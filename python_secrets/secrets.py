@@ -121,7 +121,7 @@ class Secrets(Lister):
         return parser
 
     def take_action(self, parsed_args):
-        self.log.info('listing secrets')
+        self.log.debug('listing secrets')
         columns = ('Variable', 'Value')
         is_table = type(self.formatter) is TableFormatter
         is_json = type(self.formatter) is JSONFormatter
@@ -150,7 +150,7 @@ class Generate(Command):
 
     def take_action(self, parsed_args):
         # secrets_file = self.app.get_secrets_file_path()
-        self.log.info('generating secrets')
+        self.log.debug('generating secrets')
         to_change = parsed_args.variable \
             if len(parsed_args.variable) > 0 \
             else [i['Variable'] for i in self.app.secrets_descriptions]
@@ -165,7 +165,7 @@ class Generate(Command):
             except KeyError:
                 arguments = {}
             v = generate_secret(k, t, unique=parsed_args.unique, **arguments)
-            self.log.info("generated {} for {}".format(t, k))
+            self.log.debug("generated {} for {}".format(t, k))
             self.app.set_secret(k, v)
 
 
@@ -180,10 +180,10 @@ class Set(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.log.info('setting secrets')
+        self.log.debug('setting secrets')
         for kv in parsed_args.variable:
             k, v = kv.split('=')
-            self.log.info('setting {}'.format(k))
+            self.log.debug('setting {}'.format(k))
             self.app.set_secret(k, v)
 
 # EOF

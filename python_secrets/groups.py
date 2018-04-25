@@ -23,7 +23,7 @@ class Groups(Lister):
     log = logging.getLogger(__name__)
 
     def take_action(self, parsed_args):
-        self.log.info('listing secret groups')
+        self.log.debug('listing secret groups')
         groups_dir = self.app.get_secrets_descriptions_dir()
 
         # Ignore .order file and any other non-YAML file extensions
