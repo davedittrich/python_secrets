@@ -57,6 +57,11 @@ install:
 		$(VENV_DIR)/bin/python setup.py install; \
 	fi
 
+#HELP install-active - install in the active Python virtual environment
+.PHONY: install
+install-active:
+	python setup.py install && pip install -U .
+
 #HELP docs - build Sphinx docs (NOT INTEGRATED YET FROM OPENSTACK CODE BASE)
 .PHONY: docs
 docs:
