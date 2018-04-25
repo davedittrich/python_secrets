@@ -491,6 +491,161 @@ like ``jq``, for example:
 
 ..
 
+Future Work
+-----------
+
+The Mantl project (GitHub `mantl/mantl`) employs a `security-setup`_ script
+that takes care of setting secrets (and non-secret related variables) in a
+monolithic manner.  It has specific command line options, specific secret
+generation functions, and specific data structures for each of the component
+subsystems used by `mantl`_. This method is not modular or extensible, and the
+`security-setup`_ script is not generalized such that it can be used by any
+other project.  These limitations are primary motivators for writing
+``python_secrets``, which could eventually replace ``security-setup``.
+
+At this point, the Mantl ``security.yml`` file can be read in and
+values can be manually set, as seen here:
+
+.. _mantl/mantl: https://github.com/mantl/mantl
+.. _security-setup:
+
+.. code-block:: none
+
+    $ python_secrets -d ~/git/mantl --secrets-file security.yml secrets -f yaml
+    secrets descriptions directory not found
+    - Value: admin:password
+      Variable: chronos_http_credentials
+    - Value: chronos
+      Variable: chronos_principal
+    - Value: S0JMz5z8oxQGQXMyZjwE0ZCmu4zeJV4oWDUrdc25MBLx
+      Variable: chronos_secret
+    - Value: 88821cbe-c004-4cff-9f91-2bc36cd347dc
+      Variable: consul_acl_agent_token
+    - Value: f9acbe14-28d3-4d06-a1c9-c617da5ebb4e
+      Variable: consul_acl_mantl_api_token
+    - Value: de54ae85-8226-4146-959f-8926b0b8ee55
+      Variable: consul_acl_marathon_token
+    - Value: dfc9b244-5140-41ad-b93a-ac5c2451fb95
+      Variable: consul_acl_master_token
+    - Value: e149b50f-cb5c-4efe-be96-26a52efdc715
+      Variable: consul_acl_secure_token
+    - Value: 719f2328-6446-4647-adf6-310013bac636
+      Variable: consul_acl_vault_token
+    - Value: Z0niD1jeiTkx7xaoewJm2A==
+      Variable: consul_gossip_key
+    - Value: true
+      Variable: do_chronos_auth
+    - Value: true
+      Variable: do_chronos_iptables
+    - Value: true
+      Variable: do_chronos_ssl
+    - Value: true
+      Variable: do_consul_auth
+    - Value: true
+      Variable: do_consul_ssl
+    - Value: true
+      Variable: do_mantl_api_auth
+    - Value: true
+      Variable: do_mantlui_auth
+    - Value: true
+      Variable: do_mantlui_ssl
+    - Value: true
+      Variable: do_marathon_auth
+    - Value: true
+      Variable: do_marathon_iptables
+    - Value: true
+      Variable: do_marathon_ssl
+    - Value: true
+      Variable: do_mesos_auth
+    - Value: true
+      Variable: do_mesos_follower_auth
+    - Value: true
+      Variable: do_mesos_framework_auth
+    - Value: true
+      Variable: do_mesos_iptables
+    - Value: true
+      Variable: do_mesos_ssl
+    - Value: false
+      Variable: do_private_docker_registry
+    - Value: mantl-api
+      Variable: mantl_api_principal
+    - Value: Se4R9nRy8WTAgmU9diJyIPwLYsBU+V1yBxTQumiOriK+
+      Variable: mantl_api_secret
+    - Value: admin:password
+      Variable: marathon_http_credentials
+    - Value: marathon
+      Variable: marathon_principal
+    - Value: +Y5bvIsWliFvcWgbXGWa8kwT6Qf3etogQJe+cK+IV2hX
+      Variable: marathon_secret
+    - Value:
+      - principal: marathon
+        secret: +Y5bvIsWliFvcWgbXGWa8kwT6Qf3etogQJe+cK+IV2hX
+      - principal: chronos
+        secret: S0JMz5z8oxQGQXMyZjwE0ZCmu4zeJV4oWDUrdc25MBLx
+      - principal: mantl-api
+        secret: Se4R9nRy8WTAgmU9diJyIPwLYsBU+V1yBxTQumiOriK+
+      Variable: mesos_credentials
+    - Value: follower
+      Variable: mesos_follower_principal
+    - Value: Q53uAa2mNM0UNe2RUjrX6k7QvK6ojjH1gHXYLcm3Lmfr
+      Variable: mesos_follower_secret
+    - Value: password
+      Variable: nginx_admin_password
+    - Value: true
+      Variable: security_enabled
+    - Value: chronos
+      Variable: zk_chronos_user
+    - Value: JWPO11z4lU5qeilZ
+      Variable: zk_chronos_user_secret
+    - Value: hsr+R6YQBAOXoY84a8ne8bU0opg=
+      Variable: zk_chronos_user_secret_digest
+    - Value: marathon
+      Variable: zk_marathon_user
+    - Value: UBh77ok2svQAqWox
+      Variable: zk_marathon_user_secret
+    - Value: mo2mQGXcsc21zB4wYD18jn+Csks=
+      Variable: zk_marathon_user_secret_digest
+    - Value: mesos
+      Variable: zk_mesos_user
+    - Value: L3t9FEMsXehqeBvl
+      Variable: zk_mesos_user_secret
+    - Value: bHYvGteRBxou4jqJ8XWAYmOmzxs=
+      Variable: zk_mesos_user_secret_digest
+    - Value: super
+      Variable: zk_super_user
+    - Value: 2DyL/n/GLi3Q0pa75z9OjODGZKC1RCaEiKNV1ZXo1Wpk
+      Variable: zk_super_user_secret
+    $ python_secrets -d ~/git/mantl --secrets-file security.yml secrets -f csv | grep nginx_admin_password
+    secrets descriptions directory not found
+    "nginx_admin_password","password"
+    $ python_secrets -d ~/git/mantl --secrets-file security.yml secrets set nginx_admin_password=newpassword
+    secrets descriptions directory not found
+    $ python_secrets -d ~/git/mantl --secrets-file security.yml secrets -f csv | grep nginx_admin_password
+    secrets descriptions directory not found
+    "nginx_admin_password","newpassword"
+
+..
+
+There are a few things that can be done to use ``python_secrets`` as a replacement
+for the ``security-setup`` script.  These include:
+
+* Produce secrets descriptions in a ``security.d`` directory.
+* Remove the variables that are not secrets requiring regeneration for rotation
+  or "break-glass" procedures (e.g., like ``chronos_principal``, which is a
+  userID value, and ``do_mesos_auth``, which is a boolean flag).
+* Break down more complex data structures (specifically, the ``mesos_credentials``
+  list of dictionaries with keys ``principal`` and ``secret``). These could
+  instead be discrete variables like ``marathon_secret`` (which appears to
+  be the secret associated with the invariant "variable" ``marathon_principal``).
+
+.. note::
+
+   Alternatively, these kind of variables could be supported by defining a type ``invariant``
+   or ``string`` and prompting the user to provide a new value (using any current value
+   as the default).
+
+..
+
 Credits
 ---------
 
