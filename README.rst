@@ -23,19 +23,23 @@ Features
 
 * Uses the `openstack/cliff`_ command line framework.
 
-* Supports a "drop-in" model for defining variables to more easily support
-  different use cases and combinations of secrets in a modular manner.
+* Supports a "drop-in" model for defining variables in a modular manner
+  that is used to then construct a single file for use by Ansible or
+  other applications. This is something like the `python-update-dotdee`_
+  program, but including secret setting and generation as well.
+
+* Like `python-update-dotdee`_, produces a single master file for use
+  by Ansible commands (e.g. ``ansible-playbook playbook.yml -e @secrets.yml``)
 
 * Support multiple simultaneous sets of secrets for flexibility and
-  scalability in multi-environment deployments.
-
-* Produces a single master file for use by Ansible commands (e.g.
-  ``ansible-playbook playbook.yml -e @secrets.yml``)
+  scalability in multi-environment deployments and to support
+  different use cases and combinations of secrets.
 
 * Define variable names and associate types (e.g., ``password``, ``uuid4``,
   ``consul_key``).
 
-* Allow manual entry of values, or automatic generation according to type.
+* Allow manual entry of values, or automatic generation of secrets
+  according to their type.
 
 * Generate unique values for variables, or use a single value per
   type to simplify use of secrets in access control of services
@@ -51,6 +55,7 @@ Features
   JSON, YAML) for use in shell scripts, etc. using ``cliff`` features.
 
 .. _openstack/cliff: https://github.com/openstack/cliff
+.. _python-update-dotdee: https://pypi.org/project/update-dotdee/
 
 Usage
 -----
