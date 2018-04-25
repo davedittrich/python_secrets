@@ -97,18 +97,12 @@ class PythonSecretsApp(App):
         self.set_environment(self.options.environment)
         self.set_secrets_dir(self.options.secrets_dir)
         self.set_secrets_file(self.options.secrets_file)
-        try:
-            self.read_secrets_descriptions()
-        except Exception as e:
-            self.secrets_descriptions = collections.OrderedDict()
-        try:
-            self.read_secrets()
-        except Exception as e:
-            self.secrets = collections.OrderedDict()
 
 
     def prepare_to_run_command(self, cmd):
         self.LOG.debug('prepare_to_run_command %s', cmd.__class__.__name__)
+        self.read_secrets_descriptions()
+        self.read_secrets()
 
     def clean_up(self, cmd, result, err):
         self.LOG.debug('clean_up %s', cmd.__class__.__name__)
@@ -184,10 +178,12 @@ class PythonSecretsApp(App):
 
     def read_secrets(self):
         """Load the current secrets from .yml file"""
+        self.secrets = collections.OrderedDict()
         self.LOG.debug('reading secrets from {}'.format(
             self.get_secrets_file_path()))
         with open(self.get_secrets_file_path(), 'r') as f:
             self.secrets = yaml.load(f)
+            # except Exception as e:
 
     def write_secrets(self):
         """Write out the current secrets for use by Ansible, only if any changes were made"""
@@ -205,13 +201,19 @@ class PythonSecretsApp(App):
 
     def read_secrets_descriptions(self):
         """Load the descriptions of groups of secrets from a .d directory"""
-        self.LOG.debug('reading secrets descriptions from {}'.format(
-            self.get_secrets_descriptions_dir()))
+        self.secrets_descriptions = collections.OrderedDict()
         groups_dir = self.get_secrets_descriptions_dir()
-        self.secrets_descriptions = yamlreader.yaml_load(
-            groups_dir + '/*.yml'
-        )
-
+        if os.path.exists(groups_dir):
+            self.LOG.debug('reading secrets descriptions from {}'.format(
+                self.get_secrets_descriptions_dir()))
+            try:
+                self.secrets_descriptions = yamlreader.yaml_load(
+                    groups_dir + '/*.yml'
+                )
+            except YAMLReaderError as e:
+                self.LOG.info('no secrets descriptions files found')
+        else:
+            self.LOG.info('secrets descriptions directory not found')
 
 def main(argv=sys.argv[1:]):
     """
