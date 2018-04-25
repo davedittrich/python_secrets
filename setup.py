@@ -82,6 +82,8 @@ setup(
         ],
         'python_secrets': [
             'secrets = python_secrets.secrets:Secrets',
+            'secrets set = python_secrets.secrets:Set',
+            'secrets generate = python_secrets.secrets:Generate',
             'groups = python_secrets.groups:Groups',
         ],
     },

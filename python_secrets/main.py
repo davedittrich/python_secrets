@@ -6,10 +6,13 @@
 """Python secrets management app"""
 
 # Standard library modules.
+import collections
 import logging
 import os
 import posixpath
 import sys
+import yaml
+import yamlreader
 
 from . import __version__
 
@@ -17,6 +20,7 @@ from . import __version__
 
 from cliff.app import App
 from cliff.commandmanager import CommandManager
+from numpy import random
 
 
 # Use syslog for logging?
@@ -55,6 +59,7 @@ class PythonSecretsApp(App):
             ),
             deferred_help=True,
             )
+        self.secrets_changed = False
 
     def build_option_parser(self, description, version):
         parser = super(PythonSecretsApp, self).build_option_parser(
@@ -92,6 +97,15 @@ class PythonSecretsApp(App):
         self.set_environment(self.options.environment)
         self.set_secrets_dir(self.options.secrets_dir)
         self.set_secrets_file(self.options.secrets_file)
+        try:
+            self.read_secrets_descriptions()
+        except Exception as e:
+            self.secrets_descriptions = collections.OrderedDict()
+        try:
+            self.read_secrets()
+        except Exception as e:
+            self.secrets = collections.OrderedDict()
+
 
     def prepare_to_run_command(self, cmd):
         self.LOG.debug('prepare_to_run_command %s', cmd.__class__.__name__)
@@ -100,6 +114,10 @@ class PythonSecretsApp(App):
         self.LOG.debug('clean_up %s', cmd.__class__.__name__)
         if err:
             self.LOG.debug('got an error: %s', err)
+            self.LOG.info('not writing secrets out due to error')
+        else:
+            if self.secrets_changed:
+                self.write_secrets()
 
     def set_environment(self, environment=ENVIRONMENT):
         """Set variable for current environment"""
@@ -109,9 +127,9 @@ class PythonSecretsApp(App):
         """Get the current environment setting"""
         return self.environment
 
-    def set_secrets_dir(self, secrets_dir=SECRETS_DIR):
+    def set_secrets_dir(self, secrets_dir=SECRETS_DIR, environment=ENVIRONMENT):
         """Set variable for current secrets directory"""
-        self.secrets_dir = secrets_dir
+        self.secrets_dir = posixpath.join(secrets_dir, environment)
 
     def get_secrets_dir(self):
         """Get the current secrets directory setting"""
@@ -129,13 +147,68 @@ class PythonSecretsApp(App):
         """Get absolute path to secrets file"""
         return posixpath.join(self.secrets_dir, self.secrets_file)
 
+    def get_secrets_descriptions_dir(self):
+        """Get the current secrets descriptions directory setting"""
+        # environment_dir = posixpath.join(self.get_secrets_dir(), self.get_environment())
+        return '{}.d'.format(os.path.splitext(self.get_secrets_file_path())[0])
+
     def set_redact(self, redact=True):
         """Set redaction flag"""
+        assert type(redact) is bool, "set_redact(): redact must be bool"
         self.redact = redact
 
     def get_redact(self):
         """Get redaction flag"""
         return self.redact
+
+    def get_secret(self, secret):
+        """Get the value of secret
+
+        :param secret: :type: string
+        :return: value of secret
+        """
+        return self.secrets[secret]
+
+    def set_secret(self, secret, value):
+        """Set secret to value
+
+        :param secret: :type: string
+        :param value: :type: string
+        :return:
+        """
+        self.secrets[secret] = value
+        self.secrets_changed = True
+
+    def read_secrets(self):
+        """Load the current secrets from .yml file"""
+        self.LOG.debug('reading secrets from {}'.format(
+            self.get_secrets_file_path()))
+        with open(self.get_secrets_file_path(), 'r') as f:
+            self.secrets = yaml.load(f)
+
+    def write_secrets(self):
+        """Write out the current secrets for use by Ansible, only if any changes were made"""
+        if self.secrets_changed:
+            self.LOG.debug('writing secrets to {}'.format(
+                self.get_secrets_file_path()))
+            with open(self.get_secrets_file_path(), 'w') as outfile:
+                yaml.dump(self.secrets,
+                          outfile,
+                          encoding=('utf-8'),
+                          default_flow_style=False
+                          )
+        else:
+            self.LOG.debug('not writing secrets (unchanged)')
+
+    def read_secrets_descriptions(self):
+        """Load the descriptions of groups of secrets from a .d directory"""
+        self.LOG.debug('reading secrets descriptions from {}'.format(
+            self.get_secrets_descriptions_dir()))
+        groups_dir = self.get_secrets_descriptions_dir()
+        self.secrets_descriptions = yamlreader.yaml_load(
+            groups_dir + '/*.yml'
+        )
+
 
 def main(argv=sys.argv[1:]):
     """

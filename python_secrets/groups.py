@@ -23,12 +23,8 @@ class Groups(Lister):
     log = logging.getLogger(__name__)
 
     def take_action(self, parsed_args):
-        environment_dir = posixpath.join(self.app_args.secrets_dir, self.app_args.environment)
-        groups_dir = '{}.d'.format(os.path.splitext(posixpath.join(environment_dir, self.app_args.secrets_file))[0])
-
-        # yamlfiles = groups_dir + '/*.yml'
-        # secrets = collections.OrderedDict()
-        # secrets = yamlreader.yaml_load(yamlfiles)
+        self.log.info('listing secret groups')
+        groups_dir = self.app.get_secrets_descriptions_dir()
 
         # Ignore .order file and any other non-YAML file extensions
         extensions = ['yml', 'yaml']

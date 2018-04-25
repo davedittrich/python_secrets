@@ -1,4 +1,6 @@
 cliff
 coloredlogs
 executor
+numpy
 yamlreader
+xkcdpass
