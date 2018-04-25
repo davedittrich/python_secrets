@@ -26,13 +26,13 @@ from numpy import random
 # Use syslog for logging?
 # TODO(dittrich) Make this configurable, since it can fail on Mac OS X
 SYSLOG=False
-ENVIRONMENT = os.getenv('D2_ENVIRONMENT', '')
+ENVIRONMENT = os.getenv('D2_ENVIRONMENT', None)
 SECRETS_FILE_NAME = os.getenv('D2_SECRETS_FILE', 'secrets.yml')
 SECRETS_DIR = os.getenv(
             'D2_SECRETS_DIR',
-            '.' if ENVIRONMENT == '' else '{}/.secrets'.format(os.environ.get('HOME'))
+            '.' if not ENVIRONMENT else '{}/.secrets'.format(os.environ.get('HOME'))
         )
-DEPLOYMENT_SECRETS_DIR = posixpath.join(SECRETS_DIR, ENVIRONMENT).replace("\\", "/")
+DEPLOYMENT_SECRETS_DIR = posixpath.join(SECRETS_DIR, ENVIRONMENT).replace("\\", "/") if ENVIRONMENT else SECRETS_DIR
 SECRETS_FILE_PATH = posixpath.join(DEPLOYMENT_SECRETS_DIR, SECRETS_FILE_NAME)
 PROGRAM = os.path.basename(os.path.dirname(__file__))
 DESCRIPTION="""\n
@@ -129,7 +129,10 @@ class PythonSecretsApp(App):
 
     def set_secrets_dir(self, secrets_dir=SECRETS_DIR, environment=ENVIRONMENT):
         """Set variable for current secrets directory"""
-        self.secrets_dir = posixpath.join(secrets_dir, environment)
+        if not environment:
+            self.secrets_dir = secrets_dir
+        else:
+            self.secrets_dir = posixpath.join(secrets_dir, environment)
 
     def get_secrets_dir(self):
         """Get the current secrets directory setting"""
