@@ -194,6 +194,7 @@ class PythonSecretsApp(App):
                 yaml.dump(self.secrets,
                           outfile,
                           encoding=('utf-8'),
+                          explicit_start=True,
                           default_flow_style=False
                           )
         else:
