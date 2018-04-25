@@ -102,30 +102,39 @@ class PythonSecretsApp(App):
             self.LOG.debug('got an error: %s', err)
 
     def set_environment(self, environment=ENVIRONMENT):
+        """Set variable for current environment"""
         self.environment = environment
 
     def get_environment(self):
+        """Get the current environment setting"""
         return self.environment
 
     def set_secrets_dir(self, secrets_dir=SECRETS_DIR):
+        """Set variable for current secrets directory"""
         self.secrets_dir = secrets_dir
 
     def get_secrets_dir(self):
+        """Get the current secrets directory setting"""
         return self.secrets_dir
 
     def set_secrets_file(self, secrets_file=SECRETS_FILE_PATH):
+        """Set variable with name of secrets file"""
         self.secrets_file = secrets_file
 
     def get_secrets_file(self):
+        """Get name of secrets file"""
         return self.secrets_file
 
     def get_secrets_file_path(self):
+        """Get absolute path to secrets file"""
         return posixpath.join(self.secrets_dir, self.secrets_file)
 
     def set_redact(self, redact=True):
+        """Set redaction flag"""
         self.redact = redact
 
     def get_redact(self):
+        """Get redaction flag"""
         return self.redact
 
 def main(argv=sys.argv[1:]):
