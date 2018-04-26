@@ -81,10 +81,10 @@ setup(
             'python_secrets = python_secrets.main:main',
         ],
         'python_secrets': [
-            'secrets = python_secrets.secrets:Secrets',
+            'secrets show = python_secrets.secrets:Secrets',
             'secrets set = python_secrets.secrets:Set',
             'secrets generate = python_secrets.secrets:Generate',
-            'groups = python_secrets.groups:Groups',
+            'groups list = python_secrets.groups:Groups',
         ],
     },
 )

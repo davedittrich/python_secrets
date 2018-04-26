@@ -109,9 +109,9 @@ optional arguments:
 
 Commands:
   complete       print bash completion command (cliff)
-  groups         Show a list of secrets groups.
+  groups list    Show a list of secrets groups.
   help           print detailed help for another command (cliff)
-  secrets        List the contents of the secrets file
+  secrets show   List the contents of the secrets file
   secrets generate  Generate values for secrets
   secrets set    Set values manually for secrets
 
@@ -337,7 +337,7 @@ using Ansible.  For example, CSV output (with header) can be produced like this:
 
 .. code-block:: none
 
-    $ python_secrets secrets -f csv
+    $ python_secrets secrets show --no-redact -f csv
     "Variable","Value"
     "trident_db_pass","gargle earlobe eggplant kissable"
     "ca_rootca_password","gargle earlobe eggplant kissable"
@@ -356,7 +356,7 @@ other programs.
 
 .. code-block:: none
 
-    $ python_secrets secrets -f json
+    $ python_secrets secrets show --no-redact -f json
     [
       {
         "Variable": "trident_db_pass",
@@ -403,7 +403,7 @@ like ``jq``, for example:
 
 .. code-block:: none
 
-    $ python_secrets secrets -f json | jq -r '.[] | { (.Variable): .Value } '
+    $ python_secrets secrets show --no-redact -f json | jq -r '.[] | { (.Variable): .Value } '
     {
       "trident_db_pass": "gargle earlobe eggplant kissable"
     }
@@ -436,7 +436,7 @@ like ``jq``, for example:
 
 .. code-block:: none
 
-    $ python_secrets secrets -f json | jq -r '.[] | [ (.Variable), .Value ] '
+    $ python_secrets secrets show --no-redact -f json | jq -r '.[] | [ (.Variable), .Value ] '
     [
       "trident_db_pass",
       "gargle earlobe eggplant kissable"
@@ -478,7 +478,7 @@ like ``jq``, for example:
 
 .. code-block:: none
 
-    $ python_secrets secrets -f json | jq -r '.[] | [ (.Variable), .Value ] |@sh'
+    $ python_secrets secrets show --no-redact -f json | jq -r '.[] | [ (.Variable), .Value ] |@sh'
     'trident_db_pass' 'gargle earlobe eggplant kissable'
     'ca_rootca_password' 'gargle earlobe eggplant kissable'
     'consul_key' 'zQvSe0kdf0Xarbhb80XULQ=='
@@ -493,7 +493,7 @@ like ``jq``, for example:
 
 .. code-block:: none
 
-    $ python_secrets secrets -f json | jq -r '.[] | [ (.Variable), .Value ] |@csv'
+    $ python_secrets secrets show --no-redact -f json | jq -r '.[] | [ (.Variable), .Value ] |@csv'
     "trident_db_pass","gargle earlobe eggplant kissable"
     "ca_rootca_password","gargle earlobe eggplant kissable"
     "consul_key","zQvSe0kdf0Xarbhb80XULQ=="
@@ -526,7 +526,7 @@ values can be manually set, as seen here:
 
 .. code-block:: none
 
-    $ python_secrets -d ~/git/mantl --secrets-file security.yml secrets -f yaml
+    $ python_secrets -d ~/git/mantl --secrets-file security.yml secrets show --no-redact -f yaml
     secrets descriptions directory not found
     - Value: admin:password
       Variable: chronos_http_credentials
@@ -630,12 +630,12 @@ values can be manually set, as seen here:
       Variable: zk_super_user
     - Value: 2DyL/n/GLi3Q0pa75z9OjODGZKC1RCaEiKNV1ZXo1Wpk
       Variable: zk_super_user_secret
-    $ python_secrets -d ~/git/mantl --secrets-file security.yml secrets -f csv | grep nginx_admin_password
+    $ python_secrets -d ~/git/mantl --secrets-file security.yml secrets show --no-redact -f csv | grep nginx_admin_password
     secrets descriptions directory not found
     "nginx_admin_password","password"
     $ python_secrets -d ~/git/mantl --secrets-file security.yml secrets set nginx_admin_password=newpassword
     secrets descriptions directory not found
-    $ python_secrets -d ~/git/mantl --secrets-file security.yml secrets -f csv | grep nginx_admin_password
+    $ python_secrets -d ~/git/mantl --secrets-file security.yml secrets show --no-redact -f csv | grep nginx_admin_password
     secrets descriptions directory not found
     "nginx_admin_password","newpassword"
 
