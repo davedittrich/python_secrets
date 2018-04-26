@@ -237,8 +237,8 @@ all of the secrets, just use the ``secrets`` command by itself:
 
 ..
 
-By default, the values of secrets are redacted in ``table`` output.  To show
-them in the terminal output, add the ``--no-redact`` flag:
+By default, the values of secrets are redacted when output.  To show
+the values in clear text in the terminal output, add the ``--no-redact`` flag:
 
 .. code-block:: none
 

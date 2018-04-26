@@ -127,7 +127,7 @@ class Secrets(Lister):
         is_json = type(self.formatter) is JSONFormatter
 
         data = (
-            [(k, redact(v, is_table and parsed_args.redact))
+            [(k, redact(v, parsed_args.redact))
               for k, v in self.app.secrets.items()])
         return columns, data
 
