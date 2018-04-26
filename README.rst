@@ -191,11 +191,11 @@ interface framework, which supports multiple output formats. The default
 format the ``table`` format, which makes for nice clean output. (Other
 formats will be described later.)
 
-The groups can be listed using the ``groups`` command:
+The groups can be listed using the ``groups list`` command:
 
 .. code-block:: none
 
-    $ python_secrets groups
+    $ python_secrets groups list
     +-----------+-------+
     | Group     | Items |
     +-----------+-------+
@@ -241,7 +241,7 @@ the values in clear text in the terminal output, add the ``--no-redact`` flag:
 
 .. code-block:: none
 
-    $ python_secrets secrets --no-redact
+    $ python_secrets secrets show --no-redact
     +----------------------------+--------------------------------------+
     | Variable                   | Value                                |
     +----------------------------+--------------------------------------+
@@ -264,7 +264,7 @@ type of secret to simplify things, use the ``secrets generate`` command:
 .. code-block:: none
 
     $ python_secrets secrets generate
-    $ python_secrets secrets --no-redact
+    $ python_secrets secrets show --no-redact
     +----------------------------+--------------------------------------+
     | Variable                   | Value                                |
     +----------------------------+--------------------------------------+
@@ -287,7 +287,7 @@ specifying the variable and value in the form ``variable=value``:
 .. code-block:: none
 
     $ python_secrets secrets set trident_db_pass="rural coffee purple sedan"
-    $ python_secrets secrets --no-redact
+    $ python_secrets secrets show --no-redact
     +----------------------------+--------------------------------------+
     | Variable                   | Value                                |
     +----------------------------+--------------------------------------+
@@ -310,7 +310,7 @@ them to the command line as arguments to ``secrets generate``:
 .. code-block:: none
 
     $ python_secrets secrets generate rabbitmq_default_user_pass rabbitmq_admin_user_pass
-    $ python_secrets secrets --no-redact
+    $ python_secrets secrets show --no-redact
     +----------------------------+--------------------------------------+
     | Variable                   | Value                                |
     +----------------------------+--------------------------------------+
