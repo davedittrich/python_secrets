@@ -79,41 +79,40 @@ Getting help
 ~~~~~~~~~~~~
 
 To get help information on command arguments and options, use
-``--help``:
+the ``help`` command or ``--help`` option flag:
 
 .. code-block:: none
 
+    $ python_secrets --help
+    usage: python_secrets [--version] [-v | -q] [--log-file LOG_FILE] [-h]
+                          [--debug] [-e <environment>] [-d <secrets-directory>]
+                          [-s <secrets-file>]
 
-$ python_secrets --help
-usage: python_secrets [--version] [-v | -q] [--log-file LOG_FILE] [-h]
-                      [--debug] [-e <environment>] [-d <secrets-directory>]
-                      [-s <secrets-file>]
+    Python secrets management app
 
-Python secrets management app
+    optional arguments:
+      --version             show program's version number and exit
+      -v, --verbose         Increase verbosity of output. Can be repeated.
+      -q, --quiet           Suppress output except warnings and errors.
+      --log-file LOG_FILE   Specify a file to log output. Disabled by default.
+      -h, --help            Show help message and exit.
+      --debug               Show tracebacks on errors.
+      -e <environment>, --environment <environment>
+                            Deployment environment selector (Env: D2_ENVIRONMENT;
+                            default: None)
+      -d <secrets-directory>, --secrets-dir <secrets-directory>
+                            Root directory for holding secrets (Env:
+                            D2_SECRETS_DIR; default: .)
+      -s <secrets-file>, --secrets-file <secrets-file>
+                            Secrets file (default: secrets.yml)
 
-optional arguments:
-  --version             show program's version number and exit
-  -v, --verbose         Increase verbosity of output. Can be repeated.
-  -q, --quiet           Suppress output except warnings and errors.
-  --log-file LOG_FILE   Specify a file to log output. Disabled by default.
-  -h, --help            Show help message and exit.
-  --debug               Show tracebacks on errors.
-  -e <environment>, --environment <environment>
-                        Deployment environment selector (Env: D2_ENVIRONMENT;
-                        default: None)
-  -d <secrets-directory>, --secrets-dir <secrets-directory>
-                        Root directory for holding secrets (Env:
-                        D2_SECRETS_DIR; default: .)
-  -s <secrets-file>, --secrets-file <secrets-file>
-                        Secrets file (default: secrets.yml)
-
-Commands:
-  complete       print bash completion command (cliff)
-  groups list    Show a list of secrets groups.
-  help           print detailed help for another command (cliff)
-  secrets show   List the contents of the secrets file
-  secrets generate  Generate values for secrets
-  secrets set    Set values manually for secrets
+    Commands:
+      complete       print bash completion command (cliff)
+      groups list    Show a list of secrets groups.
+      help           print detailed help for another command (cliff)
+      secrets show   List the contents of the secrets file
+      secrets generate  Generate values for secrets
+      secrets set    Set values manually for secrets
 
 ..
 
