@@ -186,7 +186,13 @@ class Set(Command):
         self.log.debug('setting secrets')
         for kv in parsed_args.variable:
             k, v = kv.split('=')
-            self.log.debug('setting {}'.format(k))
-            self.app.set_secret(k, v)
+            try:
+                description = next((item for item in self.app.secrets_descriptions if item["Variable"] == k))
+                # TODO(dittrich): validate description['Type']
+            except StopIteration:
+                self.log.info('no description for {}'.format(k))
+            else:
+                self.log.debug('setting {}'.format(k))
+                self.app.set_secret(k, v)
 
 # EOF
