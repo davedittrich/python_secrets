@@ -36,11 +36,11 @@ sdist: docs
 
 #HELP upload - upload to pypi.python.org
 .PHONY: upload
-upload:
+upload: clean bdist_wheel
 	twine upload dist/* -r pypi
 
 .PHONY: upload-test
-upload-test: bdist_wheel
+upload-test: clean bdist_wheel
 	twine upload dist/* -r testpypi
 
 #HELP upload-test - upload to test.pypi.python.org

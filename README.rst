@@ -64,7 +64,7 @@ Commands (and subcommands) generally follow the model set by the
 `OpenStackClient`_ for its `Command Structure`_. The general structure
 of a command is:
 
-.. code-block:: none
+.. code-block:: shell
 
    $ python_secrets [<global-options>] <object-1> <action> [<object-2>] [<command-arguments>]
 
@@ -88,7 +88,7 @@ Getting help
 To get help information on command arguments and options, use
 the ``help`` command or ``--help`` option flag:
 
-.. code-block:: none
+.. code-block:: shell
 
     $ python_secrets --help
     usage: python_secrets [--version] [-v | -q] [--log-file LOG_FILE] [-h]
@@ -139,7 +139,7 @@ in which a set of different environments can be configured at one
 time, to define the current environment, and to change the name
 of the secrets file to something else.
 
-.. code-block:: none
+.. code-block:: shell
 
     $ env | grep ^D2_
     D2_SECRETS_DIR=/Users/dittrich/.secrets
@@ -151,7 +151,7 @@ Each environment is in turn rooted in a directory with the environment's
 symbolic name (e.g., ``do`` for DigitalOcean in this example, and ``mantl``
 for Cisco's Mantl project.)
 
-.. code-block:: none
+.. code-block:: shell
 
     $ tree -L 1 ~/.secrets
     /Users/dittrich/.secrets
@@ -165,7 +165,7 @@ for Cisco's Mantl project.)
 Each set of secrets for a given service or purpose is described in its own
 file.
 
-.. code-block:: none
+.. code-block:: shell
 
     .
     ├── secrets.d
@@ -200,7 +200,7 @@ formats will be described later.)
 
 The groups can be listed using the ``groups list`` command:
 
-.. code-block:: none
+.. code-block:: shell
 
     $ python_secrets groups list
     +-----------+-------+
@@ -222,7 +222,7 @@ Showing Secrets
 
 To see all of the secrets, use the ``secrets show`` command:
 
-.. code-block:: none
+.. code-block:: shell
 
     $ python_secrets secrets
     +----------------------------+----------+
@@ -244,7 +244,7 @@ To see all of the secrets, use the ``secrets show`` command:
 By default, the values of secrets are redacted when output.  To show
 the values in clear text in the terminal output, add the ``--no-redact`` flag:
 
-.. code-block:: none
+.. code-block:: shell
 
     $ python_secrets secrets show --no-redact
     +----------------------------+--------------------------------------+
@@ -269,7 +269,7 @@ the environment variable ``D2_NO_REDACT`` set to (case-insensitive)
 "true", "1", or "yes". Anything else leaves the default the same.
 We'll do this now for later examples.
 
-.. code-block:: none
+.. code-block:: shell
 
     $ export D2_NO_REDACT=true
 
@@ -278,7 +278,7 @@ We'll do this now for later examples.
 The default is also to show all secrets. If you only want to process a
 subset of secrets, specify them on the command line as arguments:
 
-.. code-block:: none
+.. code-block:: shell
 
     $ python_secrets secrets show rabbitmq_default_user_pass rabbitmq_admin_user_pass
     +----------------------------+--------------------------------------+
@@ -300,7 +300,7 @@ and are set manually using the ``secrets set`` command.
 To regenerate all of the secrets at once, using the same value for each
 type of secret to simplify things, use the ``secrets generate`` command:
 
-.. code-block:: none
+.. code-block:: shell
 
     $ python_secrets secrets generate
     $ python_secrets secrets show
@@ -323,7 +323,7 @@ type of secret to simplify things, use the ``secrets generate`` command:
 You can set one or more variables manually using ``secrets set`` and
 specifying the variable and value in the form ``variable=value``:
 
-.. code-block:: none
+.. code-block:: shell
 
     $ python_secrets secrets set trident_db_pass="rural coffee purple sedan"
     $ python_secrets secrets show
@@ -346,7 +346,7 @@ specifying the variable and value in the form ``variable=value``:
 Or you can generate one or more variables in a similar manner by adding
 them to the command line as arguments to ``secrets generate``:
 
-.. code-block:: none
+.. code-block:: shell
 
     $ python_secrets secrets generate rabbitmq_default_user_pass rabbitmq_admin_user_pass
     $ python_secrets secrets show
@@ -373,7 +373,7 @@ The `openstack/cliff`_ framework also supports multiple output formats that help
 with accessing and using the secrets in applications or service configuration
 using Ansible.  For example, CSV output (with header) can be produced like this:
 
-.. code-block:: none
+.. code-block:: shell
 
     $ python_secrets secrets show -f csv
     "Variable","Value"
@@ -392,7 +392,7 @@ using Ansible.  For example, CSV output (with header) can be produced like this:
 Or you can produce JSON and have structured data for consumption by
 other programs.
 
-.. code-block:: none
+.. code-block:: shell
 
     $ python_secrets secrets show -f json
     [
@@ -439,7 +439,7 @@ other programs.
 The JSON can be manipulated, filtered, and restructured using a program
 like ``jq``, for example:
 
-.. code-block:: none
+.. code-block:: shell
 
     $ python_secrets secrets show -f json | jq -r '.[] | { (.Variable): .Value } '
     {
@@ -472,7 +472,7 @@ like ``jq``, for example:
 
 ..
 
-.. code-block:: none
+.. code-block:: shell
 
     $ python_secrets secrets show -f json | jq -r '.[] | [ (.Variable), .Value ] '
     [
@@ -514,7 +514,7 @@ like ``jq``, for example:
 
 ..
 
-.. code-block:: none
+.. code-block:: shell
 
     $ python_secrets secrets show -f json | jq -r '.[] | [ (.Variable), .Value ] |@sh'
     'trident_db_pass' 'gargle earlobe eggplant kissable'
@@ -529,7 +529,7 @@ like ``jq``, for example:
 
 ..
 
-.. code-block:: none
+.. code-block:: shell
 
     $ python_secrets secrets show -f json | jq -r '.[] | [ (.Variable), .Value ] |@csv'
     "trident_db_pass","gargle earlobe eggplant kissable"
@@ -568,7 +568,7 @@ Future Work
 .. _mantl/mantl: https://github.com/mantl/mantl
 .. _security-setup: http://docs.mantl.io/en/latest/security/security_setup.html
 
-  .. code-block:: none
+  .. code-block:: shell
 
       $ python_secrets -d ~/git/mantl --secrets-file security.yml secrets show -f yaml
       secrets descriptions directory not found
