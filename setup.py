@@ -79,6 +79,7 @@ setup(
     entry_points={
         'console_scripts': [
             'python_secrets = python_secrets.main:main',
+            'psec = python_secrets.main:main',
         ],
         'python_secrets': [
             'secrets show = python_secrets.secrets:Secrets',
