@@ -224,7 +224,7 @@ To see all of the secrets, use the ``secrets show`` command:
 
 .. code-block:: shell
 
-    $ python_secrets secrets
+    $ python_secrets secrets show
     +----------------------------+----------+
     | Variable                   | Value    |
     +----------------------------+----------+
