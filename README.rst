@@ -508,9 +508,6 @@ like ``jq``, for example:
 Future Work
 -----------
 
-* Add environment variable ``D2_NO_REDACT`` to change default for the
-  ``--no-redact`` option.
-
 * Add ``secrets create`` to add new secrets descriptions + secrets.
 
 * Add ``secrets delete`` to delete secrets.

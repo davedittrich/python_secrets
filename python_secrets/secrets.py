@@ -4,8 +4,9 @@ import binascii
 import collections
 import hashlib
 import logging
-import random
+import os
 import posixpath
+import random
 import uuid
 import yaml
 
@@ -16,7 +17,6 @@ from cliff.lister import Lister
 from numpy.random import bytes as np_random_bytes
 from python_secrets.utils import *
 from xkcdpass import xkcd_password as xp
-
 
 class Memoize:
     """Memoize(fn) - an instance which acts like fn but memoizes its arguments.
@@ -111,12 +111,15 @@ class Secrets(Lister):
 
     def get_parser(self, prog_name):
         parser = super(Secrets, self).get_parser(prog_name)
+        # Sorry for the double-negative, but it works better this way for the user as a flag
+        # and to have a default of redacting (so they need to turn it off)
+        redact = not (os.getenv('D2_NO_REDACT', "FALSE").upper() in ["true".upper(), "1", "yes".upper()])
         parser.add_argument(
             '-C', '--no-redact',
             action='store_false',
             dest='redact',
-            default=True,
-            help="Do not redact table output (all other formats are cleartext (default: False)"
+            default=redact,
+            help="Do not redact values in output (default: {})".format(redact)
         )
         return parser
 
