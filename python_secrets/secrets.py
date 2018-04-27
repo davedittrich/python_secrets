@@ -121,6 +121,7 @@ class Secrets(Lister):
             default=redact,
             help="Do not redact values in output (default: {})".format(redact)
         )
+        parser.add_argument('variable', nargs='*', default=None)
         return parser
 
     def take_action(self, parsed_args):
@@ -129,9 +130,11 @@ class Secrets(Lister):
         is_table = type(self.formatter) is TableFormatter
         is_json = type(self.formatter) is JSONFormatter
 
+        variables = parsed_args.variable if len(parsed_args.variable) > 0 else self.app.secrets.items()
         data = (
             [(k, redact(v, parsed_args.redact))
-              for k, v in self.app.secrets.items()])
+              for k, v in self.app.secrets.items() if k in variables]
+        )
         return columns, data
 
 class Generate(Command):
