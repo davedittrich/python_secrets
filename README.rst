@@ -70,6 +70,13 @@ of a command is:
 
 ..
 
+.. note::
+
+   A shorter script name ``psec`` is also included. You can use either name. In
+   this ``README.rst`` file, the long name is used.
+
+..
+
 The actions are things like ``list``, ``show``, ``create``, ``set``, ``delete``, etc.
 
 .. _OpenStackClient: https://docs.openstack.org/python-openstackclient/latest/
@@ -210,12 +217,10 @@ The groups can be listed using the ``groups list`` command:
 
 ..
 
-Generating and Setting variables
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Showing Secrets
+~~~~~~~~~~~~~~~
 
-Secrets are generated using the ``secrets generate`` command
-and are set manually using the ``secrets set`` command.  To see
-all of the secrets, just use the ``secrets`` command by itself:
+To see all of the secrets, use the ``secrets show`` command:
 
 .. code-block:: none
 
@@ -258,13 +263,47 @@ the values in clear text in the terminal output, add the ``--no-redact`` flag:
 
 ..
 
+If you don't care about redaction and want to turn it off and save
+the dozen keystrokes it takes to type `` --no-redact``, you can export
+the environment variable ``D2_NO_REDACT`` set to (case-insensitive)
+"true", "1", or "yes". Anything else leaves the default the same.
+We'll do this now for later examples.
+
+.. code-block:: none
+
+    $ export D2_NO_REDACT=true
+
+..
+
+The default is also to show all secrets. If you only want to process a
+subset of secrets, specify them on the command line as arguments:
+
+.. code-block:: none
+
+    $ python_secrets secrets show rabbitmq_default_user_pass rabbitmq_admin_user_pass
+    +----------------------------+--------------------------------------+
+    | Variable                   | Value                                |
+    +----------------------------+--------------------------------------+
+    | rabbitmq_default_user_pass | handheld angrily letdown frisk       |
+    | rabbitmq_admin_user_pass   | handheld angrily letdown frisk       |
+    +----------------------------+--------------------------------------+
+
+..
+
+
+Generating and Setting variables
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Secrets are generated using the ``secrets generate`` command
+and are set manually using the ``secrets set`` command.
+
 To regenerate all of the secrets at once, using the same value for each
 type of secret to simplify things, use the ``secrets generate`` command:
 
 .. code-block:: none
 
     $ python_secrets secrets generate
-    $ python_secrets secrets show --no-redact
+    $ python_secrets secrets show
     +----------------------------+--------------------------------------+
     | Variable                   | Value                                |
     +----------------------------+--------------------------------------+
@@ -287,7 +326,7 @@ specifying the variable and value in the form ``variable=value``:
 .. code-block:: none
 
     $ python_secrets secrets set trident_db_pass="rural coffee purple sedan"
-    $ python_secrets secrets show --no-redact
+    $ python_secrets secrets show
     +----------------------------+--------------------------------------+
     | Variable                   | Value                                |
     +----------------------------+--------------------------------------+
@@ -310,7 +349,7 @@ them to the command line as arguments to ``secrets generate``:
 .. code-block:: none
 
     $ python_secrets secrets generate rabbitmq_default_user_pass rabbitmq_admin_user_pass
-    $ python_secrets secrets show --no-redact
+    $ python_secrets secrets show
     +----------------------------+--------------------------------------+
     | Variable                   | Value                                |
     +----------------------------+--------------------------------------+
@@ -336,7 +375,7 @@ using Ansible.  For example, CSV output (with header) can be produced like this:
 
 .. code-block:: none
 
-    $ python_secrets secrets show --no-redact -f csv
+    $ python_secrets secrets show -f csv
     "Variable","Value"
     "trident_db_pass","gargle earlobe eggplant kissable"
     "ca_rootca_password","gargle earlobe eggplant kissable"
@@ -355,7 +394,7 @@ other programs.
 
 .. code-block:: none
 
-    $ python_secrets secrets show --no-redact -f json
+    $ python_secrets secrets show -f json
     [
       {
         "Variable": "trident_db_pass",
@@ -402,7 +441,7 @@ like ``jq``, for example:
 
 .. code-block:: none
 
-    $ python_secrets secrets show --no-redact -f json | jq -r '.[] | { (.Variable): .Value } '
+    $ python_secrets secrets show -f json | jq -r '.[] | { (.Variable): .Value } '
     {
       "trident_db_pass": "gargle earlobe eggplant kissable"
     }
@@ -435,7 +474,7 @@ like ``jq``, for example:
 
 .. code-block:: none
 
-    $ python_secrets secrets show --no-redact -f json | jq -r '.[] | [ (.Variable), .Value ] '
+    $ python_secrets secrets show -f json | jq -r '.[] | [ (.Variable), .Value ] '
     [
       "trident_db_pass",
       "gargle earlobe eggplant kissable"
@@ -477,7 +516,7 @@ like ``jq``, for example:
 
 .. code-block:: none
 
-    $ python_secrets secrets show --no-redact -f json | jq -r '.[] | [ (.Variable), .Value ] |@sh'
+    $ python_secrets secrets show -f json | jq -r '.[] | [ (.Variable), .Value ] |@sh'
     'trident_db_pass' 'gargle earlobe eggplant kissable'
     'ca_rootca_password' 'gargle earlobe eggplant kissable'
     'consul_key' 'zQvSe0kdf0Xarbhb80XULQ=='
@@ -492,7 +531,7 @@ like ``jq``, for example:
 
 .. code-block:: none
 
-    $ python_secrets secrets show --no-redact -f json | jq -r '.[] | [ (.Variable), .Value ] |@csv'
+    $ python_secrets secrets show -f json | jq -r '.[] | [ (.Variable), .Value ] |@csv'
     "trident_db_pass","gargle earlobe eggplant kissable"
     "ca_rootca_password","gargle earlobe eggplant kissable"
     "consul_key","zQvSe0kdf0Xarbhb80XULQ=="
@@ -514,11 +553,11 @@ Future Work
 
 * Add ``groups create``, ``groups delete``, ``groups show`` commands.
 
-* The Mantl project (GitHub `mantl/mantl`) employs a `security-setup`_ script
+* The Mantl project (GitHub `mantl/mantl`_) employs a `security-setup`_ script
   that takes care of setting secrets (and non-secret related variables) in a
   monolithic manner.  It has specific command line options, specific secret
   generation functions, and specific data structures for each of the component
-  subsystems used by `mantl`_. This method is not modular or extensible, and
+  subsystems used by `mantl/mantl`_. This method is not modular or extensible, and
   the `security-setup`_ script is not generalized such that it can be used by
   any other project.  These limitations are primary motivators for writing
   ``python_secrets``, which could eventually replace ``security-setup``.
@@ -531,7 +570,7 @@ Future Work
 
   .. code-block:: none
 
-      $ python_secrets -d ~/git/mantl --secrets-file security.yml secrets show --no-redact -f yaml
+      $ python_secrets -d ~/git/mantl --secrets-file security.yml secrets show -f yaml
       secrets descriptions directory not found
       - Value: admin:password
         Variable: chronos_http_credentials
@@ -635,12 +674,12 @@ Future Work
         Variable: zk_super_user
       - Value: 2DyL/n/GLi3Q0pa75z9OjODGZKC1RCaEiKNV1ZXo1Wpk
         Variable: zk_super_user_secret
-      $ python_secrets -d ~/git/mantl --secrets-file security.yml secrets show --no-redact -f csv | grep nginx_admin_password
+      $ python_secrets -d ~/git/mantl --secrets-file security.yml secrets show -f csv | grep nginx_admin_password
       secrets descriptions directory not found
       "nginx_admin_password","password"
       $ python_secrets -d ~/git/mantl --secrets-file security.yml secrets set nginx_admin_password=newpassword
       secrets descriptions directory not found
-      $ python_secrets -d ~/git/mantl --secrets-file security.yml secrets show --no-redact -f csv | grep nginx_admin_password
+      $ python_secrets -d ~/git/mantl --secrets-file security.yml secrets show -f csv | grep nginx_admin_password
       secrets descriptions directory not found
       "nginx_admin_password","newpassword"
 
