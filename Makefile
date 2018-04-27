@@ -34,6 +34,17 @@ sdist: docs
 	python setup.py sdist
 	ls -l dist/*.tar.gz
 
+#HELP upload - upload to pypi.python.org
+.PHONY: upload
+upload:
+	twine upload dist/* -r pypi
+
+.PHONY: upload-test
+upload-test: bdist_wheel
+	twine upload dist/* -r testpypi
+
+#HELP upload-test - upload to test.pypi.python.org
+
 #HELP clean - remove build artifacts
 .PHONY: clean
 clean:
