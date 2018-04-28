@@ -3,6 +3,14 @@
 
 language: python
 
+python:
+  - "2.6"
+  - "2.7"
+  - "3.3"
+  - "3.4"
+  - "3.5"
+  - "3.6"
+
 env:
   - TOXENV=py36
   - TOXENV=py35
@@ -13,9 +21,7 @@ env:
   - TOXENV=pypy
 
 # command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
-install: pip install -U tox
+install: pip install -r requirements.txt
 
 # command to run tests, e.g. python setup.py test
 script: tox
-
-
