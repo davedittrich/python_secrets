@@ -3,8 +3,8 @@
 
 language: python
 
-virtualenv:
-    system_site_packages: true
+#virtualenv:
+#    system_site_packages: true
 
 branches:
   only:
@@ -18,14 +18,14 @@ python:
   - "3.5"
   - "3.6"
 
-env:
-  - TOXENV=py36
-  - TOXENV=py35
-  - TOXENV=py34
-  - TOXENV=py33
-  - TOXENV=py27
-  - TOXENV=py26
-  - TOXENV=pypy
+#env:
+#  - TOXENV=py36
+#  - TOXENV=py35
+#  - TOXENV=py34
+#  - TOXENV=py33
+#  - TOXENV=py27
+#  - TOXENV=py26
+#  - TOXENV=pypy
 
 # command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
 install:
