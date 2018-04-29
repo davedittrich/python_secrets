@@ -7,7 +7,6 @@ import posixpath
 import yamlreader
 
 from cliff.lister import Lister
-from python_secrets.utils import *
 
 
 def items_in_file(yamlfile):

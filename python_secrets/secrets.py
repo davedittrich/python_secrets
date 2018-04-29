@@ -1,21 +1,18 @@
 # -*- coding: utf-8 -*-
 
 import binascii
-import collections
 import hashlib
 import logging
 import os
-import posixpath
 import random
 import uuid
-import yaml
 
 from cliff.formatters.json_format import JSONFormatter
 from cliff.formatters.table import TableFormatter
 from cliff.command import Command
 from cliff.lister import Lister
 from numpy.random import bytes as np_random_bytes
-from python_secrets.utils import *
+from .utils import *
 from xkcdpass import xkcd_password as xp
 
 class Memoize:
