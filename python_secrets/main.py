@@ -35,13 +35,6 @@ SECRETS_DIR = os.getenv(
 DEPLOYMENT_SECRETS_DIR = posixpath.join(SECRETS_DIR, ENVIRONMENT).replace("\\", "/") if ENVIRONMENT else SECRETS_DIR
 SECRETS_FILE_PATH = posixpath.join(DEPLOYMENT_SECRETS_DIR, SECRETS_FILE_NAME)
 PROGRAM = os.path.basename(os.path.dirname(__file__))
-DESCRIPTION="""\n
-\n
-usage: {} <command> [<args>]\n
-\n
-Environment Variables:\n
-D2_SECRETS_DIR   Root directory for storing secrets (e.g., "~/.secrets")\n
-D2_ENVIRONMENT   Deployment environment (e.g., "do")\n"""
 
 # Initialize a logger for this module.
 logger = logging.getLogger(__name__)
