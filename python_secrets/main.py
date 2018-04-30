@@ -101,8 +101,9 @@ class PythonSecretsApp(App):
 
     def prepare_to_run_command(self, cmd):
         self.LOG.debug('prepare_to_run_command %s', cmd.__class__.__name__)
-        self.read_secrets_descriptions()
-        self.read_secrets()
+        if cmd.__class__.__name__ != 'HelpCommand':
+            self.read_secrets_descriptions()
+            self.read_secrets()
 
     def clean_up(self, cmd, result, err):
         self.LOG.debug('clean_up %s', cmd.__class__.__name__)
