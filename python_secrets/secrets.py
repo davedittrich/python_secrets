@@ -105,13 +105,13 @@ def generate_random_base64(unique=False, size=2**5 + 1):
     return base64.b64encode(os.urandom(size))
 
 
-class Secrets(Lister):
+class SecretsShow(Lister):
     """List the contents of the secrets file"""
 
     log = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
-        parser = super(Secrets, self).get_parser(prog_name)
+        parser = super(SecretsShow, self).get_parser(prog_name)
         # Sorry for the double-negative, but it works better
         # this way for the user as a flag and to have a default
         # of redacting (so they need to turn it off)
@@ -129,11 +129,11 @@ class Secrets(Lister):
 
     def take_action(self, parsed_args):
         self.log.debug('listing secrets')
-        columns = ('Variable', 'Value')
         # TODO(dittrich): add a group selector method...
         variables = parsed_args.variable \
             if len(parsed_args.variable) > 0 \
             else [k for k in self.app.secrets.keys()]
+        columns = ('Variable', 'Value')
         data = (
                 [(k, redact(v, parsed_args.redact))
                     for k, v in self.app.secrets.items() if k in variables]
@@ -141,13 +141,13 @@ class Secrets(Lister):
         return columns, data
 
 
-class Generate(Command):
+class SecretsGenerate(Command):
     """Generate values for secrets"""
 
     log = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
-        parser = super(Generate, self).get_parser(prog_name)
+        parser = super(SecretsGenerate, self).get_parser(prog_name)
         parser.add_argument(
             '-U', '--unique',
             action='store_true',
@@ -180,13 +180,13 @@ class Generate(Command):
             self.app.set_secret(k, v)
 
 
-class Set(Command):
+class SecretsSet(Command):
     """Set values manually for secrets"""
 
     log = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
-        parser = super(Set, self).get_parser(prog_name)
+        parser = super(SecretsSet, self).get_parser(prog_name)
         parser.add_argument('variable', nargs='*', default=None)
         return parser
 
