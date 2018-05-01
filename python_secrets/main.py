@@ -213,7 +213,7 @@ class PythonSecretsApp(App):
                     with open(os.path.join(groups_dir, file), 'r') as f:
                         data = yaml.safe_load(f)
                     self.secrets_descriptions[group] = data
-            except Exception as e:
+            except Exception:
                 self.LOG.info('no secrets descriptions files found')
         else:
             self.LOG.info('secrets descriptions directory not found')
