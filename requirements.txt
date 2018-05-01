@@ -1,6 +1,4 @@
 cliff
-coloredlogs
-executor
 numpy
 tox
 yamlreader
