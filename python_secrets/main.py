@@ -15,7 +15,7 @@ import yaml
 import yamlreader
 
 from . import __version__
-from yamlreader import YAMLReaderError
+from yamlreader import YamlReaderError
 
 # External dependencies.
 
@@ -205,7 +205,7 @@ class PythonSecretsApp(App):
                 self.secrets_descriptions = yamlreader.yaml_load(
                     groups_dir + '/*.yml'
                 )
-            except YAMLReaderError as e:
+            except YamlReaderError as e:
                 self.LOG.info('no secrets descriptions files found')
         else:
             self.LOG.info('secrets descriptions directory not found')

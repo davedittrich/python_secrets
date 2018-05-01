@@ -9,7 +9,7 @@ from cliff.lister import Lister
 
 
 def items_in_file(yamlfile):
-    d = yamlreader.yaml_safe_load(yamlfile)
+    d = yamlreader.yaml_load(yamlfile)
     return len(d)
 
 
