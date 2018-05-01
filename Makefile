@@ -5,16 +5,20 @@ VENV_DIR=$(HOME)/dims/envs/$(REQUIRED_VENV)
 ENVNAME:=$(shell basename $(VIRTUAL_ENV))
 PROJECT:=$(shell basename `pwd`)
 
-#HELP test - run 'python setup.py test'
+#HELP test - run 'tox' for testing
 .PHONY: test
 test:
-	python setup.py test
+	tox
 
-#HELP release - package and upload a release"
+#HELP release - package and upload a release to pypi
 .PHONY: release
-#release: sdist bdist_wheel docs
-release: clean sdist bdist_egg bdist_wheel
-	scp -P8422 dist/python_dimscli*.{whl,egg} dist/python-dimscli*.tar.gz source.devops.dims:/data/src/
+release: clean sdist bdist_egg bdist_wheel test
+	twine upload dist/* -r pypi
+
+#HELP release-test - upload to "testpypi"
+.PHONY: release-test
+release-test: clean bdist_wheel test
+	twine upload dist/* -r testpypi
 
 #HELP bdist_egg - build an egg package
 .PHONY: bdist_egg
@@ -33,17 +37,6 @@ bdist_wheel:
 sdist: docs
 	python setup.py sdist
 	ls -l dist/*.tar.gz
-
-#HELP upload - upload to pypi.python.org
-.PHONY: upload
-upload: clean bdist_wheel
-	twine upload dist/* -r pypi
-
-.PHONY: upload-test
-upload-test: clean bdist_wheel
-	twine upload dist/* -r testpypi
-
-#HELP upload-test - upload to test.pypi.python.org
 
 #HELP clean - remove build artifacts
 .PHONY: clean
