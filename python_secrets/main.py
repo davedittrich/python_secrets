@@ -205,7 +205,7 @@ class PythonSecretsApp(App):
                 self.secrets_descriptions = yamlreader.yaml_load(
                     groups_dir + '/*.yml'
                 )
-            except YamlReaderError as e:
+            except YamlReaderError:
                 self.LOG.info('no secrets descriptions files found')
         else:
             self.LOG.info('secrets descriptions directory not found')
