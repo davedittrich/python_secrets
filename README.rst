@@ -116,10 +116,11 @@ the ``help`` command or ``--help`` option flag:
     Commands:
       complete       print bash completion command (cliff)
       groups list    Show a list of secrets groups.
+      groups show    Show a list of secrets in a group.
       help           print detailed help for another command (cliff)
-      secrets show   List the contents of the secrets file
       secrets generate  Generate values for secrets
       secrets set    Set values manually for secrets
+      secrets show   List the contents of the secrets file
 
 ..
 
@@ -214,6 +215,23 @@ The groups can be listed using the ``groups list`` command:
     | vncserver |     1 |
     | zookeper  |     1 |
     +-----------+-------+
+
+..
+
+The variables in one or more groups can be shown with
+the ``groups show`` command:
+
+.. code-block:: shell
+
+    $ psec groups show trident rabbitmq
+    +----------+----------------------------+
+    | Group    | Variable                   |
+    +----------+----------------------------+
+    | trident  | trident_sysadmin_pass      |
+    | trident  | trident_db_pass            |
+    | rabbitmq | rabbitmq_default_user_pass |
+    | rabbitmq | rabbitmq_admin_user_pass   |
+    +----------+----------------------------+
 
 ..
 
