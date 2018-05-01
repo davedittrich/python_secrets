@@ -130,9 +130,10 @@ class Secrets(Lister):
     def take_action(self, parsed_args):
         self.log.debug('listing secrets')
         columns = ('Variable', 'Value')
+        # TODO(dittrich): add a group selector method...
         variables = parsed_args.variable \
             if len(parsed_args.variable) > 0 \
-            else self.app.secrets.items()
+            else [k for k in self.app.secrets.keys()]
         data = (
                 [(k, redact(v, parsed_args.redact))
                     for k, v in self.app.secrets.items() if k in variables]
