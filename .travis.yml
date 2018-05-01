@@ -6,6 +6,20 @@ language: python
 #virtualenv:
 #    system_site_packages: true
 
+matrix:
+  include:
+    - python: 2.7
+      env: TOXENV=py27
+    - python: 3.3
+      env: TOXENV=py33
+    - python: 3.4
+      env: TOXENV=py34
+    - python: 3.5
+      env: TOXENV=py35
+    - python: pep
+      env: TOXENV=pep
+    - env: TOXENV=flake8
+
 branches:
   only:
     - master
