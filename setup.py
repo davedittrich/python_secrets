@@ -6,13 +6,14 @@
 # Author: Dave Dittrich <dave.dittrich@gmail.com>
 # URL: https://github.com/davedittrich/python_secrets
 
-PROJECT = 'python_secrets'
-
 import codecs
 import os
 import re
 
 from setuptools import find_packages, setup
+
+
+PROJECT = 'python_secrets'
 
 try:
     with open('README.rst') as readme_file:
@@ -28,7 +29,7 @@ except IOError:
 
 
 def get_contents(*args):
-    """Get the contents of a file relative to the source distribution directory."""
+    """Get the contents of a file relative to the source distribution directory.""" # noqa
     with codecs.open(get_absolute_path(*args), 'r', 'UTF-8') as handle:
         return handle.read()
 

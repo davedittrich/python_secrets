@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import collections
 import logging
 import os
 import posixpath
@@ -10,8 +9,9 @@ from cliff.lister import Lister
 
 
 def items_in_file(yamlfile):
-    d = yamlreader.yaml_load(yamlfile)
+    d = yamlreader.yaml_safe_load(yamlfile)
     return len(d)
+
 
 class Groups(Lister):
     """Show a list of secrets groups.
@@ -31,5 +31,7 @@ class Groups(Lister):
                       if any(fn.endswith(ext) for ext in extensions)]
 
         return (('Group', 'Items'),
-                ((os.path.splitext(n)[0], items_in_file(posixpath.join(groups_dir, n))) for n in file_names)
+                ((os.path.splitext(n)[0],
+                    items_in_file(posixpath.join(groups_dir, n)))
+                    for n in file_names)
                 )

@@ -15,24 +15,25 @@ import yaml
 import yamlreader
 
 from . import __version__
+from yamlreader import YAMLReaderError
 
 # External dependencies.
 
 from cliff.app import App
 from cliff.commandmanager import CommandManager
-from numpy import random
 
 
 # Use syslog for logging?
 # TODO(dittrich) Make this configurable, since it can fail on Mac OS X
-SYSLOG=False
+SYSLOG = False
 ENVIRONMENT = os.getenv('D2_ENVIRONMENT', None)
 SECRETS_FILE_NAME = os.getenv('D2_SECRETS_FILE', 'secrets.yml')
 SECRETS_DIR = os.getenv(
             'D2_SECRETS_DIR',
-            '.' if not ENVIRONMENT else '{}/.secrets'.format(os.environ.get('HOME'))
+            '.' if not ENVIRONMENT
+            else '{}/.secrets'.format(os.environ.get('HOME'))
         )
-DEPLOYMENT_SECRETS_DIR = posixpath.join(SECRETS_DIR, ENVIRONMENT).replace("\\", "/") if ENVIRONMENT else SECRETS_DIR
+DEPLOYMENT_SECRETS_DIR = posixpath.join(SECRETS_DIR, ENVIRONMENT).replace("\\", "/") if ENVIRONMENT else SECRETS_DIR  # noqa
 SECRETS_FILE_PATH = posixpath.join(DEPLOYMENT_SECRETS_DIR, SECRETS_FILE_NAME)
 PROGRAM = os.path.basename(os.path.dirname(__file__))
 
@@ -65,7 +66,7 @@ class PythonSecretsApp(App):
             metavar='<environment>',
             dest='environment',
             default=ENVIRONMENT,
-            help="Deployment environment selector "+
+            help="Deployment environment selector " +
                  "(Env: D2_ENVIRONMENT; default: {})".format(ENVIRONMENT)
         )
         parser.add_argument(
@@ -91,7 +92,6 @@ class PythonSecretsApp(App):
         self.set_secrets_dir(self.options.secrets_dir)
         self.set_secrets_file(self.options.secrets_file)
 
-
     def prepare_to_run_command(self, cmd):
         self.LOG.debug('prepare_to_run_command %s', cmd.__class__.__name__)
         if cmd.__class__.__name__ != 'HelpCommand':
@@ -115,7 +115,7 @@ class PythonSecretsApp(App):
         """Get the current environment setting"""
         return self.environment
 
-    def set_secrets_dir(self, secrets_dir=SECRETS_DIR, environment=ENVIRONMENT):
+    def set_secrets_dir(self, secrets_dir=SECRETS_DIR, environment=ENVIRONMENT):  # noqa
         """Set variable for current secrets directory"""
         if not environment:
             self.secrets_dir = secrets_dir
@@ -140,7 +140,6 @@ class PythonSecretsApp(App):
 
     def get_secrets_descriptions_dir(self):
         """Get the current secrets descriptions directory setting"""
-        # environment_dir = posixpath.join(self.get_secrets_dir(), self.get_environment())
         return '{}.d'.format(os.path.splitext(self.get_secrets_file_path())[0])
 
     def set_redact(self, redact=True):
@@ -176,11 +175,12 @@ class PythonSecretsApp(App):
         self.LOG.debug('reading secrets from {}'.format(
             self.get_secrets_file_path()))
         with open(self.get_secrets_file_path(), 'r') as f:
-            self.secrets = yaml.load(f)
+            self.secrets = yaml.safe_load(f)
             # except Exception as e:
 
     def write_secrets(self):
-        """Write out the current secrets for use by Ansible, only if any changes were made"""
+        """Write out the current secrets for use by Ansible,
+        only if any changes were made"""
         if self.secrets_changed:
             self.LOG.debug('writing secrets to {}'.format(
                 self.get_secrets_file_path()))
@@ -210,6 +210,7 @@ class PythonSecretsApp(App):
         else:
             self.LOG.info('secrets descriptions directory not found')
 
+
 def main(argv=sys.argv[1:]):
     """
     Command line interface for the ``python_secrets`` program.
@@ -217,6 +218,7 @@ def main(argv=sys.argv[1:]):
 
     myapp = PythonSecretsApp()
     return myapp.run(argv)
+
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv[1:]))

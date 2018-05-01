@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import base64
 import binascii
 import hashlib
 import logging
@@ -7,13 +8,12 @@ import os
 import random
 import uuid
 
-from cliff.formatters.json_format import JSONFormatter
-from cliff.formatters.table import TableFormatter
 from cliff.command import Command
 from cliff.lister import Lister
 from numpy.random import bytes as np_random_bytes
-from .utils import *
+from .utils import find, redact
 from xkcdpass import xkcd_password as xp
+
 
 class Memoize:
     """Memoize(fn) - an instance which acts like fn but memoizes its arguments.
@@ -61,7 +61,7 @@ def generate_password(unique=False):
         min_length=5,
         max_length=8)
     # Chose a random four-letter word for acrostic
-    acword = random.choice(
+    acword = random.choice(  # nosec
         xp.generate_wordlist(
             wordfile=wordfile,
             min_length=4,
@@ -71,15 +71,17 @@ def generate_password(unique=False):
     pword = xp.generate_xkcdpassword(mywords, acrostic=acword)
     return pword
 
+
 @Memoize
 def generate_consul_key(unique=False):
     """Generate a consul key
 
     See: https://github.com/hashicorp/consul/blob/b3292d13fb8bbc8b14b2a1e2bbae29c6e105b8f4/command/keygen/keygen.go
-    """
+    """  # noqa
     keybytes = np_random_bytes(16)
     ckey = binascii.b2a_base64(keybytes)
     return ckey.decode("utf-8").strip()
+
 
 @Memoize
 def generate_zookeeper_digest(unique=False, user=None, credential=None):
@@ -90,10 +92,12 @@ def generate_zookeeper_digest(unique=False, user=None, credential=None):
         hashlib.sha1(user + ":" + credential).digest()
                             ).strip()
 
+
 @Memoize
 def generate_uuid4(unique=False):
     """Generate a UUID4 string"""
     return str(uuid.uuid4())
+
 
 @Memoize
 def generate_random_base64(unique=False, size=2**5 + 1):
@@ -108,9 +112,11 @@ class Secrets(Lister):
 
     def get_parser(self, prog_name):
         parser = super(Secrets, self).get_parser(prog_name)
-        # Sorry for the double-negative, but it works better this way for the user as a flag
-        # and to have a default of redacting (so they need to turn it off)
-        redact = not (os.getenv('D2_NO_REDACT', "FALSE").upper() in ["true".upper(), "1", "yes".upper()])
+        # Sorry for the double-negative, but it works better
+        # this way for the user as a flag and to have a default
+        # of redacting (so they need to turn it off)
+        redact = not (os.getenv('D2_NO_REDACT', "FALSE").upper()
+                      in ["true".upper(), "1", "yes".upper()])
         parser.add_argument(
             '-C', '--no-redact',
             action='store_false',
@@ -124,15 +130,15 @@ class Secrets(Lister):
     def take_action(self, parsed_args):
         self.log.debug('listing secrets')
         columns = ('Variable', 'Value')
-        is_table = type(self.formatter) is TableFormatter
-        is_json = type(self.formatter) is JSONFormatter
-
-        variables = parsed_args.variable if len(parsed_args.variable) > 0 else self.app.secrets.items()
+        variables = parsed_args.variable \
+            if len(parsed_args.variable) > 0 \
+            else self.app.secrets.items()
         data = (
-            [(k, redact(v, parsed_args.redact))
-              for k, v in self.app.secrets.items() if k in variables]
+                [(k, redact(v, parsed_args.redact))
+                    for k, v in self.app.secrets.items() if k in variables]
         )
         return columns, data
+
 
 class Generate(Command):
     """Generate values for secrets"""
@@ -146,7 +152,8 @@ class Generate(Command):
             action='store_true',
             dest='unique',
             default=False,
-            help="Generate unique secrets for each type of secret (default: False)"
+            help="Generate unique secrets for each " +
+            "type of secret (default: False)"
         )
         parser.add_argument('variable', nargs='*', default=None)
         return parser
@@ -187,7 +194,10 @@ class Set(Command):
         for kv in parsed_args.variable:
             k, v = kv.split('=')
             try:
-                description = next((item for item in self.app.secrets_descriptions if item["Variable"] == k))
+                description = next(  # noqa
+                        (item for item
+                            in self.app.secrets_descriptions
+                            if item["Variable"] == k))
                 # TODO(dittrich): validate description['Type']
             except StopIteration:
                 self.log.info('no description for {}'.format(k))
