@@ -12,10 +12,9 @@ import os
 import posixpath
 import sys
 import yaml
-import yamlreader
 
 from . import __version__
-from yamlreader import YamlReaderError
+from .utils import find
 
 # External dependencies.
 
@@ -54,6 +53,7 @@ class PythonSecretsApp(App):
             deferred_help=True,
             )
         self.secrets_changed = False
+        self.groups = None
 
     def build_option_parser(self, description, version):
         parser = super(PythonSecretsApp, self).build_option_parser(
@@ -198,17 +198,41 @@ class PythonSecretsApp(App):
         """Load the descriptions of groups of secrets from a .d directory"""
         self.secrets_descriptions = collections.OrderedDict()
         groups_dir = self.get_secrets_descriptions_dir()
+        # Ignore .order file and any other non-YAML file extensions
+        extensions = ['yml', 'yaml']
+        file_names = [fn for fn in os.listdir(groups_dir)
+                      if any(fn.endswith(ext) for ext in extensions)]
+        self.groups = [os.path.splitext(fn) for fn in file_names]
         if os.path.exists(groups_dir):
             self.LOG.debug('reading secrets descriptions from {}'.format(
-                self.get_secrets_descriptions_dir()))
+                groups_dir))
             try:
-                self.secrets_descriptions = yamlreader.yaml_load(
-                    groups_dir + '/*.yml'
-                )
-            except YamlReaderError:
+                # Iterate over files in directory, loading them into
+                # dictionaries as dictionary keyed on group name.
+                for file in file_names:
+                    group = os.path.splitext(file)[0]
+                    with open(os.path.join(groups_dir, file), 'r') as f:
+                        data = yaml.safe_load(f)
+                    self.secrets_descriptions[group] = data
+            except Exception:
                 self.LOG.info('no secrets descriptions files found')
         else:
             self.LOG.info('secrets descriptions directory not found')
+
+    def get_items_from_group(self, group):
+        """Get the variables in a secrets description group"""
+        return [i['Variable'] for i in self.secrets_descriptions[group]]
+
+    def is_item_in_group(self, item, group):
+        """Return true or false based on item being in group"""
+        return find(
+                self.secrets_descriptions[group],
+                'Variable',
+                item) is not None
+
+    def get_groups(self):
+        """Get the secrets description groups"""
+        return [g for g in self.secrets_descriptions]
 
 
 def main(argv=sys.argv[1:]):

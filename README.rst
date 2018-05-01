@@ -116,10 +116,11 @@ the ``help`` command or ``--help`` option flag:
     Commands:
       complete       print bash completion command (cliff)
       groups list    Show a list of secrets groups.
+      groups show    Show a list of secrets in a group.
       help           print detailed help for another command (cliff)
-      secrets show   List the contents of the secrets file
       secrets generate  Generate values for secrets
       secrets set    Set values manually for secrets
+      secrets show   List the contents of the secrets file
 
 ..
 
@@ -217,6 +218,23 @@ The groups can be listed using the ``groups list`` command:
 
 ..
 
+The variables in one or more groups can be shown with
+the ``groups show`` command:
+
+.. code-block:: shell
+
+    $ psec groups show trident rabbitmq
+    +----------+----------------------------+
+    | Group    | Variable                   |
+    +----------+----------------------------+
+    | trident  | trident_sysadmin_pass      |
+    | trident  | trident_db_pass            |
+    | rabbitmq | rabbitmq_default_user_pass |
+    | rabbitmq | rabbitmq_admin_user_pass   |
+    +----------+----------------------------+
+
+..
+
 Showing Secrets
 ~~~~~~~~~~~~~~~
 
@@ -276,7 +294,9 @@ We'll do this now for later examples.
 ..
 
 The default is also to show all secrets. If you only want to process a
-subset of secrets, specify them on the command line as arguments:
+subset of secrets, you have two ways to do this.
+
+#. Specify the variables you want to show on the command line as arguments:
 
 .. code-block:: shell
 
@@ -286,6 +306,22 @@ subset of secrets, specify them on the command line as arguments:
     +----------------------------+--------------------------------------+
     | rabbitmq_default_user_pass | handheld angrily letdown frisk       |
     | rabbitmq_admin_user_pass   | handheld angrily letdown frisk       |
+    +----------------------------+--------------------------------------+
+
+..
+
+#. Use the ``--group`` flag and specify the group(s) you want to show
+   as command line arguments:
+
+.. code-block:: shell
+
+    $ python_secrets secrets show --group jenkins trident
+    +----------------------------+--------------------------------------+
+    | Variable                   | Value                                |
+    +----------------------------+--------------------------------------+
+    | jenkins_admin_password     | handheld angrily letdown frisk       |
+    | trident_db_pass            | handheld angrily letdown frisk       |
+    | trident_sysadmin_pass      | handheld angrily letdown frisk       |
     +----------------------------+--------------------------------------+
 
 ..

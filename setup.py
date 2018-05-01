@@ -81,10 +81,11 @@ setup(
             'psec = python_secrets.main:main',
         ],
         'python_secrets': [
-            'secrets show = python_secrets.secrets:Secrets',
-            'secrets set = python_secrets.secrets:Set',
-            'secrets generate = python_secrets.secrets:Generate',
-            'groups list = python_secrets.groups:Groups',
+            'secrets show = python_secrets.secrets:SecretsShow',
+            'secrets set = python_secrets.secrets:SecretsSet',
+            'secrets generate = python_secrets.secrets:SecretsGenerate',
+            'groups list = python_secrets.groups:GroupsList',
+            'groups show = python_secrets.groups:GroupsShow',
         ],
     },
 )
