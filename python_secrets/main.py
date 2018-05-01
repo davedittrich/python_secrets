@@ -14,6 +14,7 @@ import sys
 import yaml
 
 from . import __version__
+from .utils import find
 
 # External dependencies.
 
@@ -221,6 +222,13 @@ class PythonSecretsApp(App):
     def get_items_from_group(self, group):
         """Get the variables in a secrets description group"""
         return [i['Variable'] for i in self.secrets_descriptions[group]]
+
+    def is_item_in_group(self, item, group):
+        """Return true or false based on item being in group"""
+        return find(
+                self.secrets_descriptions[group],
+                'Variable',
+                item) is not None
 
     def get_groups(self):
         """Get the secrets description groups"""

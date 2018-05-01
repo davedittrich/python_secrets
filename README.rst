@@ -294,7 +294,9 @@ We'll do this now for later examples.
 ..
 
 The default is also to show all secrets. If you only want to process a
-subset of secrets, specify them on the command line as arguments:
+subset of secrets, you have two ways to do this.
+
+#. Specify the variables you want to show on the command line as arguments:
 
 .. code-block:: shell
 
@@ -304,6 +306,22 @@ subset of secrets, specify them on the command line as arguments:
     +----------------------------+--------------------------------------+
     | rabbitmq_default_user_pass | handheld angrily letdown frisk       |
     | rabbitmq_admin_user_pass   | handheld angrily letdown frisk       |
+    +----------------------------+--------------------------------------+
+
+..
+
+#. Use the ``--group`` flag and specify the group(s) you want to show
+   as command line arguments:
+
+.. code-block:: shell
+
+    $ python_secrets secrets show --group jenkins trident
+    +----------------------------+--------------------------------------+
+    | Variable                   | Value                                |
+    +----------------------------+--------------------------------------+
+    | jenkins_admin_password     | handheld angrily letdown frisk       |
+    | trident_db_pass            | handheld angrily letdown frisk       |
+    | trident_sysadmin_pass      | handheld angrily letdown frisk       |
     +----------------------------+--------------------------------------+
 
 ..

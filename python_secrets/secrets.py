@@ -124,15 +124,28 @@ class SecretsShow(Lister):
             default=redact,
             help="Do not redact values in output (default: {})".format(redact)
         )
-        parser.add_argument('variable', nargs='*', default=None)
+        parser.add_argument(
+            '-g', '--group',
+            dest='args_group',
+            action="store_true",
+            default=False,
+            help="Arguments are groups to list (default: False)"
+        )
+        parser.add_argument('args', nargs='*', default=None)
         return parser
 
     def take_action(self, parsed_args):
         self.log.debug('listing secrets')
-        # TODO(dittrich): add a group selector method...
-        variables = parsed_args.variable \
-            if len(parsed_args.variable) > 0 \
-            else [k for k in self.app.secrets.keys()]
+        variables = []
+        if parsed_args.args_group:
+            for g in parsed_args.args:
+                variables.extend(
+                    [v for v in self.app.get_items_from_group(g)]
+                 )
+        else:
+            variables = parsed_args.args \
+                if len(parsed_args.args) > 0 \
+                else [k for k in self.app.secrets.keys()]
         columns = ('Variable', 'Value')
         data = (
                 [(k, redact(v, parsed_args.redact))
@@ -156,14 +169,13 @@ class SecretsGenerate(Command):
             help="Generate unique secrets for each " +
             "type of secret (default: False)"
         )
-        parser.add_argument('variable', nargs='*', default=None)
+        parser.add_argument('args', nargs='*', default=None)
         return parser
 
     def take_action(self, parsed_args):
-        # secrets_file = self.app.get_secrets_file_path()
         self.log.debug('generating secrets')
-        to_change = parsed_args.variable \
-            if len(parsed_args.variable) > 0 \
+        to_change = parsed_args.args \
+            if len(parsed_args.args) > 0 \
             else [i['Variable'] for i in self.app.secrets_descriptions]
 
         for k in to_change:
@@ -187,12 +199,12 @@ class SecretsSet(Command):
 
     def get_parser(self, prog_name):
         parser = super(SecretsSet, self).get_parser(prog_name)
-        parser.add_argument('variable', nargs='*', default=None)
+        parser.add_argument('args', nargs='*', default=None)
         return parser
 
     def take_action(self, parsed_args):
         self.log.debug('setting secrets')
-        for kv in parsed_args.variable:
+        for kv in parsed_args.args:
             k, v = kv.split('=')
             try:
                 description = next(  # noqa

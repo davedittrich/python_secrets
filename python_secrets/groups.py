@@ -33,14 +33,14 @@ class GroupsShow(Lister):
 
     def get_parser(self, prog_name):
         parser = super(GroupsShow, self).get_parser(prog_name)
-        parser.add_argument('group', nargs='*', default=None)
+        parser.add_argument('args', nargs='*', default=None)
         return parser
 
     def take_action(self, parsed_args):
         self.log.debug('showing secrets in group')
         columns = ('Group', 'Variable')
         data = []
-        for group in parsed_args.group:
+        for group in parsed_args.args:
             for item in self.app.get_items_from_group(group):
                 data.append((group, item))
         return columns, data
