@@ -11,7 +11,7 @@ import uuid
 from cliff.command import Command
 from cliff.lister import Lister
 from numpy.random import bytes as np_random_bytes
-from .utils import find, redact
+from .utils import redact
 from xkcdpass import xkcd_password as xp
 
 
@@ -179,14 +179,8 @@ class SecretsGenerate(Command):
             else [i['Variable'] for i in self.app.secrets_descriptions]
 
         for k in to_change:
-            i = find(self.app.secrets_descriptions, 'Variable', k)
-            if i is None:
-                raise KeyError("generate: No such key '{}'".format(k))
-            t = self.app.secrets_descriptions[i]['Type']
-            try:
-                arguments = self.app.secrets_descriptions[i]['Arguments']
-            except KeyError:
-                arguments = {}
+            t = self.app.get_secret_type(k)
+            arguments = self.app.get_secret_arguments(k)
             v = generate_secret(k, t, unique=parsed_args.unique, **arguments)
             self.log.debug("generated {} for {}".format(t, k))
             self.app.set_secret(k, v)

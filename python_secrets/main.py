@@ -219,6 +219,35 @@ class PythonSecretsApp(App):
         else:
             self.LOG.info('secrets descriptions directory not found')
 
+    def get_secret_type(self, variable):
+        """Get the Type of variable from set of secrets descriptions"""
+        for g in self.secrets_descriptions.keys():
+            i = find(
+                self.secrets_descriptions[g],
+                'Variable',
+                variable)
+            if i is not None:
+                try:
+                    return self.secrets_descriptions[g][i]['Type']
+                except KeyError:
+                    return None
+        return None
+
+    # TODO(dittrich): Not very DRY (but no time now)
+    def get_secret_arguments(self, variable):
+        """Get the Arguments of variable from set of secrets descriptions"""
+        for g in self.secrets_descriptions.keys():
+            i = find(
+                self.secrets_descriptions[g],
+                'Variable',
+                variable)
+            if i is not None:
+                try:
+                    return self.secrets_descriptions[g][i]['Arguments']
+                except KeyError:
+                    return {}
+        return {}
+
     def get_items_from_group(self, group):
         """Get the variables in a secrets description group"""
         return [i['Variable'] for i in self.secrets_descriptions[group]]
