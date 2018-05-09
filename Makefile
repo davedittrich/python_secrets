@@ -42,7 +42,7 @@ sdist: docs
 .PHONY: clean
 clean:
 	rm -rf dist build *.egg-info
-	find . -name '*.pyc' -exec rm {} ';'
+	find . -name '*.pyc' -delete
 	(cd docs && make clean)
 
 #HELP install - install in required Python virtual environment (default $(REQUIRED_VENV))
