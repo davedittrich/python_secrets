@@ -25,19 +25,52 @@ from cliff.commandmanager import CommandManager
 # Use syslog for logging?
 # TODO(dittrich) Make this configurable, since it can fail on Mac OS X
 SYSLOG = False
-ENVIRONMENT = os.getenv('D2_ENVIRONMENT', None)
-SECRETS_FILE_NAME = os.getenv('D2_SECRETS_FILE', 'secrets.yml')
-SECRETS_DIR = os.getenv(
-            'D2_SECRETS_DIR',
-            '.' if not ENVIRONMENT
-            else '{}/.secrets'.format(os.environ.get('HOME'))
-        )
-DEPLOYMENT_SECRETS_DIR = posixpath.join(SECRETS_DIR, ENVIRONMENT).replace("\\", "/") if ENVIRONMENT else SECRETS_DIR  # noqa
-SECRETS_FILE_PATH = posixpath.join(DEPLOYMENT_SECRETS_DIR, SECRETS_FILE_NAME)
-PROGRAM = os.path.basename(os.path.dirname(__file__))
 
 # Initialize a logger for this module.
 logger = logging.getLogger(__name__)
+
+
+def default_environment():
+    """Return environment identifier"""
+    return os.getenv('D2_ENVIRONMENT', None)
+
+
+def default_secrets_file_name():
+    """Return just the file name for secrets file"""
+    return os.getenv('D2_SECRETS_FILE', 'secrets.yml')
+
+
+def default_secrets_dir():
+    """Return the directory path root for secrets storage"""
+    return os.getenv(
+            'D2_SECRETS_DIR',
+            '.' if not default_environment()
+            else '{}/.secrets/{}'.format(
+                os.environ.get('HOME'),
+                default_environment())
+        )
+
+
+def default_deployment_secrets_dir():
+    """Return the"""
+    _env = default_environment()
+    return posixpath.join(
+        default_secrets_dir(),
+        _env
+    ).replace("\\", "/") if _env else default_secrets_dir()  # noqa
+
+
+def default_secrets_file_path():
+    """Return full path to secrets file"""
+    return posixpath.join(
+        default_deployment_secrets_dir(),
+        default_secrets_file_name()
+    )
+
+
+def default_program():
+    """Return program name"""
+    return os.path.basename(os.path.dirname(__file__))
 
 
 class PythonSecretsApp(App):
@@ -52,6 +85,8 @@ class PythonSecretsApp(App):
             ),
             deferred_help=True,
             )
+        self.secrets_descriptions = collections.OrderedDict()
+        self.secrets = collections.OrderedDict()
         self.secrets_changed = False
         self.groups = None
 
@@ -65,24 +100,27 @@ class PythonSecretsApp(App):
             '-e', '--environment',
             metavar='<environment>',
             dest='environment',
-            default=ENVIRONMENT,
+            default=default_environment(),
             help="Deployment environment selector " +
-                 "(Env: D2_ENVIRONMENT; default: {})".format(ENVIRONMENT)
+                 "(Env: D2_ENVIRONMENT; default: {})".format(
+                     default_environment())
         )
         parser.add_argument(
             '-d', '--secrets-dir',
             metavar='<secrets-directory>',
             dest='secrets_dir',
-            default=SECRETS_DIR,
+            default=default_secrets_dir(),
             help="Root directory for holding secrets " +
-                 "(Env: D2_SECRETS_DIR; default: {})".format(SECRETS_DIR)
+                 "(Env: D2_SECRETS_DIR; default: {})".format(
+                     default_secrets_dir())
         )
         parser.add_argument(
             '-s', '--secrets-file',
             metavar='<secrets-file>',
             dest='secrets_file',
-            default=SECRETS_FILE_NAME,
-            help="Secrets file (default: {})".format(SECRETS_FILE_NAME)
+            default=default_secrets_file_name(),
+            help="Secrets file (default: {})".format(
+                default_secrets_file_name())
         )
         return parser
 
@@ -94,7 +132,7 @@ class PythonSecretsApp(App):
 
     def prepare_to_run_command(self, cmd):
         self.LOG.debug('prepare_to_run_command %s', cmd.__class__.__name__)
-        if cmd.__class__.__name__ != 'HelpCommand':
+        if not self.options.deferred_help:
             self.read_secrets_descriptions()
             self.read_secrets()
 
@@ -102,12 +140,13 @@ class PythonSecretsApp(App):
         self.LOG.debug('clean_up %s', cmd.__class__.__name__)
         if err:
             self.LOG.debug('got an error: %s', err)
-            self.LOG.info('not writing secrets out due to error')
+            if self.secrets_changed:
+                self.LOG.info('not writing secrets out due to error')
         else:
             if self.secrets_changed:
                 self.write_secrets()
 
-    def set_environment(self, environment=ENVIRONMENT):
+    def set_environment(self, environment=default_environment()):
         """Set variable for current environment"""
         self.environment = environment
 
@@ -115,7 +154,9 @@ class PythonSecretsApp(App):
         """Get the current environment setting"""
         return self.environment
 
-    def set_secrets_dir(self, secrets_dir=SECRETS_DIR, environment=ENVIRONMENT):  # noqa
+    def set_secrets_dir(self,
+                        secrets_dir=default_secrets_dir(),
+                        environment=default_environment()):
         """Set variable for current secrets directory"""
         if not environment:
             self.secrets_dir = secrets_dir
@@ -126,7 +167,8 @@ class PythonSecretsApp(App):
         """Get the current secrets directory setting"""
         return self.secrets_dir
 
-    def set_secrets_file(self, secrets_file=SECRETS_FILE_PATH):
+    def set_secrets_file(self,
+                         secrets_file=default_secrets_file_path()):
         """Set variable with name of secrets file"""
         self.secrets_file = secrets_file
 
@@ -136,7 +178,14 @@ class PythonSecretsApp(App):
 
     def get_secrets_file_path(self):
         """Get absolute path to secrets file"""
-        return posixpath.join(self.secrets_dir, self.secrets_file)
+        environment = self.get_environment()
+        if not environment:
+            return posixpath.join(self.secrets_dir, self.secrets_file)
+        else:
+            return posixpath.join(
+                posixpath.join(self.secrets_dir, self.environment),
+                self.secrets_file
+            )
 
     def get_secrets_descriptions_dir(self):
         """Get the current secrets descriptions directory setting"""
@@ -171,7 +220,6 @@ class PythonSecretsApp(App):
 
     def read_secrets(self):
         """Load the current secrets from .yml file"""
-        self.secrets = collections.OrderedDict()
         self.LOG.debug('reading secrets from {}'.format(
             self.get_secrets_file_path()))
         with open(self.get_secrets_file_path(), 'r') as f:
@@ -196,7 +244,6 @@ class PythonSecretsApp(App):
 
     def read_secrets_descriptions(self):
         """Load the descriptions of groups of secrets from a .d directory"""
-        self.secrets_descriptions = collections.OrderedDict()
         groups_dir = self.get_secrets_descriptions_dir()
         # Ignore .order file and any other non-YAML file extensions
         extensions = ['yml', 'yaml']
