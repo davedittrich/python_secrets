@@ -68,11 +68,6 @@ def default_secrets_file_path():
     )
 
 
-def default_program():
-    """Return program name"""
-    return os.path.basename(os.path.dirname(__file__))
-
-
 class PythonSecretsApp(App):
     """Python secrets application class"""
 
