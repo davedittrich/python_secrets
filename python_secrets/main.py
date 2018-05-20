@@ -52,7 +52,7 @@ def default_secrets_dir():
 
 
 def default_deployment_secrets_dir():
-    """Return the"""
+    """Return full path to the deployment secrets directory"""
     _env = default_environment()
     return posixpath.join(
         default_secrets_dir(),
