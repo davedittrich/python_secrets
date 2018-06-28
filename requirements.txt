@@ -1,4 +1,5 @@
 cliff
+lxml
 numpy
 tox
 yamlreader
