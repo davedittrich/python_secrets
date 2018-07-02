@@ -45,4 +45,4 @@ class GroupsShow(Lister):
                 data.append((group, item))
         return columns, data
 
-# EOF
+# vim: set fileencoding=utf-8 ts=4 sw=4 tw=0 et :
