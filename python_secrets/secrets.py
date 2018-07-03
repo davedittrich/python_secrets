@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import base64
 import binascii
 import hashlib
@@ -13,6 +11,7 @@ from cliff.lister import Lister
 from numpy.random import bytes as np_random_bytes
 from .utils import redact
 from xkcdpass import xkcd_password as xp
+from .google_oauth2 import GoogleSMTP
 
 
 class Memoize:
@@ -212,4 +211,116 @@ class SecretsSet(Command):
                 self.log.debug('setting {}'.format(k))
                 self.app.set_secret(k, v)
 
-# EOF
+
+class SecretsSend(Command):
+    """
+    Send secrets using GPG encrypted email.
+
+    Arguments are USERNAME@EMAIL.ADDRESS and/or VARIABLE references.
+    """
+
+    log = logging.getLogger(__name__)
+
+    def get_parser(self, prog_name):
+        parser = super(SecretsSend, self).get_parser(prog_name)
+        parser.add_argument(
+            '-T', '--refresh-token',
+            action='store_true',
+            dest='refresh_token',
+            default=False,
+            help="Refresh Google API Oauth2 token and exit (default: False)"
+        )
+        parser.add_argument(
+            '--test-smtp',
+            action='store_true',
+            dest='test_smtp',
+            default=False,
+            help='Test Oauth2 SMTP authentication and exit ' +
+                 '(default: False)'
+        )
+        parser.add_argument(
+            '-H', '--smtp-host',
+            action='store',
+            dest='smtp_host',
+            default='localhost',
+            help="SMTP host (default: localhost)"
+        )
+        parser.add_argument(
+            '-U', '--smtp-username',
+            action='store',
+            dest='smtp_username',
+            default=None,
+            help="SMTP authentication username (default: None)"
+        )
+        parser.add_argument(
+            '-F', '--from',
+            action='store',
+            dest='smtp_sender',
+            default='noreply@nowhere',
+            help="Sender address (default: 'noreply@nowhere')"
+        )
+        parser.add_argument(
+            '-S', '--subject',
+            action='store',
+            dest='smtp_subject',
+            default='For Your Information',
+            help="Subject line (default: 'For Your Information')"
+        )
+        parser.add_argument('args', nargs='*', default=None)
+        return parser
+
+    def take_action(self, parsed_args):
+        # Attempt to get refresh token first
+        orig_refresh_token = None
+        try:
+            self.refresh_token = self.app.secrets[
+                "google_oauth_refresh_token"]
+        except KeyError:
+            self.refresh_token = None
+        if parsed_args.refresh_token:
+            orig_refresh_token = self.refresh_token
+            self.log.debug('refreshing Google Oauth2 token')
+        else:
+            self.log.debug('sending secrets')
+        googlesmtp = GoogleSMTP(
+            parsed_args.smtp_username,
+            client_id=self.app.secrets['google_oauth_client_id'],
+            client_secret=self.app.secrets['google_oauth_client_secret'],
+            refresh_token=self.refresh_token
+        )
+        if parsed_args.refresh_token:
+            new_refresh_token = googlesmtp.get_authorization()[0]
+            if new_refresh_token != orig_refresh_token:
+                self.app.set_secret('google_oauth_refresh_token',
+                                    new_refresh_token)
+            return None
+        elif parsed_args.test_smtp:
+            auth_string = googlesmtp.refresh_authorization()
+            googlesmtp.test_smtp(self, auth_string)
+
+        recipients = list()
+        variables = list()
+        for arg in parsed_args.args:
+            if "@" in arg:
+                recipients.append(arg)
+            else:
+                if arg not in self.app.secrets:
+                    raise NameError(
+                        "Secret '{}' is not defined".format(arg))
+                variables.append(arg)
+        message = "The following secret{} {} ".format(
+            "" if len(variables) == 1 else "s",
+            "is" if len(variables) == 1 else "are"
+            ) + "being shared with you:\n\n" + \
+            "\n".join(
+                ['{}={}'.format(v, self.app.secrets[v]) for v in variables]
+            )
+        # https://stackoverflow.com/questions/33170016/how-to-use-django-1-8-5-orm-without-creating-a-django-project/46050808#46050808
+        for recipient in recipients:
+            googlesmtp.send_mail(parsed_args.smtp_sender,
+                                 recipient,
+                                 parsed_args.smtp_subject,
+                                 message)
+
+# vim: set fileencoding=utf-8 ts=4 sw=4 tw=0 et :
+
