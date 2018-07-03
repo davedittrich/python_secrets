@@ -1,6 +1,7 @@
 cliff
 lxml
 numpy
+six
 tox
 yamlreader
 xkcdpass
