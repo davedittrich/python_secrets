@@ -84,6 +84,7 @@ setup(
             'groups list = python_secrets.groups:GroupsList',
             'groups show = python_secrets.groups:GroupsShow',
             'secrets generate = python_secrets.secrets:SecretsGenerate',
+            'secrets init = python_secrets.secrets:SecretsInit',
             'secrets send = python_secrets.secrets:SecretsSend',
             'secrets set = python_secrets.secrets:SecretsSet',
             'secrets show = python_secrets.secrets:SecretsShow',
