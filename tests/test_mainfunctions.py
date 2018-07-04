@@ -12,20 +12,24 @@ import unittest
 
 from python_secrets.main import *
 
+TEST_ENVIRONMENT = 'testenv'
+TEST_SECRETS_FILE = 'testfile.yml'
+
+
 class Test_MainFunctions(unittest.TestCase):
 
     def setUp(self):
-        os.environ['D2_ENVIRONMENT'] = 'unittest'
-        os.environ['D2_SECRETS_FILE'] = 'unittest.yml'
+        os.environ['D2_ENVIRONMENT'] = TEST_ENVIRONMENT
+        os.environ['D2_SECRETS_FILE'] = TEST_SECRETS_FILE
 
     def tearDown(self):
         pass
 
     def test_default_environment(self):
-        assert default_environment() == 'unittest'
+        assert default_environment() == TEST_ENVIRONMENT
 
     def test_default_secrets_file_name(self):
-        assert default_secrets_file_name() == 'unittest.yml'
+        assert default_secrets_file_name() == TEST_SECRETS_FILE
 
     def test_default_secrets_dir(self):
         if os.sep == "\\":
@@ -40,7 +44,9 @@ class Test_MainFunctions(unittest.TestCase):
             return False
 
     def test_default_deployment_secrets_dir(self):
-        pass
+        assert default_deployment_secrets_dir() == os.path.join(
+            default_secrets_dir(),
+            default_secrets_file_name().replace('.yml', '.d'))
 
 
 if __name__ == '__main__':
