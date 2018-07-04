@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 """
 test_python_secrets.utils
@@ -39,3 +38,5 @@ class Test_Utils(unittest.TestCase):
 if __name__ == '__main__':
     import sys
     sys.exit(unittest.main())
+
+# vim: set fileencoding=utf-8 ts=4 sw=4 tw=0 et :
