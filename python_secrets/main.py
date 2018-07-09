@@ -9,7 +9,6 @@
 import collections
 import logging
 import os
-import posixpath
 import sys
 import yaml
 
@@ -42,27 +41,30 @@ def default_secrets_file_name():
 
 def default_secrets_dir():
     """Return the directory path root for secrets storage"""
+    _default_environment = default_environment()
+    _home = os.path.expanduser('~')
+    _secrets_subdir = os.path.join(_home,
+                                   "secrets" if '\\' in _home else ".secrets")
     return os.getenv(
             'D2_SECRETS_DIR',
-            '.' if not default_environment()
-            else '{}/.secrets/{}'.format(
-                os.environ.get('HOME'),
-                default_environment())
+            '.' if not _default_environment
+            else os.path.join(_secrets_subdir, _default_environment)
         )
 
 
 def default_deployment_secrets_dir():
-    """Return the"""
+    """Return the path to the drop-in secrets description directory"""
     _env = default_environment()
-    return posixpath.join(
-        default_secrets_dir(),
-        _env
-    ).replace("\\", "/") if _env else default_secrets_dir()  # noqa
+    if not _env:
+        return default_secrets_dir()
+    else:
+        return os.path.join(default_secrets_dir(),
+                            default_secrets_file_name().replace('.yml', '.d'))
 
 
 def default_secrets_file_path():
     """Return full path to secrets file"""
-    return posixpath.join(
+    return os.path.join(
         default_deployment_secrets_dir(),
         default_secrets_file_name()
     )
@@ -89,6 +91,10 @@ class PythonSecretsApp(App):
         self.secrets = collections.OrderedDict()
         self.secrets_changed = False
         self.groups = None
+        self.secrets_file = None
+        self.secrets_dir = None
+        self.environment = None
+        self.redact = None
 
     def build_option_parser(self, description, version):
         parser = super(PythonSecretsApp, self).build_option_parser(
@@ -113,6 +119,13 @@ class PythonSecretsApp(App):
             help="Root directory for holding secrets " +
                  "(Env: D2_SECRETS_DIR; default: {})".format(
                      default_secrets_dir())
+        )
+        parser.add_argument(
+            '--init',
+            action='store_true',
+            dest='init',
+            default=False,
+            help="Initialize directory for holding secrets."
         )
         parser.add_argument(
             '-s', '--secrets-file',
@@ -161,7 +174,8 @@ class PythonSecretsApp(App):
         if not environment:
             self.secrets_dir = secrets_dir
         else:
-            self.secrets_dir = posixpath.join(secrets_dir, environment)
+            self.secrets_dir = os.path.join(
+                os.path.dirname(secrets_dir), environment)
 
     def get_secrets_dir(self):
         """Get the current secrets directory setting"""
@@ -180,16 +194,21 @@ class PythonSecretsApp(App):
         """Get absolute path to secrets file"""
         environment = self.get_environment()
         if not environment:
-            return posixpath.join(self.secrets_dir, self.secrets_file)
+            return os.path.join(self.secrets_dir, self.secrets_file)
         else:
-            return posixpath.join(
-                posixpath.join(self.secrets_dir, self.environment),
+            return os.path.join(
+                os.path.join(self.secrets_dir, self.environment),
                 self.secrets_file
             )
 
     def get_secrets_descriptions_dir(self):
         """Get the current secrets descriptions directory setting"""
-        return '{}.d'.format(os.path.splitext(self.get_secrets_file_path())[0])
+        _path = '{}.d'.format(
+            os.path.splitext(self.get_secrets_file_path())[0])
+        if os.path.exists(_path):
+            return _path
+        else:
+            return None
 
     def set_redact(self, redact=True):
         """Set redaction flag"""
@@ -222,9 +241,11 @@ class PythonSecretsApp(App):
         """Load the current secrets from .yml file"""
         self.LOG.debug('reading secrets from {}'.format(
             self.get_secrets_file_path()))
-        with open(self.get_secrets_file_path(), 'r') as f:
-            self.secrets = yaml.safe_load(f)
-            # except Exception as e:
+        try:
+            with open(self.get_secrets_file_path(), 'r') as f:
+                self.secrets = yaml.safe_load(f)
+        except FileNotFoundError as err:
+            self.LOG.debug('{}'.format(str(err)))
 
     def write_secrets(self):
         """Write out the current secrets for use by Ansible,
@@ -245,12 +266,12 @@ class PythonSecretsApp(App):
     def read_secrets_descriptions(self):
         """Load the descriptions of groups of secrets from a .d directory"""
         groups_dir = self.get_secrets_descriptions_dir()
-        # Ignore .order file and any other non-YAML file extensions
-        extensions = ['yml', 'yaml']
-        file_names = [fn for fn in os.listdir(groups_dir)
-                      if any(fn.endswith(ext) for ext in extensions)]
-        self.groups = [os.path.splitext(fn) for fn in file_names]
-        if os.path.exists(groups_dir):
+        if groups_dir is not None:
+            # Ignore .order file and any other non-YAML file extensions
+            extensions = ['yml', 'yaml']
+            file_names = [fn for fn in os.listdir(groups_dir)
+                          if any(fn.endswith(ext) for ext in extensions)]
+            self.groups = [os.path.splitext(fn) for fn in file_names]
             self.LOG.debug('reading secrets descriptions from {}'.format(
                 groups_dir))
             try:
@@ -323,4 +344,4 @@ def main(argv=sys.argv[1:]):
 if __name__ == '__main__':
     sys.exit(main(sys.argv[1:]))
 
-# EOF
+# vim: set fileencoding=utf-8 ts=4 sw=4 tw=0 et :
