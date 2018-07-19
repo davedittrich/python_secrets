@@ -1,9 +1,11 @@
 import base64
 import binascii
+import crypt
 import hashlib
 import logging
 import os
 import random
+import secrets
 import uuid
 
 from cliff.command import Command
@@ -33,20 +35,43 @@ class Memoize:
         return self.memo[args]
 
 
-def generate_secret(key, type, unique=False, **kwargs):
+SECRET_TYPES = [
+        {'type': 'password', 'description': 'simple password string'},
+        {'type': 'crypt_6', 'description': 'crypt SHA512 ("$6$")'},
+        {'type': 'token_hex', 'description': 'hexadecimal token'},
+        {'type': 'token_urlsafe', 'description': 'URL-safe token'},
+        {'type': 'consul_key', 'description': '16 byte BASE64 token'},
+        {'type': 'zookeeper_digest', 'description': 'DIGEST-MD5 (user:pass) digest'},  # noqa
+        {'type': 'uuid4', 'description': 'UUID4 token'},
+        {'type': 'random_base64', 'description': 'random BASE64 token'}
+        ]
+
+
+def generate_secret(secret_type=None, unique=False, **kwargs):
     """Generate secret for the type of key"""
-    if type == 'password':
+    _secret_types = [i['type'] for i in SECRET_TYPES]
+    if secret_type not in _secret_types:
+        raise TypeError("Secret type " +
+                        "'{}' is not supported".format(secret_type))
+    if secret_type == 'password':
         return generate_password(unique)
-    elif type == 'consul_key':
+    if secret_type == 'crypt_6':
+        return generate_crypt6(unique, **kwargs)
+    elif secret_type == 'token_hex':
+        return generate_token_hex(unique, **kwargs)
+    elif secret_type == 'token_urlsafe':
+        return generate_token_urlsafe(unique, **kwargs)
+    elif secret_type == 'consul_key':
         return generate_consul_key(unique)
-    elif type == 'zookeeper_digest':
+    elif secret_type == 'zookeeper_digest':
         return generate_zookeeper_digest(unique, **kwargs)
-    elif type == 'uuid4':
+    elif secret_type == 'uuid4':
         return generate_uuid4(unique, **kwargs)
-    elif type == 'base64':
+    elif secret_type == 'base64':
         return generate_random_base64(unique, **kwargs)
     else:
-        raise TypeError("Secret type '{}' is not supported".format(type))
+        raise TypeError("Secret type " +
+                        "'{}' is not supported".format(secret_type))
 
 
 @Memoize
@@ -72,10 +97,32 @@ def generate_password(unique=False):
 
 
 @Memoize
-def generate_consul_key(unique=False):
-    """Generate a consul key
+def generate_crypt6(unique=False, password=None, salt=None):
+    """Generate a crypt() style SHA512 ("$6$") digest"""
+    if password is None:
+        raise RuntimeError('generate_crypt6(): "password" is not defined')
+    if salt is None:
+        salt = crypt.mksalt(crypt.METHOD_SHA512)
+    pword = crypt.crypt(password, salt)
+    return pword
 
-    See: https://github.com/hashicorp/consul/blob/b3292d13fb8bbc8b14b2a1e2bbae29c6e105b8f4/command/keygen/keygen.go
+
+@Memoize
+def generate_token_hex(unique=False, nbytes=16):
+    """Generate an random hexadecimal token."""
+    return secrets.token_hex(nbytes=nbytes)
+
+
+@Memoize
+def generate_token_urlsafe(unique=False, nbytes=16):
+    """Generate an URL-safe random token."""
+    return secrets.token_urlsafe(nbytes=nbytes)
+
+
+@Memoize
+def generate_consul_key(unique=False):
+    """Generate a consul key per the following description:
+    https://github.com/hashicorp/consul/blob/b3292d13fb8bbc8b14b2a1e2bbae29c6e105b8f4/command/keygen/keygen.go
     """  # noqa
     keybytes = np_random_bytes(16)
     ckey = binascii.b2a_base64(keybytes)
@@ -85,10 +132,24 @@ def generate_consul_key(unique=False):
 @Memoize
 def generate_zookeeper_digest(unique=False, user=None, credential=None):
     """Generate a zookeeper-compatible digest from username and password"""
-    assert user is not None, 'zk_digest(): user is not defined'
-    assert credential is not None, 'zk_digest(): credential is not defined'
+    if user is None:
+        raise RuntimeError('zk_digest(): user is not defined')
+    if credential is None:
+        raise RuntimeError('zk_digest(): credential is not defined')
     return base64.b64encode(
         hashlib.sha1(user + ":" + credential).digest()
+                            ).strip()
+
+
+@Memoize
+def generate_digest_sha1(unique=False, user=None, credential=None):
+    """Generate a SHA256 digest from username and password"""
+    if user is None:
+        raise RuntimeError('generate_digest_sha1(): user is not defined')
+    if credential is None:
+        raise RuntimeError('generate_digest_sha1(): credential is not defined')
+    return base64.b64encode(
+        hashlib.sha256(user + ":" + credential).digest()
                             ).strip()
 
 
@@ -180,7 +241,9 @@ class SecretsGenerate(Command):
         for k in to_change:
             t = self.app.get_secret_type(k)
             arguments = self.app.get_secret_arguments(k)
-            v = generate_secret(k, t, unique=parsed_args.unique, **arguments)
+            v = generate_secret(secret_type=t,
+                                unique=parsed_args.unique,
+                                **arguments)
             self.log.debug("generated {} for {}".format(t, k))
             self.app.set_secret(k, v)
 
@@ -220,6 +283,10 @@ class SecretsSend(Command):
     """
 
     log = logging.getLogger(__name__)
+
+    def __init__(self, app, app_args, cmd_name=None):
+        super().__init__(app, app_args, cmd_name=None)
+        self.refresh_token = None
 
     def get_parser(self, prog_name):
         parser = super(SecretsSend, self).get_parser(prog_name)
@@ -276,7 +343,7 @@ class SecretsSend(Command):
             self.refresh_token = self.app.secrets[
                 "google_oauth_refresh_token"]
         except KeyError:
-            self.refresh_token = None
+            pass
         if parsed_args.refresh_token:
             orig_refresh_token = self.refresh_token
             self.log.debug('refreshing Google Oauth2 token')
@@ -323,4 +390,3 @@ class SecretsSend(Command):
                                  message)
 
 # vim: set fileencoding=utf-8 ts=4 sw=4 tw=0 et :
-
