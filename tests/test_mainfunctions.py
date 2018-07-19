@@ -43,8 +43,8 @@ class Test_MainFunctions(unittest.TestCase):
         else:
             return False
 
-    def test_default_deployment_secrets_dir(self):
-        assert default_deployment_secrets_dir() == os.path.join(
+    def test_default_secrets_descriptions_dir(self):
+        assert default_secrets_descriptions_dir() == os.path.join(
             default_secrets_dir(),
             default_secrets_file_name().replace('.yml', '.d'))
 

@@ -38,9 +38,9 @@ class Test_Main_1(unittest.TestCase):
             default_environment())
         assert default_secrets_dir() == _dirname
 
-    def test_default_deployment_secrets_dir(self):
-        assert default_deployment_secrets_dir() == \
-            posixpath.join(default_secrets_dir(), 'TESTING')
+    def test_default_secrets_descriptions_dir(self):
+        assert default_secrets_descriptions_dir() == \
+               os.path.join(default_secrets_dir(), 'testing.d')
 
 
 class Test_Main_2(unittest.TestCase):
@@ -69,8 +69,8 @@ class Test_Main_2(unittest.TestCase):
         assert default_secrets_dir() == '.'
 
     def test_default_deployment_secrets_dir_unset(self):
-        assert default_deployment_secrets_dir() == \
-            default_secrets_dir()
+        assert default_secrets_descriptions_dir() == \
+               default_secrets_dir()
 
 if __name__ == '__main__':
     import sys
