@@ -30,17 +30,22 @@ logger = logging.getLogger(__name__)
 
 
 def default_environment():
-    """Return environment identifier"""
+    """
+    Returns the environment identifier specified by environment variable
+    D2_ENVIRONMENT or None if not defined.
+    """
     return os.getenv('D2_ENVIRONMENT', None)
 
 
 def default_secrets_file_name():
-    """Return just the file name for secrets file"""
+    """Returns the file name component (not fully path) for secrets file"""
     return os.getenv('D2_SECRETS_FILE', 'secrets.yml')
 
 
 def default_secrets_dir():
-    """Return the directory path root for secrets storage"""
+    """
+    Returns the directory path root for secrets storage.
+    """
     _default_environment = default_environment()
     _home = os.path.expanduser('~')
     _secrets_subdir = os.path.join(_home,
@@ -52,7 +57,7 @@ def default_secrets_dir():
         )
 
 
-def default_deployment_secrets_dir():
+def default_secrets_descriptions_dir():
     """Return the path to the drop-in secrets description directory"""
     _env = default_environment()
     if not _env:
@@ -65,7 +70,7 @@ def default_deployment_secrets_dir():
 def default_secrets_file_path():
     """Return full path to secrets file"""
     return os.path.join(
-        default_deployment_secrets_dir(),
+        default_secrets_dir(),
         default_secrets_file_name()
     )
 
@@ -192,7 +197,7 @@ class PythonSecretsApp(App):
             return os.path.join(self.secrets_dir, self.secrets_file)
         else:
             return os.path.join(
-                os.path.join(self.secrets_dir, self.environment),
+                self.secrets_dir,
                 self.secrets_file
             )
 
@@ -239,7 +244,7 @@ class PythonSecretsApp(App):
         try:
             with open(self.get_secrets_file_path(), 'r') as f:
                 self.secrets = yaml.safe_load(f)
-        except FileNotFoundError as err:
+        except OSError as err:
             self.LOG.debug('{}'.format(str(err)))
 
     def write_secrets(self):
