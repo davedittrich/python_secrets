@@ -77,7 +77,7 @@ of a command is:
 
 ..
 
-The actions are things like ``list``, ``show``, ``create``, ``set``, ``delete``, etc.
+The actions are things like ``list``, ``show``, ``generate``, ``set``, ``delete``, etc.
 
 .. _OpenStackClient: https://docs.openstack.org/python-openstackclient/latest/
 .. _Command Structure: https://docs.openstack.org/python-openstackclient/latest/cli/commands.html
