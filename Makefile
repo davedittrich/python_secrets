@@ -1,6 +1,6 @@
 # Makefile for python_secrets
 
-REQUIRED_VENV:=dimsenv
+REQUIRED_VENV:=python_secrets
 VENV_DIR=$(HOME)/dims/envs/$(REQUIRED_VENV)
 ENVNAME:=$(shell basename $(VIRTUAL_ENV))
 PROJECT:=$(shell basename `pwd`)
