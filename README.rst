@@ -31,12 +31,12 @@ Features
 * Like `python-update-dotdee`_, produces a single master file for use
   by Ansible commands (e.g. ``ansible-playbook playbook.yml -e @secrets.yml``)
 
-* Support multiple simultaneous sets of secrets for flexibility and
-  scalability in multi-environment deployments and to support
-  different use cases and combinations of secrets.
+* Support multiple simultaneous sets of secrets (environments) for
+  flexibility and scalability in multi-environment deployments and to
+  support different use cases or different combinations of secrets.
 
 * Define variable names and associate types (e.g., ``password``, ``uuid4``,
-  ``consul_key``).
+  ``random_base64``).
 
 * Allow manual entry of values, or automatic generation of secrets
   according to their type.
@@ -92,8 +92,8 @@ the ``help`` command or ``--help`` option flag:
 
     $ python_secrets --help
     usage: python_secrets [--version] [-v | -q] [--log-file LOG_FILE] [-h]
-                          [--debug] [-e <environment>] [-d <secrets-directory>]
-                          [-s <secrets-file>]
+                          [--debug] [-d <secrets-basedir>] [-e <environment>]
+                          [-s <secrets-file>] [--init]
 
     Python secrets management app
 
@@ -104,36 +104,147 @@ the ``help`` command or ``--help`` option flag:
       --log-file LOG_FILE   Specify a file to log output. Disabled by default.
       -h, --help            Show help message and exit.
       --debug               Show tracebacks on errors.
+      -d <secrets-basedir>, --secrets-basedir <secrets-basedir>
+                            Root directory for holding secrets (Env:
+                            D2_SECRETS_BASEDIR; default: /Users/dittrich/.secrets)
       -e <environment>, --environment <environment>
                             Deployment environment selector (Env: D2_ENVIRONMENT;
                             default: None)
-      -d <secrets-directory>, --secrets-dir <secrets-directory>
-                            Root directory for holding secrets (Env:
-                            D2_SECRETS_DIR; default: .)
       -s <secrets-file>, --secrets-file <secrets-file>
                             Secrets file (default: secrets.yml)
+      --init                Initialize directory for holding secrets.
 
     Commands:
       complete       print bash completion command (cliff)
+      environments create  Create environment(s)
+      environments list  List the current environments
       groups list    Show a list of secrets groups.
       groups show    Show a list of secrets in a group.
       help           print detailed help for another command (cliff)
+      secrets describe  Describe supported secret types
       secrets generate  Generate values for secrets
+      secrets send   Send secrets using GPG encrypted email.
       secrets set    Set values manually for secrets
-      secrets show   List the contents of the secrets file
+      secrets show   List the contents of the secrets file or definitions
 
 ..
 
 Directories and files
 ~~~~~~~~~~~~~~~~~~~~~
 
-By default, ``python_secrets`` looks in the current working directory
-for the directory in which variable descriptions are found and to
-read/write the file with the secrets (default name, ``security.yml``).
-The name of the directory is derived from the name of the secrets file
-by stripping off the ``.yml`` extention and adding ``.d`` (following
-the Linux drop-in configuration style directories used by programs
-like ``rsyslog``, ``dnsmasq``, etc.)
+There are three file system concepts that are important to understand
+regarding secrets storage:
+
+#. The *root directory for secrets storage*;
+#. The *environment* for organizing a set of secrets and
+   secret group descriptions;
+#. The *secrets* file and *group descriptions*.
+
+Root directory
+^^^^^^^^^^^^^^
+
+By default, ``python_secrets`` expects a root directory in the
+current user's home directory. Unless you over-ride the name of
+this directory, it defaults to ``.secrets`` on Linux and
+``secrets`` on Windows.  The first time you use ``python_secrets``,
+there will likely be no directory:
+
+.. code-block:: shell
+
+    $ tree ~/.secrets
+    /Users/dittrich/.secrets [error opening dir]
+
+    0 directories, 0 files
+
+..
+
+The root directory will be created the first time you create an environment,
+which is covered next.
+
+Environments
+^^^^^^^^^^^^
+
+Environments are sub-directories within the root secrets directory.  You create
+one environment per set of unique secrets that you need to manage. This could
+be one for open source *Program A*, one for *Program B*, etc., or it could be
+one for *Development*, one for *Testing*, one for *Production*, etc. (or any
+combination).
+
+Use the command ``environments create`` to create an environment.  Since this
+program is designed to support multiple environments, a name for the new
+environment is required. If one is not specified, the base name of the current
+working directory is used:
+
+.. code-block:: shell
+
+    $ pwd
+    /Users/dittrich/git/python_secrets
+    $ python_secrets environments create
+    environment directory /Users/dittrich/.secrets/python_secrets created
+    $ tree ~/.secrets
+    /Users/dittrich/.secrets
+    └── python_secrets
+        └── secrets.d
+
+    2 directories, 0 files
+
+..
+
+If you want or need to, you can control the name of the environment being
+used by (a) giving an argument on the command line, (b) using the ``-e`` or
+``--environment`` command line flag, or (c) by setting the environment variable
+``D2_ENVIRONMENT``.
+
+.. code-block:: shell
+
+    $ python_secrets environments create development
+    environment directory /Users/dittrich/.secrets/development created
+
+    $ python_secrets --environment testing environments create
+    environment directory /Users/dittrich/.secrets/testing created
+
+    $ D2_ENVIRONMENT=production python_secrets environments create
+    environment directory /Users/dittrich/.secrets/production created
+
+    $ tree ~/.secrets
+    /Users/dittrich/.secrets
+    ├── development
+    │   └── secrets.d
+    ├── production
+    │   └── secrets.d
+    ├── python_secrets
+    │   └── secrets.d
+    └── testing
+        └── secrets.d
+
+    8 directories, 0 files
+
+..
+
+If you want to create more than one environment at once, you will
+have to specify all of the names on the command line as arguments:
+
+.. code-block:: shell
+
+    $ python_secrets environments create development testing production
+    environment directory /Users/dittrich/.secrets/development created
+    environment directory /Users/dittrich/.secrets/testing created
+    environment directory /Users/dittrich/.secrets/production created
+
+..
+
+Secrets and group descriptions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The environment directories just created are all empty. Secrets are stored in a
+YML file (``.yml``) within the environment's directory, and group descriptions
+are stored in a drop-in directory with the same base name, but with an
+extention of ``.d`` instead of ``.yml`` (following the Linux drop-in
+configuration style directories used by programs like ``rsyslog``, ``dnsmasq``,
+etc.)
+
+The default secrets file name is ``secrets.yml``, which means the default
+descriptions directory would be named ``secrets.d``.
 
 You can define environment variables to point to the root directory
 in which a set of different environments can be configured at one
@@ -238,24 +349,24 @@ the ``groups show`` command:
 Showing Secrets
 ~~~~~~~~~~~~~~~
 
-To see all of the secrets, use the ``secrets show`` command:
+To examine the secrets, use the ``secrets show`` command:
 
 .. code-block:: shell
 
     $ python_secrets secrets show
-    +----------------------------+----------+
-    | Variable                   | Value    |
-    +----------------------------+----------+
-    | trident_db_pass            | REDACTED |
-    | ca_rootca_password         | REDACTED |
-    | consul_key                 | REDACTED |
-    | jenkins_admin_password     | REDACTED |
-    | rabbitmq_default_user_pass | REDACTED |
-    | rabbitmq_admin_user_pass   | REDACTED |
-    | trident_sysadmin_pass      | REDACTED |
-    | vncserver_password         | REDACTED |
-    | zookeeper_uuid4            | REDACTED |
-    +----------------------------+----------+
+    +----------------------------+------------+----------+
+    | Variable                   | Type       | Value    |
+    +----------------------------+------------+----------+
+    | ca_rootca_password         | password   | REDACTED |
+    | consul_key                 | consul_key | REDACTED |
+    | jenkins_admin_password     | password   | REDACTED |
+    | rabbitmq_admin_user_pass   | password   | REDACTED |
+    | rabbitmq_default_user_pass | password   | REDACTED |
+    | trident_db_pass            | password   | REDACTED |
+    | trident_sysadmin_pass      | password   | REDACTED |
+    | vncserver_password         | password   | REDACTED |
+    | zookeeper_uuid4            | uuid4      | REDACTED |
+    +----------------------------+------------+----------+
 
 ..
 
@@ -265,19 +376,19 @@ the values in clear text in the terminal output, add the ``--no-redact`` flag:
 .. code-block:: shell
 
     $ python_secrets secrets show --no-redact
-    +----------------------------+--------------------------------------+
-    | Variable                   | Value                                |
-    +----------------------------+--------------------------------------+
-    | trident_db_pass            | handheld angrily letdown frisk       |
-    | ca_rootca_password         | handheld angrily letdown frisk       |
-    | consul_key                 | Q04cbB61lm3Z7H+S4WGL+Q==             |
-    | jenkins_admin_password     | handheld angrily letdown frisk       |
-    | rabbitmq_default_user_pass | handheld angrily letdown frisk       |
-    | rabbitmq_admin_user_pass   | handheld angrily letdown frisk       |
-    | trident_sysadmin_pass      | handheld angrily letdown frisk       |
-    | vncserver_password         | handheld angrily letdown frisk       |
-    | zookeeper_uuid4            | 21516a57-e2d3-4d32-a2cc-a364341d24f7 |
-    +----------------------------+--------------------------------------+
+    +----------------------------+------------+--------------------------------------+
+    | Variable                   | Type       | Value                                |
+    +----------------------------+------------+--------------------------------------+
+    | ca_rootca_password         | password   | verse envelope alkaline language     |
+    | consul_key                 | consul_key | GVLKCRqXqm0rxo0b4/ligQ==             |
+    | jenkins_admin_password     | password   | verse envelope alkaline language     |
+    | rabbitmq_admin_user_pass   | password   | verse envelope alkaline language     |
+    | rabbitmq_default_user_pass | password   | verse envelope alkaline language     |
+    | trident_db_pass            | password   | verse envelope alkaline language     |
+    | trident_sysadmin_pass      | password   | verse envelope alkaline language     |
+    | vncserver_password         | password   | verse envelope alkaline language     |
+    | zookeeper_uuid4            | uuid4      | c8314c91-bf7c-4dc3-8645-da37279d31aa |
+    +----------------------------+------------+--------------------------------------+
 
 ..
 
@@ -301,12 +412,12 @@ subset of secrets, you have two ways to do this.
 .. code-block:: shell
 
     $ python_secrets secrets show rabbitmq_default_user_pass rabbitmq_admin_user_pass
-    +----------------------------+--------------------------------------+
-    | Variable                   | Value                                |
-    +----------------------------+--------------------------------------+
-    | rabbitmq_default_user_pass | handheld angrily letdown frisk       |
-    | rabbitmq_admin_user_pass   | handheld angrily letdown frisk       |
-    +----------------------------+--------------------------------------+
+    +----------------------------+----------+--------------------------------------+
+    | Variable                   | Type     | Value                                |
+    +----------------------------+----------+--------------------------------------+
+    | rabbitmq_default_user_pass | password | handheld angrily letdown frisk       |
+    | rabbitmq_admin_user_pass   | password | handheld angrily letdown frisk       |
+    +----------------------------+----------+--------------------------------------+
 
 ..
 
@@ -316,13 +427,36 @@ subset of secrets, you have two ways to do this.
 .. code-block:: shell
 
     $ python_secrets secrets show --group jenkins trident
-    +----------------------------+--------------------------------------+
-    | Variable                   | Value                                |
-    +----------------------------+--------------------------------------+
-    | jenkins_admin_password     | handheld angrily letdown frisk       |
-    | trident_db_pass            | handheld angrily letdown frisk       |
-    | trident_sysadmin_pass      | handheld angrily letdown frisk       |
-    +----------------------------+--------------------------------------+
+    +----------------------------+----------+--------------------------------------+
+    | Variable                   | Type     | Value                                |
+    +----------------------------+----------+--------------------------------------+
+    | jenkins_admin_password     | password | handheld angrily letdown frisk       |
+    | trident_db_pass            | password | handheld angrily letdown frisk       |
+    | trident_sysadmin_pass      | password | handheld angrily letdown frisk       |
+    +----------------------------+----------+--------------------------------------+
+
+..
+
+#. Use ``secrets describe`` to see the supported secret types
+   that are available for you to use:
+
+.. code-block:: shell
+
+    $ python_secrets secrets describe
+    +------------------+----------------------------------+
+    | Type             | Description                      |
+    +------------------+----------------------------------+
+    | password         | Simple password string           |
+    | crypt_6          | crypt() SHA512 ("$6$")           |
+    | token_hex        | Hexadecimal token                |
+    | token_urlsafe    | URL-safe token                   |
+    | consul_key       | 16-byte BASE64 token             |
+    | sha1_digest      | DIGEST-SHA1 (user:pass) digest   |
+    | sha256_digest    | DIGEST-SHA256 (user:pass) digest |
+    | zookeeper_digest | DIGEST-SHA1 (user:pass) digest   |
+    | uuid4            | UUID4 token                      |
+    | random_base64    | Random BASE64 token              |
+    +------------------+----------------------------------+
 
 ..
 
@@ -339,7 +473,7 @@ type of secret to simplify things, use the ``secrets generate`` command:
 .. code-block:: shell
 
     $ python_secrets secrets generate
-    $ python_secrets secrets show
+    $ python_secrets secrets show --column Variable --column Value
     +----------------------------+--------------------------------------+
     | Variable                   | Value                                |
     +----------------------------+--------------------------------------+
@@ -362,7 +496,7 @@ specifying the variable and value in the form ``variable=value``:
 .. code-block:: shell
 
     $ python_secrets secrets set trident_db_pass="rural coffee purple sedan"
-    $ python_secrets secrets show
+    $ python_secrets secrets show --column Variable --column Value
     +----------------------------+--------------------------------------+
     | Variable                   | Value                                |
     +----------------------------+--------------------------------------+
@@ -385,7 +519,7 @@ them to the command line as arguments to ``secrets generate``:
 .. code-block:: shell
 
     $ python_secrets secrets generate rabbitmq_default_user_pass rabbitmq_admin_user_pass
-    $ python_secrets secrets show
+    $ python_secrets secrets show --column Variable --column Value
     +----------------------------+--------------------------------------+
     | Variable                   | Value                                |
     +----------------------------+--------------------------------------+
@@ -411,7 +545,7 @@ using Ansible.  For example, CSV output (with header) can be produced like this:
 
 .. code-block:: shell
 
-    $ python_secrets secrets show -f csv
+    $ python_secrets secrets show -f csv --column Variable --column Value
     "Variable","Value"
     "trident_db_pass","gargle earlobe eggplant kissable"
     "ca_rootca_password","gargle earlobe eggplant kissable"
@@ -430,7 +564,7 @@ other programs.
 
 .. code-block:: shell
 
-    $ python_secrets secrets show -f json
+    $ python_secrets secrets show -f json --column Variable --column Value
     [
       {
         "Variable": "trident_db_pass",
@@ -477,7 +611,8 @@ like ``jq``, for example:
 
 .. code-block:: shell
 
-    $ python_secrets secrets show -f json | jq -r '.[] | { (.Variable): .Value } '
+    $ python_secrets secrets show -f json --column Variable --column Value |
+    > jq -r '.[] | { (.Variable): .Value } '
     {
       "trident_db_pass": "gargle earlobe eggplant kissable"
     }
@@ -510,7 +645,8 @@ like ``jq``, for example:
 
 .. code-block:: shell
 
-    $ python_secrets secrets show -f json | jq -r '.[] | [ (.Variable), .Value ] '
+    $ python_secrets secrets show -f json --column Variable --column Value |
+    > jq -r '.[] | [ (.Variable), .Value ] '
     [
       "trident_db_pass",
       "gargle earlobe eggplant kissable"
@@ -552,7 +688,8 @@ like ``jq``, for example:
 
 .. code-block:: shell
 
-    $ python_secrets secrets show -f json | jq -r '.[] | [ (.Variable), .Value ] |@sh'
+    $ python_secrets secrets show -f json --column Variable --column Value |
+    > jq -r '.[] | [ (.Variable), .Value ] |@sh'
     'trident_db_pass' 'gargle earlobe eggplant kissable'
     'ca_rootca_password' 'gargle earlobe eggplant kissable'
     'consul_key' 'zQvSe0kdf0Xarbhb80XULQ=='
@@ -567,7 +704,8 @@ like ``jq``, for example:
 
 .. code-block:: shell
 
-    $ python_secrets secrets show -f json | jq -r '.[] | [ (.Variable), .Value ] |@csv'
+    $ python_secrets secrets show -f json --column Variable --column Value |
+    > jq -r '.[] | [ (.Variable), .Value ] |@csv'
     "trident_db_pass","gargle earlobe eggplant kissable"
     "ca_rootca_password","gargle earlobe eggplant kissable"
     "consul_key","zQvSe0kdf0Xarbhb80XULQ=="
@@ -587,7 +725,7 @@ Future Work
 
 * Add ``secrets delete`` to delete secrets.
 
-* Add ``groups create``, ``groups delete``, ``groups show`` commands.
+* Add ``groups create`` and ``groups delete`` commands.
 
 * The Mantl project (GitHub `mantl/mantl`_) employs a `security-setup`_ script
   that takes care of setting secrets (and non-secret related variables) in a
