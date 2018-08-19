@@ -1,5 +1,6 @@
 import base64
 import binascii
+import collections
 import crypt
 import hashlib
 import logging
@@ -7,14 +8,16 @@ import os
 import random
 import secrets
 import uuid
+import yaml
 
 from cliff.command import Command
 from cliff.lister import Lister
 from numpy.random import bytes as np_random_bytes
-from .utils import redact
+from python_secrets.utils import redact, find
+from python_secrets.google_oauth2 import GoogleSMTP
 from xkcdpass import xkcd_password as xp
-from .google_oauth2 import GoogleSMTP
 
+DEFAULT_SIZE = 18
 SECRET_TYPES = [
         {'Type': 'password', 'Description': 'Simple password string'},
         {'Type': 'crypt_6', 'Description': 'crypt() SHA512 ("$6$")'},
@@ -27,6 +30,225 @@ SECRET_TYPES = [
         {'Type': 'uuid4', 'Description': 'UUID4 token'},
         {'Type': 'random_base64', 'Description': 'Random BASE64 token'}
         ]
+HOME = os.path.expanduser('~')
+CWD = os.getcwd()
+SECRETS_ROOT = os.path.join(
+    HOME, "secrets" if '\\' in HOME else ".secrets")
+DEFAULT_MODE = 0o710
+
+
+class SecretsEnvironment(object):
+    """Class for handling secrets environment metadata"""
+
+    LOG = logging.getLogger(__name__)
+
+    def __init__(self,
+                 environment=None,
+                 secrets_root=SECRETS_ROOT,
+                 secrets_file="secrets.yml",
+                 create_root=True):
+        self._environment = environment \
+            if environment is not None else os.path.basename(CWD)
+        self._secrets_root = secrets_root
+        self._secrets_file = secrets_file
+        self._secrets_descriptions = "{}.d".format(
+            os.path.splitext(self._secrets_file)[0])
+        # Ensure root directory exists in which to create secrets
+        # environments?
+        if not self.root_path_exists():
+            if create_root:
+                self.root_path_create()
+            else:
+                raise RuntimeError('Directory {} '.format(self.root_path()) +
+                                   'does not exist and create_root=False')
+        self._secrets = collections.OrderedDict()
+        self._descriptions = collections.OrderedDict()
+        self._changed = False
+        self._groups = []
+
+    def root_path(self):
+        """Returns the absolute path to secrets root directory"""
+        return self._secrets_root
+
+    def root_path_exists(self):
+        """Return whether secrets root directory exists"""
+        return os.path.exists(self.root_path())
+
+    def root_path_create(self, mode=DEFAULT_MODE):
+        """Create secrets root directory"""
+        os.mkdir(self._secrets_root, mode=mode)
+
+    def environment_path(self):
+        """Returns the absolute path to secrets environment directory"""
+        return os.path.join(self._secrets_root, self._environment)
+
+    def environment_path_exists(self):
+        """Return whether secrets environment directory exists"""
+        return os.path.exists(self.environment_path())
+
+    def environment_path_create(self, mode=DEFAULT_MODE):
+        """Create secrets environment directory"""
+        _path = self.environment_path()
+        if not os.path.exists(_path):
+            os.mkdir(_path, mode=mode)
+
+    def secrets_file_path(self):
+        """Returns the absolute path to secrets file"""
+        if self._environment is None:
+            return os.path.join(self._secrets_root, self._secrets_file)
+        else:
+            return os.path.join(self._secrets_root,
+                                self._environment,
+                                self._secrets_file)
+
+    def secrets_file_path_exists(self):
+        """Return whether secrets file exists"""
+        return os.path.exists(self.secrets_file_path())
+
+    def descriptions_path(self):
+        """Return the absolute path to secrets descriptions directory"""
+        return os.path.join(self.environment_path(),
+                            self._secrets_descriptions)
+
+    def descriptions_path_exists(self):
+        """Return whether secrets descriptions directory exists"""
+        return os.path.exists(self.descriptions_path())
+
+    def descriptions_path_create(self, mode=DEFAULT_MODE):
+        """Create secrets descriptions directory"""
+        if not self.environment_path_exists():
+            self.environment_path_create(mode=mode)
+        if not self.descriptions_path_exists():
+            os.mkdir(self.descriptions_path(), mode=mode)
+
+    def keys(self):
+        """Return the keys to the secrets dictionary"""
+        return [s for s in self._secrets.keys()]
+
+    def items(self):
+        """Return the keys to the secrets dictionary"""
+        return self._secrets.items()
+
+    def get_secret(self, secret):
+        """Get the value of secret
+
+        :param secret: :type: string
+        :return: value of secret
+        """
+        return self._secrets[secret]
+
+    def set_secret(self, secret, value):
+        """Set secret to value
+
+        :param secret: :type: string
+        :param value: :type: string
+        :return:
+        """
+        self._secrets[secret] = value
+        self._changed = True
+
+    def changed(self):
+        """Return boolean reflecting changed secrets."""
+        return self._changed
+
+    def read_secrets_and_descriptions(self):
+        """Read secrets descriptions and secrets."""
+        self.read_secrets_descriptions()
+        self.read_secrets()
+
+    def read_secrets(self):
+        """Load the current secrets from .yml file"""
+        _fname = self.secrets_file_path()
+        self.LOG.debug('reading secrets from {}'.format(_fname))
+        with open(_fname, 'r') as f:
+                self._secrets = yaml.safe_load(f)
+
+    def write_secrets(self):
+        """Write out the current secrets for use by Ansible,
+        only if any changes were made"""
+        if self._changed:
+            _fname = self.secrets_file_path()
+            self.LOG.debug('writing secrets to {}'.format(_fname))
+            with open(_fname, 'w') as f:
+                yaml.dump(self._secrets,
+                          f,
+                          encoding=('utf-8'),
+                          explicit_start=True,
+                          default_flow_style=False
+                          )
+        else:
+            self.LOG.debug('not writing secrets (unchanged)')
+
+    def read_secrets_descriptions(self):
+        """Load the descriptions of groups of secrets from a .d directory"""
+        groups_dir = self.descriptions_path()
+        if os.path.exists(groups_dir):
+            # Ignore .order file and any other non-YAML file extensions
+            extensions = ['yml', 'yaml']
+            file_names = [fn for fn in os.listdir(groups_dir)
+                          if any(fn.endswith(ext) for ext in extensions)]
+            self._groups = [os.path.splitext(fn) for fn in file_names]
+            self.LOG.debug('reading secrets descriptions from {}'.format(
+                groups_dir))
+            try:
+                # Iterate over files in directory, loading them into
+                # dictionaries as dictionary keyed on group name.
+                for fname in file_names:
+                    group = os.path.splitext(fname)[0]
+                    with open(os.path.join(groups_dir, fname), 'r') as f:
+                        data = yaml.safe_load(f)
+                    self._descriptions[group] = data
+            except Exception:
+                self.LOG.info('no secrets descriptions files found')
+        else:
+            self.LOG.info('secrets descriptions directory not found')
+
+    def descriptions(self):
+        return self._descriptions
+
+    def get_secret_type(self, variable):
+        """Get the Type of variable from set of secrets descriptions"""
+        for g in self._descriptions.keys():
+            i = find(
+                self._descriptions[g],
+                'Variable',
+                variable)
+            if i is not None:
+                try:
+                    return self._descriptions[g][i]['Type']
+                except KeyError:
+                    return None
+        return None
+
+    # TODO(dittrich): Not very DRY (but no time now)
+    def get_secret_arguments(self, variable):
+        """Get the Arguments of variable from set of secrets descriptions"""
+        for g in self._descriptions.keys():
+            i = find(
+                self._descriptions[g],
+                'Variable',
+                variable)
+            if i is not None:
+                try:
+                    return self._descriptions[g][i]['Arguments']
+                except KeyError:
+                    return {}
+        return {}
+
+    def get_items_from_group(self, group):
+        """Get the variables in a secrets description group"""
+        return [i['Variable'] for i in self._descriptions[group]]
+
+    def is_item_in_group(self, item, group):
+        """Return true or false based on item being in group"""
+        return find(
+                self._descriptions[group],
+                'Variable',
+                item) is not None
+
+    def get_groups(self):
+        """Get the secrets description groups"""
+        return [g for g in self._descriptions]
 
 
 class Memoize:
@@ -138,7 +360,7 @@ def generate_zookeeper_digest(unique=False, user=None, credential=None):
     if credential is None:
         raise RuntimeError('zk_digest(): credential is not defined')
     return base64.b64encode(
-        hashlib.sha1(user + ":" + credential).digest()
+        hashlib.sha1(user + ":" + credential).digest()  # nosec
                             ).strip()
 
 
@@ -161,15 +383,15 @@ def generate_uuid4(unique=False):
 
 
 @Memoize
-def generate_random_base64(unique=False, size=2**5 + 1):
+def generate_random_base64(unique=False, size=DEFAULT_SIZE):
     """Generate random base64 encoded string of 'size' bytes"""
-    return base64.b64encode(os.urandom(size))
+    return base64.b64encode(os.urandom(size)).decode('UTF-8')
 
 
 class SecretsShow(Lister):
-    """List the contents of the secrets file"""
+    """List the contents of the secrets file or definitions"""
 
-    log = logging.getLogger(__name__)
+    LOG = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
         parser = super(SecretsShow, self).get_parser(prog_name)
@@ -196,21 +418,25 @@ class SecretsShow(Lister):
         return parser
 
     def take_action(self, parsed_args):
-        self.log.debug('listing secrets')
+        self.LOG.debug('listing secrets')
+        self.app.secrets.read_secrets_and_descriptions()
         variables = []
         if parsed_args.args_group:
             for g in parsed_args.args:
                 variables.extend(
-                    [v for v in self.app.get_items_from_group(g)]
+                    [v for v in self.app.secrets.get_items_from_group(g)]
                  )
         else:
             variables = parsed_args.args \
                 if len(parsed_args.args) > 0 \
-                else [k for k in self.app.secrets.keys()]
-        columns = ('Variable', 'Value')
+                else [k for k in self.app.secrets._secrets.keys()]
+        columns = ('Variable', 'Type', 'Value')
         data = (
-                [(k, redact(v, parsed_args.redact))
-                    for k, v in self.app.secrets.items() if k in variables]
+                [(k,
+                  self.app.secrets.get_secret_type(k),
+                  redact(v, parsed_args.redact))
+                    for k, v in self.app.secrets._secrets.items()
+                    if k in variables]
         )
         return columns, data
 
@@ -234,7 +460,7 @@ class SecretsDescribe(Lister):
 class SecretsGenerate(Command):
     """Generate values for secrets"""
 
-    log = logging.getLogger(__name__)
+    LOG = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
         parser = super(SecretsGenerate, self).get_parser(prog_name)
@@ -243,32 +469,33 @@ class SecretsGenerate(Command):
             action='store_true',
             dest='unique',
             default=False,
-            help="Generate unique secrets for each " +
+            help="Generate unique values for each " +
             "type of secret (default: False)"
         )
         parser.add_argument('args', nargs='*', default=None)
         return parser
 
     def take_action(self, parsed_args):
-        self.log.debug('generating secrets')
+        self.LOG.debug('generating secrets')
+        self.app.secrets.read_secrets_and_descriptions()
+        # If no secrets specified, default to all secrets
         to_change = parsed_args.args \
             if len(parsed_args.args) > 0 \
-            else [i['Variable'] for i in self.app.secrets_descriptions]
-
+            else [k for k, v in self.app.secrets.items()]
         for k in to_change:
-            t = self.app.get_secret_type(k)
-            arguments = self.app.get_secret_arguments(k)
+            t = self.app.secrets.get_secret_type(k)
+            arguments = self.app.secrets.get_secret_arguments(k)
             v = generate_secret(secret_type=t,
                                 unique=parsed_args.unique,
                                 **arguments)
-            self.log.debug("generated {} for {}".format(t, k))
-            self.app.set_secret(k, v)
+            self.LOG.debug("generated {} for {}".format(t, k))
+            self.app.secrets.set_secret(k, v)
 
 
 class SecretsSet(Command):
     """Set values manually for secrets"""
 
-    log = logging.getLogger(__name__)
+    LOG = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
         parser = super(SecretsSet, self).get_parser(prog_name)
@@ -276,20 +503,21 @@ class SecretsSet(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.log.debug('setting secrets')
+        self.LOG.debug('setting secrets')
+        self.app.secrets.read_secrets_and_descriptions()
         for kv in parsed_args.args:
             k, v = kv.split('=')
             try:
                 description = next(  # noqa
                         (item for item
-                            in self.app.secrets_descriptions
+                            in self.app.secrets.descriptions
                             if item["Variable"] == k))
                 # TODO(dittrich): validate description['Type']
             except StopIteration:
-                self.log.info('no description for {}'.format(k))
+                self.LOG.info('no description for {}'.format(k))
             else:
-                self.log.debug('setting {}'.format(k))
-                self.app.set_secret(k, v)
+                self.LOG.debug('setting {}'.format(k))
+                self.app.secrets.set_secret(k, v)
 
 
 class SecretsSend(Command):
@@ -299,7 +527,7 @@ class SecretsSend(Command):
     Arguments are USERNAME@EMAIL.ADDRESS and/or VARIABLE references.
     """
 
-    log = logging.getLogger(__name__)
+    LOG = logging.getLogger(__name__)
 
     def __init__(self, app, app_args, cmd_name=None):
         super().__init__(app, app_args, cmd_name=None)
@@ -363,9 +591,9 @@ class SecretsSend(Command):
             pass
         if parsed_args.refresh_token:
             orig_refresh_token = self.refresh_token
-            self.log.debug('refreshing Google Oauth2 token')
+            self.LOG.debug('refreshing Google Oauth2 token')
         else:
-            self.log.debug('sending secrets')
+            self.LOG.debug('sending secrets')
         googlesmtp = GoogleSMTP(
             parsed_args.smtp_username,
             client_id=self.app.secrets['google_oauth_client_id'],

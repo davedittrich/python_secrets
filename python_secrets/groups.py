@@ -11,13 +11,14 @@ class GroupsList(Lister):
     The names of the groups and number of items are printed by default.
     """
 
-    log = logging.getLogger(__name__)
+    LOG = logging.getLogger(__name__)
 
     def take_action(self, parsed_args):
-        self.log.debug('listing secret groups')
+        self.LOG.debug('listing secret groups')
+        self.app.secrets.read_secrets_and_descriptions()
         items = {}
-        for g in self.app.get_groups():
-            items[g] = self.app.get_items_from_group(g)
+        for g in self.app.secrets.get_groups():
+            items[g] = self.app.secrets.get_items_from_group(g)
         return (('Group', 'Items'),
                 ((k, len(v)) for k, v in items.items())
                 )
@@ -29,7 +30,7 @@ class GroupsShow(Lister):
     The names of the groups and number of items are printed by default.
     """
 
-    log = logging.getLogger(__name__)
+    LOG = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
         parser = super(GroupsShow, self).get_parser(prog_name)
@@ -37,11 +38,12 @@ class GroupsShow(Lister):
         return parser
 
     def take_action(self, parsed_args):
-        self.log.debug('showing secrets in group')
+        self.LOG.debug('showing secrets in group')
+        self.app.secrets.read_secrets_and_descriptions()
         columns = ('Group', 'Variable')
         data = []
         for group in parsed_args.args:
-            for item in self.app.get_items_from_group(group):
+            for item in self.app.secrets.get_items_from_group(group):
                 data.append((group, item))
         return columns, data
 

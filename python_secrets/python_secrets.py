@@ -13,7 +13,6 @@ or services.
 """
 
 # Standard libraries.
-import logging
 
 # External dependencies.
 from property_manager import PropertyManager
@@ -24,10 +23,6 @@ from property_manager import PropertyManager
 #     mutable_property,
 #     required_property,
 # )
-
-
-# Initialize a logger for this module.
-logger = logging.getLogger(__name__)
 
 
 class Python_Secrets(PropertyManager):
