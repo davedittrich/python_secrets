@@ -81,6 +81,8 @@ setup(
             'psec = python_secrets.main:main',
         ],
         'python_secrets': [
+            'environments list = python_secrets.environments:EnvironmentsList',
+            'environments create = python_secrets.environments:EnvironmentsCreate',  # noqa
             'groups list = python_secrets.groups:GroupsList',
             'groups show = python_secrets.groups:GroupsShow',
             'secrets generate = python_secrets.secrets:SecretsGenerate',
