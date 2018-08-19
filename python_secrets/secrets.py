@@ -15,6 +15,19 @@ from .utils import redact
 from xkcdpass import xkcd_password as xp
 from .google_oauth2 import GoogleSMTP
 
+SECRET_TYPES = [
+        {'Type': 'password', 'Description': 'Simple password string'},
+        {'Type': 'crypt_6', 'Description': 'crypt() SHA512 ("$6$")'},
+        {'Type': 'token_hex', 'Description': 'Hexadecimal token'},
+        {'Type': 'token_urlsafe', 'Description': 'URL-safe token'},
+        {'Type': 'consul_key', 'Description': '16-byte BASE64 token'},
+        {'Type': 'sha1_digest', 'Description': 'DIGEST-SHA1 (user:pass) digest'},  # noqa
+        {'Type': 'sha256_digest', 'Description': 'DIGEST-SHA256 (user:pass) digest'},  # noqa
+        {'Type': 'zookeeper_digest', 'Description': 'DIGEST-SHA1 (user:pass) digest'},  # noqa
+        {'Type': 'uuid4', 'Description': 'UUID4 token'},
+        {'Type': 'random_base64', 'Description': 'Random BASE64 token'}
+        ]
+
 
 class Memoize:
     """Memoize(fn) - an instance which acts like fn but memoizes its arguments.
@@ -35,21 +48,9 @@ class Memoize:
         return self.memo[args]
 
 
-SECRET_TYPES = [
-        {'type': 'password', 'description': 'simple password string'},
-        {'type': 'crypt_6', 'description': 'crypt SHA512 ("$6$")'},
-        {'type': 'token_hex', 'description': 'hexadecimal token'},
-        {'type': 'token_urlsafe', 'description': 'URL-safe token'},
-        {'type': 'consul_key', 'description': '16 byte BASE64 token'},
-        {'type': 'zookeeper_digest', 'description': 'DIGEST-MD5 (user:pass) digest'},  # noqa
-        {'type': 'uuid4', 'description': 'UUID4 token'},
-        {'type': 'random_base64', 'description': 'random BASE64 token'}
-        ]
-
-
 def generate_secret(secret_type=None, unique=False, **kwargs):
     """Generate secret for the type of key"""
-    _secret_types = [i['type'] for i in SECRET_TYPES]
+    _secret_types = [i['Type'] for i in SECRET_TYPES]
     if secret_type not in _secret_types:
         raise TypeError("Secret type " +
                         "'{}' is not supported".format(secret_type))
@@ -67,7 +68,7 @@ def generate_secret(secret_type=None, unique=False, **kwargs):
         return generate_zookeeper_digest(unique, **kwargs)
     elif secret_type == 'uuid4':
         return generate_uuid4(unique, **kwargs)
-    elif secret_type == 'base64':
+    elif secret_type == 'random_base64':
         return generate_random_base64(unique, **kwargs)
     else:
         raise TypeError("Secret type " +
@@ -211,6 +212,22 @@ class SecretsShow(Lister):
                 [(k, redact(v, parsed_args.redact))
                     for k, v in self.app.secrets.items() if k in variables]
         )
+        return columns, data
+
+
+class SecretsDescribe(Lister):
+    """Describe supported secret types"""
+
+    LOG = logging.getLogger(__name__)
+
+    def get_parser(self, prog_name):
+        parser = super(SecretsDescribe, self).get_parser(prog_name)
+        return parser
+
+    def take_action(self, parsed_args):
+        self.LOG.debug('describing secrets')
+        columns = [k.title() for k in SECRET_TYPES[0].keys()]
+        data = [[v for k, v in i.items()] for i in SECRET_TYPES]
         return columns, data
 
 
