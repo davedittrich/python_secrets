@@ -13,40 +13,41 @@ import unittest
 from python_secrets.main import *
 
 TEST_ENVIRONMENT = 'testenv'
-TEST_SECRETS_FILE = 'testfile.yml'
+TEST_SECRETS_BASENAME = 'testfile.yml'
 
 
 class Test_MainFunctions(unittest.TestCase):
 
     def setUp(self):
         os.environ['D2_ENVIRONMENT'] = TEST_ENVIRONMENT
-        os.environ['D2_SECRETS_FILE'] = TEST_SECRETS_FILE
+        os.environ['D2_SECRETS_BASENAME'] = TEST_SECRETS_BASENAME
 
     def tearDown(self):
         pass
 
     def test_default_environment(self):
-        assert default_environment() == TEST_ENVIRONMENT
+        self.assertEqual(default_environment(), TEST_ENVIRONMENT)
 
     def test_default_secrets_file_name(self):
-        assert default_secrets_file_name() == TEST_SECRETS_FILE
+        self.assertEqual(default_secrets_basename(), TEST_SECRETS_BASENAME)
 
-    def test_default_secrets_dir(self):
+    def test_default_secrets_basedir(self):
         if os.sep == "\\":
-            assert default_secrets_dir() == '{}\\secrets\\{}'.format(
-                os.environ.get('USERPROFILE'),
-                os.environ.get('D2_ENVIRONMENT'))
+            self.assertEqual(default_secrets_basedir(),
+                             '{}\\secrets'.format(
+                                 os.environ.get('USERPROFILE')))
         elif os.sep == '/':
-            assert default_secrets_dir() == '{}/.secrets/{}'.format(
-                os.environ.get('HOME'),
-                os.environ.get('D2_ENVIRONMENT'))
+            self.assertEqual(default_secrets_basedir(),
+                             '{}/.secrets'.format(
+                                 os.environ.get('HOME')))
         else:
             return False
 
     def test_default_secrets_descriptions_dir(self):
-        assert default_secrets_descriptions_dir() == os.path.join(
-            default_secrets_dir(),
-            default_secrets_file_name().replace('.yml', '.d'))
+        self.assertEqual(default_secrets_descriptions_dir(),
+                         os.path.join(
+                             default_secrets_basedir(),
+                             default_secrets_basename().replace('.yml', '.d')))
 
 
 if __name__ == '__main__':
