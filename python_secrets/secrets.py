@@ -2,11 +2,14 @@ import base64
 import binascii
 import collections
 import crypt
+import errno
+import glob
 import hashlib
 import logging
 import os
 import random
 import secrets
+import shutil
 import uuid
 import yaml
 
@@ -15,6 +18,7 @@ from cliff.lister import Lister
 from numpy.random import bytes as np_random_bytes
 from python_secrets.utils import redact, find
 from python_secrets.google_oauth2 import GoogleSMTP
+from shutil import copytree
 from xkcdpass import xkcd_password as xp
 
 DEFAULT_SIZE = 18
@@ -36,6 +40,15 @@ SECRETS_ROOT = os.path.join(
     HOME, "secrets" if '\\' in HOME else ".secrets")
 DEFAULT_MODE = 0o710
 
+def copyanything(src, dst):
+    try:
+        shutil.copytree(src, dst)
+    except FileExistsError as exc:
+        pass
+    except OSError as exc: # python >2.5
+        if exc.errno == errno.ENOTDIR:
+            shutil.copy(src, dst)
+        else: raise
 
 class SecretsEnvironment(object):
     """Class for handling secrets environment metadata"""
@@ -46,7 +59,8 @@ class SecretsEnvironment(object):
                  environment=None,
                  secrets_root=SECRETS_ROOT,
                  secrets_file="secrets.yml",
-                 create_root=True):
+                 create_root=True,
+                 source=None):
         self._environment = environment \
             if environment is not None else os.path.basename(CWD)
         self._secrets_root = secrets_root
@@ -61,6 +75,8 @@ class SecretsEnvironment(object):
             else:
                 raise RuntimeError('Directory {} '.format(self.root_path()) +
                                    'does not exist and create_root=False')
+        if source is not None:
+            self.clone_from(source)
         self._secrets = collections.OrderedDict()
         self._descriptions = collections.OrderedDict()
         self._changed = False
@@ -82,15 +98,29 @@ class SecretsEnvironment(object):
         """Returns the absolute path to secrets environment directory"""
         return os.path.join(self._secrets_root, self._environment)
 
-    def environment_path_exists(self):
-        """Return whether secrets environment directory exists"""
-        return os.path.exists(self.environment_path())
+    def environment_exists(self):
+        """Return whether secrets environment directory exists and contains files"""
+        _ep = self.environment_path()
+        _files = list()
+        for root, directories, filenames in os.walk(_ep):
+            for filename in filenames:
+                _files.append(os.path.join(root, filename))
+        return os.path.exists(_ep) and len(_files) > 0
 
-    def environment_path_create(self, mode=DEFAULT_MODE):
+    def environment_create(self,
+                           source=None,
+                           mode=DEFAULT_MODE):
         """Create secrets environment directory"""
         _path = self.environment_path()
         if not os.path.exists(_path):
-            os.mkdir(_path, mode=mode)
+            if source is not None:
+                self.clone_from(source)
+            else:
+                os.mkdir(_path, mode=mode)
+                self.descriptions_path_create()
+        else:
+            if self.environment_exists():
+                raise RuntimeError('Environment "{}" exists'.format(self._environment))
 
     def secrets_file_path(self):
         """Returns the absolute path to secrets file"""
@@ -116,7 +146,7 @@ class SecretsEnvironment(object):
 
     def descriptions_path_create(self, mode=DEFAULT_MODE):
         """Create secrets descriptions directory"""
-        if not self.environment_path_exists():
+        if not self.environment_exists():
             self.environment_path_create(mode=mode)
         if not self.descriptions_path_exists():
             os.mkdir(self.descriptions_path(), mode=mode)
@@ -178,6 +208,12 @@ class SecretsEnvironment(object):
                           )
         else:
             self.LOG.debug('not writing secrets (unchanged)')
+
+    def clone_from(self, source=None):
+        """Clone an existing environment directory (or facsimile there of)"""
+        dest = self.environment_path()
+        if source is not None:
+            copyanything(source, dest)
 
     def read_secrets_descriptions(self):
         """Load the descriptions of groups of secrets from a .d directory"""

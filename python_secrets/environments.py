@@ -33,6 +33,13 @@ class EnvironmentsCreate(Command):
 
     def get_parser(self, prog_name):
         parser = super(EnvironmentsCreate, self).get_parser(prog_name)
+        parser.add_argument(
+            '-C', '--clone-from',
+            action='store',
+            dest='clone_from',
+            default=None,
+            help="Environment directory to clone from (default: None)"
+        )
         parser.add_argument('args',
                             nargs='*',
                             default=[self.app.options.environment])
@@ -45,15 +52,8 @@ class EnvironmentsCreate(Command):
             parsed_args.args = list(self.app.options.environment)
         for e in parsed_args.args:
             se = SecretsEnvironment(environment=e)
-            se_environment = se.environment_path()
-            if se.environment_path_exists():
-                raise RuntimeError('environment directory ' +
-                                   '{} '.format(se_environment) +
-                                   'already exists')
-            else:
-                se.environment_path_create()
-                se.descriptions_path_create()
-                self.app.LOG.info('environment directory {} created'.format(
-                    se_environment))
+            se.environment_create(source=parsed_args.clone_from)
+            self.app.LOG.info('environment directory {} created'.format(
+                se.environment_path()))
 
 # vim: set fileencoding=utf-8 ts=4 sw=4 tw=0 et :
