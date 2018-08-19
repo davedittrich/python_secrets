@@ -56,14 +56,12 @@ def default_secrets_basedir(init=False):
     _home = os.path.expanduser('~')
     _secrets_subdir = os.path.join(
         _home, "secrets" if '\\' in _home else ".secrets")
-    if os.path.exists(_secrets_subdir):
-        return os.getenv(
+    _basedir = os.getenv(
             'D2_SECRETS_BASEDIR',
             _secrets_subdir)
-    else:
-        if init:
-            os.mkdir(path=_secrets_subdir, mode=0o700)
-        return _secrets_subdir
+    if not os.path.exists(_basedir) and init:
+            os.mkdir(path=_basedir, mode=0o700)
+    return _basedir
 
 
 def default_secrets_descriptions_dir():
