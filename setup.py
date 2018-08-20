@@ -89,6 +89,7 @@ setup(
             'secrets send = python_secrets.secrets:SecretsSend',
             'secrets set = python_secrets.secrets:SecretsSet',
             'secrets show = python_secrets.secrets:SecretsShow',
+            'template = python_secrets.template:Template',
         ],
     },
 )

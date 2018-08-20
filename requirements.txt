@@ -1,4 +1,5 @@
 cliff
+jinja2
 lxml
 numpy
 six
