@@ -32,7 +32,7 @@ def default_environment():
     Returns the environment identifier specified by environment variable
     D2_ENVIRONMENT or None if not defined.
     """
-    return os.getenv('D2_ENVIRONMENT', None)
+    return os.getenv('D2_ENVIRONMENT', os.path.basename(os.getcwd()))
 
 
 def default_secrets_basename():
