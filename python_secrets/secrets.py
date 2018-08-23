@@ -8,14 +8,13 @@ import logging
 import os
 import random
 import secrets
-import six
 import uuid
 import yaml
 
 from cliff.command import Command
 from cliff.lister import Lister
 from numpy.random import bytes as np_random_bytes
-from python_secrets.utils import redact, find
+from python_secrets.utils import redact, find, prompt_string
 from python_secrets.google_oauth2 import GoogleSMTP
 from shutil import copy, copytree
 from xkcdpass import xkcd_password as xp
@@ -349,12 +348,6 @@ def generate_secret(secret_type=None, unique=False, **kwargs):
                         "'{}' is not supported".format(secret_type))
 
 
-def prompt_string(old="THIS IS A STRING"):
-    """Prompt the user for a string and return it"""
-    _new = six.input("Value? [{}]: ".format(old))
-    return _new
-
-
 @Memoize
 def generate_password(unique=False):
     """Generate an XKCD style password"""
@@ -558,20 +551,46 @@ class SecretsSet(Command):
 
     def get_parser(self, prog_name):
         parser = super(SecretsSet, self).get_parser(prog_name)
+        parser.add_argument(
+            '--undefined',
+            action='store_true',
+            dest='undefined',
+            default=False,
+            help="Set values for undefined variables (default: False)"
+        )
         parser.add_argument('args', nargs='*', default=None)
         return parser
 
     def take_action(self, parsed_args):
         self.LOG.debug('setting secrets')
         self.app.secrets.read_secrets_and_descriptions()
-        for kv in parsed_args.args:
-            k, v = kv.split('=')
+        if parsed_args.undefined:
+            args = [k for k, v in self.app.secrets.items()
+                    if v in [None, '']]
+        else:
+            args = parsed_args.args
+        for arg in args:
+            if '=' in arg:
+                k, v = arg.split('=')
+            else:
+                k, v = arg, self.app.secrets.get_secret(arg)
             k_type = self.app.secrets.get_type(k)
             if k_type is None:
                 self.LOG.info('no description for {}'.format(k))
-            else:
-                if v.startswith("@"):
-                    with open(v[1:], 'r') as f:
+                raise RuntimeError('variable "{}" '.format(k) +
+                                   'has no description')
+            if k_type == 'string':
+                if '=' not in arg:
+                    v = prompt_string(prompt=k, default=v)
+                    if v is None:
+                        self.LOG.info('no user input for "{}"'.format(k))
+                        return None
+                if v.startswith('@'):
+                    if v[1] == '~':
+                        _path = os.path.expanduser(v[1:])
+                    else:
+                        _path = v[1:]
+                    with open(_path, 'r') as f:
                         v = f.read().strip()
                 self.LOG.debug('setting {}'.format(k))
                 self.app.secrets.set_secret(k, v)

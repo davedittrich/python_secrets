@@ -410,57 +410,63 @@ subset of secrets, you have two ways to do this.
 
 #. Specify the variables you want to show on the command line as arguments:
 
-.. code-block:: shell
+   .. code-block:: shell
 
-    $ python_secrets secrets show rabbitmq_default_user_pass rabbitmq_admin_user_pass
-    +----------------------------+----------+--------------------------------------+
-    | Variable                   | Type     | Value                                |
-    +----------------------------+----------+--------------------------------------+
-    | rabbitmq_default_user_pass | password | handheld angrily letdown frisk       |
-    | rabbitmq_admin_user_pass   | password | handheld angrily letdown frisk       |
-    +----------------------------+----------+--------------------------------------+
+       $ python_secrets secrets show rabbitmq_default_user_pass rabbitmq_admin_user_pass
+       +----------------------------+----------+--------------------------------------+
+       | Variable                   | Type     | Value                                |
+       +----------------------------+----------+--------------------------------------+
+       | rabbitmq_default_user_pass | password | handheld angrily letdown frisk       |
+       | rabbitmq_admin_user_pass   | password | handheld angrily letdown frisk       |
+       +----------------------------+----------+--------------------------------------+
 
-..
+   ..
 
 #. Use the ``--group`` flag and specify the group(s) you want to show
    as command line arguments:
 
-.. code-block:: shell
+   .. code-block:: shell
 
-    $ python_secrets secrets show --group jenkins trident
-    +----------------------------+----------+--------------------------------------+
-    | Variable                   | Type     | Value                                |
-    +----------------------------+----------+--------------------------------------+
-    | jenkins_admin_password     | password | handheld angrily letdown frisk       |
-    | trident_db_pass            | password | handheld angrily letdown frisk       |
-    | trident_sysadmin_pass      | password | handheld angrily letdown frisk       |
-    +----------------------------+----------+--------------------------------------+
+       $ python_secrets secrets show --group jenkins trident
+       +----------------------------+----------+--------------------------------------+
+       | Variable                   | Type     | Value                                |
+       +----------------------------+----------+--------------------------------------+
+       | jenkins_admin_password     | password | handheld angrily letdown frisk       |
+       | trident_db_pass            | password | handheld angrily letdown frisk       |
+       | trident_sysadmin_pass      | password | handheld angrily letdown frisk       |
+       +----------------------------+----------+--------------------------------------+
 
-..
+   ..
 
 #. Use ``secrets describe`` to see the supported secret types
    that are available for you to use:
 
-.. code-block:: shell
+   .. code-block:: shell
 
-    $ python_secrets secrets describe
-    +------------------+----------------------------------+
-    | Type             | Description                      |
-    +------------------+----------------------------------+
-    | password         | Simple password string           |
-    | crypt_6          | crypt() SHA512 ("$6$")           |
-    | token_hex        | Hexadecimal token                |
-    | token_urlsafe    | URL-safe token                   |
-    | consul_key       | 16-byte BASE64 token             |
-    | sha1_digest      | DIGEST-SHA1 (user:pass) digest   |
-    | sha256_digest    | DIGEST-SHA256 (user:pass) digest |
-    | zookeeper_digest | DIGEST-SHA1 (user:pass) digest   |
-    | uuid4            | UUID4 token                      |
-    | random_base64    | Random BASE64 token              |
-    +------------------+----------------------------------+
+       $ python_secrets secrets describe
+       +------------------+----------------------------------+
+       | Type             | Description                      |
+       +------------------+----------------------------------+
+       | password         | Simple (xkcd) password string    |
+       | string           | Simple string                    |
+       | crypt_6          | crypt() SHA512 ("$6$")           |
+       | token_hex        | Hexadecimal token                |
+       | token_urlsafe    | URL-safe token                   |
+       | consul_key       | 16-byte BASE64 token             |
+       | sha1_digest      | DIGEST-SHA1 (user:pass) digest   |
+       | sha256_digest    | DIGEST-SHA256 (user:pass) digest |
+       | zookeeper_digest | DIGEST-SHA1 (user:pass) digest   |
+       | uuid4            | UUID4 token                      |
+       | random_base64    | Random BASE64 token              |
+       +------------------+----------------------------------+
 
-..
+   ..
 
+The type ``string`` is for secrets that are managed by another entity that you
+must obtain and use to access some remote service (e.g., the pre-shared key for
+someone's WiFi network, or an API key for accessing a cloud service provider's
+platform). All other types are structured secret types that you generate for
+configuring services.
 
 Generating and Setting variables
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -468,8 +474,41 @@ Generating and Setting variables
 Secrets are generated using the ``secrets generate`` command
 and are set manually using the ``secrets set`` command.
 
-To regenerate all of the secrets at once, using the same value for each
-type of secret to simplify things, use the ``secrets generate`` command:
+.. code-block:: shell
+
+    $ psec help secrets generate
+    usage: psec secrets generate [-h] [-U] [args [args ...]]
+
+    Generate values for secrets
+
+    positional arguments:
+      args
+
+    optional arguments:
+      -h, --help    show this help message and exit
+      -U, --unique  Generate unique values for each type of secret (default:
+                    False)
+
+    ..
+
+.. code-block:: shell
+
+    $ psec secrets set --help
+    usage: psec secrets set [-h] [--undefined] [args [args ...]]
+
+    Set values manually for secrets
+
+    positional arguments:
+      args
+
+    optional arguments:
+      -h, --help   show this help message and exit
+      --undefined  Set values for undefined variables (default: False)
+
+..
+
+To regenerate all of the non-string secrets at once, using the same value for
+each type of secret to simplify things, use the ``secrets generate`` command:
 
 .. code-block:: shell
 
@@ -536,6 +575,82 @@ them to the command line as arguments to ``secrets generate``:
     +----------------------------+--------------------------------------+
 
 ..
+
+
+A set of secrets for an open source project can be bootstrapped using the
+following steps:
+
+#. Create a template secrets environment directory that contains just
+   the secrets definitions. This example uses the template found
+   in the `davedittrich/goSecure`_ repository (directory https://github.com/davedittrich/goSecure/tree/master/secrets).
+
+#. Use this template to clone a secrets environment, which will initially
+   be empty:
+
+   .. code-block:: shell
+
+       $ psec environments create test --clone-from ~/git/goSecure/secrets
+       environment directory /Users/dittrich/.secrets/test created
+       $ psec -e test secrets show --no-redact --fit-width
+       +-----------------------+----------+-------+
+       | Variable              | Type     | Value |
+       +-----------------------+----------+-------+
+       | gosecure_app_password | password | None  |
+       | gosecure_client_ssid  | string   | None  |
+       | gosecure_client_psk   | string   | None  |
+       | gosecure_pi_password  | password | None  |
+       | gosecure_pi_pubkey    | string   | None  |
+       +-----------------------+----------+-------+
+
+   ..
+
+#. First, generate all secrets whose type is not ``string``:
+
+   .. code-block:: shell
+
+       $ psec -e test secrets generate
+       $ psec -e test secrets show --no-redact --fit-width
+       +-----------------------+----------+------------------------------+
+       | Variable              | Type     | Value                        |
+       +-----------------------+----------+------------------------------+
+       | gosecure_app_password | password | brunt outclass alike turbine |
+       | gosecure_client_psk   | string   | None                         |
+       | gosecure_client_ssid  | string   | None                         |
+       | gosecure_pi_password  | password | brunt outclass alike turbine |
+       | gosecure_pi_pubkey    | string   | None                         |
+       +-----------------------+----------+------------------------------+
+
+   ..
+
+#. Finally, manually set the remaining ``string`` type variables:
+
+   .. code-block:: shell
+
+       $ psec -e test secrets set --undefined
+       gosecure_client_psk? [None]: atjhK5AlsQMw3Zh
+       gosecure_client_ssid? [None]: YourWiFiSSID
+       gosecure_pi_pubkey? [None]: @~/.ssh/new_rsa.pub
+       $ psec -e test secrets show --no-redact --fit-width
+       +-----------------------+----------+------------------------------------------------------------------------------------------+
+       | Variable              | Type     | Value                                                                                    |
+       +-----------------------+----------+------------------------------------------------------------------------------------------+
+       | gosecure_app_password | password | brunt outclass alike turbine                                                             |
+       | gosecure_client_psk   | string   | atjhK5AlsQMw3Zh
+       | gosecure_client_ssid  | string   | YourWiFiSSID                                                                             |
+       | gosecure_pi_password  | password | brunt outclass alike turbine                                                             |
+       | gosecure_pi_pubkey    | string   | ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC+qUIucrPvRkTmY0tgxr9ac/VtBUHhYHfOdDVpU99AcryLMWiU |
+       |                       |          | uQ2/NVikfOfPo5mt9YTQyqRbeBzKlNgbHnsxh0AZatjhK5AlsQMw3ZhZUcLYZbt7szuQy8ineN0potlCJoVaMSOb |
+       |                       |          | 9htf9gAPvzwxUnHxg35jPCzAXYAi3Erc6y338+CL0XxQvCogXOA+MwH7wZGgdT3WpupLG/7HAr/3KJEQQk1FlS2m |
+       |                       |          | Rd+WuewnLbKkqBP21N+48ccq6XhEhAmlzzr9SENw5DMmrvMAYIYkoTwUeD3Qx4YebjFkCxZw+w7AafEFn0Kz6vCX |
+       |                       |          | 4mp/6ZF/Ko+o04HM2sVr6wtCu2dB dittrich@localhost                                          |
+       +-----------------------+----------+------------------------------------------------------------------------------------------+
+
+   ..
+
+You are now ready to compile your software, or build your project!
+
+
+.. _davedittrich/goSecure: https://github.com/davedittrich/goSecure/
 
 Outputting structured information for use in other scripts
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
