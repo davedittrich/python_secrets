@@ -1,13 +1,9 @@
 import logging
-import os
 
 from cliff.command import Command
-from cliff.lister import Lister
 from jinja2 import (Environment, FileSystemLoader,
                     StrictUndefined, Undefined,
-                    make_logging_undefined, meta)
-from jinja2.exceptions import UndefinedError
-from python_secrets.secrets import SecretsEnvironment
+                    make_logging_undefined, select_autoescape)
 
 
 class Template(Command):
@@ -40,10 +36,17 @@ class Template(Command):
         template_loader = FileSystemLoader('.')
         base = Undefined if parsed_args.check_defined is True \
             else StrictUndefined
-        LoggingUndefined = make_logging_undefined(logger=self.LOG,
-                                                  base=base)
-        template_env = Environment(loader=template_loader,
-                                   undefined=LoggingUndefined)
+        LoggingUndefined = make_logging_undefined(
+            logger=self.LOG,
+            base=base)
+        template_env = Environment(
+            loader=template_loader,
+            autoescape=select_autoescape(
+                disabled_extensions=('txt',),
+                default_for_string=True,
+                default=True,
+            ),
+            undefined=LoggingUndefined)
         template = template_env.get_template(parsed_args.source)
         output_text = template.render(template_vars)
         if parsed_args.check_defined is False:

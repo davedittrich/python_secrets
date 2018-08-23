@@ -3,7 +3,6 @@ import binascii
 import collections
 import crypt
 import errno
-import glob
 import hashlib
 import logging
 import os
@@ -18,7 +17,7 @@ from cliff.lister import Lister
 from numpy.random import bytes as np_random_bytes
 from python_secrets.utils import redact, find
 from python_secrets.google_oauth2 import GoogleSMTP
-from shutil import copytree
+from shutil import copy, copytree
 from xkcdpass import xkcd_password as xp
 
 DEFAULT_SIZE = 18
@@ -40,15 +39,18 @@ SECRETS_ROOT = os.path.join(
     HOME, "secrets" if '\\' in HOME else ".secrets")
 DEFAULT_MODE = 0o710
 
+
 def copyanything(src, dst):
     try:
-        shutil.copytree(src, dst)
+        copytree(src, dst)
     except FileExistsError as exc:
         pass
-    except OSError as exc: # python >2.5
+    except OSError as exc:  # python >2.5
         if exc.errno == errno.ENOTDIR:
-            shutil.copy(src, dst)
-        else: raise
+            copy(src, dst)
+        else:
+            raise
+
 
 class SecretsEnvironment(object):
     """Class for handling secrets environment metadata"""
@@ -99,7 +101,8 @@ class SecretsEnvironment(object):
         return os.path.join(self._secrets_root, self._environment)
 
     def environment_exists(self):
-        """Return whether secrets environment directory exists and contains files"""
+        """Return whether secrets environment directory exists
+        and contains files"""
         _ep = self.environment_path()
         _files = list()
         for root, directories, filenames in os.walk(_ep):
@@ -120,7 +123,8 @@ class SecretsEnvironment(object):
                 self.descriptions_path_create()
         else:
             if self.environment_exists():
-                raise RuntimeError('Environment "{}" exists'.format(self._environment))
+                raise RuntimeError('Environment "{}" exists'.format(
+                    self._environment))
 
     def secrets_file_path(self):
         """Returns the absolute path to secrets file"""
