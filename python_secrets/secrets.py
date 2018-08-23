@@ -670,4 +670,24 @@ class SecretsSend(Command):
                                  parsed_args.smtp_subject,
                                  message)
 
+
+class SecretsPath(Command):
+    """Return path to secrets file"""
+
+    LOG = logging.getLogger(__name__)
+
+    def get_parser(self, prog_name):
+        parser = super(SecretsPath, self).get_parser(prog_name)
+        default_environment = self.app_args.environment
+        parser.add_argument('environment',
+                            nargs='?',
+                            default=default_environment)
+        return parser
+
+    def take_action(self, parsed_args):
+        self.LOG.debug('returning secrets path')
+        e = parsed_args.environment
+        print(SecretsEnvironment(environment=e).secrets_file_path())
+
+
 # vim: set fileencoding=utf-8 ts=4 sw=4 tw=0 et :

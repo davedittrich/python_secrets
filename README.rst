@@ -29,7 +29,7 @@ Features
   program, but including secret setting and generation as well.
 
 * Like `python-update-dotdee`_, produces a single master file for use
-  by Ansible commands (e.g. ``ansible-playbook playbook.yml -e @secrets.yml``)
+  by Ansible commands (e.g. ``ansible-playbook playbook.yml -e @$(python_secrets secrets path)``)
 
 * Support multiple simultaneous sets of secrets (environments) for
   flexibility and scalability in multi-environment deployments and to
@@ -123,6 +123,7 @@ the ``help`` command or ``--help`` option flag:
       help           print detailed help for another command (cliff)
       secrets describe  Describe supported secret types
       secrets generate  Generate values for secrets
+      secrets path   Return path to secrets file
       secrets send   Send secrets using GPG encrypted email.
       secrets set    Set values manually for secrets
       secrets show   List the contents of the secrets file or definitions
@@ -538,6 +539,79 @@ them to the command line as arguments to ``secrets generate``:
 
 Outputting structured information for use in other scripts
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Once secrets are created and stored, they will eventually need to be accessed
+in order to use them in program execution.  This can be done by passing the
+``.yml`` secrets file itself to a program, or by outputting the variables in
+other formats like CSV, JSON, or as environment type variables.
+
+Passing the secrets file by path
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+One way to do this is to take advantage of command line options like
+`Ansible`_'s ``--extra-vars`` and passing it a path to the ``.yml`` secrets
+file.  (See `Passing Variables On The Command Line`_). You can do that like
+this.
+
+Let's assume we want to use ``consul_key`` variable to configure Consul
+using Ansible. Here is the variable as stored:
+
+.. code-block:: shell
+
+    $ psec secrets show consul_key
+    +------------+------------+--------------------------+
+    | Variable   | Type       | Value                    |
+    +------------+------------+--------------------------+
+    | consul_key | consul_key | GVLKCRqXqm0rxo0b4/ligQ== |
+    +------------+------------+--------------------------+
+
+..
+
+Using Ansible's ``debug`` module, we can verify that this variable is not
+set by any previously loaded Ansible inventory:
+
+.. code-block:: shell
+
+    $ ansible -i localhost, -m debug -a 'var=consul_key' localhost
+    localhost | SUCCESS => {
+        "consul_key": "VARIABLE IS NOT DEFINED!"
+    }
+
+..
+
+In order for Ansible to set the ``consul_key`` variable outside of any
+pre-defined inventory files, we need to pass a file path to the
+``--extra-vars`` option. The path can be obtained using the
+``psec secrets path`` command:
+
+.. code-block:: shell
+
+    $ psec secrets path
+    /Users/dittrich/.secrets/python_secrets/secrets.yml
+
+..
+
+It is possible to run this command in an in-line command expansion operation in
+Bash. Ansible expects the file path passed to ``-extra-vars`` to start with an
+``@`` character, so the command line to use would look like this:
+
+.. code-block:: shell
+
+    $ ansible -i localhost, -e @$(python_secrets secrets path) -m debug -a 'var=consul_key' localhost
+    localhost | SUCCESS => {
+        "consul_key": "GVLKCRqXqm0rxo0b4/ligQ=="
+    }
+
+..
+
+Ansible now has the value and can use it in templating configuration files, or
+so forth.
+
+.. _Ansible: https://docs.ansible.com/
+.. _Passing variables on the Command Line: https://docs.ansible.com/ansible/latest/user_guide/playbooks_variables.html#passing-variables-on-the-command-line
+
+Outputting Variables in Other Formats
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The `openstack/cliff`_ framework also supports multiple output formats that help
 with accessing and using the secrets in applications or service configuration
