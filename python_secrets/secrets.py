@@ -8,7 +8,7 @@ import logging
 import os
 import random
 import secrets
-import shutil
+import six
 import uuid
 import yaml
 
@@ -22,7 +22,8 @@ from xkcdpass import xkcd_password as xp
 
 DEFAULT_SIZE = 18
 SECRET_TYPES = [
-        {'Type': 'password', 'Description': 'Simple password string'},
+        {'Type': 'password', 'Description': 'Simple (xkcd) password string'},
+        {'Type': 'string', 'Description': 'Simple string'},
         {'Type': 'crypt_6', 'Description': 'crypt() SHA512 ("$6$")'},
         {'Type': 'token_hex', 'Description': 'Hexadecimal token'},
         {'Type': 'token_urlsafe', 'Description': 'URL-safe token'},
@@ -62,6 +63,7 @@ class SecretsEnvironment(object):
                  secrets_root=SECRETS_ROOT,
                  secrets_file="secrets.yml",
                  create_root=True,
+                 defer_loading=True,
                  source=None):
         self._environment = environment \
             if environment is not None else os.path.basename(CWD)
@@ -180,6 +182,14 @@ class SecretsEnvironment(object):
         """
         self._secrets[secret] = value
         self._changed = True
+
+    def get_type(self, variable):
+        """Return type for variable or None if no description"""
+        for group in self._descriptions.keys():
+            for i in self._descriptions[group]:
+                if i['Variable'] == variable:
+                    return i['Type']
+        return None
 
     def changed(self):
         """Return boolean reflecting changed secrets."""
@@ -316,6 +326,8 @@ def generate_secret(secret_type=None, unique=False, **kwargs):
     if secret_type not in _secret_types:
         raise TypeError("Secret type " +
                         "'{}' is not supported".format(secret_type))
+    if secret_type == "string":
+        return None
     if secret_type == 'password':
         return generate_password(unique)
     if secret_type == 'crypt_6':
@@ -335,6 +347,12 @@ def generate_secret(secret_type=None, unique=False, **kwargs):
     else:
         raise TypeError("Secret type " +
                         "'{}' is not supported".format(secret_type))
+
+
+def prompt_string(old="THIS IS A STRING"):
+    """Prompt the user for a string and return it"""
+    _new = six.input("Value? [{}]: ".format(old))
+    return _new
 
 
 @Memoize
@@ -458,7 +476,7 @@ class SecretsShow(Lister):
         return parser
 
     def take_action(self, parsed_args):
-        self.LOG.debug('listing secrets')
+        self.LOG.debug('showing secrets')
         self.app.secrets.read_secrets_and_descriptions()
         variables = []
         if parsed_args.args_group:
@@ -528,8 +546,9 @@ class SecretsGenerate(Command):
             v = generate_secret(secret_type=t,
                                 unique=parsed_args.unique,
                                 **arguments)
-            self.LOG.debug("generated {} for {}".format(t, k))
-            self.app.secrets.set_secret(k, v)
+            if v is not None:
+                self.LOG.debug("generated {} for {}".format(t, k))
+                self.app.secrets.set_secret(k, v)
 
 
 class SecretsSet(Command):
@@ -547,15 +566,13 @@ class SecretsSet(Command):
         self.app.secrets.read_secrets_and_descriptions()
         for kv in parsed_args.args:
             k, v = kv.split('=')
-            try:
-                description = next(  # noqa
-                        (item for item
-                            in self.app.secrets.descriptions
-                            if item["Variable"] == k))
-                # TODO(dittrich): validate description['Type']
-            except StopIteration:
+            k_type = self.app.secrets.get_type(k)
+            if k_type is None:
                 self.LOG.info('no description for {}'.format(k))
             else:
+                if v.startswith("@"):
+                    with open(v[1:], 'r') as f:
+                        v = f.read().strip()
                 self.LOG.debug('setting {}'.format(k))
                 self.app.secrets.set_secret(k, v)
 
