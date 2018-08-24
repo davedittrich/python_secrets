@@ -155,6 +155,9 @@ class PythonSecretsApp(App):
 
     def initialize_app(self, argv):
         self.LOG.debug('initialize_app')
+        if sys.version_info <= (3, 6):
+            raise RuntimeError('This program uses the Python "secrets" ' +
+                               'module, which requires Python 3.6 or higher')
 
     def prepare_to_run_command(self, cmd):
         self.LOG.debug('prepare_to_run_command %s', cmd.__class__.__name__)

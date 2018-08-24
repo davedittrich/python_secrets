@@ -63,6 +63,12 @@ Features
 .. _python-update-dotdee: https://pypi.org/project/update-dotdee/
 .. _terraform: https://www.terraform.io/
 
+.. note::
+
+   Due to the use of the Python ``secrets`` module, which was introduced
+   in Python 3.6, only Python versions >= 3.6 can be used.
+
+..
 
 Usage
 -----
