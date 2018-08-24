@@ -129,6 +129,22 @@ class PythonSecretsApp(App):
                 default_secrets_basename())
         )
         parser.add_argument(
+            '-P', '--env-var-prefix',
+            metavar='<prefix>',
+            dest='env_var_prefix',
+            default=None,
+            help="Prefix string for environment variables " +
+                 "(default: None)"
+        )
+        parser.add_argument(
+            '-E', '--export-env-vars',
+            action='store_true',
+            dest='export_env_vars',
+            default=False,
+            help="Export secrets as environment variables " +
+                 "(default: False)"
+        )
+        parser.add_argument(
             '--init',
             action='store_true',
             dest='init',
@@ -145,7 +161,10 @@ class PythonSecretsApp(App):
         self.secrets = SecretsEnvironment(
             environment=self.options.environment,
             secrets_root=self.options.secrets_basedir,
-            secrets_file=self.options.secrets_file)
+            secrets_file=self.options.secrets_file,
+            export_env_vars=self.options.export_env_vars,
+            env_var_prefix=self.options.env_var_prefix,
+            )
 
     def clean_up(self, cmd, result, err):
         self.LOG.debug('clean_up %s', cmd.__class__.__name__)

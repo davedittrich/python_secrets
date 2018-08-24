@@ -63,6 +63,8 @@ class SecretsEnvironment(object):
                  secrets_file="secrets.yml",
                  create_root=True,
                  defer_loading=True,
+                 export_env_vars=False,
+                 env_var_prefix=None,
                  source=None):
         self._environment = environment \
             if environment is not None else os.path.basename(CWD)
@@ -78,6 +80,8 @@ class SecretsEnvironment(object):
             else:
                 raise RuntimeError('Directory {} '.format(self.root_path()) +
                                    'does not exist and create_root=False')
+        self.export_env_vars = export_env_vars
+        self.env_var_prefix = env_var_prefix
         if source is not None:
             self.clone_from(source)
         self._secrets = collections.OrderedDict()
@@ -172,14 +176,29 @@ class SecretsEnvironment(object):
         """
         return self._secrets[secret]
 
+    def _set_secret(self, secret, value):
+        """Set secret to value and export environment variable
+
+                :param secret: :type: string
+                :param value: :type: string
+                :return:
+                """
+        self._secrets[secret] = value
+        if self.export_env_vars:
+            if self.env_var_prefix is not None:
+                _env_var = '{}{}'.format(self.env_var_prefix, secret)
+            else:
+                _env_var = secret
+            os.environ[_env_var] = str(value)
+
     def set_secret(self, secret, value):
-        """Set secret to value
+        """Set secret to value and record change
 
         :param secret: :type: string
         :param value: :type: string
         :return:
         """
-        self._secrets[secret] = value
+        self._set_secret(secret, value)
         self._changed = True
 
     def get_type(self, variable):
@@ -204,7 +223,9 @@ class SecretsEnvironment(object):
         _fname = self.secrets_file_path()
         self.LOG.debug('reading secrets from {}'.format(_fname))
         with open(_fname, 'r') as f:
-                self._secrets = yaml.safe_load(f)
+            _secrets = yaml.safe_load(f)
+        for k, v in _secrets.items():
+            self._set_secret(k, v)
 
     def write_secrets(self):
         """Write out the current secrets for use by Ansible,
