@@ -29,7 +29,7 @@ Features
   program, but including secret setting and generation as well.
 
 * Like `python-update-dotdee`_, produces a single master file for use
-  by Ansible commands (e.g. ``ansible-playbook playbook.yml -e @$(python_secrets secrets path)``)
+  by Ansible commands (e.g. ``ansible-playbook playbook.yml -e @"$(python_secrets secrets path)"``)
 
 * Support multiple simultaneous sets of secrets (environments) for
   flexibility and scalability in multi-environment deployments and to
@@ -712,7 +712,7 @@ Bash. Ansible expects the file path passed to ``-extra-vars`` to start with an
 
 .. code-block:: shell
 
-    $ ansible -i localhost, -e @$(python_secrets secrets path) -m debug -a 'var=consul_key' localhost
+    $ ansible -i localhost, -e @"$(python_secrets secrets path)" -m debug -a 'var=consul_key' localhost
     localhost | SUCCESS => {
         "consul_key": "GVLKCRqXqm0rxo0b4/ligQ=="
     }
