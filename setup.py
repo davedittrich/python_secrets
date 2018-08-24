@@ -84,6 +84,7 @@ setup(
             'environments create = python_secrets.environments:EnvironmentsCreate',  # noqa
             'groups list = python_secrets.groups:GroupsList',
             'groups show = python_secrets.groups:GroupsShow',
+            'run = python_secrets.run:Run',
             'secrets describe = python_secrets.secrets:SecretsDescribe',
             'secrets generate = python_secrets.secrets:SecretsGenerate',
             'secrets path = python_secrets.secrets:SecretsPath',

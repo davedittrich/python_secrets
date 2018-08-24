@@ -51,11 +51,18 @@ Features
 * Show the variables and their unredacted values (or redacted them
   to maintain secrecy during demonstrations or in documentation).
 
+* Export the variables (optionally with a specific prefix string)
+  to the environment and run a command that inherits them (e.g.,
+  to pass variables to `terraform`_ for provisioning cloud
+  instances).
+
 * Output the variables and values in multiple different formats (CSV,
   JSON, YAML) for use in shell scripts, etc. using ``cliff`` features.
 
 .. _openstack/cliff: https://github.com/openstack/cliff
 .. _python-update-dotdee: https://pypi.org/project/update-dotdee/
+.. _terraform: https://www.terraform.io/
+
 
 Usage
 -----
@@ -93,7 +100,7 @@ the ``help`` command or ``--help`` option flag:
     $ python_secrets --help
     usage: python_secrets [--version] [-v | -q] [--log-file LOG_FILE] [-h]
                           [--debug] [-d <secrets-basedir>] [-e <environment>]
-                          [-s <secrets-file>] [--init]
+                          [-s <secrets-file>] [-P <prefix>] [-E] [--init]
 
     Python secrets management app
 
@@ -112,6 +119,12 @@ the ``help`` command or ``--help`` option flag:
                             default: None)
       -s <secrets-file>, --secrets-file <secrets-file>
                             Secrets file (default: secrets.yml)
+      -P <prefix>, --env-var-prefix <prefix>
+                            Prefix string for environment variables (default:
+                            None)
+      -E, --export-env-vars
+                            Export secrets as environment variables (default:
+                            False)
       --init                Initialize directory for holding secrets.
 
     Commands:
@@ -121,12 +134,14 @@ the ``help`` command or ``--help`` option flag:
       groups list    Show a list of secrets groups.
       groups show    Show a list of secrets in a group.
       help           print detailed help for another command (cliff)
+      run            Run a command using exported secrets
       secrets describe  Describe supported secret types
       secrets generate  Generate values for secrets
       secrets path   Return path to secrets file
       secrets send   Send secrets using GPG encrypted email.
       secrets set    Set values manually for secrets
       secrets show   List the contents of the secrets file or definitions
+      template       Template file(s)
 
 ..
 
@@ -722,6 +737,25 @@ Bash. Ansible expects the file path passed to ``-extra-vars`` to start with an
 Ansible now has the value and can use it in templating configuration files, or
 so forth.
 
+Other programs like Hashicorp `terraform`_ look for environment variables that
+begin with ``TF_VAR_`` and use them to set ``terraform`` variables for use
+in modules. To prove we are running in a sub-shell, we will first change the
+shell prompt.
+
+.. code-block:: shell
+
+    $ PS1="test> "
+    test> psec -e test --export-env-vars --env-var-prefix="TEST_" run bash
+    $ env | grep '^TEST_'
+    TEST_gosecure_pi_pubkey=ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC+qUIucrPvRkTmY0tgxr9ac/VtBUHhYHfOdDVpU99AcryLMWiU [...]
+    TEST_gosecure_client_psk=atjhK5AlsQMw3Zh
+    TEST_gosecure_client_ssid=YourWiFiSSID
+    TEST_gosecure_pi_password=brunt outclass alike turbine
+    TEST_gosecure_app_password=brunt outclass alike turbine
+    $ exit
+    test>
+
+..
 .. _Ansible: https://docs.ansible.com/
 .. _Passing variables on the Command Line: https://docs.ansible.com/ansible/latest/user_guide/playbooks_variables.html#passing-variables-on-the-command-line
 

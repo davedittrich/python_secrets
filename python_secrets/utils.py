@@ -1,4 +1,18 @@
+import subprocess  # nosec
 from six.moves import input
+
+# NOTE: While calling subprocess.call() with shell=True can have security
+# implications, the person running this command already has control of her
+# account.
+
+
+def get_output(cmd=['echo', 'NO COMMAND SPECIFIED'],
+               stderr=subprocess.STDOUT):
+    """Use subprocess.check_ouput to run subcommand"""
+    output = subprocess.check_output(  # nosec
+            cmd, stderr=stderr
+        ).decode('UTF-8').splitlines()
+    return output
 
 
 def find(lst, key, value):
