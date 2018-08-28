@@ -90,7 +90,7 @@ setup(
             'secrets set = python_secrets.secrets:SecretsSet',
             'secrets show = python_secrets.secrets:SecretsShow',
             'template = python_secrets.template:Template',
-            'util myip = python_secrets.utils:MyIP',
+            'utils myip = python_secrets.utils:MyIP',
         ],
     },
 )
