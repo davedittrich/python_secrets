@@ -1,8 +1,7 @@
 # Makefile for python_secrets
 
 REQUIRED_VENV:=python_secrets
-VENV_DIR=$(HOME)/dims/envs/$(REQUIRED_VENV)
-ENVNAME:=$(shell basename $(VIRTUAL_ENV))
+VENV_DIR=$(HOME)/.virtualenvs/$(REQUIRED_VENV)
 PROJECT:=$(shell basename `pwd`)
 
 #HELP test - run 'tox' for testing
