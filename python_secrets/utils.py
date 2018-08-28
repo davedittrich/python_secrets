@@ -59,11 +59,26 @@ class MyIP(Command):
 
     log = logging.getLogger(__name__)
 
+    def get_parser(self, prog_name):
+        parser = super().get_parser(prog_name)
+        parser.add_argument(
+            '-C', '--cidr',
+            action='store_true',
+            dest='cidr',
+            default=False,
+            help="Express IP address as CIDR block " +
+                 "(default: False)"
+        )
+        return parser
+
     def take_action(self, parsed_args):
         self.log.debug('getting current internet source IP address')
         r = requests.get(OPENDNS_URL, stream=True)
-        ip_address = ipaddress.ip_address(r.text)
-        print(str(ip_address))
+        interface = ipaddress.ip_interface(r.text)
+        if parsed_args.cidr:
+            print(str(interface.with_prefixlen))
+        else:
+            print(str(interface.ip))
 
 
 # vim: set fileencoding=utf-8 ts=4 sw=4 tw=0 et :
