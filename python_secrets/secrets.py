@@ -1,6 +1,5 @@
 import base64
 import binascii
-import collections
 import crypt
 import errno
 import hashlib
@@ -84,8 +83,8 @@ class SecretsEnvironment(object):
         self.env_var_prefix = env_var_prefix
         if source is not None:
             self.clone_from(source)
-        self._secrets = collections.OrderedDict()
-        self._descriptions = collections.OrderedDict()
+        self._secrets = dict()
+        self._descriptions = dict()
         self._changed = False
         self._groups = []
 
@@ -165,7 +164,7 @@ class SecretsEnvironment(object):
         return [s for s in self._secrets.keys()]
 
     def items(self):
-        """Return the keys to the secrets dictionary"""
+        """Return the items from the secrets dictionary."""
         return self._secrets.items()
 
     def get_secret(self, secret):
@@ -216,16 +215,33 @@ class SecretsEnvironment(object):
     def read_secrets_and_descriptions(self):
         """Read secrets descriptions and secrets."""
         self.read_secrets_descriptions()
-        self.read_secrets()
+        self.read_secrets(from_descriptions=True)
 
-    def read_secrets(self):
-        """Load the current secrets from .yml file"""
+    def read_secrets(self, from_descriptions=False):
+        """
+        Load the current secrets from .yml file
+
+        If no secrets have been set yet and from_descriptions is True,
+        return a dictionary compromised of the keys from the
+        descriptions dictionary defined to be None and set self._changed
+        to ensure these are written out.
+        """
         _fname = self.secrets_file_path()
         self.LOG.debug('reading secrets from {}'.format(_fname))
-        with open(_fname, 'r') as f:
-            _secrets = yaml.safe_load(f)
-        for k, v in _secrets.items():
-            self._set_secret(k, v)
+        try:
+            with open(_fname, 'r') as f:
+                _secrets = yaml.safe_load(f)
+            for k, v in _secrets.items():
+                self._set_secret(k, v)
+        except FileNotFoundError as err:
+            if from_descriptions:
+                for group in self._descriptions.keys():
+                    for i in self._descriptions[group]:
+                        self._set_secret(i['Variable'], None)
+                # Ensure these get written out to create a secrets file.
+                self._changed = True
+            else:
+                raise err
 
     def write_secrets(self):
         """Write out the current secrets for use by Ansible,
@@ -501,13 +517,13 @@ class SecretsShow(Lister):
         else:
             variables = parsed_args.args \
                 if len(parsed_args.args) > 0 \
-                else [k for k in self.app.secrets._secrets.keys()]
+                else [k for k, v in self.app.secrets.items()]
         columns = ('Variable', 'Type', 'Value')
         data = (
                 [(k,
                   self.app.secrets.get_secret_type(k),
                   redact(v, parsed_args.redact))
-                    for k, v in self.app.secrets._secrets.items()
+                    for k, v in self.app.secrets.items()
                     if k in variables]
         )
         return columns, data
