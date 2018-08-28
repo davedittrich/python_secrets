@@ -16,6 +16,7 @@ from numpy.random import bytes as np_random_bytes
 from python_secrets.utils import redact, find, prompt_string
 from python_secrets.google_oauth2 import GoogleSMTP
 from shutil import copy, copytree
+from subprocess import run, PIPE
 from xkcdpass import xkcd_password as xp
 
 DEFAULT_SIZE = 18
@@ -629,6 +630,10 @@ class SecretsSet(Command):
                         _path = v[1:]
                     with open(_path, 'r') as f:
                         v = f.read().strip()
+                elif v.startswith('!'):
+                    p = run(v[1:].split(),
+                            stdout=PIPE, stderr=PIPE)
+                    v = p.stdout.decode('UTF-8').strip()
                 self.LOG.debug('setting {}'.format(k))
                 self.app.secrets.set_secret(k, v)
 
