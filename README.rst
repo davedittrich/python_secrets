@@ -128,7 +128,7 @@ the ``help`` command or ``--help`` option flag:
                             D2_SECRETS_BASEDIR; default: /Users/dittrich/.secrets)
       -e <environment>, --environment <environment>
                             Deployment environment selector (Env: D2_ENVIRONMENT;
-                            default: None)
+                            default: python_secrets)
       -s <secrets-file>, --secrets-file <secrets-file>
                             Secrets file (default: secrets.yml)
       -P <prefix>, --env-var-prefix <prefix>
