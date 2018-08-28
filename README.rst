@@ -35,18 +35,23 @@ Features
   flexibility and scalability in multi-environment deployments and to
   support different use cases or different combinations of secrets.
 
-* Define variable names and associate types (e.g., ``password``, ``uuid4``,
-  ``random_base64``).
+* List the groups of variables (and how many in each group).
+
+* Describe secrets by their variable name, type (e.g., ``password``, ``uuid4``,
+  ``random_base64``) and an optional description that will be used
+  to prompt for values when setting ``string`` variables.
 
 * Allow manual entry of values, or automatic generation of secrets
   according to their type.
+
+* Manually set ``string`` variables based on the output of simple
+  commands. This allows interfacing with external programs for
+  obtaining secrets, such as `Vault by Hashicorp`_.
 
 * Generate unique values for variables, or use a single value per
   type to simplify use of secrets in access control of services
   while supporting a "break-glass" process to quickly regenerate
   secrets when needed.
-
-* List the groups of variables (and how many in each group).
 
 * Show the variables and their unredacted values (or redacted them
   to maintain secrecy during demonstrations or in documentation).
@@ -62,6 +67,7 @@ Features
 .. _openstack/cliff: https://github.com/openstack/cliff
 .. _python-update-dotdee: https://pypi.org/project/update-dotdee/
 .. _terraform: https://www.terraform.io/
+.. _Vault by Hashicorp: https://www.vaultproject.io/
 
 .. note::
 
@@ -148,6 +154,7 @@ the ``help`` command or ``--help`` option flag:
       secrets set    Set values manually for secrets
       secrets show   List the contents of the secrets file or definitions
       template       Template file(s)
+      utils myip     Get current internet routable source address.
 
 ..
 
@@ -670,6 +677,73 @@ following steps:
 
 You are now ready to compile your software, or build your project!
 
+There is also a mechanism to run simple commands (i.e., basic arguments with
+no special inline command substitution or variable expansion features of
+shells like ``bash``) and use the resulting output as the value.
+
+For this example, let's assume an environment that requires a CIDR
+notation address for ingres access control (e.g., when using Amazon
+Web Services to allow control of instances from your remote laptop).
+
+.. code-block:: shell
+
+    $ psec -e xgt secrets set aws_cidr_allowed=""
+    $ psec -e secrets show --no-redact aws_cidr_allowed
+    +------------------+--------+-------+
+    | Variable         | Type   | Value |
+    +------------------+--------+-------+
+    | aws_cidr_allowed | string |       |
+    +------------------+--------+-------+
+
+..
+
+The ``python_secrets`` program has a utility feature that will return
+the current routable IP source address as an IP address, or using CIDR
+notation.  The variable can be set in one of two ways:
+
+#. Via (non-interactive) inline command subtitution from the terminal shell:
+
+   .. code-block:: shell
+
+       $ psec -e xgt secrets set aws_cidr_allowed="$(psec utils myip --cidr)"
+
+   ..
+
+#. Interactively when prompted using simple command line form:
+
+   .. code-block:: shell
+
+       $ psec -e xgt secrets set aws_cidr_allowed
+       aws_cidr_allowed? []: !psec utils myip --cidr
+
+   ..
+
+
+The variable now contains the output of the specified program:
+
+.. code-block:: shell
+
+    $ psec secrets show --no-redact aws_cidr_allowed
+    +------------------+--------+------------------+
+    | Variable         | Type   | Value            |
+    +------------------+--------+------------------+
+    | aws_cidr_allowed | string | 93.184.216.34/32 |
+    +------------------+--------+------------------+
+
+..
+
+.. note::
+
+    If you work from behind a static NAT firewall, this IP address will
+    likely not change very often (if at all). If you are using a mobile device
+    that is assigned differing DHCP addresses depending on location, the IP address
+    may change fairly regularly and the initial AWS Security Group setting will
+    begin to block access to your cloud instances. Programs like ``terraform``
+    can refresh their state, allowing you to simply reset the variable used to
+    create the Security Group and re-apply the plan to regenerate the AWS
+    Security Group and re-enable your remote access.
+
+..
 
 .. _davedittrich/goSecure: https://github.com/davedittrich/goSecure/
 
@@ -762,6 +836,7 @@ shell prompt.
     test>
 
 ..
+
 .. _Ansible: https://docs.ansible.com/
 .. _Passing variables on the Command Line: https://docs.ansible.com/ansible/latest/user_guide/playbooks_variables.html#passing-variables-on-the-command-line
 
@@ -953,6 +1028,8 @@ Future Work
 * Add ``secrets create`` to add new secrets descriptions + secrets.
 
 * Add ``secrets delete`` to delete secrets.
+
+* Add ``secrets backup`` and ``secrets restore`` for demo, debugging, experimentation.
 
 * Add ``groups create`` and ``groups delete`` commands.
 
