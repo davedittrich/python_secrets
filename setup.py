@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-# Setup script for the `update-dotdee' package.
+# Setup script for the `python_secrets' module.
 #
 # Author: Dave Dittrich <dave.dittrich@gmail.com>
 # URL: https://github.com/davedittrich/python_secrets
