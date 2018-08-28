@@ -1,6 +1,11 @@
+import ipaddress
+import logging
+import requests
 import subprocess  # nosec
+from cliff.command import Command
 from six.moves import input
 
+OPENDNS_URL = 'https://diagnostic.opendns.com/myip'
 # NOTE: While calling subprocess.call() with shell=True can have security
 # implications, the person running this command already has control of her
 # account.
@@ -47,6 +52,18 @@ def prompt_string(prompt="Enter a value",
         except KeyboardInterrupt:
             break
     return default if _new in [None, ''] else _new
+
+
+class MyIP(Command):
+    """Get current internet routable source address."""
+
+    log = logging.getLogger(__name__)
+
+    def take_action(self, parsed_args):
+        self.log.debug('getting current internet source IP address')
+        r = requests.get(OPENDNS_URL, stream=True)
+        ip_address = ipaddress.ip_address(r.text)
+        print(str(ip_address))
 
 
 # vim: set fileencoding=utf-8 ts=4 sw=4 tw=0 et :

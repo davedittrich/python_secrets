@@ -3,6 +3,7 @@ jinja2
 lxml
 numpy
 six
+requests
 tox
 yamlreader
 xkcdpass
