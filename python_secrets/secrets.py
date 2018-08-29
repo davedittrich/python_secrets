@@ -16,7 +16,11 @@ from numpy.random import bytes as np_random_bytes
 from python_secrets.utils import redact, find, prompt_string
 from python_secrets.google_oauth2 import GoogleSMTP
 from shutil import copy, copytree
-from subprocess import run, PIPE
+# >> Issue: [B404:blacklist] Consider possible security implications associated with run module.  # noqa
+#    Severity: Low   Confidence: High
+#    Location: python_secrets/secrets.py:21
+#    More Info: https://bandit.readthedocs.io/en/latest/blacklists/blacklist_imports.html#b404-import-subprocess  # noqa
+from subprocess import run, PIPE  # nosec
 from xkcdpass import xkcd_password as xp
 
 DEFAULT_SIZE = 18
@@ -631,8 +635,13 @@ class SecretsSet(Command):
                     with open(_path, 'r') as f:
                         v = f.read().strip()
                 elif v.startswith('!'):
+                    # >> Issue: [B603:subprocess_without_shell_equals_true] subprocess call - check for execution of untrusted input.  # noqa
+                    #    Severity: Low   Confidence: High
+                    #    Location: python_secrets/secrets.py:641
                     p = run(v[1:].split(),
-                            stdout=PIPE, stderr=PIPE)
+                            stdout=PIPE,
+                            stderr=PIPE,
+                            shell=False)
                     v = p.stdout.decode('UTF-8').strip()
                 self.LOG.debug('setting {}'.format(k))
                 self.app.secrets.set_secret(k, v)
