@@ -770,7 +770,7 @@ class SecretsPath(Command):
 
     def get_parser(self, prog_name):
         parser = super(SecretsPath, self).get_parser(prog_name)
-        default_environment = self.app_args.environment
+        default_environment = self.app.options.environment
         parser.add_argument('environment',
                             nargs='?',
                             default=default_environment)
