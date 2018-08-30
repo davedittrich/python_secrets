@@ -261,6 +261,7 @@ class SecretsEnvironment(object):
                           explicit_start=True,
                           default_flow_style=False
                           )
+            self._changed = False
         else:
             self.LOG.debug('not writing secrets (unchanged)')
 
