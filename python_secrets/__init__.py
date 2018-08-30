@@ -1,6 +1,6 @@
 __author__ = 'Dave Dittrich'
 __email__ = 'dave.dittrich@gmail.com'
-__version__ = '0.13.4'
+__version__ = '0.13.5'
 
 __all__ = ['__author__', '__email__', '__version__']
 
