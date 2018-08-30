@@ -25,7 +25,9 @@ class Run(Command):
         self.LOG.debug('running command')
         self.app.secrets.read_secrets_and_descriptions()
 
-        cmd = " ".join([a for a in parsed_args.args]).encode('unicode-escape').decode()
+        cmd = " ".join(
+            [a for a in parsed_args.args]
+        ).encode('unicode-escape').decode()
         return call(cmd, shell=True)  # nosec
 
 
