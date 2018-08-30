@@ -25,8 +25,8 @@ class Run(Command):
         self.LOG.debug('running command')
         self.app.secrets.read_secrets_and_descriptions()
 
-        retcode = call(" ".join([a for a in parsed_args.args]),
-                       shell=True)  # nosec
-        return retcode
+        cmd = " ".join([a for a in parsed_args.args]).encode('unicode-escape').decode()
+        return call(cmd, shell=True)  # nosec
+
 
 # vim: set fileencoding=utf-8 ts=4 sw=4 tw=0 et :
