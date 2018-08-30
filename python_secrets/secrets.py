@@ -180,6 +180,19 @@ class SecretsEnvironment(object):
         """
         return self._secrets[secret]
 
+    def get_secret_export(self, secret):
+        """Get the specified environment variable for exporting secret
+
+        :param secret: :type: string
+        :return: environment variable for exporting secret
+        """
+        # TODO(dittrich): Create a map after reading (more efficient)
+        for group in self._descriptions.keys():
+            for i in self._descriptions[group]:
+                if i['Variable'] == secret:
+                    return i.get('Export')
+        return None
+
     def _set_secret(self, secret, value):
         """Set secret to value and export environment variable
 
@@ -189,10 +202,12 @@ class SecretsEnvironment(object):
                 """
         self._secrets[secret] = value
         if self.export_env_vars:
-            if self.env_var_prefix is not None:
-                _env_var = '{}{}'.format(self.env_var_prefix, secret)
-            else:
-                _env_var = secret
+            _env_var = self.get_secret_export(secret)
+            if _env_var is None:
+                if self.env_var_prefix is not None:
+                    _env_var = '{}{}'.format(self.env_var_prefix, secret)
+                else:
+                    _env_var = secret
             os.environ[_env_var] = str(value)
 
     def set_secret(self, secret, value):
@@ -207,6 +222,7 @@ class SecretsEnvironment(object):
 
     def get_type(self, variable):
         """Return type for variable or None if no description"""
+        # TODO(dittrich): Create a map after reading (more efficient)
         for group in self._descriptions.keys():
             for i in self._descriptions[group]:
                 if i['Variable'] == variable:
@@ -524,10 +540,11 @@ class SecretsShow(Lister):
             variables = parsed_args.args \
                 if len(parsed_args.args) > 0 \
                 else [k for k, v in self.app.secrets.items()]
-        columns = ('Variable', 'Type', 'Value')
+        columns = ('Variable', 'Type', 'Export', 'Value')
         data = (
                 [(k,
                   self.app.secrets.get_secret_type(k),
+                  self.app.secrets.get_secret_export(k),
                   redact(v, parsed_args.redact))
                     for k, v in self.app.secrets.items()
                     if k in variables]
