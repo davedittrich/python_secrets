@@ -29,10 +29,26 @@ logger = logging.getLogger(__name__)
 
 def default_environment():
     """
-    Returns the environment identifier specified by environment variable
-    D2_ENVIRONMENT or None if not defined.
+    Returns the environment identifier.
+
+    There are multiple ways to define the default environment (in order
+    of priority):
+
+    1. The --environment command line option.
+    2. The content of the file .python_secrets_environment in the current
+       working directory; or
+    3. The value specified by environment variable D2_ENVIRONMENT.
+    4. The basename of the current working directory.
     """
-    return os.getenv('D2_ENVIRONMENT', os.path.basename(os.getcwd()))
+    cwd = os.getcwd()
+    env_file = os.path.join(cwd, '.python_secrets_environment')
+    if os.path.exists(env_file):
+        with open(env_file, 'r') as f:
+            env_string = f.read().replace('\n', '')
+    else:
+        env_string = os.getenv('D2_ENVIRONMENT',
+                               os.path.basename(cwd))
+    return env_string
 
 
 def default_secrets_basename():
@@ -161,6 +177,7 @@ class PythonSecretsApp(App):
 
     def prepare_to_run_command(self, cmd):
         self.LOG.debug('prepare_to_run_command %s', cmd.__class__.__name__)
+        self.LOG.debug('using environment "{}"'.format(self.options.environment))
         self.secrets = SecretsEnvironment(
             environment=self.options.environment,
             secrets_root=self.options.secrets_basedir,
