@@ -177,7 +177,8 @@ class PythonSecretsApp(App):
 
     def prepare_to_run_command(self, cmd):
         self.LOG.debug('prepare_to_run_command %s', cmd.__class__.__name__)
-        self.LOG.debug('using environment "{}"'.format(self.options.environment))
+        self.LOG.debug('using environment "{}"'.format(
+            self.options.environment))
         self.secrets = SecretsEnvironment(
             environment=self.options.environment,
             secrets_root=self.options.secrets_basedir,

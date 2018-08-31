@@ -56,4 +56,48 @@ class EnvironmentsCreate(Command):
             self.app.LOG.info('environment directory {} created'.format(
                 se.environment_path()))
 
+
+class EnvironmentsDefault(Command):
+    """Manage default environment via file in cwd"""
+
+    LOG = logging.getLogger(__name__)
+
+    def get_parser(self, prog_name):
+        parser = super().get_parser(prog_name)
+        parser.add_argument(
+            '--unset-default',
+            action='store_true',
+            dest='unset_default',
+            default=False,
+            help="Unset localized environment default"
+        )
+        parser.add_argument('environment',
+                            nargs='?',
+                            default=None)
+        return parser
+
+    def take_action(self, parsed_args):
+        self.LOG.debug('managing localized environment default')
+        cwd = os.getcwd()
+        env_file = os.path.join(cwd, '.python_secrets_environment')
+        if parsed_args.unset_default:
+            try:
+                os.remove(env_file)
+            except Exception:
+                self.LOG.info('no default environment was set')
+            else:
+                self.LOG.info('default environment unset')
+        elif parsed_args.environment is None:
+            # No environment specified, show current setting
+            if os.path.exists(env_file):
+                with open(env_file, 'r') as f:
+                    env_string = f.read().replace('\n', '')
+                print(env_string)
+        else:
+            # Set default to specified environment
+            with open(env_file, 'w') as f:
+                f.write(parsed_args.environment)
+            self.LOG.info('default environment set to "{}"'.format(
+                parsed_args.environment))
+
 # vim: set fileencoding=utf-8 ts=4 sw=4 tw=0 et :
