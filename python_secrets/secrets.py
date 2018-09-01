@@ -665,6 +665,38 @@ class SecretsSet(Command):
                 self.app.secrets.set_secret(k, v)
 
 
+class SecretsGet(Command):
+    """Get value associated with a secret"""
+
+    LOG = logging.getLogger(__name__)
+
+    def get_parser(self, prog_name):
+        parser = super().get_parser(prog_name)
+        parser.add_argument(
+            '-C', '--content',
+            action='store_true',
+            dest='content',
+            default=False,
+            help="Get content if secret is a file path " +
+            "(default: False)"
+        )
+        parser.add_argument('secret', nargs='?', default=None)
+        return parser
+
+    def take_action(self, parsed_args):
+        self.LOG.debug('get secret')
+        self.app.secrets.read_secrets_and_descriptions()
+        if parsed_args.secret is not None:
+            value = self.app.secrets.get_secret(parsed_args.secret)
+            if not parsed_args.content:
+                print(value)
+            else:
+                if os.path.exists(value):
+                    with open(value, 'r') as f:
+                        content = f.read().replace('\n', '')
+                    print(content)
+
+
 class SecretsSend(Command):
     """
     Send secrets using GPG encrypted email.

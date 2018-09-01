@@ -86,6 +86,7 @@ setup(
             'run = python_secrets.run:Run',
             'secrets describe = python_secrets.secrets:SecretsDescribe',
             'secrets generate = python_secrets.secrets:SecretsGenerate',
+            'secrets get = python_secrets.secrets:SecretsGet',
             'secrets path = python_secrets.secrets:SecretsPath',
             'secrets send = python_secrets.secrets:SecretsSend',
             'secrets set = python_secrets.secrets:SecretsSet',
