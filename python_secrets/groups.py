@@ -2,7 +2,8 @@
 
 import logging
 
-from cliff.lister import Lister
+from cliff.lister import Lister, Command
+from python_secrets.secrets import SecretsEnvironment
 
 
 class GroupsList(Lister):
@@ -46,5 +47,25 @@ class GroupsShow(Lister):
             for item in self.app.secrets.get_items_from_group(group):
                 data.append((group, item))
         return columns, data
+
+
+class GroupsPath(Command):
+    """Return path to secrets descriptions (groups) directory"""
+
+    LOG = logging.getLogger(__name__)
+
+    def get_parser(self, prog_name):
+        parser = super(GroupsPath, self).get_parser(prog_name)
+        default_environment = self.app.options.environment
+        parser.add_argument('environment',
+                            nargs='?',
+                            default=default_environment)
+        return parser
+
+    def take_action(self, parsed_args):
+        self.LOG.debug('returning groups path')
+        e = SecretsEnvironment(environment=parsed_args.environment)
+        print(e.descriptions_path())
+
 
 # vim: set fileencoding=utf-8 ts=4 sw=4 tw=0 et :

@@ -92,7 +92,7 @@ of a command is:
 .. note::
 
    A shorter script name ``psec`` is also included. You can use either name. In
-   this ``README.rst`` file, the long name is used.
+   this ``README.rst`` file, both names are used interchangably.
 
 ..
 
@@ -109,10 +109,10 @@ the ``help`` command or ``--help`` option flag:
 
 .. code-block:: shell
 
-    $ python_secrets --help
-    usage: python_secrets [--version] [-v | -q] [--log-file LOG_FILE] [-h]
-                          [--debug] [-d <secrets-basedir>] [-e <environment>]
-                          [-s <secrets-file>] [-P <prefix>] [-E] [--init]
+    $ psec help
+    usage: psec [--version] [-v | -q] [--log-file LOG_FILE] [-h] [--debug]
+                [-d <secrets-basedir>] [-e <environment>] [-s <secrets-file>]
+                [-P <prefix>] [-E] [--init]
 
     Python secrets management app
 
@@ -142,19 +142,23 @@ the ``help`` command or ``--help`` option flag:
     Commands:
       complete       print bash completion command (cliff)
       environments create  Create environment(s)
+      environments default  Manage default environment via file in cwd
       environments list  List the current environments
+      environments path  Return path to files and directories for environment
       groups list    Show a list of secrets groups.
       groups show    Show a list of secrets in a group.
       help           print detailed help for another command (cliff)
       run            Run a command using exported secrets
       secrets describe  Describe supported secret types
       secrets generate  Generate values for secrets
+      secrets get    Get value associated with a secret
       secrets path   Return path to secrets file
       secrets send   Send secrets using GPG encrypted email.
       secrets set    Set values manually for secrets
       secrets show   List the contents of the secrets file or definitions
       template       Template file(s)
       utils myip     Get current internet routable source address.
+      utils tfoutput  Retrieve current 'terraform output' results.
 
 ..
 

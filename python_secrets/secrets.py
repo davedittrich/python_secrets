@@ -827,8 +827,8 @@ class SecretsPath(Command):
 
     def take_action(self, parsed_args):
         self.LOG.debug('returning secrets path')
-        e = parsed_args.environment
-        print(SecretsEnvironment(environment=e).secrets_file_path())
+        e = SecretsEnvironment(environment=parsed_args.environment)
+        print(e.secrets_file_path())
 
 
 # vim: set fileencoding=utf-8 ts=4 sw=4 tw=0 et :

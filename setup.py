@@ -83,6 +83,7 @@ setup(
             'environments list = python_secrets.environments:EnvironmentsList',
             'environments path = python_secrets.environments:EnvironmentsPath',
             'groups list = python_secrets.groups:GroupsList',
+            'groups path = python_secrets.groups:GroupsPath',
             'groups show = python_secrets.groups:GroupsShow',
             'run = python_secrets.run:Run',
             'secrets describe = python_secrets.secrets:SecretsDescribe',

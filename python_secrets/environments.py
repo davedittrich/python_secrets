@@ -4,7 +4,7 @@ import os
 from cliff.command import Command
 from cliff.lister import Lister
 from python_secrets.secrets import SecretsEnvironment
-from stat import *
+from stat import S_IMODE
 
 
 class EnvironmentsList(Lister):
@@ -113,16 +113,7 @@ class EnvironmentsPath(Command):
         parser.add_argument('environment',
                             nargs='?',
                             default=default_environment)
-        group = parser.add_mutually_exclusive_group()
-        group.add_argument(
-            '--descriptions',
-            action='store_true',
-            dest='descriptions',
-            default=False,
-            help='Return environment descriptions directory' +
-                 '(default: False)'
-        )
-        group.add_argument(
+        parser.add_argument(
             '--tmpdir',
             action='store_true',
             dest='tmpdir',
@@ -150,8 +141,6 @@ class EnvironmentsPath(Command):
                         tmpdir, oct(current_mode), oct(tmpdir_mode)))
             finally:
                 print(tmpdir)
-        elif parsed_args.descriptions:
-            print(e.descriptions_path())
         else:
             print(e.environment_path())
 
