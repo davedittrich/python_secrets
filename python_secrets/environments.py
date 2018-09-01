@@ -4,6 +4,7 @@ import os
 from cliff.command import Command
 from cliff.lister import Lister
 from python_secrets.secrets import SecretsEnvironment
+from stat import *
 
 
 class EnvironmentsList(Lister):
@@ -99,5 +100,60 @@ class EnvironmentsDefault(Command):
                 f.write(parsed_args.environment)
             self.LOG.info('default environment set to "{}"'.format(
                 parsed_args.environment))
+
+
+class EnvironmentsPath(Command):
+    """Return path to files and directories for environment"""
+
+    LOG = logging.getLogger(__name__)
+
+    def get_parser(self, prog_name):
+        parser = super().get_parser(prog_name)
+        default_environment = self.app.options.environment
+        parser.add_argument('environment',
+                            nargs='?',
+                            default=default_environment)
+        group = parser.add_mutually_exclusive_group()
+        group.add_argument(
+            '--descriptions',
+            action='store_true',
+            dest='descriptions',
+            default=False,
+            help='Return environment descriptions directory' +
+                 '(default: False)'
+        )
+        group.add_argument(
+            '--tmpdir',
+            action='store_true',
+            dest='tmpdir',
+            default=False,
+            help='Create and/or return tmpdir for this environment ' +
+                 '(default: False)'
+        )
+        return parser
+
+    def take_action(self, parsed_args):
+        self.LOG.debug('returning environment path')
+        e = SecretsEnvironment(environment=parsed_args.environment)
+        if parsed_args.tmpdir:
+            tmpdir = os.path.join(e.environment_path(), 'tmp')
+            tmpdir_mode = 0o700
+            try:
+                os.mkdir(tmpdir, tmpdir_mode)
+                self.LOG.info('created tmpdir {}'.format(tmpdir))
+            except FileExistsError:
+                mode = os.stat(tmpdir).st_mode
+                current_mode = S_IMODE(mode)
+                if current_mode != tmpdir_mode:
+                    os.chmod(tmpdir, tmpdir_mode)
+                    self.LOG.info('changed mode on {} from {} to {}'.format(
+                        tmpdir, oct(current_mode), oct(tmpdir_mode)))
+            finally:
+                print(tmpdir)
+        elif parsed_args.descriptions:
+            print(e.descriptions_path())
+        else:
+            print(e.environment_path())
+
 
 # vim: set fileencoding=utf-8 ts=4 sw=4 tw=0 et :
