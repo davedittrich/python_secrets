@@ -2,7 +2,8 @@
 
 import logging
 
-from cliff.lister import Lister, Command
+from cliff.lister import Lister
+from cliff.command import Command
 from python_secrets.secrets import SecretsEnvironment
 
 
