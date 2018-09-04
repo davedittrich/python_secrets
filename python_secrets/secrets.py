@@ -112,31 +112,32 @@ class SecretsEnvironment(object):
         or subdirectories within it"""
         _path = os.path.join(self._secrets_root, self._environment)
 
-        valid_subdir = 'a-zA-Z0-9_/'
-        invalid_subdir = re.compile('[^{}]'.format(valid_subdir))
-        valid_host = 'a-zA-Z0-9_\./'
-        invalid_host = re.compile('[^{}]'.format(valid_host))
+        if not (subdir is None and host is None):
+            valid_subdir = 'a-zA-Z0-9_/'
+            invalid_subdir = re.compile('[^{}]'.format(valid_subdir))
+            valid_host = 'a-zA-Z0-9_\./'
+            invalid_host = re.compile('[^{}]'.format(valid_host))
 
-        if subdir is None and host is not None:
-            raise RuntimeError('Must specify subdir when specifying host')
+            if subdir is None and host is not None:
+                raise RuntimeError('Must specify subdir when specifying host')
 
-        if subdir is not None:
-            if subdir.startswith('/'):
-                raise RuntimeError('subdir may not start with "/"')
-            elif subdir.endswith('/'):
-                raise RuntimeError('subdir may not end with "/"')
-            if not bool(invalid_subdir.search(subdir)):
-                _path = os.path.join(_path, subdir)
-            else:
-                raise RuntimeError('Invalid character in subdir: ' +
-                                   'must be in [{}]'.format(valid_subdir))
+            if subdir is not None:
+                if subdir.startswith('/'):
+                    raise RuntimeError('subdir may not start with "/"')
+                elif subdir.endswith('/'):
+                    raise RuntimeError('subdir may not end with "/"')
+                if not bool(invalid_subdir.search(subdir)):
+                    _path = os.path.join(_path, subdir)
+                else:
+                    raise RuntimeError('Invalid character in subdir: ' +
+                                       'must be in [{}]'.format(valid_subdir))
 
-        if host is not None:
-            if not bool(invalid_host.search(host)):
-                _path = os.path.join(_path, host)
-            else:
-                raise RuntimeError('Invalid character in host: ' +
-                                   'must be in [{}]'.format(valid_host))
+            if host is not None:
+                if not bool(invalid_host.search(host)):
+                    _path = os.path.join(_path, host)
+                else:
+                    raise RuntimeError('Invalid character in host: ' +
+                                       'must be in [{}]'.format(valid_host))
 
         return _path
 
