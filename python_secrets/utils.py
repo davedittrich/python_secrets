@@ -7,7 +7,10 @@ import subprocess  # nosec
 
 from cliff.command import Command
 from cliff.lister import Lister
+from os import listdir, sep
+from os.path import abspath, basename, isdir
 from six.moves import input
+
 
 OPENDNS_URL = 'https://diagnostic.opendns.com/myip'
 # NOTE: While calling subprocess.call() with shell=True can have security
@@ -163,5 +166,57 @@ class TfOutput(Lister):
             for k, v in dout[prefix]['value'].items():
                 data.append(["{}_{}".format(prefix, k), v])
         return columns, data
+
+
+def tree(dir, padding='', print_files=True, isLast=False, isFirst=True):
+    """
+    Prints the tree structure for the path specified on the command line
+
+    Modified code from tree.py written by Doug Dahms
+    https://stackoverflow.com/a/36253753
+
+    :param dir:
+    :param padding:
+    :param print_files:
+    :param isLast:
+    :param isFirst:
+    :return:
+    """
+
+    if isFirst:
+        print(padding[:-1] + dir)
+    else:
+        if isLast:
+            print(padding[:-1] + str('└── ') + basename(abspath(dir)))
+        else:
+            print(padding[:-1] + str('├── ') + basename(abspath(dir)))
+    files = []
+    if print_files:
+        files = listdir(dir)
+    else:
+        files = [x for x in listdir(dir) if isdir(dir + sep + x)]
+    if not isFirst:
+        padding = padding + '   '
+    files = sorted(files, key=lambda s: s.lower())
+    count = 0
+    last = len(files) - 1
+    for i, file in enumerate(files):
+        count += 1
+        path = dir + sep + file
+        isLast = (i == last)
+        if isdir(path):
+            if count == len(files):
+                if isFirst:
+                    tree(path, padding, print_files, isLast, False)
+                else:
+                    tree(path, padding + ' ', print_files, isLast, False)
+            else:
+                tree(path, padding + '│', print_files, isLast, False)
+        else:
+            if isLast:
+                print(padding + '└── ' + file)
+            else:
+                print(padding + '├── ' + file)
+
 
 # vim: set fileencoding=utf-8 ts=4 sw=4 tw=0 et :

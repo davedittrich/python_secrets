@@ -4,6 +4,7 @@ import os
 from cliff.command import Command
 from cliff.lister import Lister
 from python_secrets.secrets import SecretsEnvironment
+from python_secrets.utils import tree
 from stat import S_IMODE
 
 
@@ -143,6 +144,34 @@ class EnvironmentsPath(Command):
                 print(tmpdir)
         else:
             print(e.environment_path())
+
+
+class EnvironmentsTree(Command):
+    """Output tree listing of files/directories in environment"""
+
+    LOG = logging.getLogger(__name__)
+
+    def get_parser(self, prog_name):
+        parser = super().get_parser(prog_name)
+        default_environment = self.app.options.environment
+        parser.add_argument(
+            '--no-files',
+            action='store_true',
+            dest='no_files',
+            default=False,
+            help='Do not include files in listing ' +
+                 '(default: False)'
+        )
+        parser.add_argument('environment',
+                            nargs='?',
+                            default=default_environment)
+        return parser
+
+    def take_action(self, parsed_args):
+        self.LOG.debug('outputting environment tree')
+        e = SecretsEnvironment(environment=parsed_args.environment)
+        print_files = bool(parsed_args.no_files is False)
+        tree(e.environment_path(), print_files=print_files)
 
 
 # vim: set fileencoding=utf-8 ts=4 sw=4 tw=0 et :

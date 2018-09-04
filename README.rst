@@ -145,7 +145,9 @@ the ``help`` command or ``--help`` option flag:
       environments default  Manage default environment via file in cwd
       environments list  List the current environments
       environments path  Return path to files and directories for environment
+      environments tree  Output tree listing of files/directories in environment
       groups list    Show a list of secrets groups.
+      groups path    Return path to secrets descriptions (groups) directory
       groups show    Show a list of secrets in a group.
       help           print detailed help for another command (cliff)
       run            Run a command using exported secrets
@@ -263,6 +265,69 @@ have to specify all of the names on the command line as arguments:
     environment directory /Users/dittrich/.secrets/development created
     environment directory /Users/dittrich/.secrets/testing created
     environment directory /Users/dittrich/.secrets/production created
+
+..
+
+The environment directories are for storing *all* secrets and sensitive files
+(e.g., backups of certificates, databases, etc.)
+
+You can see all of the files and directories using the ``environments path``
+command:
+
+.. code-block:: shell
+
+    $ psec -e d2 environments tree
+    /Users/dittrich/.secrets/d2
+    ├── backups
+    │   ├── black.secretsmgmt.tk
+    │   │   ├── letsencrypt_2018-04-06T23:36:58PDT.tgz
+    │   │   └── letsencrypt_2018-04-25T16:32:20PDT.tgz
+    │   ├── green.secretsmgmt.tk
+    │   │   ├── letsencrypt_2018-04-06T23:45:49PDT.tgz
+    │   │   └── letsencrypt_2018-04-25T16:32:20PDT.tgz
+    │   ├── purple.secretsmgmt.tk
+    │   │   ├── letsencrypt_2018-04-25T16:32:20PDT.tgz
+    │   │   ├── trident_2018-01-31T23:38:48PST.tar.bz2
+    │   │   └── trident_2018-02-04T20:05:33PST.tar.bz2
+    │   └── red.secretsmgmt.tk
+    │       ├── letsencrypt_2018-04-06T23:45:49PDT.tgz
+    │       └── letsencrypt_2018-04-25T16:32:20PDT.tgz
+    ├── dittrich.asc
+    ├── keys
+    │   └── opendkim
+    │       └── secretsmgmt.tk
+    │           ├── 201801.private
+    │           ├── 201801.txt
+    │           ├── 201802.private
+    │           └── 201802.txt
+    ├── secrets.d
+    │   ├── ca.yml
+    │   ├── consul.yml
+    │   ├── jenkins.yml
+    │   ├── rabbitmq.yml
+    │   ├── trident.yml
+    │   ├── vncserver.yml
+    │   └── zookeper.yml
+    ├── secrets.yml
+    └── vault_password.txt
+
+..
+
+To just see the directory structure, add the ``--no-files`` option:
+
+.. code-block:: shell
+
+    $ psec -e d2 environments tree --no-files
+    /Users/dittrich/.secrets/d2
+    ├── backups
+    │   ├── black.secretsmgmt.tk
+    │   ├── green.secretsmgmt.tk
+    │   ├── purple.secretsmgmt.tk
+    │   └── red.secretsmgmt.tk
+    ├── keys
+    │   └── opendkim
+    │       └── secretsmgmt.tk
+    └── secrets.d
 
 ..
 
