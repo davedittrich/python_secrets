@@ -27,20 +27,21 @@ SYSLOG = False
 logger = logging.getLogger(__name__)
 
 
-def default_environment():
+def default_environment(cwd=None):
     """
     Returns the environment identifier.
 
     There are multiple ways to define the default environment (in order
     of priority):
 
-    1. The --environment command line option.
+    1. The --environment command line option;
     2. The content of the file .python_secrets_environment in the current
-       working directory; or
-    3. The value specified by environment variable D2_ENVIRONMENT.
+       working directory;
+    3. The value specified by environment variable D2_ENVIRONMENT; or
     4. The basename of the current working directory.
     """
-    cwd = os.getcwd()
+    if cwd is None:
+        cwd = os.getcwd()
     env_file = os.path.join(cwd, '.python_secrets_environment')
     if os.path.exists(env_file):
         with open(env_file, 'r') as f:

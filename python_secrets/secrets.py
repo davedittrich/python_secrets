@@ -6,6 +6,7 @@ import hashlib
 import logging
 import os
 import random
+import re
 import secrets
 import uuid
 import yaml
@@ -69,9 +70,10 @@ class SecretsEnvironment(object):
                  defer_loading=True,
                  export_env_vars=False,
                  env_var_prefix=None,
-                 source=None):
+                 source=None,
+                 cwd=CWD):
         self._environment = environment \
-            if environment is not None else os.path.basename(CWD)
+            if environment is not None else os.path.basename(cwd)
         self._secrets_root = secrets_root
         self._secrets_file = secrets_file
         self._secrets_descriptions = "{}.d".format(
@@ -105,9 +107,38 @@ class SecretsEnvironment(object):
         """Create secrets root directory"""
         os.mkdir(self._secrets_root, mode=mode)
 
-    def environment_path(self):
-        """Returns the absolute path to secrets environment directory"""
-        return os.path.join(self._secrets_root, self._environment)
+    def environment_path(self, subdir=None, host=None):
+        """Returns the absolute path to secrets environment directory
+        or subdirectories within it"""
+        _path = os.path.join(self._secrets_root, self._environment)
+
+        valid_subdir = 'a-zA-Z0-9_/'
+        invalid_subdir = re.compile('[^{}]'.format(valid_subdir))
+        valid_host = 'a-zA-Z0-9_\./'
+        invalid_host = re.compile('[^{}]'.format(valid_host))
+
+        if subdir is None and host is not None:
+            raise RuntimeError('Must specify subdir when specifying host')
+
+        if subdir is not None:
+            if subdir.startswith('/'):
+                raise RuntimeError('subdir may not start with "/"')
+            elif subdir.endswith('/'):
+                raise RuntimeError('subdir may not end with "/"')
+            if not bool(invalid_subdir.search(subdir)):
+                _path = os.path.join(_path, subdir)
+            else:
+                raise RuntimeError('Invalid character in subdir: ' +
+                                   'must be in [{}]'.format(valid_subdir))
+
+        if host is not None:
+            if not bool(invalid_host.search(host)):
+                _path = os.path.join(_path, host)
+            else:
+                raise RuntimeError('Invalid character in host: ' +
+                                   'must be in [{}]'.format(valid_host))
+
+        return _path
 
     def environment_exists(self):
         """Return whether secrets environment directory exists
@@ -178,6 +209,8 @@ class SecretsEnvironment(object):
         :param secret: :type: string
         :return: value of secret
         """
+        if secret is None:
+            raise RuntimeError('Must specify secret to get')
         return self._secrets[secret]
 
     def get_secret_export(self, secret):
