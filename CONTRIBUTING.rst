@@ -24,20 +24,20 @@ If you are reporting a bug, please include:
 Fix Bugs
 ~~~~~~~~
 
-Look through the GitHub issues for bugs. Anything tagged with "bug"
+Look through the GitHub issues for bugs. Anything tagged with **bug**
 is open to whoever wants to implement it.
 
 Implement Features
 ~~~~~~~~~~~~~~~~~~
 
-Look through the GitHub issues for features. Anything tagged with "feature"
+Look through the GitHub issues for features. Anything tagged with **feature**
 is open to whoever wants to implement it.
 
 Write Documentation
 ~~~~~~~~~~~~~~~~~~~
 
-python_secrets could always use more documentation, whether as part of the
-official python_secrets docs, in docstrings, or even on the web in blog posts,
+``python_secrets`` could always use more documentation, whether as part of the
+official ``python_secrets`` docs, in docstrings, or even on the web in blog posts,
 articles, and such.
 
 Submit Feedback
@@ -50,7 +50,7 @@ If you are proposing a feature:
 * Explain in detail how it would work.
 * Keep the scope as narrow as possible, to make it easier to implement.
 * Remember that this is a volunteer-driven project, and that contributions
-  are welcome :)
+  (i.e., pull requests) are welcome. :)
 
 Get Started!
 ------------
@@ -74,13 +74,11 @@ Ready to contribute? Here's how to set up `python_secrets` for local development
 
    Now you can make your changes locally.
 
-5. When you're done making changes, check that your changes pass flake8 and the tests, including testing other Python versions with tox::
+5. When you're done making changes, check that your changes pass ``flake8`` and ``bandit`` (security) tests, including testing other Python versions with ``tox``::
 
-    $ flake8 python_secrets tests
-    $ python setup.py test
-    $ tox
+    $ make test
 
-   To get flake8 and tox, just pip install them into your virtualenv.
+   To get ``flake8`` and ``tox``, just ``python -m pip install`` them into your virtualenv.
 
 6. Commit your changes and push your branch to GitHub::
 
@@ -98,8 +96,10 @@ Before you submit a pull request, check that it meets these guidelines:
 1. The pull request should include tests.
 2. If the pull request adds functionality, the docs should be updated. Put
    your new functionality into a function with a docstring, and add the
-   feature to the list in README.rst.
-3. The pull request should work for Python 2.6, 2.7, 3.3, and 3.4, and for PyPy. Check
+   feature to the list of changes in ``HISTORY.rst`` and documentation on use
+   in ``README.rst``.
+3. The pull request should work for the versions of Python defined in ``tox.ini``
+   and ``.travis.yml``. Check
    https://travis-ci.org/davedittrich/python_secrets/pull_requests
    and make sure that the tests pass for all supported Python versions.
 
