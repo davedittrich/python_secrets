@@ -87,6 +87,17 @@ class SecretsEnvironment(object):
                 raise RuntimeError('Directory {} '.format(self.root_path()) +
                                    'does not exist and create_root=False')
         self.export_env_vars = export_env_vars
+
+        # When exporting environment variables, include one that specifies
+        # the environment from which these variables were derived. This also
+        # works around a limitation in Ansible where the current working directory
+        # from which "ansible" was run. (The D2 lookup_plugin/python_secrets.py
+        # script needs to communicate this back to python_secrets in order for
+        # it's .python_secrets_environment file to be used to identify the
+        # proper environment.)
+        if self.export_env_vars is True:
+            os.environ['PYTHON_SECRETS_ENVIRONMENT'] = self._environment
+
         self.env_var_prefix = env_var_prefix
         if source is not None:
             self.clone_from(source)
