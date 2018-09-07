@@ -61,7 +61,6 @@ class EnvironmentsCreate(Command):
             )
 
 
-
 class EnvironmentsDefault(Command):
     """Manage default environment via file in cwd"""
 
