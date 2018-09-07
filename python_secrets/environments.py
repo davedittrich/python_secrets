@@ -55,8 +55,11 @@ class EnvironmentsCreate(Command):
         for e in parsed_args.args:
             se = SecretsEnvironment(environment=e)
             se.environment_create(source=parsed_args.clone_from)
-            self.app.LOG.info('environment directory {} created'.format(
-                se.environment_path()))
+            self.app.LOG.info(
+                'environment "{}" '.format(e) +
+                '({}) created'.format(se.environment_path())
+            )
+
 
 
 class EnvironmentsDefault(Command):

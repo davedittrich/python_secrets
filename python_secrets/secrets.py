@@ -101,6 +101,7 @@ class SecretsEnvironment(object):
         self.env_var_prefix = env_var_prefix
         if source is not None:
             self.clone_from(source)
+            self.read_secrets_descriptions()
         self._secrets = dict()
         self._descriptions = dict()
         self._changed = False
@@ -282,9 +283,9 @@ class SecretsEnvironment(object):
         """Read secrets descriptions and secrets."""
         self.read_secrets_descriptions()
         self.read_secrets(from_descriptions=True)
-        self._find_new_secrets()
+        self.find_new_secrets()
 
-    def _find_new_secrets(self):
+    def find_new_secrets(self):
         """
         Ensure that any new secrets defined in description files are
         called out and/or become new undefined secrets.
@@ -293,8 +294,10 @@ class SecretsEnvironment(object):
         for group in self._descriptions.keys():
             for i in self._descriptions[group]:
                 s = i['Variable']
+                t = i['Type']
                 if self.get_secret(s) is None:
-                    self.LOG.info('new variable "{}" '.format(s) +
+                    self.LOG.info('new {} '.format(t) +
+                                  'variable "{}" '.format(s) +
                                   'is not defined')
                     self._set_secret(s, None)
 
@@ -346,6 +349,8 @@ class SecretsEnvironment(object):
         dest = self.environment_path()
         if source is not None:
             copyanything(source, dest)
+        self.read_secrets_descriptions()
+        self.find_new_secrets()
 
     def read_secrets_descriptions(self):
         """Load the descriptions of groups of secrets from a .d directory"""
@@ -365,7 +370,11 @@ class SecretsEnvironment(object):
                     group = os.path.splitext(fname)[0]
                     with open(os.path.join(groups_dir, fname), 'r') as f:
                         data = yaml.safe_load(f)
-                    self._descriptions[group] = data
+                    if data is not None:
+                        self._descriptions[group] = data
+                    else:
+                        raise RuntimeError('descriptions for group ' +
+                                           '"{}" is empty'.format(group))
             except Exception:
                 self.LOG.info('no secrets descriptions files found')
         else:

@@ -687,7 +687,18 @@ following steps:
    .. code-block:: shell
 
        $ psec environments create test --clone-from ~/git/goSecure/secrets
+       new password variable "gosecure_app_password" is not defined
+       new string variable "gosecure_client_ssid" is not defined
+       new string variable "gosecure_client_ssid" is not defined
+       new string variable "gosecure_client_psk" is not defined
+       new password variable "gosecure_pi_password" is not defined
+       new string variable "gosecure_pi_pubkey" is not defined
        environment directory /Users/dittrich/.secrets/test created
+
+   ..
+
+   .. code-block:: shell
+
        $ psec -e test secrets show --no-redact --fit-width
        +-----------------------+----------+-------+
        | Variable              | Type     | Value |
