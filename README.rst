@@ -1091,6 +1091,17 @@ like ``jq``, for example:
 
 ..
 
+Python Security
+---------------
+
+Last, but certainly not least, take the time to read up on `Python Security`_
+and understand the types and sources of security vulnerabilities related to
+Python programs. Keep these ideas in mind when using and/or modifying this
+program.
+
+.. _Python Security: https://python-security.readthedocs.io/index.html
+
+
 Future Work
 -----------
 
