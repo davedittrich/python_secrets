@@ -223,7 +223,7 @@ class SecretsEnvironment(object):
         """
         if secret is None:
             raise RuntimeError('Must specify secret to get')
-        return self._secrets[secret]
+        return self._secrets.get(secret, None)
 
     def get_secret_export(self, secret):
         """Get the specified environment variable for exporting secret
@@ -282,6 +282,21 @@ class SecretsEnvironment(object):
         """Read secrets descriptions and secrets."""
         self.read_secrets_descriptions()
         self.read_secrets(from_descriptions=True)
+        self._find_new_secrets()
+
+    def _find_new_secrets(self):
+        """
+        Ensure that any new secrets defined in description files are
+        called out and/or become new undefined secrets.
+        :return:
+        """
+        for group in self._descriptions.keys():
+            for i in self._descriptions[group]:
+                s = i['Variable']
+                if self.get_secret(s) is None:
+                    self.LOG.info('new variable "{}" '.format(s) +
+                                  'is not defined')
+                    self._set_secret(s, None)
 
     def read_secrets(self, from_descriptions=False):
         """
