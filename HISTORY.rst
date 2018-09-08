@@ -31,6 +31,9 @@ Unreleased
 Added
 ^^^^^
 
+- Note new undefined variables when adding groups or ``environments create --clone-from``
+- When exporting vars, also export PYTHON_SECRETS_ENVIRONMENT w/environment name
+- Add reference to Python Security coding information
 - ``environments tree`` command
 - ``environments path`` command with features supporting Ansible Lookup Plugin
 - ``secrets get`` command
