@@ -717,6 +717,13 @@ following steps:
    .. code-block:: shell
 
        $ psec -e test secrets generate
+       new password variable "gosecure_app_password" is not defined
+       new string variable "gosecure_client_ssid" is not defined
+       new string variable "gosecure_client_ssid" is not defined
+       new string variable "gosecure_client_psk" is not defined
+       new password variable "gosecure_pi_password" is not defined
+       new string variable "gosecure_pi_pubkey" is not defined
+
        $ psec -e test secrets show --no-redact --fit-width
        +-----------------------+----------+------------------------------+
        | Variable              | Type     | Value                        |
@@ -735,9 +742,13 @@ following steps:
    .. code-block:: shell
 
        $ psec -e test secrets set --undefined
-       gosecure_client_psk? [None]: atjhK5AlsQMw3Zh
-       gosecure_client_ssid? [None]: YourWiFiSSID
-       gosecure_pi_pubkey? [None]: @~/.ssh/new_rsa.pub
+       new string variable "gosecure_client_psk" is not defined
+       new string variable "gosecure_client_ssid" is not defined
+       new string variable "gosecure_pi_pubkey" is not defined
+       Pre-shared key for goSecure client WiFi AP? [None]: atjhK5AlsQMw3Zh
+       SSID for goSecure client WiFi AP? [None]: YourWiFiSSID
+       SSH public key for accessing "pi" account? [None]: @~/.ssh/new_rsa.pub
+
        $ psec -e test secrets show --no-redact --fit-width
        +-----------------------+----------+------------------------------------------------------------------------------------------+
        | Variable              | Type     | Value                                                                                    |
@@ -754,6 +765,21 @@ following steps:
        +-----------------------+----------+------------------------------------------------------------------------------------------+
 
    ..
+
+.. note::
+
+   If you don't want to see the warnings about new variables that are not
+   defined, simply add the ``-q`` flag.
+
+   .. code-block:: shell
+
+       $ psec -q secrets generate
+       $ psec -q secrets set --undefined
+       Pre-shared key for goSecure client WiFi AP? [None]:
+
+   ..
+
+..
 
 You are now ready to compile your software, or build your project!
 
@@ -1115,6 +1141,8 @@ program.
 
 Future Work
 -----------
+
+* Increase test coverage (test driven development is a good thing)
 
 * Add ``secrets create`` to add new secrets descriptions + secrets.
 
