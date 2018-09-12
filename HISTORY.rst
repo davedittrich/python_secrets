@@ -25,12 +25,14 @@ History
 .. Security in case of vulnerabilities.
 
 
-Unreleased
-~~~~~~~~~~
+0.16.0 (2018-09-12)
+~~~~~~~~~~~~~~~~~~~
 
 Added
 ^^^^^
 
+- Use attribute maps instead of lookup loops
+- Add Prompt attribute in descriptions for better UX when setting variables
 - Note new undefined variables when adding groups or ``environments create --clone-from``
 - When exporting vars, also export PYTHON_SECRETS_ENVIRONMENT w/environment name
 - Add reference to Python Security coding information
