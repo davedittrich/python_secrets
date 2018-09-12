@@ -243,10 +243,10 @@ class SecretsEnvironment(object):
     def _set_secret(self, secret, value):
         """Set secret to value and export environment variable
 
-                :param secret: :type: string
-                :param value: :type: string
-                :return:
-                """
+        :param secret: :type: string
+        :param value: :type: string
+        :return:
+        """
         self._secrets[secret] = value
         if self.export_env_vars:
             _env_var = self.get_secret_export(secret)
@@ -307,7 +307,7 @@ class SecretsEnvironment(object):
         Load the current secrets from .yml file
 
         If no secrets have been set yet and from_descriptions is True,
-        return a dictionary compromised of the keys from the
+        return a dictionary comprised of the keys from the
         descriptions dictionary defined to be None and set self._changed
         to ensure these are written out.
         """
