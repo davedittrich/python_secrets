@@ -24,18 +24,18 @@ Features
 * Uses the `openstack/cliff`_ command line framework.
 
 * Supports a "drop-in" model for defining variables in a modular manner
-  that is used to then construct a single file for use by Ansible or
-  other applications. This is something like the `python-update-dotdee`_
-  program, but including secret setting and generation as well.
+  (something like the `python-update-dotdee`_ program), supporting simplified
+  bulk setting or generating variables as needed.
 
-* Like `python-update-dotdee`_, produces a single master file for use
-  by Ansible commands (e.g. ``ansible-playbook playbook.yml -e @"$(python_secrets secrets path)"``)
+* Like `python-update-dotdee`_, produces a single master ``.yml`` file for
+  use by programs like Ansible (e.g.
+  ``ansible-playbook playbook.yml -e @"$(python_secrets secrets path)"``)
 
 * Support multiple simultaneous sets of secrets (environments) for
   flexibility and scalability in multi-environment deployments and to
   support different use cases or different combinations of secrets.
 
-* List the groups of variables (and how many in each group).
+* List the groups of variables (and how many secrets in each group).
 
 * Describe secrets by their variable name, type (e.g., ``password``, ``uuid4``,
   ``random_base64``) and an optional description that will be used
@@ -64,6 +64,10 @@ Features
 * Output the variables and values in multiple different formats (CSV,
   JSON, YAML) for use in shell scripts, etc. using ``cliff`` features.
 
+* Makes it easy to store temporary files (e.g., Jinja templates)
+  that may contain secrets *outside* of the source repo directory
+  in an environment-specific ``tmp/`` directory.
+
 .. _openstack/cliff: https://github.com/openstack/cliff
 .. _python-update-dotdee: https://pypi.org/project/update-dotdee/
 .. _terraform: https://www.terraform.io/
@@ -76,6 +80,32 @@ Features
 
 ..
 
+Limitations
+-----------
+
+* Secrets are stored in *unencrypted* form in the environments
+  directories.  Permissions are set to limit access, but this is not an
+  "encrypt data data at rest" solution like `Vault by Hashicorp`_.
+
+* Does not handle secure distributed access for users on remote systems. You
+  must use something like `Vault by Hashicorp`_ or `libfuse/sshfs`_ for secure
+  (realtime) distributed access.
+
+* Does not handle secure distribution of newly generated secrets out
+  to distributed systems that need them. You will need to use a program
+  like `Ansible`_ and related playbooks for pushing out and changing
+  secrets (or for retrieving backups). Look at the `D2 Ansible
+  playbooks`_ (https://github.com/davedittrich/ansible-dims-playbooks)
+  for example playbooks for doing these tasks.
+
+* Does not clean up the environment-specific ``tmp/`` directories.
+  (You need to handle that in code, but at least they are less likely
+  to end up in a Git commit.)
+
+
+.. _libfuse/sshfs: https://github.com/libfuse/sshfs
+.. _D2 Ansible Playbooks: https://github.com/davedittrich/ansible-dims-playbooks
+
 Usage
 -----
 
@@ -85,18 +115,20 @@ of a command is:
 
 .. code-block:: shell
 
-   $ python_secrets [<global-options>] <object-1> <action> [<object-2>] [<command-arguments>]
+   $ psec [<global-options>] <object-1> <action> [<object-2>] [<command-arguments>]
 
 ..
 
 .. note::
 
-   A shorter script name ``psec`` is also included. You can use either name. In
-   this ``README.rst`` file, both names are used interchangably.
+   When originally written, ``python_secrets`` was the primary command name. That is
+   a little unwieldy to type, so a shorter script name ``psec`` was also included.
+   You can use either name. In this ``README.rst`` file, both names may be used
+   interchangably (but the shorter name is easier to type).
 
 ..
 
-The actions are things like ``list``, ``show``, ``generate``, ``set``, ``delete``, etc.
+The actions are things like ``list``, ``show``, ``generate``, ``set``, etc.
 
 .. _OpenStackClient: https://docs.openstack.org/python-openstackclient/latest/
 .. _Command Structure: https://docs.openstack.org/python-openstackclient/latest/cli/commands.html
@@ -164,6 +196,40 @@ the ``help`` command or ``--help`` option flag:
 
 ..
 
+Help is also available for individual commands, showing their unique
+command line options and arguments. You can get this command-level help
+output by using ``help command`` or ``command --help``, like this:
+
+.. code-block:: shell
+
+    $ psec help utils myip
+    usage: psec utils myip [-h] [-C]
+
+    Get current internet routable source address.
+
+    optional arguments:
+      -h, --help  show this help message and exit
+      -C, --cidr  Express IP address as CIDR block (default: False)
+
+..
+
+.. code-block:: shell
+
+    $ psec template --help
+    usage: psec template [-h] [--check-defined] [source] [dest]
+
+    Template file(s)
+
+    positional arguments:
+      source           input Jinja2 template source
+      dest             templated output destination ('-' for stdout)
+
+    optional arguments:
+      -h, --help       show this help message and exit
+      --check-defined  Just check for undefined variables
+
+..
+
 Directories and files
 ~~~~~~~~~~~~~~~~~~~~~
 
@@ -178,11 +244,15 @@ regarding secrets storage:
 Root directory
 ^^^^^^^^^^^^^^
 
-By default, ``python_secrets`` expects a root directory in the
-current user's home directory. Unless you over-ride the name of
-this directory, it defaults to ``.secrets`` on Linux and
-``secrets`` on Windows.  The first time you use ``python_secrets``,
-there will likely be no directory:
+By default, ``python_secrets`` expects a root directory in the current user's
+home directory. Unless you over-ride the name of this directory, it defaults to
+``.secrets`` on Linux and ``secrets`` on Windows. The ability to change the
+location is supported to allow this directory to be placed on an exported
+file share, in a common location for use by a group on a workstation, or
+to move the contents to a different partition with more disk space.
+
+The first time you use ``python_secrets``, there will likely be no
+directory:
 
 .. code-block:: shell
 
@@ -193,22 +263,27 @@ there will likely be no directory:
 
 ..
 
-The root directory will be created the first time you create an environment,
-which is covered next.
+.. note::
+
+   The root directory will be created automatically for you the first time
+   you create an environment.
+
+..
 
 Environments
 ^^^^^^^^^^^^
 
-Environments are sub-directories within the root secrets directory.  You create
+Environments are sub-directories within the root secrets directory.  You can
+just create the directory structure without any files. You create
 one environment per set of unique secrets that you need to manage. This could
 be one for open source *Program A*, one for *Program B*, etc., or it could be
-one for *Development*, one for *Testing*, one for *Production*, etc. (or any
+one for *development*, one for *testing*, one for *production*, etc. (or any
 combination).
 
 Use the command ``environments create`` to create an environment.  Since this
 program is designed to support multiple environments, a name for the new
-environment is required. If one is not specified, the base name of the current
-working directory is used:
+environment is required. The name can be provided explicitly, or it can be
+inferred from the base name of the current working directory:
 
 .. code-block:: shell
 
@@ -225,10 +300,11 @@ working directory is used:
 
 ..
 
-If you want or need to, you can control the name of the environment being
-used by (a) giving an argument on the command line, (b) using the ``-e`` or
+Let's say we want to create empty environments for the three deployments
+(*development*, *testing*, and *production*). The names can be assigned
+explicitly by (a) giving an argument on the command line, (b) using the ``-e`` or
 ``--environment`` command line flag, or (c) by setting the environment variable
-``D2_ENVIRONMENT``.
+``D2_ENVIRONMENT``:
 
 .. code-block:: shell
 
@@ -268,11 +344,12 @@ have to specify all of the names on the command line as arguments:
 
 ..
 
-The environment directories are for storing *all* secrets and sensitive files
-(e.g., backups of certificates, databases, etc.)
+The environment directories are useable for storing *all* secrets and
+sensitive files (e.g., backups of certificates, databases, etc.) associated
+with an environment.
 
-You can see all of the files and directories using the ``environments path``
-command:
+For convenience, there is a command ``environments tree`` that produces
+output similar to the Unix ``tree`` command:
 
 .. code-block:: shell
 
@@ -313,7 +390,7 @@ command:
 
 ..
 
-To just see the directory structure, add the ``--no-files`` option:
+To just see the directory structure and not files, add the ``--no-files`` option:
 
 .. code-block:: shell
 
@@ -358,19 +435,21 @@ of the secrets file to something else.
 ..
 
 Each environment is in turn rooted in a directory with the environment's
-symbolic name (e.g., ``do`` for DigitalOcean in this example, and ``mantl``
-for Cisco's Mantl project.)
+symbolic name (e.g., ``do`` for DigitalOcean in this example, and ``goSecure``
+for the GitHub `davedittrich/goSecure`_ VPN project.)
 
 .. code-block:: shell
 
     $ tree -L 1 ~/.secrets
     /Users/dittrich/.secrets
     ├── do
-    └── mantl
+    └── goSecure
 
     3 directories, 0 files
 
 ..
+
+.. _davedittrich/goSecure: https://github.com/davedittrich/goSecure
 
 Each set of secrets for a given service or purpose is described in its own
 file.
@@ -390,14 +469,32 @@ file.
 
 ..
 
-A description file looks like this:
+You can see one of the descriptions files from the template
+in this repository using ``cat secrets/secrets.d/myapp.yml``:
 
 .. code-block:: yaml
 
     ---
 
-    - Variable: jenkins_admin_password
+    - Variable: myapp_pi_password
       Type: password
+      Prompt: 'Password for myapp "pi" user account'
+      Export: DEMO_pi_password
+
+    - Variable: myapp_app_password
+      Type: password
+      Prompt: 'Password for myapp web app'
+      Export: DEMO_app_password
+
+    - Variable: myapp_client_psk
+      Type: string
+      Prompt: 'Pre-shared key for myapp client WiFi AP'
+      Export: DEMO_client_ssid
+
+    - Variable: myapp_client_ssid
+      Type: string
+      Prompt: 'SSID for myapp client WiFi AP'
+      Export: DEMO_client_ssid
 
     # vim: ft=ansible :
 
@@ -412,18 +509,14 @@ The groups can be listed using the ``groups list`` command:
 
 .. code-block:: shell
 
-    $ python_secrets groups list
-    +-----------+-------+
-    | Group     | Items |
-    +-----------+-------+
-    | ca        |     1 |
-    | consul    |     1 |
-    | jenkins   |     1 |
-    | rabbitmq  |     2 |
-    | trident   |     2 |
-    | vncserver |     1 |
-    | zookeper  |     1 |
-    +-----------+-------+
+    $ psec groups list
+    +---------+-------+
+    | Group   | Items |
+    +---------+-------+
+    | jenkins |     1 |
+    | myapp   |     4 |
+    | trident |     2 |
+    +---------+-------+
 
 ..
 
@@ -432,15 +525,17 @@ the ``groups show`` command:
 
 .. code-block:: shell
 
-    $ psec groups show trident rabbitmq
-    +----------+----------------------------+
-    | Group    | Variable                   |
-    +----------+----------------------------+
-    | trident  | trident_sysadmin_pass      |
-    | trident  | trident_db_pass            |
-    | rabbitmq | rabbitmq_default_user_pass |
-    | rabbitmq | rabbitmq_admin_user_pass   |
-    +----------+----------------------------+
+    $ psec groups show trident myapp
+    +---------+-----------------------+
+    | Group   | Variable              |
+    +---------+-----------------------+
+    | trident | trident_sysadmin_pass |
+    | trident | trident_db_pass       |
+    | myapp   | myapp_pi_password     |
+    | myapp   | myapp_app_password    |
+    | myapp   | myapp_client_psk      |
+    | myapp   | myapp_client_ssid     |
+    +---------+-----------------------+
 
 ..
 
@@ -451,20 +546,18 @@ To examine the secrets, use the ``secrets show`` command:
 
 .. code-block:: shell
 
-    $ python_secrets secrets show
-    +----------------------------+------------+----------+
-    | Variable                   | Type       | Value    |
-    +----------------------------+------------+----------+
-    | ca_rootca_password         | password   | REDACTED |
-    | consul_key                 | consul_key | REDACTED |
-    | jenkins_admin_password     | password   | REDACTED |
-    | rabbitmq_admin_user_pass   | password   | REDACTED |
-    | rabbitmq_default_user_pass | password   | REDACTED |
-    | trident_db_pass            | password   | REDACTED |
-    | trident_sysadmin_pass      | password   | REDACTED |
-    | vncserver_password         | password   | REDACTED |
-    | zookeeper_uuid4            | uuid4      | REDACTED |
-    +----------------------------+------------+----------+
+    $ psec secrets show
+    +------------------------+----------+-------------------+----------+
+    | Variable               | Type     | Export            | Value    |
+    +------------------------+----------+-------------------+----------+
+    | jenkins_admin_password | password | None              | REDACTED |
+    | myapp_app_password     | password | DEMO_app_password | REDACTED |
+    | myapp_client_psk       | string   | DEMO_client_ssid  | REDACTED |
+    | myapp_client_ssid      | string   | DEMO_client_ssid  | REDACTED |
+    | myapp_pi_password      | password | DEMO_pi_password  | REDACTED |
+    | trident_db_pass        | password | None              | REDACTED |
+    | trident_sysadmin_pass  | password | None              | REDACTED |
+    +------------------------+----------+-------------------+----------+
 
 ..
 
@@ -473,20 +566,18 @@ the values in clear text in the terminal output, add the ``--no-redact`` flag:
 
 .. code-block:: shell
 
-    $ python_secrets secrets show --no-redact
-    +----------------------------+------------+--------------------------------------+
-    | Variable                   | Type       | Value                                |
-    +----------------------------+------------+--------------------------------------+
-    | ca_rootca_password         | password   | verse envelope alkaline language     |
-    | consul_key                 | consul_key | GVLKCRqXqm0rxo0b4/ligQ==             |
-    | jenkins_admin_password     | password   | verse envelope alkaline language     |
-    | rabbitmq_admin_user_pass   | password   | verse envelope alkaline language     |
-    | rabbitmq_default_user_pass | password   | verse envelope alkaline language     |
-    | trident_db_pass            | password   | verse envelope alkaline language     |
-    | trident_sysadmin_pass      | password   | verse envelope alkaline language     |
-    | vncserver_password         | password   | verse envelope alkaline language     |
-    | zookeeper_uuid4            | uuid4      | c8314c91-bf7c-4dc3-8645-da37279d31aa |
-    +----------------------------+------------+--------------------------------------+
+    $ psec secrets show --no-redact
+    +------------------------+----------+-------------------+------------------------------+
+    | Variable               | Type     | Export            | Value                        |
+    +------------------------+----------+-------------------+------------------------------+
+    | jenkins_admin_password | password | None              | fetch outsider awning maroon |
+    | myapp_app_password     | password | DEMO_app_password | fetch outsider awning maroon |
+    | myapp_client_psk       | string   | DEMO_client_ssid  | PSK                          |
+    | myapp_client_ssid      | string   | DEMO_client_ssid  | SSID                         |
+    | myapp_pi_password      | password | DEMO_pi_password  | fetch outsider awning maroon |
+    | trident_db_pass        | password | None              | fetch outsider awning maroon |
+    | trident_sysadmin_pass  | password | None              | fetch outsider awning maroon |
+    +------------------------+----------+-------------------+------------------------------+
 
 ..
 
@@ -509,7 +600,7 @@ subset of secrets, you have two ways to do this.
 
    .. code-block:: shell
 
-       $ python_secrets secrets show rabbitmq_default_user_pass rabbitmq_admin_user_pass
+       $ psec secrets show rabbitmq_default_user_pass rabbitmq_admin_user_pass
        +----------------------------+----------+--------------------------------------+
        | Variable                   | Type     | Value                                |
        +----------------------------+----------+--------------------------------------+
@@ -524,7 +615,7 @@ subset of secrets, you have two ways to do this.
 
    .. code-block:: shell
 
-       $ python_secrets secrets show --group jenkins trident
+       $ psec secrets show --group jenkins trident
        +----------------------------+----------+--------------------------------------+
        | Variable                   | Type     | Value                                |
        +----------------------------+----------+--------------------------------------+
@@ -540,7 +631,7 @@ subset of secrets, you have two ways to do this.
 
    .. code-block:: shell
 
-       $ python_secrets secrets describe
+       $ psec secrets describe
        +------------------+----------------------------------+
        | Type             | Description                      |
        +------------------+----------------------------------+
@@ -609,13 +700,12 @@ each type of secret to simplify things, use the ``secrets generate`` command:
 
 .. code-block:: shell
 
-    $ python_secrets secrets generate
-    $ python_secrets secrets show --column Variable --column Value
+    $ psec secrets generate
+    $ psec secrets show --column Variable --column Value
     +----------------------------+--------------------------------------+
     | Variable                   | Value                                |
     +----------------------------+--------------------------------------+
     | trident_db_pass            | gargle earlobe eggplant kissable     |
-    | ca_rootca_password         | gargle earlobe eggplant kissable     |
     | consul_key                 | zQvSe0kdf0Xarbhb80XULQ==             |
     | jenkins_admin_password     | gargle earlobe eggplant kissable     |
     | rabbitmq_default_user_pass | gargle earlobe eggplant kissable     |
@@ -632,8 +722,8 @@ specifying the variable and value in the form ``variable=value``:
 
 .. code-block:: shell
 
-    $ python_secrets secrets set trident_db_pass="rural coffee purple sedan"
-    $ python_secrets secrets show --column Variable --column Value
+    $ psec secrets set trident_db_pass="rural coffee purple sedan"
+    $ psec secrets show --column Variable --column Value
     +----------------------------+--------------------------------------+
     | Variable                   | Value                                |
     +----------------------------+--------------------------------------+
@@ -655,8 +745,8 @@ them to the command line as arguments to ``secrets generate``:
 
 .. code-block:: shell
 
-    $ python_secrets secrets generate rabbitmq_default_user_pass rabbitmq_admin_user_pass
-    $ python_secrets secrets show --column Variable --column Value
+    $ psec secrets generate rabbitmq_default_user_pass rabbitmq_admin_user_pass
+    $ psec secrets show --column Variable --column Value
     +----------------------------+--------------------------------------+
     | Variable                   | Value                                |
     +----------------------------+--------------------------------------+
@@ -679,7 +769,8 @@ following steps:
 
 #. Create a template secrets environment directory that contains just
    the secrets definitions. This example uses the template found
-   in the `davedittrich/goSecure`_ repository (directory https://github.com/davedittrich/goSecure/tree/master/secrets).
+   in the `davedittrich/goSecure`_ repository
+   (directory https://github.com/davedittrich/goSecure/tree/master/secrets).
 
 #. Use this template to clone a secrets environment, which will initially
    be empty:
@@ -696,6 +787,18 @@ following steps:
        environment directory /Users/dittrich/.secrets/test created
 
    ..
+
+   .. note::
+
+      If you ever want to suppress messages about new variables, etc., 
+      just add the ``-q`` flag:
+
+      .. code-block:: shell
+
+          $ psec -q environments create test --clone-from ~/git/goSecure/secrets
+          $
+
+      ..
 
    .. code-block:: shell
 
@@ -913,7 +1016,7 @@ Bash. Ansible expects the file path passed to ``-extra-vars`` to start with an
 
 .. code-block:: shell
 
-    $ ansible -i localhost, -e @"$(python_secrets secrets path)" -m debug -a 'var=consul_key' localhost
+    $ ansible -i localhost, -e @"$(psec secrets path)" -m debug -a 'var=consul_key' localhost
     localhost | SUCCESS => {
         "consul_key": "GVLKCRqXqm0rxo0b4/ligQ=="
     }
@@ -955,7 +1058,7 @@ using Ansible.  For example, CSV output (with header) can be produced like this:
 
 .. code-block:: shell
 
-    $ python_secrets secrets show -f csv --column Variable --column Value
+    $ psec secrets show -f csv --column Variable --column Value
     "Variable","Value"
     "trident_db_pass","gargle earlobe eggplant kissable"
     "ca_rootca_password","gargle earlobe eggplant kissable"
@@ -974,7 +1077,7 @@ other programs.
 
 .. code-block:: shell
 
-    $ python_secrets secrets show -f json --column Variable --column Value
+    $ psec secrets show -f json --column Variable --column Value
     [
       {
         "Variable": "trident_db_pass",
@@ -1021,7 +1124,7 @@ like ``jq``, for example:
 
 .. code-block:: shell
 
-    $ python_secrets secrets show -f json --column Variable --column Value |
+    $ psec secrets show -f json --column Variable --column Value |
     > jq -r '.[] | { (.Variable): .Value } '
     {
       "trident_db_pass": "gargle earlobe eggplant kissable"
@@ -1055,7 +1158,7 @@ like ``jq``, for example:
 
 .. code-block:: shell
 
-    $ python_secrets secrets show -f json --column Variable --column Value |
+    $ psec secrets show -f json --column Variable --column Value |
     > jq -r '.[] | [ (.Variable), .Value ] '
     [
       "trident_db_pass",
@@ -1098,7 +1201,7 @@ like ``jq``, for example:
 
 .. code-block:: shell
 
-    $ python_secrets secrets show -f json --column Variable --column Value |
+    $ psec secrets show -f json --column Variable --column Value |
     > jq -r '.[] | [ (.Variable), .Value ] |@sh'
     'trident_db_pass' 'gargle earlobe eggplant kissable'
     'ca_rootca_password' 'gargle earlobe eggplant kissable'
@@ -1114,7 +1217,7 @@ like ``jq``, for example:
 
 .. code-block:: shell
 
-    $ python_secrets secrets show -f json --column Variable --column Value |
+    $ psec secrets show -f json --column Variable --column Value |
     > jq -r '.[] | [ (.Variable), .Value ] |@csv'
     "trident_db_pass","gargle earlobe eggplant kissable"
     "ca_rootca_password","gargle earlobe eggplant kissable"
