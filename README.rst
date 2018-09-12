@@ -66,7 +66,8 @@ Features
 * Output the variables and values in multiple different formats (CSV,
   JSON, YAML) for use in shell scripts, etc. using ``cliff`` features.
 
-* Makes it easy to store temporary files (e.g., Jinja templates)
+* Makes it easy to store temporary files (e.g., the output from
+  Jinja template rendering)
   that may contain secrets *outside* of the source repo directory
   in an environment-specific ``tmp/`` directory.
 
