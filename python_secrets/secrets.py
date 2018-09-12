@@ -205,7 +205,7 @@ class SecretsEnvironment(object):
     def descriptions_path_create(self, mode=DEFAULT_MODE):
         """Create secrets descriptions directory"""
         if not self.environment_exists():
-            self.environment_path_create(mode=mode)
+            self.environment_create(mode=mode)
         if not self.descriptions_path_exists():
             os.mkdir(self.descriptions_path(), mode=mode)
 
