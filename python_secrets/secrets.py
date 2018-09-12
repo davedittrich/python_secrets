@@ -38,6 +38,12 @@ SECRET_TYPES = [
         {'Type': 'uuid4', 'Description': 'UUID4 token'},
         {'Type': 'random_base64', 'Description': 'Random BASE64 token'}
         ]
+SECRET_ATTRIBUTES = [
+    'Variable',
+    'Type',
+    'Export',
+    'Prompt'
+]
 HOME = os.path.expanduser('~')
 CWD = os.getcwd()
 SECRETS_ROOT = os.path.join(
@@ -100,6 +106,9 @@ class SecretsEnvironment(object):
             os.environ['PYTHON_SECRETS_ENVIRONMENT'] = self._environment
 
         self.env_var_prefix = env_var_prefix
+        # Secrets attribute maps; anything else throws exception
+        for a in SECRET_ATTRIBUTES:
+            setattr(self, a, dict())
         if source is not None:
             self.clone_from(source)
             self.read_secrets_descriptions()
@@ -233,12 +242,7 @@ class SecretsEnvironment(object):
         :param secret: :type: string
         :return: environment variable for exporting secret
         """
-        # TODO(dittrich): Create a map after reading (more efficient)
-        for group in self._descriptions.keys():
-            for i in self._descriptions[group]:
-                if i['Variable'] == secret:
-                    return i.get('Export')
-        return None
+        return self.Export.get(secret, None)
 
     def _set_secret(self, secret, value):
         """Set secret to value and export environment variable
@@ -247,7 +251,8 @@ class SecretsEnvironment(object):
         :param value: :type: string
         :return:
         """
-        self._secrets[secret] = value
+        self._secrets[secret] = value  # DEPRECATED
+        getattr(self, 'Variable')[secret] = value
         if self.export_env_vars:
             _env_var = self.get_secret_export(secret)
             if _env_var is None:
@@ -264,17 +269,13 @@ class SecretsEnvironment(object):
         :param value: :type: string
         :return:
         """
-        self._set_secret(secret, value)
+        self._set_secret(secret, value)  # DEPRECATED
+        getattr(self, 'Variable', {secret: value})
         self._changed = True
 
     def get_type(self, variable):
         """Return type for variable or None if no description"""
-        # TODO(dittrich): Create a map after reading (more efficient)
-        for group in self._descriptions.keys():
-            for i in self._descriptions[group]:
-                if i['Variable'] == variable:
-                    return i['Type']
-        return None
+        return self.Type.get(variable, None)
 
     def changed(self):
         """Return boolean reflecting changed secrets."""
@@ -292,6 +293,7 @@ class SecretsEnvironment(object):
         called out and/or become new undefined secrets.
         :return:
         """
+        # TODO(dittrich): Replace this with simpler use of attribute maps
         for group in self._descriptions.keys():
             for i in self._descriptions[group]:
                 s = i['Variable']
@@ -373,6 +375,19 @@ class SecretsEnvironment(object):
                         data = yaml.safe_load(f)
                     if data is not None:
                         self._descriptions[group] = data
+                        # Dynamically create maps keyed on variable name
+                        # for simpler lookups. (See the get_prompt() method
+                        # for an example.)
+                        for d in data:
+                            for k, v in d.items():
+                                try:
+                                    # Add to existing map
+                                    v = v if v != d['Variable'] else None
+                                    getattr(self, k)[d['Variable']] = v
+                                except AttributeError:
+                                    raise RuntimeError(
+                                        '"{}" is not '.format(k) +
+                                        'a valid attribute')
                     else:
                         raise RuntimeError('descriptions for group ' +
                                            '"{}" is empty'.format(group))
@@ -397,6 +412,10 @@ class SecretsEnvironment(object):
                 except KeyError:
                     return None
         return None
+
+    def get_prompt(self, secret):
+        """Get the prompt for the secret"""
+        return self.Prompt.get(secret, secret)
 
     # TODO(dittrich): Not very DRY (but no time now)
     def get_secret_arguments(self, variable):
@@ -711,7 +730,9 @@ class SecretsSet(Command):
                                    'has no description')
             if k_type == 'string':
                 if '=' not in arg:
-                    v = prompt_string(prompt=k, default=v)
+                    v = prompt_string(
+                        prompt=self.app.secrets.get_prompt(k),
+                        default=v)
                     if v is None:
                         self.LOG.info('no user input for "{}"'.format(k))
                         return None
