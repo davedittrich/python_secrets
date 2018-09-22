@@ -18,7 +18,7 @@ PROJECT = 'python_secrets'
 try:
     with open('README.rst') as readme_file:
         long_description = readme_file.read()
-        long_description_content_type='text/x-rst',
+        long_description_content_type = 'text/x-rst'
 except IOError:
         long_description = ''
 
