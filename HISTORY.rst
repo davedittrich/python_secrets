@@ -25,6 +25,15 @@ History
 .. Security in case of vulnerabilities.
 
 
+Unreleased
+~~~~~~~~~~
+
+Added
+^^^^^
+
+- Improve error handling consistency when no environment exists
+
+
 0.16.0 (2018-09-12)
 ~~~~~~~~~~~~~~~~~~~
 
