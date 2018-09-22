@@ -31,6 +31,7 @@ class Template(Command):
 
     def take_action(self, parsed_args):
         self.LOG.debug('templating file(s)')
+        self.app.secrets.requires_environment()
         self.app.secrets.read_secrets_and_descriptions()
         template_vars = self.app.secrets.items()
         template_loader = FileSystemLoader('.')

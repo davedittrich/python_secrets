@@ -218,6 +218,15 @@ class SecretsEnvironment(object):
         if not self.descriptions_path_exists():
             os.mkdir(self.descriptions_path(), mode=mode)
 
+    def requires_environment(self):
+        """
+        Provide consistent error handling for any commands that require
+        an environment actually exist in order to work properly.
+        """
+        if not self.environment_exists():
+            raise RuntimeError(
+                'environment "{}" does not exist'.format(self._environment))
+
     def keys(self):
         """Return the keys to the secrets dictionary"""
         return [s for s in self._secrets.keys()]
@@ -618,6 +627,7 @@ class SecretsShow(Lister):
 
     def take_action(self, parsed_args):
         self.LOG.debug('showing secrets')
+        self.app.secrets.requires_environment()
         self.app.secrets.read_secrets_and_descriptions()
         variables = []
         if parsed_args.args_group:
@@ -776,6 +786,7 @@ class SecretsGet(Command):
 
     def take_action(self, parsed_args):
         self.LOG.debug('get secret')
+        self.app.secrets.requires_environment()
         self.app.secrets.read_secrets_and_descriptions()
         if parsed_args.secret is not None:
             value = self.app.secrets.get_secret(parsed_args.secret)
@@ -850,6 +861,7 @@ class SecretsSend(Command):
         return parser
 
     def take_action(self, parsed_args):
+        self.app.secrets.requires_environment()
         # Attempt to get refresh token first
         orig_refresh_token = None
         try:
@@ -919,6 +931,7 @@ class SecretsPath(Command):
     def take_action(self, parsed_args):
         self.LOG.debug('returning secrets path')
         e = SecretsEnvironment(environment=parsed_args.environment)
+        e.requires_environment()
         print(e.secrets_file_path())
 
 
