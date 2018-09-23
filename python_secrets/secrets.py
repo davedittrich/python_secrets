@@ -1,6 +1,5 @@
 import base64
 import binascii
-import crypt
 import errno
 import hashlib
 import logging
@@ -521,6 +520,10 @@ def generate_password(unique=False):
 @Memoize
 def generate_crypt6(unique=False, password=None, salt=None):
     """Generate a crypt() style SHA512 ("$6$") digest"""
+    try:  # Python 3
+        import crypt
+    except ModuleNotFoundError as e:
+        raise
     if password is None:
         raise RuntimeError('generate_crypt6(): "password" is not defined')
     if salt is None:
