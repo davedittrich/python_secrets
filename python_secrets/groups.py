@@ -17,6 +17,7 @@ class GroupsList(Lister):
 
     def take_action(self, parsed_args):
         self.LOG.debug('listing secret groups')
+        self.app.secrets.requires_environment()
         self.app.secrets.read_secrets_and_descriptions()
         items = {}
         for g in self.app.secrets.get_groups():
@@ -41,6 +42,7 @@ class GroupsShow(Lister):
 
     def take_action(self, parsed_args):
         self.LOG.debug('showing secrets in group')
+        self.app.secrets.requires_environment()
         self.app.secrets.read_secrets_and_descriptions()
         columns = ('Group', 'Variable')
         data = []

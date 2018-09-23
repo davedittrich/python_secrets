@@ -172,6 +172,7 @@ class EnvironmentsTree(Command):
     def take_action(self, parsed_args):
         self.LOG.debug('outputting environment tree')
         e = SecretsEnvironment(environment=parsed_args.environment)
+        e.requires_environment()
         print_files = bool(parsed_args.no_files is False)
         tree(e.environment_path(), print_files=print_files)
 

@@ -23,6 +23,7 @@ class Run(Command):
 
     def take_action(self, parsed_args):
         self.LOG.debug('running command')
+        self.app.secrets.reequires_environment()
         self.app.secrets.read_secrets_and_descriptions()
 
         cmd = " ".join(
