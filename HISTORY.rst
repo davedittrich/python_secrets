@@ -25,6 +25,15 @@ History
 .. Security in case of vulnerabilities.
 
 
+Unreleased
+~~~~~~~~~~
+
+Added
+^^^^^
+
+- ``groups create`` command
+
+
 0.16.0 (2018-09-12)
 ~~~~~~~~~~~~~~~~~~~
 

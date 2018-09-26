@@ -181,6 +181,7 @@ the ``help`` command or ``--help`` option flag:
       environments list  List the current environments
       environments path  Return path to files and directories for environment
       environments tree  Output tree listing of files/directories in environment
+      groups create  Create a secrets descriptions group
       groups list    Show a list of secrets groups.
       groups path    Return path to secrets descriptions (groups) directory
       groups show    Show a list of secrets in a group.
@@ -541,6 +542,40 @@ the ``groups show`` command:
     +---------+-----------------------+
 
 ..
+
+When integrating a new open source tool or project, you can create
+a new group and clone its secrets descriptions. This does not copy
+any values, just the descriptions, allowing the current environment
+to manage its own values.
+
+.. code-block:: shell
+
+    $ psec groups create newgroup --clone-from ~/git/goSecure/secrets/secrets.d/gosecure.yml
+    created new group "newgroup"
+    $ psec groups list
+    new password variable "gosecure_pi_password" is not defined
+    new password variable "gosecure_app_password" is not defined
+    new string variable "gosecure_client_psk" is not defined
+    new string variable "gosecure_client_ssid" is not defined
+    new string variable "gosecure_vpn_client_id" is not defined
+    new token_hex variable "gosecure_vpn_client_psk" is not defined
+    new string variable "gosecure_pi_pubkey" is not defined
+    new string variable "gosecure_pi_locale" is not defined
+    new string variable "gosecure_pi_timezone" is not defined
+    new string variable "gosecure_pi_wifi_country" is not defined
+    new string variable "gosecure_pi_keyboard_model" is not defined
+    new string variable "gosecure_pi_keyboard_layout" is not defined
+    +----------+-------+
+    | Group    | Items |
+    +----------+-------+
+    | jenkins  |     1 |
+    | myapp    |     4 |
+    | newgroup |    12 |
+    | trident  |     2 |
+    +----------+-------+
+
+..
+
 
 Showing Secrets
 ~~~~~~~~~~~~~~~
