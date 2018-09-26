@@ -1,6 +1,5 @@
 import base64
 import binascii
-import crypt
 import errno
 import hashlib
 import logging
@@ -364,6 +363,37 @@ class SecretsEnvironment(object):
         self.read_secrets_descriptions()
         self.find_new_secrets()
 
+    def get_descriptions(self, infile=None):
+        """
+        Read a secrets description file and return a dictionary if valid.
+
+        :param infile:
+        :return: dictionary of descriptions
+        """
+        with open(infile, 'r') as f:
+            data = yaml.safe_load(f)
+        for d in data:
+            for k in d.keys():
+                if k not in SECRET_ATTRIBUTES:
+                    raise RuntimeError('Invalid attribute ' +
+                                       '"{}"'.format(k) +
+                                       'in {}'.format(infile))
+        return data
+
+    def check_duplicates(self, data=list()):
+        """
+        Check to see if any 'Variable' dictionary elements in list match
+        any already defined variables. If so, raise RuntimeError().
+
+        :param data: list of dictionaries containing secret descriptions
+        :return: None
+        """
+        for d in data:
+            v = d.get('Variable')
+            if v in self._secrets:
+                raise RuntimeError('Variable "{}" '.format(v) +
+                                   'duplicates an existing variable')
+
     def read_secrets_descriptions(self):
         """Load the descriptions of groups of secrets from a .d directory"""
         groups_dir = self.descriptions_path()
@@ -380,8 +410,8 @@ class SecretsEnvironment(object):
                 # dictionaries as dictionary keyed on group name.
                 for fname in file_names:
                     group = os.path.splitext(fname)[0]
-                    with open(os.path.join(groups_dir, fname), 'r') as f:
-                        data = yaml.safe_load(f)
+                    data = self.get_descriptions(
+                        os.path.join(groups_dir, fname))
                     if data is not None:
                         self._descriptions[group] = data
                         # Dynamically create maps keyed on variable name
@@ -530,6 +560,10 @@ def generate_password(unique=False):
 @Memoize
 def generate_crypt6(unique=False, password=None, salt=None):
     """Generate a crypt() style SHA512 ("$6$") digest"""
+    try:  # Python 3
+        import crypt
+    except ModuleNotFoundError as e:
+        raise
     if password is None:
         raise RuntimeError('generate_crypt6(): "password" is not defined')
     if salt is None:

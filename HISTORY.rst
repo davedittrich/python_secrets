@@ -31,6 +31,7 @@ Unreleased
 Added
 ^^^^^
 
+- ``groups create`` command
 - Improve error handling consistency when no environment exists
 
 
