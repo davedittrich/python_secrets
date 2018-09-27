@@ -23,7 +23,8 @@ Version: 0.17.2
 Features
 --------
 
-* Uses the `openstack/cliff`_ command line framework.
+* Uses the `openstack/cliff`_ command line framework for a robust and
+  full-featured CLI. It is easy to add new commands and features!
 
 * Supports a "drop-in" model for defining variables in a modular manner
   (something like the `python-update-dotdee`_ program), supporting simplified
@@ -65,6 +66,10 @@ Features
 
 * Output the variables and values in multiple different formats (CSV,
   JSON, YAML) for use in shell scripts, etc. using ``cliff`` features.
+
+* Send secrets to other users on demand using GPG encrypted email to
+  protect the secrets while in transit and while at rest in users'
+  email inboxes.
 
 * Makes it easy to store temporary files (e.g., the output from
   Jinja template rendering)
