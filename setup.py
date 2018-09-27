@@ -65,7 +65,6 @@ setup(
     keywords='python_secrets',
     classifiers=[
         'Development Status :: 5 - Production/Stable',
-        'Framework :: Cliff',
         'Intended Audience :: Developers',
         'Intended Audience :: End Users/Desktop',
         'Intended Audience :: Information Technology',
