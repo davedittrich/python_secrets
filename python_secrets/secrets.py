@@ -234,7 +234,7 @@ class SecretsEnvironment(object):
         """Return the items from the secrets dictionary."""
         return self._secrets.items()
 
-    def get_secret(self, secret):
+    def get_secret(self, secret, allow_none=False):
         """Get the value of secret
 
         :param secret: :type: string
@@ -242,7 +242,10 @@ class SecretsEnvironment(object):
         """
         if secret is None:
             raise RuntimeError('Must specify secret to get')
-        return self._secrets.get(secret, None)
+        v = self._secrets.get(secret, None)
+        if v is None and not allow_none:
+            raise RuntimeError('{} is not defined'.format(secret))
+        return v
 
     def get_secret_export(self, secret):
         """Get the specified environment variable for exporting secret
@@ -306,7 +309,7 @@ class SecretsEnvironment(object):
             for i in self._descriptions[group]:
                 s = i['Variable']
                 t = i['Type']
-                if self.get_secret(s) is None:
+                if self.get_secret(s, allow_none=True) is None:
                     self.LOG.info('new {} '.format(t) +
                                   'variable "{}" '.format(s) +
                                   'is not defined')
@@ -766,7 +769,7 @@ class SecretsSet(Command):
             if '=' in arg:
                 k, v = arg.split('=')
             else:
-                k, v = arg, self.app.secrets.get_secret(arg)
+                k, v = arg, self.app.secrets.get_secret(arg, allow_none=True)
             k_type = self.app.secrets.get_type(k)
             if k_type is None:
                 self.LOG.info('no description for {}'.format(k))
@@ -823,7 +826,8 @@ class SecretsGet(Command):
         self.app.secrets.requires_environment()
         self.app.secrets.read_secrets_and_descriptions()
         if parsed_args.secret is not None:
-            value = self.app.secrets.get_secret(parsed_args.secret)
+            value = self.app.secrets.get_secret(
+                parsed_args.secret, allow_none=True)
             if not parsed_args.content:
                 print(value)
             else:
@@ -895,34 +899,43 @@ class SecretsSend(Command):
         return parser
 
     def take_action(self, parsed_args):
+        self.LOG.debug('send secret(s)')
         self.app.secrets.requires_environment()
+        self.app.secrets.read_secrets_and_descriptions()
         # Attempt to get refresh token first
         orig_refresh_token = None
-        try:
-            self.refresh_token = self.app.secrets[
-                "google_oauth_refresh_token"]
-        except KeyError:
-            pass
+        self.refresh_token =\
+            self.app.secrets.get_secret('google_oauth_refresh_token',
+                                        allow_none=True)
         if parsed_args.refresh_token:
             orig_refresh_token = self.refresh_token
             self.LOG.debug('refreshing Google Oauth2 token')
         else:
             self.LOG.debug('sending secrets')
+        if parsed_args.smtp_username is not None:
+            username = parsed_args.smtp_username
+        else:
+            username = self.app.secrets.get_secret(
+                'google_oauth_username')
         googlesmtp = GoogleSMTP(
-            parsed_args.smtp_username,
-            client_id=self.app.secrets['google_oauth_client_id'],
-            client_secret=self.app.secrets['google_oauth_client_secret'],
+            username=username,
+            client_id=self.app.secrets.get_secret(
+                'google_oauth_client_id'),
+            client_secret=self.app.secrets.get_secret(
+                'google_oauth_client_secret'),
             refresh_token=self.refresh_token
         )
         if parsed_args.refresh_token:
             new_refresh_token = googlesmtp.get_authorization()[0]
             if new_refresh_token != orig_refresh_token:
-                self.app.set_secret('google_oauth_refresh_token',
-                                    new_refresh_token)
+                self.app.secrets.set_secret('google_oauth_refresh_token',
+                                            new_refresh_token)
             return None
         elif parsed_args.test_smtp:
-            auth_string = googlesmtp.refresh_authorization()
-            googlesmtp.test_smtp(self, auth_string)
+            auth_string, expires_in = googlesmtp.refresh_authorization()
+            googlesmtp.test_smtp(
+                googlesmtp.generate_oauth2_string(
+                    base64_encode=True))
 
         recipients = list()
         variables = list()
@@ -930,18 +943,17 @@ class SecretsSend(Command):
             if "@" in arg:
                 recipients.append(arg)
             else:
-                if arg not in self.app.secrets:
-                    raise NameError(
-                        "Secret '{}' is not defined".format(arg))
-                variables.append(arg)
+                if self.app.secrets.get_secret(arg):
+                    variables.append(arg)
         message = "The following secret{} {} ".format(
             "" if len(variables) == 1 else "s",
             "is" if len(variables) == 1 else "are"
             ) + "being shared with you:\n\n" + \
             "\n".join(
-                ['{}={}'.format(v, self.app.secrets[v]) for v in variables]
+                ['{}={}'.format(v, self.app.secrets.get_secret(v))
+                 for v in variables]
             )
-        # https://stackoverflow.com/questions/33170016/how-to-use-django-1-8-5-orm-without-creating-a-django-project/46050808#46050808
+        # https://stackoverflow.com/questions/33170016/how-to-use-django-1-8-5-orm-without-creating-a-django-project/46050808#46050808  # noqa
         for recipient in recipients:
             googlesmtp.send_mail(parsed_args.smtp_sender,
                                  recipient,

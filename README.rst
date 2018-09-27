@@ -994,6 +994,34 @@ The variable now contains the output of the specified program:
 
 .. _davedittrich/goSecure: https://github.com/davedittrich/goSecure/
 
+Sharing secrets
+~~~~~~~~~~~~~~~
+
+The ``python_secrets`` program has a mechanism for sharing secrets with
+others using GPG encrypted email messages for securing secrets in transit
+and at rest in users' inboxes.
+
+.. note::
+
+   The Electronic Frontier Foundation (EFF) has a `Surveillance Self-Defense
+   Guide`_ that includes guides on `How to: Use PGP for Linux`_ and other operating
+   systems. Follow their instructions if you are new to PGP/GPG.
+
+..
+
+.. code-block:: shell
+
+    $ psec -q secrets send dittrich@u.washington.edu myapp_app_password
+
+..
+
+Any arguments that contain ``@`` are assumed to be email addresses, and
+the rest are assumed to be secrets to be sent. If there is no GPG key
+associated with the recipient email addresses, an exception is thrown.
+
+.. _Surveillance Self-Defense Guide: https://ssd.eff.org/en
+.. _How to\: Use PGP for Linux: https://ssd.eff.org/en/module/how-use-pgp-linux
+
 Outputting structured information for use in other scripts
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

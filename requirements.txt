@@ -1,6 +1,7 @@
 cliff
 jinja2
 lxml
+gnupg
 numpy
 six
 requests

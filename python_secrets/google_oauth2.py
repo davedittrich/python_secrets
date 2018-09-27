@@ -17,13 +17,45 @@
 # requirements and Python 3 coding style.
 # Copyright 2018 David Dittrich <dave.dittrich@gmail.com>
 
+# Parts based on 'cryptoletter.py' by Nex
+# https://github.com/botherder/cryptoletter/blob/master/cryptoletter.py
+# Copyright (c) 2015, Claudio "nex" Guarnieri
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#
+# * Redistributions of source code must retain the above copyright notice, this
+#   list of conditions and the following disclaimer.
+#
+# * Redistributions in binary form must reproduce the above copyright notice,
+#   this list of conditions and the following disclaimer in the documentation
+#   and/or other materials provided with the distribution.
+#
+# * Neither the name of cryptoletter nor the names of its
+#   contributors may be used to endorse or promote products derived from
+#   this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+# LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+# CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+# ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+# POSSIBILITY OF SUCH DAMAGE.
+
+
 import base64
 import imaplib
 import json
+import gnupg
 import lxml.html  # nosec
 import smtplib
-import urllib.parse
-import urllib.request
+import urllib
 
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -65,6 +97,8 @@ class GoogleSMTP(object):
         self.GOOGLE_ACCOUNTS_BASE_URL = 'https://accounts.google.com'
         self.REDIRECT_URI = 'urn:ietf:wg:oauth:2.0:oob'
 
+        self.gpg = gnupg.GPG(homedir='~/.gnupg')
+
         # TODO(dittrich): Disabled this temporarily
         # if self.refresh_token in [None, '']:
         #     self.refresh_token, self.access_token, self.expires_in = \
@@ -103,6 +137,17 @@ class GoogleSMTP(object):
         params['response_type'] = 'code'
         return '{}?{}'.format(self.command_to_url('o/oauth2/auth'),
                               self.url_format_params(params))
+
+    def find_keyid(self, recipient):
+        # We need the keyid to encrypt the message to the recipient.
+        # Let's walk through all keys in the keyring and find the
+        # appropriate one.
+        keys = self.gpg.list_keys()
+        for key in keys:
+            for uid in key['uids']:
+                if recipient in uid:
+                    return key['keyid']
+        return None
 
     def authorize_tokens(self, auth_token):
         params = dict()
@@ -197,7 +242,7 @@ class GoogleSMTP(object):
         smtp_conn.set_debuglevel(True)
         smtp_conn.ehlo('test')
         smtp_conn.starttls()
-        smtp_conn.docmd('AUTH', 'XOAUTH2 ' + base64.b64encode(auth_string))
+        smtp_conn.docmd('AUTH', 'XOAUTH2 ' + auth_string)
 
     def get_refresh_token(self):
         return self.refresh_token
@@ -223,6 +268,18 @@ class GoogleSMTP(object):
         self.access_token, self.expires_in = self.refresh_authorization()
         # TODO(dittrich): probably don't want to use 'fromaddr' here...
         auth_string = self.generate_oauth2_string(base64_encode=True)
+
+        # Encrypt message to recipient
+        keyid = self.find_keyid(toaddr)
+        if not keyid:
+            raise RuntimeError('No GPG key found for {}'.format(toaddr))
+        encrypted_data = self.gpg.encrypt(message, keyid)
+        if not encrypted_data.ok:
+            raise RuntimeError('GPG encryption failed: {}'.format(
+                encrypted_data.stderr
+            ))
+        encrypted_body = str(encrypted_data)
+
         msg = MIMEMultipart('related')
         msg['Subject'] = subject
         msg['From'] = fromaddr
@@ -230,7 +287,7 @@ class GoogleSMTP(object):
         msg.preamble = 'This is a multi-part message in MIME format.'
         msg_alternative = MIMEMultipart('alternative')
         msg.attach(msg_alternative)
-        part_text = MIMEText(lxml.html.fromstring(message).text_content().encode('utf-8'), 'plain', _charset='utf-8') # noqa
+        part_text = MIMEText(lxml.html.fromstring(encrypted_body).text_content().encode('utf-8'), 'plain', _charset='utf-8')  # noqa
         part_html = MIMEText(message.encode('utf-8'), 'html', _charset='utf-8')
         msg_alternative.attach(part_text)
         msg_alternative.attach(part_html)

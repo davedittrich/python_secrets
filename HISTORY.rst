@@ -31,6 +31,7 @@ Unreleased
 Added
 ^^^^^
 
+- Finish GPG encrypted email delivery of secrets
 - ``groups create`` command
 - Improve error handling consistency when no environment exists
 
