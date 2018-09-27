@@ -15,7 +15,7 @@ python_secrets
 
 Python CLI for managing secrets (passwords, API keys, etc)
 
-Version: 0.17.1
+Version: 0.17.2
 
 * Free software: Apache 2.0 License
 * Documentation: https://python_secrets.readthedocs.org.
