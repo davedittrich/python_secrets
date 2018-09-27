@@ -833,7 +833,7 @@ following steps:
 
    .. note::
 
-      If you ever want to suppress messages about new variables, etc., 
+      If you ever want to suppress messages about new variables, etc.,
       just add the ``-q`` flag:
 
       .. code-block:: shell
@@ -1082,6 +1082,82 @@ Use ``-q`` to produce no extraneous output.
 .. code-block:: shell
 
     $ psec -q secrets send dittrich@u.washington.edu myapp_app_password
+
+..
+
+The resulting email looks like this:
+
+.. code-block:: shell
+
+    Message-ID: <5bac64ce.1c69fb81.b136e.45ae@mx.google.com>
+    Date: Wed, 26 Sep 2018 22:04:14 -0700 (PDT)
+    From: dave.dittrich@gmail.com
+    X-Google-Original-From: noreply@nowhere
+    Content-Type: multipart/related; boundary="===============6413073026511107073=="
+    MIME-Version: 1.0
+    Subject: For Your Information
+    To: dittrich@u.washington.edu
+
+    This is a multi-part message in MIME format.
+    --===============6413073026511107073==
+    Content-Type: multipart/alternative; boundary="===============2830935289665347054=="
+    MIME-Version: 1.0
+
+    --===============2830935289665347054==
+    Content-Type: text/plain; charset="utf-8"
+    MIME-Version: 1.0
+    Content-Transfer-Encoding: base64
+
+    LS0tLS1CRUdJTiBQR1AgTUVTU0FHRS0tLS0tCgpoUUlXQStSZlhnK3dLTGJlRUFnZlFNcjZYb0lT
+    cS9BaTlMbEVpZTFTejd5ckEzUmN4SWdjb01XTUNSM3JBaXBHCjF0TTJoZkpxRGJZOThSOEVST01F
+    aVltSzR2aVJ4ZjgrSU54NU54SUJPbFh1T1JQTy82NElUKzdrVSt5aDZGV00KNU1MK0Jkb21sQzNF
+    eC9pd3hwbTJ1R2FPczFpcU9DaDIxbTd5RnJWYkNVSW5NN1ZiMTEwck41aXNOZ3BFdndrQgpaZHhp
+    alJqazdtYVl1eFNkc2c3Y2RVQ29uSmdBR214QU0vZkFzOTREcHNrYkwzMFpqZE1iRHlMbUk4NWp2
+    QU45CjU3KzAxLzM1MEMyN1hrbEUxdEZudWNlRkRqZ04zeEd4K2Zud0pqdkFpNUpaVHltanRkQi9r
+    dUZUMlJTTmJJTlAKMWRZdHp4WGxNeVd0SVphNDVYcHdNenZ1TkFTbEJtbENjQXk4YlluSEJmeFRy
+    SGdJSUlCMlZNY1N6dmdjR3BtVApkYzZqaDVOeEV1bWljOWdXMmplSnFqRHRtdW9Ib3dxZldZb2xX
+    bGlXUTMrNDNzeVkrdHFlMGgvWEwzS2ZxSTMrClZzWWdyQmpGd0hnem1INEthMWxucXdUZkMzZTJ3
+    cUI4Uk5hcllqcXAzbHFQOVBhMHdzSVVWMHVYN2dhL01kVWcKdHNRSktPWWJRTnlXVTFLZEZWNHl4
+    Ynp1TWVlQ3ltMmxMbXJwVks5T3hCV04vbCtXMjRsWmhkck9TcGFJQnpNdgpnc1p3VWVuVzBXR054
+    bklwUGhoSWRuVE40ZlNscE5JVDhMcmJYeUhoY2ZVS2lsUDNpeEVPRS9Lc25QUFJNTURFCk9SY0xT
+    Z3FMMTB4b0toMnNzZTNxNG5RaHZkZW5IVVVxVjJ0WW1UVmRCNVl3cTN1MFdtY3BGSGU2NnBZeTBB
+    VSsKdzRjb2JVM2crQWtJMHBNQnllRzZYaWV4VzF1UzRLVVVnaFlhWVlYQ2dnazJZNEpZT05QSDJJ
+    NlIydmxuNjFsVApZdm1tR0NNamw3cC9pTnE2RWJpbndoMnNsbkpLMHd3S1BIbVBPUjJvRjdWREN0
+    dE9idHA0cEZUWTNHalByc0dRCkNDT3dYR2hCSFVQRnY2c3R4NEdtUi9GUWpBRWxxaEpjQWtTbDFz
+    WWhsUFRhSmEyVGgyNG81L1lPUmxRaHhhRUgKUEFrNFgzcGVCMk9UVjRNR2RCOD0KPTc0aXEKLS0t
+    LS1FTkQgUEdQIE1FU1NBR0UtLS0tLQo=
+
+    --===============2830935289665347054==
+    Content-Type: text/html; charset="utf-8"
+    MIME-Version: 1.0
+    Content-Transfer-Encoding: base64
+
+    VGhlIGZvbGxvd2luZyBzZWNyZXQgaXMgYmVpbmcgc2hhcmVkIHdpdGggeW91OgoKbXlhcHBfYXBw
+    X3Bhc3N3b3JkPWJydW50IG91dGNsYXNzIGFsaWtlIHR1cmJpbmU=
+
+    --===============2830935289665347054==--
+
+    --===============6413073026511107073==--
+
+..
+
+Decrypted, it looks like this:
+
+.. code-block:: shell
+
+    Date: Wed, 26 Sep 2018 22:04:14 -0700 (PDT)
+    From: dave.dittrich@gmail.com
+    Subject: For Your Information
+    To: dittrich@u.washington.edu
+
+    The following secret is being shared with you:
+
+    myapp_app_password=brunt outclass alike turbine
+
+    --
+    Sent using python_secrets version 0.17.2
+    https://pypi.org/project/python-secrets/
+    https://github.com/davedittrich/python_secrets
 
 ..
 

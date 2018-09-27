@@ -55,6 +55,7 @@ import json
 import gnupg
 import lxml.html  # nosec
 import smtplib
+import textwrap
 import urllib
 
 from email.mime.multipart import MIMEMultipart
@@ -269,6 +270,13 @@ class GoogleSMTP(object):
         # TODO(dittrich): probably don't want to use 'fromaddr' here...
         auth_string = self.generate_oauth2_string(base64_encode=True)
 
+        # Note: version number is tracked with bumpversion (see "setup.cfg")
+        message = message + textwrap.dedent("""
+        
+        --
+        Sent using python_secrets version 0.17.2
+        https://pypi.org/project/python-secrets/
+        https://github.com/davedittrich/python_secrets""")
         # Encrypt message to recipient
         keyid = self.find_keyid(toaddr)
         if not keyid:
