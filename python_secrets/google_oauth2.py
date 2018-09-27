@@ -274,7 +274,7 @@ class GoogleSMTP(object):
         message = message + textwrap.dedent("""
         
         --
-        Sent using python_secrets version 0.17.2
+        Sent using python_secrets version 0.17.3
         https://pypi.org/project/python-secrets/
         https://github.com/davedittrich/python_secrets""")
         # Encrypt message to recipient
