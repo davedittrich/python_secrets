@@ -267,12 +267,9 @@ class GoogleSMTP(object):
 
     def send_mail(self, fromaddr, toaddr, subject, message):
         self.access_token, self.expires_in = self.refresh_authorization()
-        # TODO(dittrich): probably don't want to use 'fromaddr' here...
         auth_string = self.generate_oauth2_string(base64_encode=True)
-
         # Note: version number is tracked with bumpversion (see "setup.cfg")
-        message = message + textwrap.dedent("""
-        
+        message = message + textwrap.dedent("""\n
         --
         Sent using python_secrets version 0.17.3
         https://pypi.org/project/python-secrets/
