@@ -1091,7 +1091,7 @@ and must be set according to Google's instructions. See also:
 
 + https://github.com/google/gmail-oauth2-tools/blob/master/python/oauth2.py
 
-* https://developers.google.com/identity/protocols/OAuth2
++ https://developers.google.com/identity/protocols/OAuth2
 
 
 .. _OAuth 2.0 Mechanism: https://developers.google.com/gmail/imap/xoauth2-protocol.
