@@ -25,12 +25,13 @@ History
 .. Security in case of vulnerabilities.
 
 
-Unreleased
-~~~~~~~~~~
+18.9.0 (2018-09-27)
+~~~~~~~~~~~~~~~~~~~
 
 Added
 ^^^^^
 
+- Switched to calendar version numbering
 - Finish GPG encrypted email delivery of secrets
 - ``groups create`` command
 - Improve error handling consistency when no environment exists

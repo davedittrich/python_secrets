@@ -950,7 +950,7 @@ class SecretsSend(Command):
             "is" if len(variables) == 1 else "are"
             ) + "being shared with you:\n\n" + \
             "\n".join(
-                ['{}={}'.format(v, self.app.secrets.get_secret(v))
+                ["{}='{}'".format(v, self.app.secrets.get_secret(v))
                  for v in variables]
             )
         # https://stackoverflow.com/questions/33170016/how-to-use-django-1-8-5-orm-without-creating-a-django-project/46050808#46050808  # noqa
