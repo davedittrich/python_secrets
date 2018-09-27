@@ -999,7 +999,8 @@ Sharing secrets
 
 The ``python_secrets`` program has a mechanism for sharing secrets with
 others using GPG encrypted email messages for securing secrets in transit
-and at rest in users' inboxes.
+and at rest in users' inboxes. Email is sent using Google's OAuth2
+authenticated SMTP services.
 
 .. note::
 
@@ -1008,6 +1009,45 @@ and at rest in users' inboxes.
    systems. Follow their instructions if you are new to PGP/GPG.
 
 ..
+
+The command is ``secrets send``.
+
+.. code-block:: shell
+
+    $ psec secrets send --help
+    usage: psec secrets send [-h] [-T] [--test-smtp] [-H SMTP_HOST]
+                             [-U SMTP_USERNAME] [-F SMTP_SENDER] [-S SMTP_SUBJECT]
+                             [args [args ...]]
+
+    Send secrets using GPG encrypted email. Arguments are USERNAME@EMAIL.ADDRESS
+    and/or VARIABLE references.
+
+    positional arguments:
+      args
+
+    optional arguments:
+      -h, --help            show this help message and exit
+      -T, --refresh-token   Refresh Google API Oauth2 token and exit (default:
+                            False)
+      --test-smtp           Test Oauth2 SMTP authentication and exit (default:
+                            False)
+      -H SMTP_HOST, --smtp-host SMTP_HOST
+                            SMTP host (default: localhost)
+      -U SMTP_USERNAME, --smtp-username SMTP_USERNAME
+                            SMTP authentication username (default: None)
+      -F SMTP_SENDER, --from SMTP_SENDER
+                            Sender address (default: 'noreply@nowhere')
+      -S SMTP_SUBJECT, --subject SMTP_SUBJECT
+                            Subject line (default: 'For Your Information')
+
+..
+
+Any arguments (``args``) that contain the ``@`` symbol are assumed to be email
+addresses while the rest are assumed to be the names of secrets variables
+to be sent.
+
+All recipients must have GPG public keys in your keyring.  An exception is thrown
+if no GPG key is associated with the recipient(s) email addresses.
 
 .. code-block:: shell
 
@@ -1040,12 +1080,38 @@ Use ``-q`` to produce no extraneous output.
 
 ..
 
-Any arguments that contain ``@`` are assumed to be email addresses, and
-the rest are assumed to be secrets to be sent. If there is no GPG key
-associated with the recipient email addresses, an exception is thrown.
+A group of secrets required for Google's `OAuth 2.0 Mechanism`_  is provided
+and must be set according to Google's instructions. See also:
+
++ https://github.com/google/gmail-oauth2-tools/wiki/OAuth2DotPyRunThrough
+
++ http://blog.macuyiko.com/post/2016/how-to-send-html-mails-with-oauth2-and-gmail-in-python.html
+
++ https://developers.google.com/api-client-library/python/guide/aaa_oauth
+
++ https://github.com/google/gmail-oauth2-tools/blob/master/python/oauth2.py
+
+* https://developers.google.com/identity/protocols/OAuth2
+
+
+.. _OAuth 2.0 Mechanism: https://developers.google.com/gmail/imap/xoauth2-protocol.
+
+.. code-block:: shell
+
+    $ psec groups show oauth
+    +-------+----------------------------+
+    | Group | Variable                   |
+    +-------+----------------------------+
+    | oauth | google_oauth_client_id     |
+    | oauth | google_oauth_client_secret |
+    | oauth | google_oauth_refresh_token |
+    +-------+----------------------------+
+
+..
 
 .. _Surveillance Self-Defense Guide: https://ssd.eff.org/en
 .. _How to\: Use PGP for Linux: https://ssd.eff.org/en/module/how-use-pgp-linux
+
 
 Outputting structured information for use in other scripts
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
