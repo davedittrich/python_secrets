@@ -959,6 +959,7 @@ class SecretsSend(Command):
                                  recipient,
                                  parsed_args.smtp_subject,
                                  message)
+            self.LOG.info('sent encrypted secrets to {} '.format(recipient))
 
 
 class SecretsPath(Command):

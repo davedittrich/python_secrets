@@ -1011,6 +1011,31 @@ and at rest in users' inboxes.
 
 .. code-block:: shell
 
+    $ psec secrets send dittrich@u.washington.edu myapp_app_password
+    Setting homedir to '/Users/dittrich/.gnupg'
+
+    Initialised settings:
+    binary: /usr/local/bin/gpg
+    binary version: 1.4.11\ncfg:pubkey:1;2;3;16;17\ncfg:cipher:2;3;4;7;8;9;10;11;12;13\ncfg:ciphername:3DES;CAST5;BLOWFISH;AES;AES192;AES256;TWOFISH;CAMELLIA128;CAMELLIA192;CAMELLIA256\ncfg:digest:1;2;3;8;9;10;11\ncfg:digestname:MD5;SHA1;RIPEMD160;SHA256;SHA384;SHA512;SHA224\ncfg:compress:0;1;2;3\n'
+    homedir: /Users/dittrich/.gnupg
+    ignore_homedir_permissions: False
+    keyring: /Users/dittrich/.gnupg/pubring.gpg
+    secring: /Users/dittrich/.gnupg/secring.gpg
+    default_preference_list: SHA512 SHA384 SHA256 AES256 CAMELLIA256 TWOFISH AES192 ZLIB ZIP Uncompressed
+    keyserver: hkp://wwwkeys.pgp.net
+    options: None
+    verbose: False
+    use_agent: False
+
+    Creating the trustdb is only available with GnuPG>=2.x
+    sent encrypted secrets to dittrich@u.washington.edu
+
+..
+
+Use ``-q`` to produce no extraneous output.
+
+.. code-block:: shell
+
     $ psec -q secrets send dittrich@u.washington.edu myapp_app_password
 
 ..
