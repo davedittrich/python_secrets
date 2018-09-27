@@ -289,10 +289,11 @@ be one for open source *Program A*, one for *Program B*, etc., or it could be
 one for *development*, one for *testing*, one for *production*, etc. (or any
 combination).
 
-Use the command ``environments create`` to create an environment.  Since this
+The command ``environments create`` creates an environment.  Since this
 program is designed to support multiple environments, a name for the new
-environment is required. The name can be provided explicitly, or it can be
-inferred from the base name of the current working directory:
+environment is required.  The name of the environment can be provided
+explicitly, or it can be inferred from the base name of the current working
+directory:
 
 .. code-block:: shell
 
@@ -350,6 +351,48 @@ have to specify all of the names on the command line as arguments:
     environment directory /Users/dittrich/.secrets/development created
     environment directory /Users/dittrich/.secrets/testing created
     environment directory /Users/dittrich/.secrets/production created
+
+..
+
+If you are using one source repository for building multiple deployments, of
+course you can't rely on the basename of the directory for all deployments. The
+default environment can be set, shown, or unset, using the ``environments
+default`` command.
+
+.. code-block:: shell
+
+    $ psec environments default --help
+    usage: psec environments default [-h] [--unset-default] [environment]
+
+    Manage default environment via file in cwd
+
+    positional arguments:
+      environment
+
+    optional arguments:
+      -h, --help       show this help message and exit
+      --unset-default  Unset localized environment default
+
+..
+
+If no default is explicitly set, nothing is returned:
+
+.. code-block:: shell
+
+    $ psec environments default
+
+..
+
+The following shows setting and unsetting the default:
+
+.. code-block:: shell
+
+    $ psec environments default test
+    default environment set to "test"
+    $ psec environments default
+    test
+    $ psec environments default --unset-default
+    default environment unset
 
 ..
 
