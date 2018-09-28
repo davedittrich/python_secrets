@@ -501,7 +501,6 @@ for the GitHub `davedittrich/goSecure`_ VPN project.)
 
 ..
 
-.. _davedittrich/goSecure: https://github.com/davedittrich/goSecure
 
 Each set of secrets for a given service or purpose is described in its own
 file.
@@ -1040,7 +1039,6 @@ The variable now contains the output of the specified program:
 
 ..
 
-.. _davedittrich/goSecure: https://github.com/davedittrich/goSecure/
 
 Sharing secrets
 ~~~~~~~~~~~~~~~
@@ -1688,3 +1686,5 @@ Future Work
 
   ..
 
+
+.. _davedittrich/goSecure: https://github.com/davedittrich/goSecure
