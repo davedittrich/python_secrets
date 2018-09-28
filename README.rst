@@ -826,6 +826,40 @@ specifying the variable and value in the form ``variable=value``:
 
 ..
 
+.. caution::
+
+   Note in the example above that the command argument is
+   ``trident_db_pass="rural coffee purple sedan"`` and not
+   ``trident_db_pass='rural coffee purple sedan'``.
+   When using the ``variable=value`` form of the ``secrets set``
+   command with a value that contains spaces, you **must** quote the value with
+   the double-quote character (``"``) as opposed to the single-quote
+   (apostrophe, or ``'``) character. The Bash shell (and possibly other
+   shells) will not properly parse the command line and the resulting
+   ``sys.argv`` argument vector will be incorrectly set as seen here:
+
+   .. code-block:: shell
+
+       _sys.argv[1:] = {list} <class 'list'>: ['--debug', 'secrets', 'set', 'trident_db_password=rural coffee purple sedan']
+        0 = {str} '--debug'
+        1 = {str} 'secrets'
+        2 = {str} 'set'
+        3 = {str} 'trident_db_password=rural coffee purple sedan'
+        __len__ = {int} 4
+
+
+       _sys.argv[1:] = {list} <class 'list'>: ['--debug', 'secrets', 'set', "trident_db_password='rural", 'coffee', 'purple', "sedan'"]
+        0 = {str} '--debug'
+        1 = {str} 'secrets'
+        2 = {str} 'set'
+        3 = {str} 'trident_db_password=\\'rural'
+        4 = {str} 'coffee'
+        5 = {str} 'purple'
+        6 = {str} 'sedan\\''
+        __len__ = {int} 7
+
+..
+
 Or you can generate one or more variables in a similar manner by adding
 them to the command line as arguments to ``secrets generate``:
 
