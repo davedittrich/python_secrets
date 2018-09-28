@@ -775,32 +775,31 @@ class SecretsSet(Command):
                 self.LOG.info('no description for {}'.format(k))
                 raise RuntimeError('variable "{}" '.format(k) +
                                    'has no description')
-            if k_type == 'string':
-                if '=' not in arg:
-                    v = prompt_string(
-                        prompt=self.app.secrets.get_prompt(k),
-                        default=v)
-                    if v is None:
-                        self.LOG.info('no user input for "{}"'.format(k))
-                        return None
-                if v.startswith('@'):
-                    if v[1] == '~':
-                        _path = os.path.expanduser(v[1:])
-                    else:
-                        _path = v[1:]
-                    with open(_path, 'r') as f:
-                        v = f.read().strip()
-                elif v.startswith('!'):
-                    # >> Issue: [B603:subprocess_without_shell_equals_true] subprocess call - check for execution of untrusted input.  # noqa
-                    #    Severity: Low   Confidence: High
-                    #    Location: python_secrets/secrets.py:641
-                    p = run(v[1:].split(),
-                            stdout=PIPE,
-                            stderr=PIPE,
-                            shell=False)
-                    v = p.stdout.decode('UTF-8').strip()
-                self.LOG.debug('setting {}'.format(k))
-                self.app.secrets.set_secret(k, v)
+            if '=' not in arg:
+                v = prompt_string(
+                    prompt=self.app.secrets.get_prompt(k),
+                    default=v)
+                if v is None:
+                    self.LOG.info('no user input for "{}"'.format(k))
+                    return None
+            if v.startswith('@'):
+                if v[1] == '~':
+                    _path = os.path.expanduser(v[1:])
+                else:
+                    _path = v[1:]
+                with open(_path, 'r') as f:
+                    v = f.read().strip()
+            elif v.startswith('!'):
+                # >> Issue: [B603:subprocess_without_shell_equals_true] subprocess call - check for execution of untrusted input.  # noqa
+                #    Severity: Low   Confidence: High
+                #    Location: python_secrets/secrets.py:641
+                p = run(v[1:].split(),
+                        stdout=PIPE,
+                        stderr=PIPE,
+                        shell=False)
+                v = p.stdout.decode('UTF-8').strip()
+            self.LOG.debug('setting {}'.format(k))
+            self.app.secrets.set_secret(k, v)
 
 
 class SecretsGet(Command):
