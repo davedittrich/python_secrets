@@ -11,7 +11,7 @@ test:
 
 #HELP release - package and upload a release to pypi
 .PHONY: release
-release: clean sdist bdist_egg bdist_wheel test
+release: clean sdist bdist_egg bdist_wheel test twine-check
 	twine upload dist/* -r pypi
 
 #HELP release-test - upload to "testpypi"
@@ -36,6 +36,11 @@ bdist_wheel:
 sdist: docs
 	python setup.py sdist
 	ls -l dist/*.tar.gz
+
+#HELP twine-check
+.PHONY: twine-check
+twine-check: bdist_egg
+	twine check dist/*
 
 #HELP clean - remove build artifacts
 .PHONY: clean
