@@ -5,10 +5,18 @@
 
 """Python secrets management app"""
 
+from __future__ import print_function
+
 # Standard library modules.
 import logging
 import os
 import sys
+
+if sys.version_info < (3,6,0):
+    print("The {} program ".format(os.path.basename(sys.argv[0])) +
+          "prequires Python 3.6.0 or newer\n" +
+          "Found Python {}".format(sys.version), file=sys.stderr)
+    sys.exit(1)
 
 from . import __version__
 from python_secrets.secrets import SecretsEnvironment
