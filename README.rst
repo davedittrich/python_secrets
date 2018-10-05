@@ -141,6 +141,16 @@ The actions are things like ``list``, ``show``, ``generate``, ``set``, etc.
 .. _OpenStackClient: https://docs.openstack.org/python-openstackclient/latest/
 .. _Command Structure: https://docs.openstack.org/python-openstackclient/latest/cli/commands.html
 
+.. note::
+
+    A proof-of-concept for using ``python_secrets`` in an open source
+    project to eliminate default passwords and keep secrets out of the
+    source code repository directory can be found here:
+
+    https://davedittrich.github.io/goSecure/documentation.html
+
+..
+
 Getting help
 ~~~~~~~~~~~~
 
