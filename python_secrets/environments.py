@@ -117,6 +117,14 @@ class EnvironmentsPath(Command):
                             nargs='?',
                             default=default_environment)
         parser.add_argument(
+            '--json',
+            action='store_true',
+            dest='json',
+            default=False,
+            help="Output in JSON (e.g., for Terraform external data source; " +
+                 "default: False)"
+        )
+        parser.add_argument(
             '--tmpdir',
             action='store_true',
             dest='tmpdir',
@@ -125,6 +133,15 @@ class EnvironmentsPath(Command):
                  '(default: False)'
         )
         return parser
+
+    def _print(self, item, use_json=False):
+        """Output item, optionally using JSON"""
+        if use_json:
+            import json
+            res = {'path': item}
+            print(json.dumps(res))
+        else:
+            print(item)
 
     def take_action(self, parsed_args):
         self.LOG.debug('returning environment path')
@@ -143,9 +160,9 @@ class EnvironmentsPath(Command):
                     self.LOG.info('changed mode on {} from {} to {}'.format(
                         tmpdir, oct(current_mode), oct(tmpdir_mode)))
             finally:
-                print(tmpdir)
+                self._print(tmpdir, parsed_args.json)
         else:
-            print(e.environment_path())
+            self._print(e.environment_path(), parsed_args.json)
 
 
 class EnvironmentsTree(Command):

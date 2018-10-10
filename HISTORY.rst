@@ -31,6 +31,7 @@ Unreleased
 Added
 ^^^^^
 
+- Add ``--json`` output to ``environments path``
 - Add reference to proof-of-concept using goSecure fork
 
 Changed
