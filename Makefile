@@ -8,6 +8,7 @@ PROJECT:=$(shell basename `pwd`)
 .PHONY: test
 test:
 	tox
+	python setup.py check --restructuredtext
 
 #HELP release - package and upload a release to pypi
 .PHONY: release
@@ -40,7 +41,7 @@ sdist: docs
 #HELP twine-check
 .PHONY: twine-check
 twine-check: bdist_egg
-	twine check dist/*
+	twine check $(shell ls dist/*.egg | head -n 1)
 
 #HELP clean - remove build artifacts
 .PHONY: clean
