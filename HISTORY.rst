@@ -25,6 +25,20 @@ History
 .. Security in case of vulnerabilities.
 
 
+Unreleased
+~~~~~~~~~~
+
+Added
+^^^^^
+
+- Add reference to proof-of-concept using goSecure fork
+
+Changed
+^^^^^^^
+
+- Allow ``secrets set`` to set any type (not just ``string``)
+
+
 18.9.0 (2018-09-27)
 ~~~~~~~~~~~~~~~~~~~
 
