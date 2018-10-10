@@ -15,7 +15,7 @@ python_secrets
 
 Python CLI for managing secrets (passwords, API keys, etc)
 
-Version: 18.9.2
+Version: 18.9.3
 
 * Free software: Apache 2.0 License
 * Documentation: https://python_secrets.readthedocs.org.
@@ -113,6 +113,26 @@ Limitations
 
 .. _libfuse/sshfs: https://github.com/libfuse/sshfs
 .. _D2 Ansible Playbooks: https://github.com/davedittrich/ansible-dims-playbooks
+
+Installation
+------------
+
+Install using the ``pip`` module of Python 3.6 (or greater):
+
+.. code-block:: shell
+
+   $ python3 -V
+   $ Python 3.6.6
+   $ python3 -m pip install python_secrets
+
+..
+
+.. raw:: html
+
+    <a href="https://asciinema.org/a/201502?autoplay=1" target="_blank"><img src="https://asciinema.org/a/201502.png" width="835"/></a>
+
+..
+
 
 Usage
 -----
@@ -260,6 +280,14 @@ regarding secrets storage:
    secret group descriptions;
 #. The *secrets* file and *group descriptions*.
 
+
+.. raw:: html
+
+    <a href="https://asciinema.org/a/201503?autoplay=1" target="_blank"><img src="https://asciinema.org/a/201503.png" width="835"/></a>
+
+..
+
+
 Root directory
 ^^^^^^^^^^^^^^
 
@@ -298,6 +326,12 @@ one environment per set of unique secrets that you need to manage. This could
 be one for open source *Program A*, one for *Program B*, etc., or it could be
 one for *development*, one for *testing*, one for *production*, etc. (or any
 combination).
+
+.. raw:: html
+
+    <a href="https://asciinema.org/a/201505?autoplay=1" target="_blank"><img src="https://asciinema.org/a/201505.png" width="835"/></a>
+
+..
 
 The command ``environments create`` creates an environment.  Since this
 program is designed to support multiple environments, a name for the new
@@ -1240,7 +1274,7 @@ Decrypted, it looks like this:
     myapp_app_password=brunt outclass alike turbine
 
     --
-    Sent using python_secrets version 18.9.2
+    Sent using python_secrets version 18.9.3
     https://pypi.org/project/python-secrets/
     https://github.com/davedittrich/python_secrets
 
@@ -1277,6 +1311,16 @@ and must be set according to Google's instructions. See also:
 
 .. _Surveillance Self-Defense Guide: https://ssd.eff.org/en
 .. _How to\: Use PGP for Linux: https://ssd.eff.org/en/module/how-use-pgp-linux
+
+
+Processing templates
+~~~~~~~~~~~~~~~~~~~~
+
+.. raw:: html
+
+    <a href="https://asciinema.org/a/201507?autoplay=1" target="_blank"><img src="https://asciinema.org/a/201507.png" width="835"/></a>
+
+..
 
 
 Outputting structured information for use in other scripts
@@ -1368,6 +1412,13 @@ shell prompt.
     test>
 
 ..
+
+.. raw:: html
+
+    <a href="https://asciinema.org/a/201510?autoplay=1" target="_blank"><img src="https://asciinema.org/a/201510.png" width="835"/></a>
+
+..
+
 
 .. _Ansible: https://docs.ansible.com/
 .. _Passing variables on the Command Line: https://docs.ansible.com/ansible/latest/user_guide/playbooks_variables.html#passing-variables-on-the-command-line

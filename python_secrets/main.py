@@ -5,18 +5,26 @@
 
 """Python secrets management app"""
 
+from __future__ import print_function
+
 # Standard library modules.
 import logging
 import os
 import sys
 
-from . import __version__
+from python_secrets import __version__
 from python_secrets.secrets import SecretsEnvironment
 
 # External dependencies.
 
 from cliff.app import App
 from cliff.commandmanager import CommandManager
+
+if sys.version_info < (3, 6, 0):
+    print("The {} program ".format(os.path.basename(sys.argv[0])) +
+          "prequires Python 3.6.0 or newer\n" +
+          "Found Python {}".format(sys.version), file=sys.stderr)
+    sys.exit(1)
 
 
 # Use syslog for logging?
