@@ -121,7 +121,7 @@ Commands (and subcommands) generally follow the model set by the
 `OpenStackClient`_ for its `Command Structure`_. The general structure
 of a command is:
 
-.. code-block:: shell
+.. code-block:: console
 
    $ psec [<global-options>] <object-1> <action> [<object-2>] [<command-arguments>]
 
@@ -157,7 +157,7 @@ Getting help
 To get help information on command arguments and options, use
 the ``help`` command or ``--help`` option flag:
 
-.. code-block:: shell
+.. code-block:: console
 
     $ psec help
     usage: psec [--version] [-v | -q] [--log-file LOG_FILE] [-h] [--debug]
@@ -219,7 +219,7 @@ Help is also available for individual commands, showing their unique
 command line options and arguments. You can get this command-level help
 output by using ``help command`` or ``command --help``, like this:
 
-.. code-block:: shell
+.. code-block:: console
 
     $ psec help utils myip
     usage: psec utils myip [-h] [-C]
@@ -232,7 +232,7 @@ output by using ``help command`` or ``command --help``, like this:
 
 ..
 
-.. code-block:: shell
+.. code-block:: console
 
     $ psec template --help
     usage: psec template [-h] [--check-defined] [source] [dest]
@@ -273,7 +273,7 @@ to move the contents to a different partition with more disk space.
 The first time you use ``python_secrets``, there will likely be no
 directory:
 
-.. code-block:: shell
+.. code-block:: console
 
     $ tree ~/.secrets
     /Users/dittrich/.secrets [error opening dir]
@@ -305,7 +305,7 @@ environment is required.  The name of the environment can be provided
 explicitly, or it can be inferred from the base name of the current working
 directory:
 
-.. code-block:: shell
+.. code-block:: console
 
     $ pwd
     /Users/dittrich/git/python_secrets
@@ -326,7 +326,7 @@ explicitly by (a) giving an argument on the command line, (b) using the ``-e`` o
 ``--environment`` command line flag, or (c) by setting the environment variable
 ``D2_ENVIRONMENT``:
 
-.. code-block:: shell
+.. code-block:: console
 
     $ python_secrets environments create development
     environment directory /Users/dittrich/.secrets/development created
@@ -355,7 +355,7 @@ explicitly by (a) giving an argument on the command line, (b) using the ``-e`` o
 If you want to create more than one environment at once, you will
 have to specify all of the names on the command line as arguments:
 
-.. code-block:: shell
+.. code-block:: console
 
     $ python_secrets environments create development testing production
     environment directory /Users/dittrich/.secrets/development created
@@ -369,7 +369,7 @@ course you can't rely on the basename of the directory for all deployments. The
 default environment can be set, shown, or unset, using the ``environments
 default`` command.
 
-.. code-block:: shell
+.. code-block:: console
 
     $ psec environments default --help
     usage: psec environments default [-h] [--unset-default] [environment]
@@ -387,7 +387,7 @@ default`` command.
 
 If no default is explicitly set, nothing is returned:
 
-.. code-block:: shell
+.. code-block:: console
 
     $ psec environments default
 
@@ -395,7 +395,7 @@ If no default is explicitly set, nothing is returned:
 
 The following shows setting and unsetting the default:
 
-.. code-block:: shell
+.. code-block:: console
 
     $ psec environments default test
     default environment set to "test"
@@ -413,7 +413,7 @@ with an environment.
 For convenience, there is a command ``environments tree`` that produces
 output similar to the Unix ``tree`` command:
 
-.. code-block:: shell
+.. code-block:: console
 
     $ psec -e d2 environments tree
     /Users/dittrich/.secrets/d2
@@ -454,7 +454,7 @@ output similar to the Unix ``tree`` command:
 
 To just see the directory structure and not files, add the ``--no-files`` option:
 
-.. code-block:: shell
+.. code-block:: console
 
     $ psec -e d2 environments tree --no-files
     /Users/dittrich/.secrets/d2
@@ -488,7 +488,7 @@ in which a set of different environments can be configured at one
 time, to define the current environment, and to change the name
 of the secrets file to something else.
 
-.. code-block:: shell
+.. code-block:: console
 
     $ env | grep ^D2_
     D2_SECRETS_DIR=/Users/dittrich/.secrets
@@ -500,7 +500,7 @@ Each environment is in turn rooted in a directory with the environment's
 symbolic name (e.g., ``do`` for DigitalOcean in this example, and ``goSecure``
 for the GitHub `davedittrich/goSecure`_ VPN project.)
 
-.. code-block:: shell
+.. code-block:: console
 
     $ tree -L 1 ~/.secrets
     /Users/dittrich/.secrets
@@ -515,7 +515,7 @@ for the GitHub `davedittrich/goSecure`_ VPN project.)
 Each set of secrets for a given service or purpose is described in its own
 file.
 
-.. code-block:: shell
+.. code-block:: console
 
     .
     ├── secrets.d
@@ -568,7 +568,7 @@ formats will be described later.)
 
 The groups can be listed using the ``groups list`` command:
 
-.. code-block:: shell
+.. code-block:: console
 
     $ psec groups list
     +---------+-------+
@@ -584,7 +584,7 @@ The groups can be listed using the ``groups list`` command:
 The variables in one or more groups can be shown with
 the ``groups show`` command:
 
-.. code-block:: shell
+.. code-block:: console
 
     $ psec groups show trident myapp
     +---------+-----------------------+
@@ -605,7 +605,7 @@ a new group and clone its secrets descriptions. This does not copy
 any values, just the descriptions, allowing the current environment
 to manage its own values.
 
-.. code-block:: shell
+.. code-block:: console
 
     $ psec groups create newgroup --clone-from ~/git/goSecure/secrets/secrets.d/gosecure.yml
     created new group "newgroup"
@@ -639,7 +639,7 @@ Showing Secrets
 
 To examine the secrets, use the ``secrets show`` command:
 
-.. code-block:: shell
+.. code-block:: console
 
     $ psec secrets show
     +------------------------+----------+-------------------+----------+
@@ -659,7 +659,7 @@ To examine the secrets, use the ``secrets show`` command:
 By default, the values of secrets are redacted when output.  To show
 the values in clear text in the terminal output, add the ``--no-redact`` flag:
 
-.. code-block:: shell
+.. code-block:: console
 
     $ psec secrets show --no-redact
     +------------------------+----------+-------------------+------------------------------+
@@ -682,7 +682,7 @@ the environment variable ``D2_NO_REDACT`` set to (case-insensitive)
 "true", "1", or "yes". Anything else leaves the default the same.
 We'll do this now for later examples.
 
-.. code-block:: shell
+.. code-block:: console
 
     $ export D2_NO_REDACT=true
 
@@ -693,7 +693,7 @@ subset of secrets, you have two ways to do this.
 
 #. Specify the variables you want to show on the command line as arguments:
 
-   .. code-block:: shell
+   .. code-block:: console
 
        $ psec secrets show rabbitmq_default_user_pass rabbitmq_admin_user_pass
        +----------------------------+----------+--------------------------------------+
@@ -708,7 +708,7 @@ subset of secrets, you have two ways to do this.
 #. Use the ``--group`` flag and specify the group(s) you want to show
    as command line arguments:
 
-   .. code-block:: shell
+   .. code-block:: console
 
        $ psec secrets show --group jenkins trident
        +----------------------------+----------+--------------------------------------+
@@ -724,7 +724,7 @@ subset of secrets, you have two ways to do this.
 #. Use ``secrets describe`` to see the supported secret types
    that are available for you to use:
 
-   .. code-block:: shell
+   .. code-block:: console
 
        $ psec secrets describe
        +------------------+----------------------------------+
@@ -757,7 +757,7 @@ Generating and Setting variables
 Secrets are generated using the ``secrets generate`` command
 and are set manually using the ``secrets set`` command.
 
-.. code-block:: shell
+.. code-block:: console
 
     $ psec help secrets generate
     usage: psec secrets generate [-h] [-U] [args [args ...]]
@@ -774,7 +774,7 @@ and are set manually using the ``secrets set`` command.
 
     ..
 
-.. code-block:: shell
+.. code-block:: console
 
     $ psec secrets set --help
     usage: psec secrets set [-h] [--undefined] [args [args ...]]
@@ -793,7 +793,7 @@ and are set manually using the ``secrets set`` command.
 To regenerate all of the non-string secrets at once, using the same value for
 each type of secret to simplify things, use the ``secrets generate`` command:
 
-.. code-block:: shell
+.. code-block:: console
 
     $ psec secrets generate
     $ psec secrets show --column Variable --column Value
@@ -815,7 +815,7 @@ each type of secret to simplify things, use the ``secrets generate`` command:
 You can set one or more variables manually using ``secrets set`` and
 specifying the variable and value in the form ``variable=value``:
 
-.. code-block:: shell
+.. code-block:: console
 
     $ psec secrets set trident_db_pass="rural coffee purple sedan"
     $ psec secrets show --column Variable --column Value
@@ -847,7 +847,7 @@ specifying the variable and value in the form ``variable=value``:
    shells) will not properly parse the command line and the resulting
    ``sys.argv`` argument vector will be incorrectly set as seen here:
 
-   .. code-block:: shell
+   .. code-block:: console
 
        _sys.argv[1:] = {list} <class 'list'>: ['--debug', 'secrets', 'set', 'trident_db_password=rural coffee purple sedan']
         0 = {str} '--debug'
@@ -872,7 +872,7 @@ specifying the variable and value in the form ``variable=value``:
 Or you can generate one or more variables in a similar manner by adding
 them to the command line as arguments to ``secrets generate``:
 
-.. code-block:: shell
+.. code-block:: console
 
     $ psec secrets generate rabbitmq_default_user_pass rabbitmq_admin_user_pass
     $ psec secrets show --column Variable --column Value
@@ -904,7 +904,7 @@ following steps:
 #. Use this template to clone a secrets environment, which will initially
    be empty:
 
-   .. code-block:: shell
+   .. code-block:: console
 
        $ psec environments create test --clone-from ~/git/goSecure/secrets
        new password variable "gosecure_app_password" is not defined
@@ -922,14 +922,14 @@ following steps:
       If you ever want to suppress messages about new variables, etc.,
       just add the ``-q`` flag:
 
-      .. code-block:: shell
+      .. code-block:: console
 
           $ psec -q environments create test --clone-from ~/git/goSecure/secrets
           $
 
       ..
 
-   .. code-block:: shell
+   .. code-block:: console
 
        $ psec -e test secrets show --no-redact --fit-width
        +-----------------------+----------+-------+
@@ -946,7 +946,7 @@ following steps:
 
 #. First, generate all secrets whose type is not ``string``:
 
-   .. code-block:: shell
+   .. code-block:: console
 
        $ psec -e test secrets generate
        new password variable "gosecure_app_password" is not defined
@@ -971,7 +971,7 @@ following steps:
 
 #. Finally, manually set the remaining ``string`` type variables:
 
-   .. code-block:: shell
+   .. code-block:: console
 
        $ psec -e test secrets set --undefined
        new string variable "gosecure_client_psk" is not defined
@@ -1003,7 +1003,7 @@ following steps:
    If you don't want to see the warnings about new variables that are not
    defined, simply add the ``-q`` flag.
 
-   .. code-block:: shell
+   .. code-block:: console
 
        $ psec -q secrets generate
        $ psec -q secrets set --undefined
@@ -1023,7 +1023,7 @@ For this example, let's assume an environment that requires a CIDR
 notation address for ingres access control (e.g., when using Amazon
 Web Services to allow control of instances from your remote laptop).
 
-.. code-block:: shell
+.. code-block:: console
 
     $ psec -e xgt secrets set aws_cidr_allowed=""
     $ psec -e secrets show --no-redact aws_cidr_allowed
@@ -1041,7 +1041,7 @@ notation.  The variable can be set in one of two ways:
 
 #. Via (non-interactive) inline command subtitution from the terminal shell:
 
-   .. code-block:: shell
+   .. code-block:: console
 
        $ psec -e xgt secrets set aws_cidr_allowed="$(psec utils myip --cidr)"
 
@@ -1049,7 +1049,7 @@ notation.  The variable can be set in one of two ways:
 
 #. Interactively when prompted using simple command line form:
 
-   .. code-block:: shell
+   .. code-block:: console
 
        $ psec -e xgt secrets set aws_cidr_allowed
        aws_cidr_allowed? []: !psec utils myip --cidr
@@ -1059,7 +1059,7 @@ notation.  The variable can be set in one of two ways:
 
 The variable now contains the output of the specified program:
 
-.. code-block:: shell
+.. code-block:: console
 
     $ psec secrets show --no-redact aws_cidr_allowed
     +------------------+--------+------------------+
@@ -1102,7 +1102,7 @@ authenticated SMTP services.
 
 The command is ``secrets send``.
 
-.. code-block:: shell
+.. code-block:: console
 
     $ psec secrets send --help
     usage: psec secrets send [-h] [-T] [--test-smtp] [-H SMTP_HOST]
@@ -1139,7 +1139,7 @@ to be sent.
 All recipients must have GPG public keys in your keyring.  An exception is thrown
 if no GPG key is associated with the recipient(s) email addresses.
 
-.. code-block:: shell
+.. code-block:: console
 
     $ psec secrets send dittrich@u.washington.edu myapp_app_password
     Setting homedir to '/Users/dittrich/.gnupg'
@@ -1164,7 +1164,7 @@ if no GPG key is associated with the recipient(s) email addresses.
 
 Use ``-q`` to produce no extraneous output.
 
-.. code-block:: shell
+.. code-block:: console
 
     $ psec -q secrets send dittrich@u.washington.edu myapp_app_password
 
@@ -1172,7 +1172,7 @@ Use ``-q`` to produce no extraneous output.
 
 The resulting email looks like this:
 
-.. code-block:: shell
+.. code-block:: console
 
     Message-ID: <5bac64ce.1c69fb81.b136e.45ae@mx.google.com>
     Date: Wed, 26 Sep 2018 22:04:14 -0700 (PDT)
@@ -1228,7 +1228,7 @@ The resulting email looks like this:
 
 Decrypted, it looks like this:
 
-.. code-block:: shell
+.. code-block:: console
 
     Date: Wed, 26 Sep 2018 22:04:14 -0700 (PDT)
     From: dave.dittrich@gmail.com
@@ -1262,7 +1262,7 @@ and must be set according to Google's instructions. See also:
 
 .. _OAuth 2.0 Mechanism: https://developers.google.com/gmail/imap/xoauth2-protocol.
 
-.. code-block:: shell
+.. code-block:: console
 
     $ psec groups show oauth
     +-------+----------------------------+
@@ -1298,7 +1298,7 @@ this.
 Let's assume we want to use ``consul_key`` variable to configure Consul
 using Ansible. Here is the variable as stored:
 
-.. code-block:: shell
+.. code-block:: console
 
     $ psec secrets show consul_key
     +------------+------------+--------------------------+
@@ -1312,7 +1312,7 @@ using Ansible. Here is the variable as stored:
 Using Ansible's ``debug`` module, we can verify that this variable is not
 set by any previously loaded Ansible inventory:
 
-.. code-block:: shell
+.. code-block:: console
 
     $ ansible -i localhost, -m debug -a 'var=consul_key' localhost
     localhost | SUCCESS => {
@@ -1326,7 +1326,7 @@ pre-defined inventory files, we need to pass a file path to the
 ``--extra-vars`` option. The path can be obtained using the
 ``psec secrets path`` command:
 
-.. code-block:: shell
+.. code-block:: console
 
     $ psec secrets path
     /Users/dittrich/.secrets/python_secrets/secrets.yml
@@ -1337,7 +1337,7 @@ It is possible to run this command in an in-line command expansion operation in
 Bash. Ansible expects the file path passed to ``-extra-vars`` to start with an
 ``@`` character, so the command line to use would look like this:
 
-.. code-block:: shell
+.. code-block:: console
 
     $ ansible -i localhost, -e @"$(psec secrets path)" -m debug -a 'var=consul_key' localhost
     localhost | SUCCESS => {
@@ -1354,7 +1354,7 @@ begin with ``TF_VAR_`` and use them to set ``terraform`` variables for use
 in modules. To prove we are running in a sub-shell, we will first change the
 shell prompt.
 
-.. code-block:: shell
+.. code-block:: console
 
     $ PS1="test> "
     test> psec -e test --export-env-vars --env-var-prefix="TEST_" run bash
@@ -1379,7 +1379,7 @@ The `openstack/cliff`_ framework also supports multiple output formats that help
 with accessing and using the secrets in applications or service configuration
 using Ansible.  For example, CSV output (with header) can be produced like this:
 
-.. code-block:: shell
+.. code-block:: console
 
     $ psec secrets show -f csv --column Variable --column Value
     "Variable","Value"
@@ -1398,7 +1398,7 @@ using Ansible.  For example, CSV output (with header) can be produced like this:
 Or you can produce JSON and have structured data for consumption by
 other programs.
 
-.. code-block:: shell
+.. code-block:: console
 
     $ psec secrets show -f json --column Variable --column Value
     [
@@ -1445,7 +1445,7 @@ other programs.
 The JSON can be manipulated, filtered, and restructured using a program
 like ``jq``, for example:
 
-.. code-block:: shell
+.. code-block:: console
 
     $ psec secrets show -f json --column Variable --column Value |
     > jq -r '.[] | { (.Variable): .Value } '
@@ -1479,7 +1479,7 @@ like ``jq``, for example:
 
 ..
 
-.. code-block:: shell
+.. code-block:: console
 
     $ psec secrets show -f json --column Variable --column Value |
     > jq -r '.[] | [ (.Variable), .Value ] '
@@ -1522,7 +1522,7 @@ like ``jq``, for example:
 
 ..
 
-.. code-block:: shell
+.. code-block:: console
 
     $ psec secrets show -f json --column Variable --column Value |
     > jq -r '.[] | [ (.Variable), .Value ] |@sh'
@@ -1538,7 +1538,7 @@ like ``jq``, for example:
 
 ..
 
-.. code-block:: shell
+.. code-block:: console
 
     $ psec secrets show -f json --column Variable --column Value |
     > jq -r '.[] | [ (.Variable), .Value ] |@csv'
@@ -1593,7 +1593,7 @@ Future Work
 .. _mantl/mantl: https://github.com/mantl/mantl
 .. _security-setup: http://docs.mantl.io/en/latest/security/security_setup.html
 
-  .. code-block:: shell
+  .. code-block:: console
 
       $ python_secrets -d ~/git/mantl --secrets-file security.yml secrets show -f yaml
       secrets descriptions directory not found
