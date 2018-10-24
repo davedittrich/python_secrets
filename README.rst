@@ -391,7 +391,7 @@ have to specify all of the names on the command line as arguments:
 
 .. code-block:: console
 
-    $ python_secrets environments create development testing production
+    $ psec environments create development testing production
     environment directory /Users/dittrich/.secrets/development created
     environment directory /Users/dittrich/.secrets/testing created
     environment directory /Users/dittrich/.secrets/production created
@@ -419,11 +419,30 @@ default`` command.
 
 ..
 
-If no default is explicitly set, nothing is returned:
+If no default is explicitly set, the default that would be
+applied is returned:
 
 .. code-block:: console
 
+    $ cd ~/git/python_secrets
     $ psec environments default
+    default environment is "python_secrets"
+
+..
+
+You can get a list of all available environments at any time,
+including which one would be the default used by sub-commands:
+
+.. code-block:: console
+
+    $ psec environments list
+    +-------------+---------+
+    | Environment | Default |
+    +-------------+---------+
+    | development | No      |
+    | testing     | No      |
+    | production  | No      |
+    +-------------+---------+
 
 ..
 
@@ -431,10 +450,18 @@ The following shows setting and unsetting the default:
 
 .. code-block:: console
 
-    $ psec environments default test
-    default environment set to "test"
+    $ psec environments default testing
+    default environment set to "testing"
     $ psec environments default
-    test
+    testing
+    $ psec environments list
+    +-------------+---------+
+    | Environment | Default |
+    +-------------+---------+
+    | development | No      |
+    | testing     | Yes     |
+    | production  | No      |
+    +-------------+---------+
     $ psec environments default --unset-default
     default environment unset
 
