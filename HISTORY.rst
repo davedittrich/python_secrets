@@ -31,6 +31,10 @@ Unreleased
 Added
 ^^^^^
 
+- Add screencasts to documenation
+- Add feedback about minimum Python version
+- Add RST checks to ensure PyPi documentation works
+- Improve visibility into default environment
 - Add ``--json`` output to ``environments path``
 - Add reference to proof-of-concept using goSecure fork
 
