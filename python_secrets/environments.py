@@ -3,9 +3,18 @@ import os
 
 from cliff.command import Command
 from cliff.lister import Lister
+from python_secrets.main import default_environment
 from python_secrets.secrets import SecretsEnvironment
 from python_secrets.utils import tree
 from stat import S_IMODE
+
+
+def _is_default(a, b):
+    """
+    Return "Yes" or "No" depending on whether e is the default
+    environment or not.
+    """
+    return "Yes" if a == b else "No"
 
 
 class EnvironmentsList(Lister):
@@ -19,11 +28,13 @@ class EnvironmentsList(Lister):
 
     def take_action(self, parsed_args):
         self.LOG.debug('listing environment(s)')
-        columns = (['Environment'])
+        default_environment = self.app.options.environment
+        columns = (['Environment', 'Default'])
         basedir = self.app.secrets.root_path()
         data = (
-            [e] for e in os.listdir(basedir)
-            if os.path.isdir(os.path.join(basedir, e))
+            [(e, _is_default(e, default_environment))
+                for e in os.listdir(basedir)
+                if os.path.isdir(os.path.join(basedir, e))]
         )
         return columns, data
 
@@ -87,7 +98,7 @@ class EnvironmentsDefault(Command):
         if parsed_args.unset_default:
             try:
                 os.remove(env_file)
-            except Exception:
+            except Exception as e:
                 self.LOG.info('no default environment was set')
             else:
                 self.LOG.info('default environment unset')
@@ -97,6 +108,9 @@ class EnvironmentsDefault(Command):
                 with open(env_file, 'r') as f:
                     env_string = f.read().replace('\n', '')
                 print(env_string)
+            else:
+                self.LOG.info('default environment is "{}"'.format(
+                    default_environment()))
         else:
             # Set default to specified environment
             with open(env_file, 'w') as f:
