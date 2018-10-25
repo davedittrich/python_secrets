@@ -98,7 +98,7 @@ class EnvironmentsDefault(Command):
         if parsed_args.unset_default:
             try:
                 os.remove(env_file)
-            except Exception as e:
+            except Exception as e:  # noqa
                 self.LOG.info('no default environment was set')
             else:
                 self.LOG.info('default environment unset')

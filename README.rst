@@ -119,7 +119,7 @@ Installation
 
 Install using the ``pip`` module of Python 3.6 (or greater):
 
-.. code-block:: shell
+.. code-block:: console
 
    $ python3 -V
    $ Python 3.6.6

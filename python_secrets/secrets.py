@@ -53,7 +53,7 @@ DEFAULT_MODE = 0o710
 def copyanything(src, dst):
     try:
         copytree(src, dst)
-    except FileExistsError as exc:
+    except FileExistsError as e:  # noqa
         pass
     except OSError as exc:  # python >2.5
         if exc.errno == errno.ENOTDIR:
@@ -136,7 +136,7 @@ class SecretsEnvironment(object):
         if not (subdir is None and host is None):
             valid_subdir = 'a-zA-Z0-9_/'
             invalid_subdir = re.compile('[^{}]'.format(valid_subdir))
-            valid_host = 'a-zA-Z0-9_\./'
+            valid_host = 'a-zA-Z0-9_\./'  # noqa
             invalid_host = re.compile('[^{}]'.format(valid_host))
 
             if subdir is None and host is not None:
@@ -565,7 +565,7 @@ def generate_crypt6(unique=False, password=None, salt=None):
     """Generate a crypt() style SHA512 ("$6$") digest"""
     try:  # Python 3
         import crypt
-    except ModuleNotFoundError as e:
+    except ModuleNotFoundError as e:  # noqa
         raise
     if password is None:
         raise RuntimeError('generate_crypt6(): "password" is not defined')
