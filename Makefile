@@ -8,7 +8,6 @@ PROJECT:=$(shell basename `pwd`)
 .PHONY: test
 test:
 	tox
-	python setup.py check --restructuredtext
 
 #HELP release - package and upload a release to pypi
 .PHONY: release
