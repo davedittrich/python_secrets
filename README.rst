@@ -76,11 +76,6 @@ Features
   that may contain secrets *outside* of the source repo directory
   in an environment-specific ``tmp/`` directory.
 
-.. _openstack/cliff: https://github.com/openstack/cliff
-.. _python-update-dotdee: https://pypi.org/project/update-dotdee/
-.. _terraform: https://www.terraform.io/
-.. _Vault by Hashicorp: https://www.vaultproject.io/
-
 .. note::
 
    Due to the use of the Python ``secrets`` module, which was introduced
@@ -109,10 +104,6 @@ Limitations
 * Does not clean up the environment-specific ``tmp/`` directories.
   (You need to handle that in code, but at least they are less likely
   to end up in a Git commit.)
-
-
-.. _libfuse/sshfs: https://github.com/libfuse/sshfs
-.. _D2 Ansible Playbooks: https://github.com/davedittrich/ansible-dims-playbooks
 
 Installation
 ------------
@@ -157,9 +148,6 @@ of a command is:
 ..
 
 The actions are things like ``list``, ``show``, ``generate``, ``set``, etc.
-
-.. _OpenStackClient: https://docs.openstack.org/python-openstackclient/latest/
-.. _Command Structure: https://docs.openstack.org/python-openstackclient/latest/cli/commands.html
 
 .. note::
 
@@ -1156,7 +1144,7 @@ authenticated SMTP services.
 .. note::
 
    The Electronic Frontier Foundation (EFF) has a `Surveillance Self-Defense
-   Guide`_ that includes guides on `How to: Use PGP for Linux`_ and other operating
+   Guide`_ that includes guides on `How to Use PGP for Linux`_ and other operating
    systems. Follow their instructions if you are new to PGP/GPG.
 
 ..
@@ -1321,8 +1309,6 @@ and must be set according to Google's instructions. See also:
 + https://developers.google.com/identity/protocols/OAuth2
 
 
-.. _OAuth 2.0 Mechanism: https://developers.google.com/gmail/imap/xoauth2-protocol.
-
 .. code-block:: console
 
     $ psec groups show oauth
@@ -1335,9 +1321,6 @@ and must be set according to Google's instructions. See also:
     +-------+----------------------------+
 
 ..
-
-.. _Surveillance Self-Defense Guide: https://ssd.eff.org/en
-.. _How to\: Use PGP for Linux: https://ssd.eff.org/en/module/how-use-pgp-linux
 
 
 Processing templates
@@ -1446,9 +1429,6 @@ shell prompt.
 
 ..
 
-
-.. _Ansible: https://docs.ansible.com/
-.. _Passing variables on the Command Line: https://docs.ansible.com/ansible/latest/user_guide/playbooks_variables.html#passing-variables-on-the-command-line
 
 Outputting Variables in Other Formats
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1640,21 +1620,21 @@ and understand the types and sources of security vulnerabilities related to
 Python programs. Keep these ideas in mind when using and/or modifying this
 program.
 
-.. _Python Security: https://python-security.readthedocs.io/index.html
 
+Bugs, Enhancements, and Future Work
+-----------------------------------
 
-Future Work
------------
+Feature requests (and of course bug reports) are highly encouraged. You can
+do that by `opening an issue`_ on GitHub. Better yet, make a `pull
+request`_ with your own fix or feature. (Check there to see if one
+may already exist.)
+
+If you want to help, there are some things that are on the "to do"
+list. These are tracked on this repository's GitHub `Projects`_ page.
+
+General or more elaborate potential enhancements are listed here:
 
 * Increase test coverage (test driven development is a good thing)
-
-* Add ``secrets create`` to add new secrets descriptions + secrets.
-
-* Add ``secrets delete`` to delete secrets.
-
-* Add ``secrets backup`` and ``secrets restore`` for demo, debugging, experimentation.
-
-* Add ``groups create`` and ``groups delete`` commands.
 
 * The Mantl project (GitHub `mantl/mantl`_) employs a `security-setup`_ script
   that takes care of setting secrets (and non-secret related variables) in a
@@ -1667,9 +1647,6 @@ Future Work
 
   At this point, the Mantl ``security.yml`` file can be read in and
   values can be manually set, as seen here:
-
-.. _mantl/mantl: https://github.com/mantl/mantl
-.. _security-setup: http://docs.mantl.io/en/latest/security/security_setup.html
 
   .. code-block:: console
 
@@ -1808,5 +1785,23 @@ Future Work
 
   ..
 
-
+.. _openstack/cliff: https://github.com/openstack/cliff
+.. _python-update-dotdee: https://pypi.org/project/update-dotdee/
+.. _terraform: https://www.terraform.io/
+.. _Vault by Hashicorp: https://www.vaultproject.io/
+.. _mantl/mantl: https://github.com/mantl/mantl
+.. _security-setup: http://docs.mantl.io/en/latest/security/security_setup.html
+.. _Ansible: https://docs.ansible.com/
+.. _libfuse/sshfs: https://github.com/libfuse/sshfs
+.. _OpenStackClient: https://docs.openstack.org/python-openstackclient/latest/
+.. _Command Structure: https://docs.openstack.org/python-openstackclient/latest/cli/commands.html
+.. _D2 Ansible Playbooks: https://github.com/davedittrich/ansible-dims-playbooks
+.. _Passing variables on the Command Line: https://docs.ansible.com/ansible/latest/user_guide/playbooks_variables.html#passing-variables-on-the-command-line
+.. _OAuth 2.0 Mechanism: https://developers.google.com/gmail/imap/xoauth2-protocol.
 .. _davedittrich/goSecure: https://github.com/davedittrich/goSecure
+.. _Surveillance Self-Defense Guide: https://ssd.eff.org/en
+.. _opening an issue: https://github.com/davedittrich/python_secrets/issues
+.. _pull request: https://github.com/davedittrich/python_secrets/pulls
+.. _Projects: https://github.com/davedittrich/python_secrets/projects/1
+.. _How to Use PGP for Linux: https://ssd.eff.org/en/module/how-use-pgp-linux
+.. _Python Security: https://python-security.readthedocs.io/index.html
