@@ -400,7 +400,9 @@ class SecretsEnvironment(object):
     def read_secrets_descriptions(self):
         """Load the descriptions of groups of secrets from a .d directory"""
         groups_dir = self.descriptions_path()
-        if os.path.exists(groups_dir):
+        if not os.path.exists(groups_dir):
+            self.LOG.info('secrets descriptions directory not found')
+        else:
             # Ignore .order file and any other non-YAML file extensions
             extensions = ['yml', 'yaml']
             file_names = [fn for fn in os.listdir(groups_dir)
@@ -408,35 +410,34 @@ class SecretsEnvironment(object):
             self._groups = [os.path.splitext(fn) for fn in file_names]
             self.LOG.debug('reading secrets descriptions from {}'.format(
                 groups_dir))
-            try:
-                # Iterate over files in directory, loading them into
-                # dictionaries as dictionary keyed on group name.
-                for fname in file_names:
-                    group = os.path.splitext(fname)[0]
-                    data = self.get_descriptions(
-                        os.path.join(groups_dir, fname))
-                    if data is not None:
-                        self._descriptions[group] = data
-                        # Dynamically create maps keyed on variable name
-                        # for simpler lookups. (See the get_prompt() method
-                        # for an example.)
-                        for d in data:
-                            for k, v in d.items():
-                                try:
-                                    # Add to existing map
-                                    v = v if v != d['Variable'] else None
-                                    getattr(self, k)[d['Variable']] = v
-                                except AttributeError:
-                                    raise RuntimeError(
-                                        '"{}" is not '.format(k) +
-                                        'a valid attribute')
-                    else:
-                        raise RuntimeError('descriptions for group ' +
-                                           '"{}" is empty'.format(group))
-            except Exception:
+            # Iterate over files in directory, loading them into
+            # dictionaries as dictionary keyed on group name.
+            if len(file_names) == 0:
                 self.LOG.info('no secrets descriptions files found')
-        else:
-            self.LOG.info('secrets descriptions directory not found')
+            for fname in file_names:
+                group = os.path.splitext(fname)[0]
+                if os.path.splitext(group)[1] != "":
+                    raise RuntimeError('Group name cannot include ".": {}'.format(group))
+                data = self.get_descriptions(
+                    os.path.join(groups_dir, fname))
+                if data is not None:
+                    self._descriptions[group] = data
+                    # Dynamically create maps keyed on variable name
+                    # for simpler lookups. (See the get_prompt() method
+                    # for an example.)
+                    for d in data:
+                        for k, v in d.items():
+                            try:
+                                # Add to existing map
+                                v = v if v != d['Variable'] else None
+                                getattr(self, k)[d['Variable']] = v
+                            except AttributeError:
+                                raise RuntimeError(
+                                    '"{}" is not '.format(k) +
+                                    'a valid attribute')
+                else:
+                    raise RuntimeError('descriptions for group ' +
+                                       '"{}" is empty'.format(group))
 
     def descriptions(self):
         return self._descriptions
