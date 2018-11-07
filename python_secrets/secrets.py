@@ -417,7 +417,8 @@ class SecretsEnvironment(object):
             for fname in file_names:
                 group = os.path.splitext(fname)[0]
                 if os.path.splitext(group)[1] != "":
-                    raise RuntimeError('Group name cannot include ".": {}'.format(group))
+                    raise RuntimeError('Group name cannot include ".": ' +
+                                       '{}'.format(group))
                 data = self.get_descriptions(
                     os.path.join(groups_dir, fname))
                 if data is not None:
