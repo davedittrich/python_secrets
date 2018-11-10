@@ -679,10 +679,17 @@ class SecretsShow(Lister):
         self.app.secrets.read_secrets_and_descriptions()
         variables = []
         if parsed_args.args_group:
+            if not len(parsed_args.args):
+                raise RuntimeError('No group specified')
             for g in parsed_args.args:
-                variables.extend(
-                    [v for v in self.app.secrets.get_items_from_group(g)]
-                 )
+                try:
+                    variables.extend(
+                        [v for v
+                         in self.app.secrets.get_items_from_group(g)]
+                    )
+                except KeyError as e:
+                    raise RuntimeError('Group {} '.format(str(e)) +
+                                       'does not exist')
         else:
             variables = parsed_args.args \
                 if len(parsed_args.args) > 0 \
@@ -736,6 +743,8 @@ class SecretsDescribe(Lister):
             self.app.secrets.read_secrets_and_descriptions()
             variables = []
             if parsed_args.args_group:
+                if not len(parsed_args.args):
+                    raise RuntimeError('No group specified')
                 for g in parsed_args.args:
                     try:
                         variables.extend(
