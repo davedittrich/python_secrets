@@ -118,12 +118,13 @@ Install using the ``pip`` module of Python 3.6 (or greater):
 
 ..
 
-.. raw:: html
-
-    <a href="https://asciinema.org/a/201502?autoplay=1" target="_blank"><img src="https://asciinema.org/a/201502.png" width="835"/></a>
+.. image:: https://asciinema.org/a/201502.png
+   :target: https://asciinema.org/a/201502?autoplay=1
+   :align: center
+   :alt: Installation of python_secrets
+   :width: 835px
 
 ..
-
 
 Usage
 -----
@@ -269,9 +270,11 @@ regarding secrets storage:
 #. The *secrets* file and *group descriptions*.
 
 
-.. raw:: html
-
-    <a href="https://asciinema.org/a/201503?autoplay=1" target="_blank"><img src="https://asciinema.org/a/201503.png" width="835"/></a>
+.. image:: https://asciinema.org/a/201503.png
+   :target: https://asciinema.org/a/201503?autoplay=1
+   :align: center
+   :alt: Environments
+   :width: 835px
 
 ..
 
@@ -315,9 +318,11 @@ be one for open source *Program A*, one for *Program B*, etc., or it could be
 one for *development*, one for *testing*, one for *production*, etc. (or any
 combination).
 
-.. raw:: html
-
-    <a href="https://asciinema.org/a/201505?autoplay=1" target="_blank"><img src="https://asciinema.org/a/201505.png" width="835"/></a>
+.. image:: https://asciinema.org/a/201505.png
+   :target: https://asciinema.org/a/201505?autoplay=1
+   :align: center
+   :alt: Groups, secrets, generating and setting
+   :width: 835px
 
 ..
 
@@ -1364,9 +1369,11 @@ and must be set according to Google's instructions. See also:
 Processing templates
 ~~~~~~~~~~~~~~~~~~~~
 
-.. raw:: html
-
-    <a href="https://asciinema.org/a/201507?autoplay=1" target="_blank"><img src="https://asciinema.org/a/201507.png" width="835"/></a>
+.. image:: https://asciinema.org/a/201507.png
+   :target: https://asciinema.org/a/201507?autoplay=1
+   :align: center
+   :alt: Rendering templates outside the source repo directory
+   :width: 835px
 
 ..
 
@@ -1461,9 +1468,11 @@ shell prompt.
 
 ..
 
-.. raw:: html
-
-    <a href="https://asciinema.org/a/201510?autoplay=1" target="_blank"><img src="https://asciinema.org/a/201510.png" width="835"/></a>
+.. image:: https://asciinema.org/a/201510.png
+   :target: https://asciinema.org/a/201510?autoplay=1
+   :align: center
+   :alt: Exporting secrets via the environment
+   :width: 835px
 
 ..
 
