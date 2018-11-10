@@ -640,6 +640,8 @@ class SecretsShow(Lister):
 
     LOG = logging.getLogger(__name__)
 
+    # Note: Not totally DRY. Replicates some logic from SecretsDescribe()
+
     def get_parser(self, prog_name):
         parser = super(SecretsShow, self).get_parser(prog_name)
         # Sorry for the double-negative, but it works better
@@ -660,6 +662,13 @@ class SecretsShow(Lister):
             action="store_true",
             default=False,
             help="Arguments are groups to list (default: False)"
+        )
+        parser.add_argument(
+            '-p', '--prompts',
+            dest='args_prompts',
+            action="store_true",
+            default=False,
+            help="Include prompts (default: False)"
         )
         parser.add_argument('args', nargs='*', default=None)
         return parser
@@ -695,14 +704,59 @@ class SecretsDescribe(Lister):
 
     LOG = logging.getLogger(__name__)
 
+    # Note: Not totally DRY. Replicates some logic from SecretsShow()
+
     def get_parser(self, prog_name):
         parser = super(SecretsDescribe, self).get_parser(prog_name)
+        what = parser.add_mutually_exclusive_group(required=False)
+        what.add_argument(
+            '-g', '--group',
+            dest='args_group',
+            action="store_true",
+            default=False,
+            help="Arguments are groups to list (default: False)"
+        )
+        what.add_argument(
+            '-t', '--types',
+            dest='types',
+            action="store_true",
+            default=False,
+            help="Describe types (default: False)"
+        )
+        parser.add_argument('args', nargs='*', default=None)
         return parser
 
     def take_action(self, parsed_args):
         self.LOG.debug('describing secrets')
-        columns = [k.title() for k in SECRET_TYPES[0].keys()]
-        data = [[v for k, v in i.items()] for i in SECRET_TYPES]
+        if parsed_args.types:
+            columns = [k.title() for k in SECRET_TYPES[0].keys()]
+            data = [[v for k, v in i.items()] for i in SECRET_TYPES]
+        else:
+            self.app.secrets.requires_environment()
+            self.app.secrets.read_secrets_and_descriptions()
+            variables = []
+            if parsed_args.args_group:
+                for g in parsed_args.args:
+                    try:
+                        variables.extend(
+                            [v for v
+                                in self.app.secrets.get_items_from_group(g)]
+                        )
+                    except KeyError as e:
+                        raise RuntimeError('Group {} '.format(str(e)) +
+                                           'does not exist')
+            else:
+                variables = parsed_args.args \
+                    if len(parsed_args.args) > 0 \
+                    else [k for k, v in self.app.secrets.items()]
+            columns = ('Variable', 'Type', 'Prompt')
+            data = (
+                    [(k,
+                      self.app.secrets.get_secret_type(k),
+                      self.app.secrets.get_prompt(k))
+                        for k, v in self.app.secrets.items()
+                        if k in variables]
+            )
         return columns, data
 
 

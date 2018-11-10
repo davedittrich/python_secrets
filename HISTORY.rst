@@ -31,6 +31,7 @@ Unreleased
 Added
 ^^^^^
 
+- Add "--type" option to "secrets describe"
 - Improve visibility into default environment
 - Add screencasts to documenation
 - Add RST checks to ensure PyPi documentation works
@@ -41,6 +42,7 @@ Added
 Changed
 ^^^^^^^
 
+- The "secrets describe" command now describes variables and types
 - Allow ``secrets set`` to set any type (not just ``string``)
 
 

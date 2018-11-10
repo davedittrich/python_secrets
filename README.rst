@@ -770,35 +770,73 @@ subset of secrets, you have two ways to do this.
 
    ..
 
-#. Use ``secrets describe`` to see the supported secret types
-   that are available for you to use:
 
-   .. code-block:: console
+Describing Secrets and Secret Types
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-       $ psec secrets describe
-       +------------------+----------------------------------+
-       | Type             | Description                      |
-       +------------------+----------------------------------+
-       | password         | Simple (xkcd) password string    |
-       | string           | Simple string                    |
-       | crypt_6          | crypt() SHA512 ("$6$")           |
-       | token_hex        | Hexadecimal token                |
-       | token_urlsafe    | URL-safe token                   |
-       | consul_key       | 16-byte BASE64 token             |
-       | sha1_digest      | DIGEST-SHA1 (user:pass) digest   |
-       | sha256_digest    | DIGEST-SHA256 (user:pass) digest |
-       | zookeeper_digest | DIGEST-SHA1 (user:pass) digest   |
-       | uuid4            | UUID4 token                      |
-       | random_base64    | Random BASE64 token              |
-       +------------------+----------------------------------+
+To describe the secrets in the select environment, use the
+``secrets describe`` command:
 
-   ..
+.. code-block:: console
 
-The type ``string`` is for secrets that are managed by another entity that you
-must obtain and use to access some remote service (e.g., the pre-shared key for
-someone's WiFi network, or an API key for accessing a cloud service provider's
-platform). All other types are structured secret types that you generate for
-configuring services.
+    $ psec secrets describe
+    +----------------------------+----------+-----------------------------------------+
+    | Variable                   | Type     | Prompt                                  |
+    +----------------------------+----------+-----------------------------------------+
+    | google_oauth_client_id     | string   | Google OAuth2 client id                 |
+    | google_oauth_client_secret | string   | Google OAuth2 client secret             |
+    | google_oauth_refresh_token | string   | Google OAuth2 refresh token             |
+    | google_oauth_username      | None     | google_oauth_username                   |
+    | jenkins_admin_password     | password | Password for Jenkins "admin" account    |
+    | myapp_app_password         | password | Password for myapp web app              |
+    | myapp_client_psk           | string   | Pre-shared key for myapp client WiFi AP |
+    | myapp_client_ssid          | string   | SSID for myapp client WiFi AP           |
+    | myapp_pi_password          | password | Password for myapp "pi" user account    |
+    | trident_db_pass            | password | Password for Trident postgres database  |
+    | trident_sysadmin_pass      | password | Password for Trident sysadmin account   |
+    +----------------------------+----------+-----------------------------------------+
+    $ psec secrets describe --group trident
+    +-----------------------+----------+----------------------------------------+
+    | Variable              | Type     | Prompt                                 |
+    +-----------------------+----------+----------------------------------------+
+    | trident_db_pass       | password | Password for Trident postgres database |
+    | trident_sysadmin_pass | password | Password for Trident sysadmin account  |
+    +-----------------------+----------+----------------------------------------+
+
+..
+
+To get a description of the available secret types, add the ``--types`` flag.
+
+.. code-block:: console
+
+    $ psec secrets describe --types
+    +------------------+----------------------------------+
+    | Type             | Description                      |
+    +------------------+----------------------------------+
+    | password         | Simple (xkcd) password string    |
+    | string           | Simple string                    |
+    | crypt_6          | crypt() SHA512 ("$6$")           |
+    | token_hex        | Hexadecimal token                |
+    | token_urlsafe    | URL-safe token                   |
+    | consul_key       | 16-byte BASE64 token             |
+    | sha1_digest      | DIGEST-SHA1 (user:pass) digest   |
+    | sha256_digest    | DIGEST-SHA256 (user:pass) digest |
+    | zookeeper_digest | DIGEST-SHA1 (user:pass) digest   |
+    | uuid4            | UUID4 token                      |
+    | random_base64    | Random BASE64 token              |
+    +------------------+----------------------------------+
+
+..
+
+.. note::
+
+    The type ``string`` is for secrets that are managed by another entity that you
+    must obtain and use to access some remote service (e.g., the pre-shared key for
+    someone's WiFi network, or an API key for accessing a cloud service provider's
+    platform). All other types are structured secret types that you generate for
+    configuring services.
+
+..
 
 Generating and Setting variables
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
