@@ -4,6 +4,7 @@ lxml
 gnupg
 numpy
 six
+sphinx
 requests
 tox
 yamlreader
