@@ -24,6 +24,18 @@ History
 .. Fixed for any bug fixes.
 .. Security in case of vulnerabilities.
 
+Unreleased
+~~~~~~~~~~
+
+Added
+^^^^^
+
+- Add ``cliff.sphinxext`` for documentation
+
+Changed
+^^^^^^^
+
+- Refactored ``SecretsEnvironment()`` so ``autoprogram_cliff`` works
 
 18.11.0 (2018-11-09)
 ~~~~~~~~~~~~~~~~~~~~

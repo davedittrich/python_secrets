@@ -110,7 +110,7 @@ class GroupsPath(Command):
 
     def get_parser(self, prog_name):
         parser = super(GroupsPath, self).get_parser(prog_name)
-        default_environment = self.app.options.environment
+        default_environment = SecretsEnvironment().environment()
         parser.add_argument('environment',
                             nargs='?',
                             default=default_environment)

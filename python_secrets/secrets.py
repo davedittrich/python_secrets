@@ -7,6 +7,7 @@ import os
 import random
 import re
 import secrets
+import textwrap
 import uuid
 import yaml
 
@@ -43,10 +44,6 @@ SECRET_ATTRIBUTES = [
     'Export',
     'Prompt'
 ]
-HOME = os.path.expanduser('~')
-CWD = os.getcwd()
-SECRETS_ROOT = os.path.join(
-    HOME, "secrets" if '\\' in HOME else ".secrets")
 DEFAULT_MODE = 0o710
 
 
@@ -62,6 +59,31 @@ def copyanything(src, dst):
             raise
 
 
+def _identify_environment(environment=None):
+    """
+    Returns the environment identifier.
+
+    There are multiple ways to define the default environment (in order
+    of priority):
+
+    1. The --environment command line option;
+    2. The content of the file .python_secrets_environment in the current
+       working directory;
+    3. The value specified by environment variable D2_ENVIRONMENT; or
+    4. The basename of the current working directory.
+    """
+    cwd = os.getcwd()
+    if environment is None:
+        env_file = os.path.join(cwd, '.python_secrets_environment')
+        if os.path.exists(env_file):
+            with open(env_file, 'r') as f:
+                environment = f.read().replace('\n', '')
+        else:
+            environment = os.getenv('D2_ENVIRONMENT',
+                                    os.path.basename(cwd))
+    return environment
+
+
 class SecretsEnvironment(object):
     """Class for handling secrets environment metadata"""
 
@@ -69,28 +91,30 @@ class SecretsEnvironment(object):
 
     def __init__(self,
                  environment=None,
-                 secrets_root=SECRETS_ROOT,
-                 secrets_file="secrets.yml",
+                 secrets_basedir=None,
+                 secrets_file=os.getenv('D2_SECRETS_BASENAME',
+                                        'secrets.yml'),
                  create_root=True,
                  defer_loading=True,
                  export_env_vars=False,
                  env_var_prefix=None,
                  source=None,
-                 cwd=CWD):
-        self._environment = environment \
-            if environment is not None else os.path.basename(cwd)
-        self._secrets_root = secrets_root
+                 cwd=os.getcwd()):
+        self._cwd = cwd
+        self._environment = _identify_environment(environment)
         self._secrets_file = secrets_file
-        self._secrets_descriptions = "{}.d".format(
-            os.path.splitext(self._secrets_file)[0])
+        self._secrets_basedir = secrets_basedir
         # Ensure root directory exists in which to create secrets
         # environments?
-        if not self.root_path_exists():
+        if not self.secrets_basedir_exists():
             if create_root:
-                self.root_path_create()
+                self.secrets_basedir_create()
             else:
-                raise RuntimeError('Directory {} '.format(self.root_path()) +
-                                   'does not exist and create_root=False')
+                raise RuntimeError(
+                    'Directory {} '.format(self.secrets_basedir()) +
+                    'does not exist and create_root=False')
+        self._secrets_descriptions = "{}.d".format(
+            os.path.splitext(self._secrets_file)[0])
         self.export_env_vars = export_env_vars
 
         # When exporting environment variables, include one that specifies the
@@ -102,7 +126,7 @@ class SecretsEnvironment(object):
         # proper environment.)
 
         if self.export_env_vars is True:
-            os.environ['PYTHON_SECRETS_ENVIRONMENT'] = self._environment
+            os.environ['PYTHON_SECRETS_ENVIRONMENT'] = self.environment()
 
         self.env_var_prefix = env_var_prefix
         # Secrets attribute maps; anything else throws exception
@@ -116,22 +140,63 @@ class SecretsEnvironment(object):
         self._changed = False
         self._groups = []
 
-    def root_path(self):
-        """Returns the absolute path to secrets root directory"""
-        return self._secrets_root
+    def environment(self):
+        """Returns the environment identifier."""
+        return self._environment
 
-    def root_path_exists(self):
+    # TODO(dittrich): FIX Cere call
+    def secrets_descriptions_dir(self):
+        """Return the path to the drop-in secrets description directory"""
+        _env = self.environment()
+        if not _env:
+            return self.secrets_basedir()
+        else:
+            return os.path.join(self.secrets_basedir(),
+                                self.secrets_basename().replace('.yml', '.d'))
+
+    def secrets_basename(self):
+        """Return the basename of the current secrets file"""
+        return os.path.basename(self._secrets_file)
+
+    # def secrets_basedir(self):
+    #     """Return the basedir of the current secrets file"""
+    #     return os.path.dirname(self._secrets_file)
+
+    def secrets_basedir(self, init=False):
+        """
+        Returns the directory path root for secrets storage and definitions.
+
+        When more than one environment is being used, a single top-level
+        directory in the user's home directory is the preferred location.
+        This function checks to see if such a directory exists, and if
+        so defaults to that location.
+
+        If the environment variable "D2_SECRETS_BASEDIR" is set, that location
+        is used instead.
+        """
+        if self._secrets_basedir is None:
+            _home = os.path.expanduser('~')
+            _secrets_subdir = os.path.join(
+                _home, 'secrets' if '\\' in _home else '.secrets')
+            self._secrets_basedir = os.getenv('D2_SECRETS_BASEDIR',
+                                              _secrets_subdir)
+            if not os.path.exists(self._secrets_basedir) and init:
+                    self.secrets_basedir_create()
+        return self._secrets_basedir
+
+    def secrets_basedir_exists(self):
         """Return whether secrets root directory exists"""
-        return os.path.exists(self.root_path())
+        _secrets_basedir = self.secrets_basedir()
+        return os.path.exists(_secrets_basedir)
 
-    def root_path_create(self, mode=DEFAULT_MODE):
+    def secrets_basedir_create(self, mode=DEFAULT_MODE):
         """Create secrets root directory"""
-        os.mkdir(self._secrets_root, mode=mode)
+        os.mkdir(self.secrets_basedir(), mode=mode)
 
     def environment_path(self, subdir=None, host=None):
         """Returns the absolute path to secrets environment directory
         or subdirectories within it"""
-        _path = os.path.join(self._secrets_root, self._environment)
+        _path = os.path.join(self.secrets_basedir(), self.environment())
 
         if not (subdir is None and host is None):
             valid_subdir = 'a-zA-Z0-9_/'
@@ -186,15 +251,15 @@ class SecretsEnvironment(object):
         else:
             if self.environment_exists():
                 raise RuntimeError('Environment "{}" exists'.format(
-                    self._environment))
+                    self.environment()))
 
     def secrets_file_path(self):
         """Returns the absolute path to secrets file"""
-        if self._environment is None:
-            return os.path.join(self._secrets_root, self._secrets_file)
+        if self.environment() is None:
+            return os.path.join(self.secrets_basedir(), self._secrets_file)
         else:
-            return os.path.join(self._secrets_root,
-                                self._environment,
+            return os.path.join(self.secrets_basedir(),
+                                self.environment(),
                                 self._secrets_file)
 
     def secrets_file_path_exists(self):
@@ -217,6 +282,10 @@ class SecretsEnvironment(object):
         if not self.descriptions_path_exists():
             os.mkdir(self.descriptions_path(), mode=mode)
 
+    def tmpdir_path(self):
+        """Return the absolute path to secrets descriptions tmp directory"""
+        return os.path.join(self.environment_path(), "tmp")
+
     def requires_environment(self):
         """
         Provide consistent error handling for any commands that require
@@ -224,7 +293,7 @@ class SecretsEnvironment(object):
         """
         if not self.environment_exists():
             raise RuntimeError(
-                'environment "{}" does not exist'.format(self._environment))
+                'environment "{}" does not exist'.format(self.environment()))
 
     def keys(self):
         """Return the keys to the secrets dictionary"""
@@ -647,6 +716,25 @@ class SecretsShow(Lister):
         # Sorry for the double-negative, but it works better
         # this way for the user as a flag and to have a default
         # of redacting (so they need to turn it off)
+        parser.epilog = textwrap.dedent("""
+
+        .. code-block:: console
+
+            $ psec secrets show
+            +------------------------+----------+-------------------+----------+  # noqa
+            | Variable               | Type     | Export            | Value    |  # noqa
+            +------------------------+----------+-------------------+----------+  # noqa
+            | jenkins_admin_password | password | None              | REDACTED |  # noqa
+            | myapp_app_password     | password | DEMO_app_password | REDACTED |  # noqa
+            | myapp_client_psk       | string   | DEMO_client_ssid  | REDACTED |  # noqa
+            | myapp_client_ssid      | string   | DEMO_client_ssid  | REDACTED |  # noqa
+            | myapp_pi_password      | password | DEMO_pi_password  | REDACTED |  # noqa
+            | trident_db_pass        | password | None              | REDACTED |  # noqa
+            | trident_sysadmin_pass  | password | None              | REDACTED |  # noqa
+            +------------------------+----------+-------------------+----------+  # noqa
+
+        ..
+        """)
         redact = not (os.getenv('D2_NO_REDACT', "FALSE").upper()
                       in ["true".upper(), "1", "yes".upper()])
         parser.add_argument(
@@ -1033,7 +1121,7 @@ class SecretsPath(Command):
 
     def get_parser(self, prog_name):
         parser = super(SecretsPath, self).get_parser(prog_name)
-        default_environment = self.app.options.environment
+        default_environment = SecretsEnvironment().environment()
         parser.add_argument('environment',
                             nargs='?',
                             default=default_environment)

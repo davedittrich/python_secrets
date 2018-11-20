@@ -35,78 +35,6 @@ SYSLOG = False
 logger = logging.getLogger(__name__)
 
 
-def default_environment(cwd=None):
-    """
-    Returns the environment identifier.
-
-    There are multiple ways to define the default environment (in order
-    of priority):
-
-    1. The --environment command line option;
-    2. The content of the file .python_secrets_environment in the current
-       working directory;
-    3. The value specified by environment variable D2_ENVIRONMENT; or
-    4. The basename of the current working directory.
-    """
-    if cwd is None:
-        cwd = os.getcwd()
-    env_file = os.path.join(cwd, '.python_secrets_environment')
-    if os.path.exists(env_file):
-        with open(env_file, 'r') as f:
-            env_string = f.read().replace('\n', '')
-    else:
-        env_string = os.getenv('D2_ENVIRONMENT',
-                               os.path.basename(cwd))
-    return env_string
-
-
-def default_secrets_basename():
-    """Returns the file base name for secrets file"""
-    return os.getenv('D2_SECRETS_BASENAME', 'secrets.yml')
-
-
-def default_secrets_basedir(init=False):
-    """
-    Returns the directory path root for secrets storage and definitions.
-
-    When more than one environment is being used, a single top-level
-    directory in the user's home directory is the preferred location.
-    This function checks to see if such a directory exists, and if
-    so defaults to that location.
-
-    If the environment variable "D2_SECRETS_BASEDIR" is set, that location
-    is used instead.
-    """
-
-    _home = os.path.expanduser('~')
-    _secrets_subdir = os.path.join(
-        _home, "secrets" if '\\' in _home else ".secrets")
-    _basedir = os.getenv(
-            'D2_SECRETS_BASEDIR',
-            _secrets_subdir)
-    if not os.path.exists(_basedir) and init:
-            os.mkdir(path=_basedir, mode=0o700)
-    return _basedir
-
-
-def default_secrets_descriptions_dir():
-    """Return the path to the drop-in secrets description directory"""
-    _env = default_environment()
-    if not _env:
-        return default_secrets_basedir()
-    else:
-        return os.path.join(default_secrets_basedir(),
-                            default_secrets_basename().replace('.yml', '.d'))
-
-
-def default_secrets_file_path():
-    """Return full path to secrets file"""
-    return os.path.join(
-        default_secrets_basedir(),
-        default_secrets_basename()
-    )
-
-
 class PythonSecretsApp(App):
     """Python secrets application class"""
 
@@ -120,6 +48,9 @@ class PythonSecretsApp(App):
             deferred_help=True,
             )
         self.secrets = None
+        self.environment = None
+        self.secrets_basedir = None
+        self.secrets_file = None
 
     def build_option_parser(self, description, version):
         parser = super(PythonSecretsApp, self).build_option_parser(
@@ -127,31 +58,32 @@ class PythonSecretsApp(App):
             version
         )
         # Global options
+        _env = SecretsEnvironment()
         parser.add_argument(
             '-d', '--secrets-basedir',
             metavar='<secrets-basedir>',
             dest='secrets_basedir',
-            default=default_secrets_basedir(),
+            default=_env.secrets_basedir(),
             help="Root directory for holding secrets " +
                  "(Env: D2_SECRETS_BASEDIR; default: {})".format(
-                     default_secrets_basedir())
+                     _env.secrets_basedir())
         )
         parser.add_argument(
             '-e', '--environment',
             metavar='<environment>',
             dest='environment',
-            default=default_environment(),
+            default=_env.environment(),
             help="Deployment environment selector " +
                  "(Env: D2_ENVIRONMENT; default: {})".format(
-                     default_environment())
+                     _env.environment())
         )
         parser.add_argument(
             '-s', '--secrets-file',
             metavar='<secrets-file>',
             dest='secrets_file',
-            default=default_secrets_basename(),
+            default=_env.secrets_basename(),
             help="Secrets file (default: {})".format(
-                default_secrets_basename())
+                _env.secrets_basename())
         )
         parser.add_argument(
             '-P', '--env-var-prefix',
@@ -188,10 +120,13 @@ class PythonSecretsApp(App):
         self.LOG.debug('prepare_to_run_command %s', cmd.__class__.__name__)
         self.LOG.debug('using environment "{}"'.format(
             self.options.environment))
+        self.environment = self.options.environment
+        self.secrets_basedir = self.options.secrets_basedir
+        self.secrets_file = self.options.secrets_file
         self.secrets = SecretsEnvironment(
-            environment=self.options.environment,
-            secrets_root=self.options.secrets_basedir,
-            secrets_file=self.options.secrets_file,
+            environment=self.environment,
+            secrets_basedir=self.secrets_basedir,
+            secrets_file=self.secrets_file,
             export_env_vars=self.options.export_env_vars,
             env_var_prefix=self.options.env_var_prefix,
             )

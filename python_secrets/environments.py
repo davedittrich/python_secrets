@@ -3,7 +3,6 @@ import os
 
 from cliff.command import Command
 from cliff.lister import Lister
-from python_secrets.main import default_environment
 from python_secrets.secrets import SecretsEnvironment
 from python_secrets.utils import tree
 from stat import S_IMODE
@@ -28,9 +27,9 @@ class EnvironmentsList(Lister):
 
     def take_action(self, parsed_args):
         self.LOG.debug('listing environment(s)')
-        default_environment = self.app.options.environment
+        default_environment = SecretsEnvironment().environment()
         columns = (['Environment', 'Default'])
-        basedir = self.app.secrets.root_path()
+        basedir = self.app.secrets.secrets_basedir()
         data = (
             [(e, _is_default(e, default_environment))
                 for e in os.listdir(basedir)
@@ -55,14 +54,14 @@ class EnvironmentsCreate(Command):
         )
         parser.add_argument('args',
                             nargs='*',
-                            default=[self.app.options.environment])
+                            default=[SecretsEnvironment().environment()])
         return parser
 
     def take_action(self, parsed_args):
         self.LOG.debug('creating environment(s)')
         # basedir = self.app.get_secrets_basedir()
         if len(parsed_args.args) == 0:
-            parsed_args.args = list(self.app.options.environment)
+            parsed_args.args = list(self.app.environment)
         for e in parsed_args.args:
             se = SecretsEnvironment(environment=e)
             se.environment_create(source=parsed_args.clone_from)
@@ -110,7 +109,7 @@ class EnvironmentsDefault(Command):
                 print(env_string)
             else:
                 self.LOG.info('default environment is "{}"'.format(
-                    default_environment()))
+                    SecretsEnvironment().environment()))
         else:
             # Set default to specified environment
             with open(env_file, 'w') as f:
@@ -126,7 +125,7 @@ class EnvironmentsPath(Command):
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
-        default_environment = self.app.options.environment
+        default_environment = SecretsEnvironment().environment()
         parser.add_argument('environment',
                             nargs='?',
                             default=default_environment)
@@ -161,7 +160,7 @@ class EnvironmentsPath(Command):
         self.LOG.debug('returning environment path')
         e = SecretsEnvironment(environment=parsed_args.environment)
         if parsed_args.tmpdir:
-            tmpdir = os.path.join(e.environment_path(), 'tmp')
+            tmpdir = e.tmpdir_path()
             tmpdir_mode = 0o700
             try:
                 os.mkdir(tmpdir, tmpdir_mode)
@@ -186,7 +185,7 @@ class EnvironmentsTree(Command):
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
-        default_environment = self.app.options.environment
+        default_environment = SecretsEnvironment().environment()
         parser.add_argument(
             '--no-files',
             action='store_true',
