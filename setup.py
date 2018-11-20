@@ -48,8 +48,9 @@ def get_absolute_path(*args):
 
 
 setup(
+    setup_requires=['pbr>=1.9', 'setuptools>=17.1'],
     name='python_secrets',
-    version=get_version('python_secrets', '__init__.py'),
+    pbr=True,
     description="Python CLI for managing secrets (passwords, API keys, etc)",
     long_description=long_description + "\n\n" + history,
     author="Dave Dittrich",

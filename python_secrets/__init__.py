@@ -1,6 +1,13 @@
+import pbr.version
+
+version_info = pbr.version.VersionInfo('python_secrets')
+try:
+    __version__ = version_info.version_string()
+except AttributeError:
+    __version__ = '18.11.2'
+
 __author__ = 'Dave Dittrich'
 __email__ = 'dave.dittrich@gmail.com'
-__version__ = '18.11.2'
 
 __all__ = ['__author__', '__email__', '__version__']
 
