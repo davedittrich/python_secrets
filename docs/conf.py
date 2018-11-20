@@ -42,6 +42,8 @@ import python_secrets
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.viewcode', 'cliff.sphinxext']
 
+autoprogram_cliff_application = 'python_secrets'
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
