@@ -108,7 +108,7 @@ Limitations
 Usage concepts
 --------------
 
-See chapter :ref:`section_usage` for individual command documentation. The
+There is a separate **Usage** chapter with individual command documentation. The
 remainder of this section covers higher level usage concepts necessary
 to best use ``python_secrets`` in your open source software project.
 
