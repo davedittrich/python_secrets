@@ -125,10 +125,9 @@ class EnvironmentsPath(Command):
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
-        default_environment = SecretsEnvironment().environment()
         parser.add_argument('environment',
                             nargs='?',
-                            default=default_environment)
+                            default=None)
         parser.add_argument(
             '--json',
             action='store_true',
@@ -158,12 +157,12 @@ class EnvironmentsPath(Command):
 
     def take_action(self, parsed_args):
         self.LOG.debug('returning environment path')
-        e = SecretsEnvironment(environment=parsed_args.environment)
+        e = SecretsEnvironment(environment=self.app.options.environment)
         if parsed_args.tmpdir:
             tmpdir = e.tmpdir_path()
             tmpdir_mode = 0o700
             try:
-                os.mkdir(tmpdir, tmpdir_mode)
+                os.makedirs(tmpdir, tmpdir_mode)
                 self.LOG.info('created tmpdir {}'.format(tmpdir))
             except FileExistsError:
                 mode = os.stat(tmpdir).st_mode
