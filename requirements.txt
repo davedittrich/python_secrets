@@ -6,6 +6,7 @@ numpy
 six
 sphinx
 Pygments
+python_secrets
 requests
 tox
 yamlreader
