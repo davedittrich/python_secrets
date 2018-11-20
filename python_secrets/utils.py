@@ -4,6 +4,7 @@ import logging
 import os
 import requests
 import subprocess  # nosec
+import textwrap
 
 from cliff.command import Command
 from cliff.lister import Lister
@@ -79,6 +80,8 @@ class MyIP(Command):
             help="Express IP address as CIDR block " +
                  "(default: False)"
         )
+        parser.epilog = textwrap.dedent("""
+        """)
         return parser
 
     def take_action(self, parsed_args):
@@ -134,10 +137,28 @@ class TfOutput(Lister):
     log = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
-        cwd = os.getcwd()
-        tfstate = os.path.join(cwd, 'terraform.tfstate')
         parser = super().get_parser(prog_name)
-        parser.add_argument('tfstate', nargs='?', default=tfstate)
+        parser.add_argument('tfstate',
+                            nargs='?',
+                            default=None,
+                            help="Path to Terraform state file " +
+                                 "(default: None)"
+                            )
+        parser.epilog = textwrap.dedent("""
+        If the ``tfstate`` argument is not provided, this command will attempt to   # noqa
+        search for a ``terraform.tfstate`` file in (1) the active environment's     # noqa
+        secrets storage directory (see ``environments path``), or (2) the current   # noqa
+        working directory. The former is documented preferred location for storing  # noqa
+        this file, since it will contain secrets that _should not_ be stored in     # noqa
+        a source repository directory to avoid potential leaking of those secrets.  # noqa
+
+        .. code-block:: console
+
+            $ psec environments path
+            /Users/dittrich/.secrets/python_secrets
+
+        ..
+        """)
         return parser
 
     def take_action(self, parsed_args):
@@ -145,8 +166,15 @@ class TfOutput(Lister):
         columns = ('Variable', 'Value')
         data = list()
         tfstate = parsed_args.tfstate
+        if tfstate is None:
+            base = 'terraform.tfstate'
+            tfstate = os.path.join(self.app.secrets.environment_path(), base)
+            if not os.path.exists(tfstate):
+                tfstate = os.path.join(os.getcwd(), base)
+            if not os.path.exists(tfstate):
+                raise RuntimeError('No terraform state file specified')
         if not os.path.exists(tfstate):
-            raise RuntimeError('No terraform state file "{}"'.format(
+            raise RuntimeError('File does not exist: "{}"'.format(
                 tfstate)
             )
         # >> Issue: [B607:start_process_with_partial_path] Starting a process with a partial executable path  # noqa
