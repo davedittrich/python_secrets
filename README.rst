@@ -105,10 +105,12 @@ Limitations
   (You need to handle that in code, but at least they are less likely
   to end up in a Git commit.)
 
-Usage
-~~~~~
+Usage concepts
+--------------
 
-See chapter :ref:`section_usage`.
+See chapter :ref:`section_usage` for individual command documentation. The
+remainder of this section covers higher level usage concepts necessary
+to best use ``python_secrets`` in your open source software project.
 
 
 Directories and files
