@@ -5,6 +5,7 @@ gnupg
 numpy
 six
 sphinx
+Pygments
 requests
 tox
 yamlreader
