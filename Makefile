@@ -8,6 +8,7 @@ PROJECT:=$(shell basename `pwd`)
 .PHONY: test
 test:
 	tox
+	bats tests
 
 #HELP release - package and upload a release to pypi
 .PHONY: release
