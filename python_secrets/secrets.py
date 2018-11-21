@@ -15,6 +15,7 @@ from cliff.command import Command
 from cliff.lister import Lister
 from numpy.random import bytes as np_random_bytes
 from python_secrets.utils import redact, find, prompt_string
+from python_secrets.utils import SetAWSCredentials
 from python_secrets.google_oauth2 import GoogleSMTP
 from shutil import copy, copytree
 # >> Issue: [B404:blacklist] Consider possible security implications associated with run module.  # noqa
@@ -953,7 +954,6 @@ class SecretsSet(Command):
                 v = p.stdout.decode('UTF-8').strip()
             self.LOG.debug('setting {}'.format(k))
             self.app.secrets.set_secret(k, v)
-
 
 class SecretsGet(Command):
     """Get value associated with a secret"""

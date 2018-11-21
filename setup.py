@@ -112,6 +112,7 @@ setup(
             'secrets show = python_secrets.secrets:SecretsShow',
             'template = python_secrets.template:Template',
             'utils myip = python_secrets.utils:MyIP',
+            'utils set-aws-credentials = python_secrets.utils:SetAWSCredentials',
             'utils tfoutput = python_secrets.utils:TfOutput',
         ],
     },

@@ -96,6 +96,7 @@ below will detail help output for each command.
       secrets show   List the contents of the secrets file or definitions
       template       Template file(s)
       utils myip     Get current internet routable source address.
+      utils set-aws-credentials  Set credentials from saved secrets for use by AWS CLI.
       utils tfoutput  Retrieve current 'terraform output' results.
 
 ..

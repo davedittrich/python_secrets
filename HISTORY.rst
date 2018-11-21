@@ -31,6 +31,7 @@ Added
 ^^^^^
 
 - Add ``environments rename`` command
+- Add ``utils set-aws-credentials`` command to mirror AWS CLI credentials
 - Use ``autoprogram_cliff`` for self-documentation
 - Add ``cliff.sphinxext`` for documentation
 
