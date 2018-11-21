@@ -8,7 +8,7 @@ PROJECT:=$(shell basename `pwd`)
 .PHONY: test
 test:
 	tox
-	bats tests
+	[ "$(TRAVIS)" != "true" ] && bats tests || true
 
 #HELP release - package and upload a release to pypi
 .PHONY: release
