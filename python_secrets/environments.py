@@ -1,5 +1,6 @@
 import logging
 import os
+import textwrap
 
 from cliff.command import Command
 from cliff.lister import Lister
@@ -69,6 +70,71 @@ class EnvironmentsCreate(Command):
                 'environment "{}" '.format(e) +
                 '({}) created'.format(se.environment_path())
             )
+
+
+class EnvironmentsRename(Command):
+    """Rename environment"""
+
+    LOG = logging.getLogger(__name__)
+
+    def get_epilog(self):
+        return textwrap.dedent("""\
+        .. code-block:: console
+
+            $ psec environments list
+            +----------------+---------+
+            | Environment    | Default |
+            +----------------+---------+
+            | old            | No      |
+            +----------------+---------+
+            $ psec environments rename new old
+            Source environment "new" does not exist
+            $ psec environments rename old new
+            environment "old" renamed to "new"
+            $ psec environments list
+            +----------------+---------+
+            | Environment    | Default |
+            +----------------+---------+
+            | new            | No      |
+            +----------------+---------+
+
+        ..""")
+
+    def get_parser(self, prog_name):
+        parser = super(EnvironmentsRename, self).get_parser(prog_name)
+        parser.add_argument('source',
+                            nargs=1,
+                            default=None,
+                            help='environment to rename')
+        parser.add_argument('dest',
+                            nargs=1,
+                            default=None,
+                            help='new environment name')
+        return parser
+
+    def take_action(self, parsed_args):
+        self.LOG.debug('renaming environment')
+        basedir = self.app.secrets.secrets_basedir()
+        source = parsed_args.source[0]
+        dest = parsed_args.dest[0]
+        if source is None:
+            raise RuntimeError('No source name provided')
+        if dest is None:
+            raise RuntimeError('No destination name provided')
+        if not SecretsEnvironment(environment=source).environment_exists():
+            raise RuntimeError(
+                'Source environment "{}"'.format(source) +
+                ' does not exist')
+        if SecretsEnvironment(environment=dest).environment_exists():
+            raise RuntimeError(
+                'Desitnation environment "{}"'.format(dest) +
+                ' already exist')
+        os.rename(os.path.join(basedir, source),
+                  os.path.join(basedir, dest))
+        self.LOG.info(
+            'environment "{}" '.format(source) +
+            'renamed to "{}"' .format(dest)
+        )
 
 
 class EnvironmentsDefault(Command):

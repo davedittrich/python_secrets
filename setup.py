@@ -96,6 +96,7 @@ setup(
             'environments default = python_secrets.environments:EnvironmentsDefault',  # noqa
             'environments list = python_secrets.environments:EnvironmentsList',
             'environments path = python_secrets.environments:EnvironmentsPath',
+            'environments rename = python_secrets.environments:EnvironmentsRename',  # noqa
             'environments tree = python_secrets.environments:EnvironmentsTree',
             'groups create = python_secrets.groups:GroupsCreate',
             'groups list = python_secrets.groups:GroupsList',

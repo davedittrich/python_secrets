@@ -30,6 +30,7 @@ Unreleased
 Added
 ^^^^^
 
+- Add ``environments rename`` command
 - Add ``cliff.sphinxext`` for documentation
 
 Changed
