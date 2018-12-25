@@ -4,7 +4,7 @@ version_info = pbr.version.VersionInfo('python_secrets')
 try:
     __version__ = version_info.version_string()
 except AttributeError:
-    __version__ = '18.11.5'
+    __version__ = '18.12.1'
 
 __author__ = 'Dave Dittrich'
 __email__ = 'dave.dittrich@gmail.com'
