@@ -31,6 +31,7 @@ Added
 ^^^^^
 
 - Add ``environments rename`` command
+- Use ``autoprogram_cliff`` for self-documentation
 - Add ``cliff.sphinxext`` for documentation
 
 Changed
