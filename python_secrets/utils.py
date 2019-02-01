@@ -21,6 +21,7 @@ OPENDNS_URL = 'https://diagnostic.opendns.com/myip'
 # implications, the person running this command already has control of her
 # account.
 
+
 def get_output(cmd=['echo', 'NO COMMAND SPECIFIED'],
                stderr=subprocess.STDOUT,
                shell=False):
@@ -253,15 +254,15 @@ class SetAWSCredentials(Command):
     """Set credentials from saved secrets for use by AWS CLI.
 
     This command directly manipulates the AWS CLI "credentials" INI-style file.
-    The AWS CLI does not support non-interactive manipulation of the credentials
-    file, so this hack is used to do this. Be aware that this might cause some
-    problems (though it shouldn't, since the file is so simple.)
+    The AWS CLI does not support non-interactive manipulation of the
+    credentials file, so this hack is used to do this. Be aware that this might
+    cause some problems (though it shouldn't, since the file is so simple.)
 
     Use the --user option to select a specific user, otherwise "default" is
     used.
     """
 
-    # See https://docs.aws.amazon.com/cli/latest/userguide/cli-config-files.html
+    # See https://docs.aws.amazon.com/cli/latest/userguide/cli-config-files.html  # noqa
 
     log = logging.getLogger(__name__)
 
@@ -285,9 +286,10 @@ class SetAWSCredentials(Command):
         for v in required_vars:
             try:
                 cred = self.app.secrets.get_secret(v)
-            except Exception as e:
+            except Exception as err:  # noqa
                 raise
             config[parsed_args.user][v] = cred
         config.write()
 
+#
 # vim: set fileencoding=utf-8 ts=4 sw=4 tw=0 et :
