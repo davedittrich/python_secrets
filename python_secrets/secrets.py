@@ -181,7 +181,7 @@ class SecretsEnvironment(object):
             self._secrets_basedir = os.getenv('D2_SECRETS_BASEDIR',
                                               _secrets_subdir)
             if not os.path.exists(self._secrets_basedir) and init:
-                    self.secrets_basedir_create()
+                self.secrets_basedir_create()
         return self._secrets_basedir
 
     def secrets_basedir_exists(self):

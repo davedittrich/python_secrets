@@ -18,15 +18,15 @@ PROJECT = 'python_secrets'
 try:
     with open('README.rst') as readme_file:
         long_description = readme_file.read()
-        long_description_content_type = 'text/x-rst'
+    long_description_content_type = 'text/x-rst'
 except IOError:
-        long_description = ''
+    long_description = ''
 
 try:
     with open('HISTORY.rst') as history_file:
         history = history_file.read().replace('.. :changelog:', '')
 except IOError:
-        history = ''
+    history = ''
 
 
 def get_contents(*args):
@@ -48,21 +48,30 @@ def get_absolute_path(*args):
 
 
 setup(
-    setup_requires=['pbr>=1.9', 'setuptools>=17.1'],
     name='python_secrets',
     pbr=True,
+
+    setup_requires=['pbr>=1.9', 'setuptools>=17.1'],
+
     description="Python CLI for managing secrets (passwords, API keys, etc)",
     long_description=long_description + "\n\n" + history,
+
     author="Dave Dittrich",
     author_email='dave.dittrich@gmail.com',
+
     url='https://github.com/davedittrich/python_secrets',
+    download_url='https://github.com/davedittrich/python_secrets/tarball/master',  # noqa
+
+    namespace_packages=[],
     packages=find_packages(),
     package_dir={'python_secrets':
                  'python_secrets'},
     include_package_data=True,
+
+    python_requires='>=3.6',
     install_requires=get_contents('requirements.txt'),
+
     license="Apache Software License",
-    zip_safe=False,
     keywords='python_secrets',
     classifiers=[
         'Development Status :: 5 - Production/Stable',
@@ -85,7 +94,9 @@ setup(
         'Topic :: System :: Installation/Setup',
         'Topic :: Utilities',
     ],
+
     test_suite='tests',
+
     entry_points={
         'console_scripts': [
             'python_secrets = python_secrets.main:main',
@@ -112,7 +123,9 @@ setup(
             'secrets show = python_secrets.secrets:SecretsShow',
             'template = python_secrets.template:Template',
             'utils myip = python_secrets.utils:MyIP',
+            'utils set-aws-credentials = python_secrets.utils:SetAWSCredentials',  # noqa
             'utils tfoutput = python_secrets.utils:TfOutput',
         ],
     },
+    zip_safe=False,
 )

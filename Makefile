@@ -6,8 +6,14 @@ PROJECT:=$(shell basename `pwd`)
 
 #HELP test - run 'tox' for testing
 .PHONY: test
-test:
+test: test-tox test-bats
+
+.PHONY: test-tox
+test-tox:
 	tox
+
+.PHONY: test-bats
+test-bats:
 	[ "$(TRAVIS)" != "true" ] && bats tests || true
 
 #HELP release - package and upload a release to pypi
