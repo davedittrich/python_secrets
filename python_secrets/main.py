@@ -13,6 +13,7 @@ import os
 import sys
 
 from python_secrets import __version__
+from python_secrets import __release__
 from python_secrets.secrets import SecretsEnvironment
 
 # External dependencies.
@@ -41,7 +42,7 @@ class PythonSecretsApp(App):
     def __init__(self):
         super(PythonSecretsApp, self).__init__(
             description=__doc__.strip(),
-            version=__version__,
+            version=__release__ if __release__ != __version__ else __version__,
             command_manager=CommandManager(
                 namespace='python_secrets'
             ),
