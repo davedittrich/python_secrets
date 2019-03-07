@@ -46,6 +46,8 @@ SECRET_ATTRIBUTES = [
 ]
 DEFAULT_MODE = 0o710
 
+logger = logging.getLogger(__name__)
+
 
 def copyanything(src, dst):
     try:
@@ -82,6 +84,20 @@ def _identify_environment(environment=None):
             environment = os.getenv('D2_ENVIRONMENT',
                                     os.path.basename(cwd))
     return environment
+
+
+def is_valid_environment(env_path, verbose=True):
+    """Check to see if this looks like a valid environment
+    directory based on contents."""
+    contains_expected = False
+    for root, directories, filenames in os.walk(env_path):
+        if 'secrets.yml' in filenames or 'secrets.d' in directories:
+            contains_expected = True
+    is_valid = os.path.exists(env_path) and contains_expected
+    if not is_valid and verbose:
+        logger.info('[!] environment directory {} '.format(env_path) +
+                    'exists and is not valid')
+    return is_valid
 
 
 class SecretsEnvironment(object):
@@ -231,11 +247,7 @@ class SecretsEnvironment(object):
         """Return whether secrets environment directory exists
         and contains files"""
         _ep = self.environment_path()
-        _files = list()
-        for root, directories, filenames in os.walk(_ep):
-            for filename in filenames:
-                _files.append(os.path.join(root, filename))
-        return os.path.exists(_ep) and len(_files) > 0
+        return is_valid_environment(_ep, self.app_args.verbose_level > 1)
 
     def environment_create(self,
                            source=None,
