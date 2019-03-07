@@ -46,6 +46,8 @@ SECRET_ATTRIBUTES = [
 ]
 DEFAULT_MODE = 0o710
 
+logger = logging.getLogger(__name__)
+
 
 def copyanything(src, dst):
     try:
@@ -84,6 +86,20 @@ def _identify_environment(environment=None):
     return environment
 
 
+def is_valid_environment(env_path, verbose_level=0):
+    """Check to see if this looks like a valid environment
+    directory based on contents."""
+    contains_expected = False
+    for root, directories, filenames in os.walk(env_path):
+        if 'secrets.yml' in filenames or 'secrets.d' in directories:
+            contains_expected = True
+    is_valid = os.path.exists(env_path) and contains_expected
+    if not is_valid and verbose_level > 0:
+        logger.info('[!] directory {} exists '.format(env_path) +
+                    'but does not look like a valid environment')
+    return is_valid
+
+
 class SecretsEnvironment(object):
     """Class for handling secrets environment metadata"""
 
@@ -99,11 +115,13 @@ class SecretsEnvironment(object):
                  export_env_vars=False,
                  env_var_prefix=None,
                  source=None,
+                 verbose_level=0,
                  cwd=os.getcwd()):
         self._cwd = cwd
         self._environment = _identify_environment(environment)
         self._secrets_file = secrets_file
         self._secrets_basedir = secrets_basedir
+        self.verbose_level = verbose_level
         # Ensure root directory exists in which to create secrets
         # environments?
         if not self.secrets_basedir_exists():
@@ -231,11 +249,7 @@ class SecretsEnvironment(object):
         """Return whether secrets environment directory exists
         and contains files"""
         _ep = self.environment_path()
-        _files = list()
-        for root, directories, filenames in os.walk(_ep):
-            for filename in filenames:
-                _files.append(os.path.join(root, filename))
-        return os.path.exists(_ep) and len(_files) > 0
+        return is_valid_environment(_ep, verbose_level=self.verbose_level)
 
     def environment_create(self,
                            source=None,

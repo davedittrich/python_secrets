@@ -4,6 +4,7 @@ import textwrap
 
 from cliff.command import Command
 from cliff.lister import Lister
+from python_secrets.secrets import is_valid_environment
 from python_secrets.secrets import SecretsEnvironment
 from python_secrets.utils import tree
 from stat import S_IMODE
@@ -34,7 +35,9 @@ class EnvironmentsList(Lister):
         data = (
             [(e, _is_default(e, default_environment))
                 for e in os.listdir(basedir)
-                if os.path.isdir(os.path.join(basedir, e))]
+                if is_valid_environment(
+                    os.path.join(basedir, e),
+                    self.app_args.verbose_level)]
         )
         return columns, data
 

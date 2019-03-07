@@ -15,7 +15,7 @@ python_secrets
 
 Python CLI for managing secrets (passwords, API keys, etc)
 
-Version: 18.12.1
+Version: 19.3.1
 
 * Free software: Apache 2.0 License
 * Documentation: https://python_secrets.readthedocs.org.
@@ -1187,7 +1187,7 @@ Decrypted, it looks like this:
     myapp_app_password=brunt outclass alike turbine
 
     --
-    Sent using python_secrets version 18.12.1
+    Sent using python_secrets version 19.3.1
     https://pypi.org/project/python-secrets/
     https://github.com/davedittrich/python_secrets
 
@@ -1687,6 +1687,19 @@ General or more elaborate potential enhancements are listed here:
 
   ..
 
+Credits
+---------
+
+Tools used in rendering this package:
+
+*  Cookiecutter_
+*  `cookiecutter-pypackage`_
+
+Development of this program was supported in part under an Open Source
+Development Grant from the Comcast Innovation Fund.
+
+.. _Cookiecutter: https://github.com/audreyr/cookiecutter
+.. _`cookiecutter-pypackage`: https://github.com/audreyr/cookiecutter-pypackage
 .. _openstack/cliff: https://github.com/openstack/cliff
 .. _python-update-dotdee: https://pypi.org/project/update-dotdee/
 .. _terraform: https://www.terraform.io/
