@@ -1687,6 +1687,19 @@ General or more elaborate potential enhancements are listed here:
 
   ..
 
+Credits
+---------
+
+Tools used in rendering this package:
+
+*  Cookiecutter_
+*  `cookiecutter-pypackage`_
+
+Development of this program was supported in part under an Open Source
+Development Grant from the Comcast Innovation Fund.
+
+.. _Cookiecutter: https://github.com/audreyr/cookiecutter
+.. _`cookiecutter-pypackage`: https://github.com/audreyr/cookiecutter-pypackage
 .. _openstack/cliff: https://github.com/openstack/cliff
 .. _python-update-dotdee: https://pypi.org/project/update-dotdee/
 .. _terraform: https://www.terraform.io/
