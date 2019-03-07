@@ -37,7 +37,7 @@ class EnvironmentsList(Lister):
                 for e in os.listdir(basedir)
                 if is_valid_environment(
                     os.path.join(basedir, e),
-                    self.app_args.verbose_level > 0)]
+                    self.app_args.verbose_level)]
         )
         return columns, data
 
