@@ -24,8 +24,11 @@ History
 .. Fixed for any bug fixes.
 .. Security in case of vulnerabilities.
 
-Unreleased
-~~~~~~~~~~
+.. Unreleased
+.. ~~~~~~~~~~
+
+19.3.1 (2019-04-06)
+~~~~~~~~~~~~~~~~~~
 
 Added
 ^^^^^
