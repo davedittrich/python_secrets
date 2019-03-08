@@ -1,3 +1,4 @@
+import argparse
 import base64
 import binascii
 import errno
@@ -726,31 +727,15 @@ class SecretsShow(Lister):
     # Note: Not totally DRY. Replicates some logic from SecretsDescribe()
 
     def get_parser(self, prog_name):
-        parser = super(SecretsShow, self).get_parser(prog_name)
         # Sorry for the double-negative, but it works better
         # this way for the user as a flag and to have a default
         # of redacting (so they need to turn it off)
-        parser.epilog = textwrap.dedent("""
-
-        .. code-block:: console
-
-            $ psec secrets show
-            +------------------------+----------+-------------------+----------+  # noqa
-            | Variable               | Type     | Export            | Value    |  # noqa
-            +------------------------+----------+-------------------+----------+  # noqa
-            | jenkins_admin_password | password | None              | REDACTED |  # noqa
-            | myapp_app_password     | password | DEMO_app_password | REDACTED |  # noqa
-            | myapp_client_psk       | string   | DEMO_client_ssid  | REDACTED |  # noqa
-            | myapp_client_ssid      | string   | DEMO_client_ssid  | REDACTED |  # noqa
-            | myapp_pi_password      | password | DEMO_pi_password  | REDACTED |  # noqa
-            | trident_db_pass        | password | None              | REDACTED |  # noqa
-            | trident_sysadmin_pass  | password | None              | REDACTED |  # noqa
-            +------------------------+----------+-------------------+----------+  # noqa
-
-        ..
-        """)
         redact = not (os.getenv('D2_NO_REDACT', "FALSE").upper()
                       in ["true".upper(), "1", "yes".upper()])
+
+        parser = super(SecretsShow, self).get_parser(prog_name)
+        # TODO(dittrich): This is closer to working properly. Extend when able.
+        parser.formatter_class = argparse.RawDescriptionHelpFormatter
         parser.add_argument(
             '-C', '--no-redact',
             action='store_false',
@@ -772,7 +757,33 @@ class SecretsShow(Lister):
             default=False,
             help="Include prompts (default: False)"
         )
-        parser.add_argument('args', nargs='*', default=None)
+        parser.add_argument('arg', nargs='*', default=None)
+        parser.epilog = textwrap.dedent("""\
+            To get show a subset of secrets, specify their names as
+            the arguments.
+
+            If you instead want to show all secrets in one or more
+            groups, use the ``--group`` option and specify the group
+            names as the arguments.
+
+            .. code-block:: console
+
+                $ psec secrets show
+                +------------------------+----------+-------------------+----------+
+                | Variable               | Type     | Export            | Value    |
+                +------------------------+----------+-------------------+----------+
+                | jenkins_admin_password | password | None              | REDACTED |
+                | myapp_app_password     | password | DEMO_app_password | REDACTED |
+                | myapp_client_psk       | string   | DEMO_client_ssid  | REDACTED |
+                | myapp_client_ssid      | string   | DEMO_client_ssid  | REDACTED |
+                | myapp_pi_password      | password | DEMO_pi_password  | REDACTED |
+                | trident_db_pass        | password | None              | REDACTED |
+                | trident_sysadmin_pass  | password | None              | REDACTED |
+                +------------------------+----------+-------------------+----------+
+
+            ..
+            """)  # noqa
+
         return parser
 
     def take_action(self, parsed_args):
@@ -781,9 +792,9 @@ class SecretsShow(Lister):
         self.app.secrets.read_secrets_and_descriptions()
         variables = []
         if parsed_args.args_group:
-            if not len(parsed_args.args):
+            if not len(parsed_args.arg):
                 raise RuntimeError('No group specified')
-            for g in parsed_args.args:
+            for g in parsed_args.arg:
                 try:
                     variables.extend(
                         [v for v
@@ -793,8 +804,8 @@ class SecretsShow(Lister):
                     raise RuntimeError('Group {} '.format(str(e)) +
                                        'does not exist')
         else:
-            variables = parsed_args.args \
-                if len(parsed_args.args) > 0 \
+            variables = parsed_args.arg \
+                if len(parsed_args.arg) > 0 \
                 else [k for k, v in self.app.secrets.items()]
         columns = ('Variable', 'Type', 'Export', 'Value')
         data = (
@@ -817,6 +828,16 @@ class SecretsDescribe(Lister):
 
     def get_parser(self, prog_name):
         parser = super(SecretsDescribe, self).get_parser(prog_name)
+        parser.formatter_class = argparse.RawDescriptionHelpFormatter
+        parser.epilog = textwrap.dedent("""
+            To get descriptions for a subset of secrets, specify their
+            names as the arguments.
+
+            If you instead want to get descriptions of all secrets in
+            one or more groups, use the ``--group`` option and specify
+            the group names as the arguments.
+            """)
+
         what = parser.add_mutually_exclusive_group(required=False)
         what.add_argument(
             '-g', '--group',
@@ -832,7 +853,7 @@ class SecretsDescribe(Lister):
             default=False,
             help="Describe types (default: False)"
         )
-        parser.add_argument('args', nargs='*', default=None)
+        parser.add_argument('arg', nargs='*', default=None)
         return parser
 
     def take_action(self, parsed_args):
@@ -845,9 +866,9 @@ class SecretsDescribe(Lister):
             self.app.secrets.read_secrets_and_descriptions()
             variables = []
             if parsed_args.args_group:
-                if not len(parsed_args.args):
+                if not len(parsed_args.arg):
                     raise RuntimeError('No group specified')
-                for g in parsed_args.args:
+                for g in parsed_args.arg:
                     try:
                         variables.extend(
                             [v for v
@@ -857,8 +878,8 @@ class SecretsDescribe(Lister):
                         raise RuntimeError('Group {} '.format(str(e)) +
                                            'does not exist')
             else:
-                variables = parsed_args.args \
-                    if len(parsed_args.args) > 0 \
+                variables = parsed_args.arg \
+                    if len(parsed_args.arg) > 0 \
                     else [k for k, v in self.app.secrets.items()]
             columns = ('Variable', 'Type', 'Prompt')
             data = (
@@ -878,6 +899,7 @@ class SecretsGenerate(Command):
 
     def get_parser(self, prog_name):
         parser = super(SecretsGenerate, self).get_parser(prog_name)
+        parser.formatter_class = argparse.RawDescriptionHelpFormatter
         parser.add_argument(
             '-U', '--unique',
             action='store_true',
@@ -886,15 +908,20 @@ class SecretsGenerate(Command):
             help="Generate unique values for each " +
             "type of secret (default: False)"
         )
-        parser.add_argument('args', nargs='*', default=None)
+        parser.add_argument('arg', nargs='*', default=None)
+        parser.epilog = textwrap.dedent("""
+            To generate a subset of generable secrets, specify them
+            as the arguments to this command. If no secrets are specified,
+            all generable secrets are (re)generated.
+            """)
         return parser
 
     def take_action(self, parsed_args):
         self.LOG.debug('generating secrets')
         self.app.secrets.read_secrets_and_descriptions()
         # If no secrets specified, default to all secrets
-        to_change = parsed_args.args \
-            if len(parsed_args.args) > 0 \
+        to_change = parsed_args.arg \
+            if len(parsed_args.arg) > 0 \
             else [k for k, v in self.app.secrets.items()]
         for k in to_change:
             t = self.app.secrets.get_secret_type(k)
@@ -914,6 +941,7 @@ class SecretsSet(Command):
 
     def get_parser(self, prog_name):
         parser = super(SecretsSet, self).get_parser(prog_name)
+        parser.formatter_class = argparse.RawDescriptionHelpFormatter
         parser.add_argument(
             '--undefined',
             action='store_true',
@@ -921,7 +949,18 @@ class SecretsSet(Command):
             default=False,
             help="Set values for undefined variables (default: False)"
         )
-        parser.add_argument('args', nargs='*', default=None)
+        parser.add_argument('arg', nargs='*', default=None)
+        parser.epilog = textwrap.dedent("""
+            To set one or more secrets directly, specify them as
+            ``variable=value`` pairs as the arguments to this command.
+
+            ``$ psec secrets set trident_db_pass="rural coffee purple sedan"``
+
+            If no secrets as specified, you will be prompted for each
+            secrets. Adding the ``--undefined`` flag will limit the secrets
+            you are prompted to set to only those that are currently
+            not set.
+            """)
         return parser
 
     def take_action(self, parsed_args):
@@ -931,7 +970,7 @@ class SecretsSet(Command):
             args = [k for k, v in self.app.secrets.items()
                     if v in [None, '']]
         else:
-            args = parsed_args.args
+            args = parsed_args.arg
         for arg in args:
             if '=' in arg:
                 k, v = arg.split('=')
@@ -976,6 +1015,7 @@ class SecretsGet(Command):
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
+        parser.formatter_class = argparse.RawDescriptionHelpFormatter
         parser.add_argument(
             '-C', '--content',
             action='store_true',
@@ -985,6 +1025,10 @@ class SecretsGet(Command):
             "(default: False)"
         )
         parser.add_argument('secret', nargs='?', default=None)
+        parser.epilog = textwrap.dedent("""
+            To get a subset of secrets, specify them as arguments to this
+            command. If no secrets are specified, they are all returned.
+            """)
         return parser
 
     def take_action(self, parsed_args):
@@ -1007,7 +1051,6 @@ class SecretsSend(Command):
     """
     Send secrets using GPG encrypted email.
 
-    Arguments are USERNAME@EMAIL.ADDRESS and/or VARIABLE references.
     """
 
     LOG = logging.getLogger(__name__)
@@ -1018,6 +1061,7 @@ class SecretsSend(Command):
 
     def get_parser(self, prog_name):
         parser = super(SecretsSend, self).get_parser(prog_name)
+        parser.formatter_class = argparse.RawDescriptionHelpFormatter
         parser.add_argument(
             '-T', '--refresh-token',
             action='store_true',
@@ -1061,7 +1105,13 @@ class SecretsSend(Command):
             default='For Your Information',
             help="Subject line (default: 'For Your Information')"
         )
-        parser.add_argument('args', nargs='*', default=None)
+        parser.add_argument('arg', nargs='*', default=None)
+        parser.epilog = textwrap.dedent("""
+            Recipients for the secrets are specified as
+            ``USERNAME@EMAIL.ADDRESS`` strings and/or ``VARIABLE``
+            references.
+            """)
+
         return parser
 
     def take_action(self, parsed_args):
@@ -1105,7 +1155,7 @@ class SecretsSend(Command):
 
         recipients = list()
         variables = list()
-        for arg in parsed_args.args:
+        for arg in parsed_args.arg:
             if "@" in arg:
                 recipients.append(arg)
             else:
@@ -1134,11 +1184,19 @@ class SecretsPath(Command):
     LOG = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
-        parser = super(SecretsPath, self).get_parser(prog_name)
         default_environment = SecretsEnvironment().environment()
+
+        parser = super(SecretsPath, self).get_parser(prog_name)
+        parser.formatter_class = argparse.RawDescriptionHelpFormatter
         parser.add_argument('environment',
                             nargs='?',
                             default=default_environment)
+        parser.epilog = textwrap.dedent("""
+            If no arguments are present, the path to the secrets for
+            the default environment is returned. If you want to get the
+            secrets path for a specific environment, specify it as the
+            argument to this command.
+            """)
         return parser
 
     def take_action(self, parsed_args):

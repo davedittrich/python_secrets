@@ -1,4 +1,6 @@
+import argparse
 import logging
+import textwrap
 
 from cliff.command import Command
 from subprocess import call  # nosec
@@ -15,10 +17,32 @@ class Run(Command):
 
     def get_parser(self, prog_name):
         parser = super(Run, self).get_parser(prog_name)
-        parser.add_argument('args',
+        parser.formatter_class = argparse.RawDescriptionHelpFormatter
+        parser.add_argument('arg',
                             nargs='*',
-                            help='command arguments (default: "env")',
-                            default=['env'])
+                            help='command arguments ' +
+                                 '(default: "psec run --help")',
+                            default=['psec', 'run', '--help'])
+        parser.epilog = textwrap.dedent("""
+            This option is used to run a command, just like a normal Bash
+            command line. While this may not seem important, when combined
+            with the ``-e`` option to export an environment's variables into
+            the shells environment, it becomes very powerful. If you use this
+            option to run a program like ``byobu``, every shell that is
+            subsequently spawned will inherit these environment variables
+            (which in turn are inherited by programs like Ansible, Terraform,
+            etc.)
+
+            If no arguments are specified, the ``--help`` text is output.
+
+            .. code-block:: console
+
+                This is a code block
+                This is a code block
+                This is a code block
+
+            ..
+            """)
         return parser
 
     def take_action(self, parsed_args):
@@ -27,7 +51,7 @@ class Run(Command):
         self.app.secrets.read_secrets_and_descriptions()
 
         cmd = " ".join(
-            [a for a in parsed_args.args]
+            [a for a in parsed_args.arg]
         ).encode('unicode-escape').decode()
         return call(cmd, shell=True)  # nosec
 

@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 # Standard library modules.
+import argparse
 import logging
 import os
 import sys
@@ -58,6 +59,7 @@ class PythonSecretsApp(App):
             description,
             version
         )
+        parser.formatter_class = argparse.RawDescriptionHelpFormatter
         # Global options
         _env = SecretsEnvironment()
         parser.add_argument(
