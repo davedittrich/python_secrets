@@ -34,14 +34,6 @@ class Run(Command):
             etc.)
 
             If no arguments are specified, the ``--help`` text is output.
-
-            .. code-block:: console
-
-                This is a code block
-                This is a code block
-                This is a code block
-
-            ..
             """)
         return parser
 
