@@ -96,11 +96,10 @@ setup(
     ],
 
     test_suite='tests',
-
+    scripts=['bin/psec'],
     entry_points={
         'console_scripts': [
             'python_secrets = python_secrets.main:main',
-            'psec = python_secrets.main:main',
         ],
         'python_secrets': [
             'environments create = python_secrets.environments:EnvironmentsCreate',  # noqa
