@@ -27,6 +27,16 @@ History
 .. Unreleased
 .. ~~~~~~~~~~
 
+19.4.0 (2019-04-18)
+~~~~~~~~~~~~~~~~~~~
+
+Changed
+^^^^^^^
+
+- Install a script 'psec' to complement console_script entry point
+- Clarify arguments in --help output
+
+
 19.3.1 (2019-04-06)
 ~~~~~~~~~~~~~~~~~~~
 

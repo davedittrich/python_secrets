@@ -25,6 +25,24 @@ class EnvironmentsList(Lister):
 
     def get_parser(self, prog_name):
         parser = super(EnvironmentsList, self).get_parser(prog_name)
+        parser.epilog = textwrap.dedent("""
+            You can get a list of all available environments at any time,
+            including which one would be the default used by sub-commands:
+
+            .. code-block:: console
+
+                $ psec environments list
+                +-------------+---------+
+                | Environment | Default |
+                +-------------+---------+
+                | development | No      |
+                | testing     | No      |
+                | production  | No      |
+                +-------------+---------+
+
+            ..
+            """)
+
         return parser
 
     def take_action(self, parsed_args):
@@ -80,29 +98,6 @@ class EnvironmentsRename(Command):
 
     LOG = logging.getLogger(__name__)
 
-    def get_epilog(self):
-        return textwrap.dedent("""\
-        .. code-block:: console
-
-            $ psec environments list
-            +----------------+---------+
-            | Environment    | Default |
-            +----------------+---------+
-            | old            | No      |
-            +----------------+---------+
-            $ psec environments rename new old
-            Source environment "new" does not exist
-            $ psec environments rename old new
-            environment "old" renamed to "new"
-            $ psec environments list
-            +----------------+---------+
-            | Environment    | Default |
-            +----------------+---------+
-            | new            | No      |
-            +----------------+---------+
-
-        ..""")
-
     def get_parser(self, prog_name):
         parser = super(EnvironmentsRename, self).get_parser(prog_name)
         parser.add_argument('source',
@@ -113,6 +108,28 @@ class EnvironmentsRename(Command):
                             nargs=1,
                             default=None,
                             help='new environment name')
+        parser.epilog = textwrap.dedent("""\
+            .. code-block:: console
+
+                $ psec environments list
+                +----------------+---------+
+                | Environment    | Default |
+                +----------------+---------+
+                | old            | No      |
+                +----------------+---------+
+                $ psec environments rename new old
+                Source environment "new" does not exist
+                $ psec environments rename old new
+                environment "old" renamed to "new"
+                $ psec environments list
+                +----------------+---------+
+                | Environment    | Default |
+                +----------------+---------+
+                | new            | No      |
+                +----------------+---------+
+
+            ..""")
+
         return parser
 
     def take_action(self, parsed_args):
@@ -144,10 +161,6 @@ class EnvironmentsDefault(Command):
     """Manage default environment via file in cwd"""
 
     LOG = logging.getLogger(__name__)
-
-    def get_epilog(self):
-        return textwrap.dedent("""\
-            """)
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
