@@ -30,6 +30,11 @@ History
 19.4.0 (2019-04-18)
 ~~~~~~~~~~~~~~~~~~~
 
+Added
+^^^^^
+
+- Python 3.7 coverage for Travis CI
+
 Changed
 ^^^^^^^
 
