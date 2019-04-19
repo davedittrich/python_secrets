@@ -141,27 +141,32 @@ class TfOutput(Lister):
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
+        tfstate = None
+        try:
+            tfstate = os.path.join(self.app.secrets.environment_path(),
+                                        "terraform.tfstate")
+        except AttributeError:
+            pass
         parser.add_argument('tfstate',
                             nargs='?',
-                            default=None,
+                            default=tfstate,
                             help="Path to Terraform state file " +
-                                 "(default: None)"
+                                 "(default: {})".format(tfstate)
                             )
         parser.epilog = textwrap.dedent("""
-        If the ``tfstate`` argument is not provided, this command will attempt to   # noqa
-        search for a ``terraform.tfstate`` file in (1) the active environment's     # noqa
-        secrets storage directory (see ``environments path``), or (2) the current   # noqa
-        working directory. The former is documented preferred location for storing  # noqa
-        this file, since it will contain secrets that _should not_ be stored in     # noqa
-        a source repository directory to avoid potential leaking of those secrets.  # noqa
+        If the ``tfstate`` argument is not provided, this command will attempt to
+        search for a ``terraform.tfstate`` file in (1) the active environment's
+        secrets storage directory (see ``environments path``), or (2) the current
+        working directory. The former is the documented preferred location for storing
+        this file, since it will contain secrets that _should not_ be stored in
+        a source repository directory to avoid potential leaking of those secrets.
 
         .. code-block:: console
 
             $ psec environments path
             /Users/dittrich/.secrets/python_secrets
 
-        ..
-        """)
+        ..""")  # noqa
         return parser
 
     def take_action(self, parsed_args):

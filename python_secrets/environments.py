@@ -145,12 +145,24 @@ class EnvironmentsDefault(Command):
 
     LOG = logging.getLogger(__name__)
 
+    def get_epilog(self):
+        return textwrap.dedent("""\
+            """)
+
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
-        parser.add_argument(
-            '--unset-default',
+        what = parser.add_mutually_exclusive_group(required=False)
+        what.add_argument(
+            '--set',
             action='store_true',
-            dest='unset_default',
+            dest='set',
+            default=False,
+            help="Set localized environment default"
+        )
+        what.add_argument(
+            '--unset',
+            action='store_true',
+            dest='unset',
             default=False,
             help="Unset localized environment default"
         )
@@ -163,13 +175,19 @@ class EnvironmentsDefault(Command):
         self.LOG.debug('managing localized environment default')
         cwd = os.getcwd()
         env_file = os.path.join(cwd, '.python_secrets_environment')
-        if parsed_args.unset_default:
+        if parsed_args.unset:
             try:
                 os.remove(env_file)
             except Exception as e:  # noqa
                 self.LOG.info('no default environment was set')
             else:
                 self.LOG.info('default environment unset')
+        elif parsed_args.set:
+            # Set default to specified environment
+            with open(env_file, 'w') as f:
+                f.write(parsed_args.environment)
+            self.LOG.info('default environment set to "{}"'.format(
+                parsed_args.environment))
         elif parsed_args.environment is None:
             # No environment specified, show current setting
             if os.path.exists(env_file):
@@ -179,12 +197,6 @@ class EnvironmentsDefault(Command):
             else:
                 self.LOG.info('default environment is "{}"'.format(
                     SecretsEnvironment().environment()))
-        else:
-            # Set default to specified environment
-            with open(env_file, 'w') as f:
-                f.write(parsed_args.environment)
-            self.LOG.info('default environment set to "{}"'.format(
-                parsed_args.environment))
 
 
 class EnvironmentsPath(Command):
