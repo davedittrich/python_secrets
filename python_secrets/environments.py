@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+
+import argparse
 import logging
 import os
 import textwrap
@@ -25,6 +28,7 @@ class EnvironmentsList(Lister):
 
     def get_parser(self, prog_name):
         parser = super(EnvironmentsList, self).get_parser(prog_name)
+        parser.formatter_class = argparse.RawDescriptionHelpFormatter
         parser.epilog = textwrap.dedent("""
             You can get a list of all available environments at any time,
             including which one would be the default used by sub-commands:
@@ -67,6 +71,7 @@ class EnvironmentsCreate(Command):
 
     def get_parser(self, prog_name):
         parser = super(EnvironmentsCreate, self).get_parser(prog_name)
+        parser.formatter_class = argparse.RawDescriptionHelpFormatter
         parser.add_argument(
             '-C', '--clone-from',
             action='store',
@@ -77,6 +82,46 @@ class EnvironmentsCreate(Command):
         parser.add_argument('env',
                             nargs='*',
                             default=[SecretsEnvironment().environment()])
+        parser.epilog = textwrap.dedent("""
+
+            A set of secrets for an open source project can be bootstrapped
+            using the following steps:
+
+            #. Create a template secrets environment directory that contains
+               just the secrets definitions. This example uses the template
+               found in the `davedittrich/goSecure`_ repository (directory
+               https://github.com/davedittrich/goSecure/tree/master/secrets).
+
+            #. Use this template to clone a secrets environment, which will
+               initially be empty:
+
+               .. code-block:: console
+
+                   $ psec environments create test --clone-from ~/git/goSecure/secrets
+                   new password variable "gosecure_app_password" is not defined
+                   new string variable "gosecure_client_ssid" is not defined
+                   new string variable "gosecure_client_ssid" is not defined
+                   new string variable "gosecure_client_psk" is not defined
+                   new password variable "gosecure_pi_password" is not defined
+                   new string variable "gosecure_pi_pubkey" is not defined
+                   environment directory /Users/dittrich/.secrets/test created
+
+               ..
+
+            If you want to create more than one environment at once, you will
+            have to specify all of the names on the command line as arguments:
+
+            .. code-block:: console
+
+                $ psec environments create development testing production
+                environment directory /Users/dittrich/.secrets/development created
+                environment directory /Users/dittrich/.secrets/testing created
+                environment directory /Users/dittrich/.secrets/production created
+
+            ..
+
+            .. _davedittrich/goSecure: https://github.com/davedittrich/goSecure
+            """)
         return parser
 
     def take_action(self, parsed_args):
@@ -100,6 +145,7 @@ class EnvironmentsRename(Command):
 
     def get_parser(self, prog_name):
         parser = super(EnvironmentsRename, self).get_parser(prog_name)
+        parser.formatter_class = argparse.RawDescriptionHelpFormatter
         parser.add_argument('source',
                             nargs=1,
                             default=None,
@@ -108,7 +154,7 @@ class EnvironmentsRename(Command):
                             nargs=1,
                             default=None,
                             help='new environment name')
-        parser.epilog = textwrap.dedent("""\
+        parser.epilog = textwrap.dedent("""
             .. code-block:: console
 
                 $ psec environments list
@@ -128,7 +174,8 @@ class EnvironmentsRename(Command):
                 | new            | No      |
                 +----------------+---------+
 
-            ..""")
+            ..
+            """)
 
         return parser
 
@@ -164,6 +211,7 @@ class EnvironmentsDefault(Command):
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
+        parser.formatter_class = argparse.RawDescriptionHelpFormatter
         what = parser.add_mutually_exclusive_group(required=False)
         what.add_argument(
             '--set',
@@ -182,6 +230,55 @@ class EnvironmentsDefault(Command):
         parser.add_argument('environment',
                             nargs='?',
                             default=None)
+        parser.epilog = textwrap.dedent("""
+            If no default is explicitly set, the default that would be
+            applied is returned:
+
+            .. code-block:: console
+
+                $ cd ~/git/python_secrets
+                $ psec environments default
+                default environment is "python_secrets"
+
+            ..
+
+            When listing environments, the default environment that would
+            be implicitly used will be identified:
+
+            .. code-block:: console
+
+                $ psec environments list
+                +-------------+---------+
+                | Environment | Default |
+                +-------------+---------+
+                | development | No      |
+                | testing     | No      |
+                | production  | No      |
+                +-------------+---------+
+
+            ..
+
+            The following shows setting and unsetting the default:
+
+            .. code-block:: console
+
+                $ psec environments default testing
+                default environment set to "testing"
+                $ psec environments default
+                testing
+                $ psec environments list
+                +-------------+---------+
+                | Environment | Default |
+                +-------------+---------+
+                | development | No      |
+                | testing     | Yes     |
+                | production  | No      |
+                +-------------+---------+
+                $ psec environments default --unset-default
+                default environment unset
+
+            ..
+            """)
         return parser
 
     def take_action(self, parsed_args):
@@ -219,6 +316,7 @@ class EnvironmentsPath(Command):
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
+        parser.formatter_class = argparse.RawDescriptionHelpFormatter
         parser.add_argument('environment',
                             nargs='?',
                             default=None)
@@ -238,6 +336,23 @@ class EnvironmentsPath(Command):
             help='Create and/or return tmpdir for this environment ' +
                  '(default: False)'
         )
+        parser.epilog = textwrap.dedent("""
+            Provides the full absolute path to the environment directory
+            for the environment.
+
+            .. code-block:: console
+
+                $ psec environments path
+                /Users/dittrich/.secrets/python_secrets
+                $ psec environments path -e goSecure
+                /Users/dittrich/.secrets/goSecure
+
+            ..
+
+            Using the ``--tmpdir`` option will return the path to the
+            temporary directory for the environment. If it does not already
+            exist, it will be created so it is ready for use.
+            """)
         return parser
 
     def _print(self, item, use_json=False):
@@ -278,6 +393,7 @@ class EnvironmentsTree(Command):
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
+        parser.formatter_class = argparse.RawDescriptionHelpFormatter
         default_environment = SecretsEnvironment().environment()
         parser.add_argument(
             '--no-files',
@@ -290,6 +406,69 @@ class EnvironmentsTree(Command):
         parser.add_argument('environment',
                             nargs='?',
                             default=default_environment)
+        parser.epilog = textwrap.dedent("""
+            The ``environments tree`` command produces output similar
+            to the Unix ``tree`` command:
+
+            .. code-block:: console
+
+                $ psec -e d2 environments tree
+                /Users/dittrich/.secrets/d2
+                ├── backups
+                │   ├── black.secretsmgmt.tk
+                │   │   ├── letsencrypt_2018-04-06T23:36:58PDT.tgz
+                │   │   └── letsencrypt_2018-04-25T16:32:20PDT.tgz
+                │   ├── green.secretsmgmt.tk
+                │   │   ├── letsencrypt_2018-04-06T23:45:49PDT.tgz
+                │   │   └── letsencrypt_2018-04-25T16:32:20PDT.tgz
+                │   ├── purple.secretsmgmt.tk
+                │   │   ├── letsencrypt_2018-04-25T16:32:20PDT.tgz
+                │   │   ├── trident_2018-01-31T23:38:48PST.tar.bz2
+                │   │   └── trident_2018-02-04T20:05:33PST.tar.bz2
+                │   └── red.secretsmgmt.tk
+                │       ├── letsencrypt_2018-04-06T23:45:49PDT.tgz
+                │       └── letsencrypt_2018-04-25T16:32:20PDT.tgz
+                ├── dittrich.asc
+                ├── keys
+                │   └── opendkim
+                │       └── secretsmgmt.tk
+                │           ├── 201801.private
+                │           ├── 201801.txt
+                │           ├── 201802.private
+                │           └── 201802.txt
+                ├── secrets.d
+                │   ├── ca.yml
+                │   ├── consul.yml
+                │   ├── jenkins.yml
+                │   ├── rabbitmq.yml
+                │   ├── trident.yml
+                │   ├── vncserver.yml
+                │   └── zookeper.yml
+                ├── secrets.yml
+                └── vault_password.txt
+
+            ..
+
+            To just see the directory structure and not files, add
+            the ``--no-files`` option:
+
+            .. code-block:: console
+
+                $ psec -e d2 environments tree --no-files
+                /Users/dittrich/.secrets/d2
+                ├── backups
+                │   ├── black.secretsmgmt.tk
+                │   ├── green.secretsmgmt.tk
+                │   ├── purple.secretsmgmt.tk
+                │   └── red.secretsmgmt.tk
+                ├── keys
+                │   └── opendkim
+                │       └── secretsmgmt.tk
+                └── secrets.d
+
+            ..
+
+            """)
         return parser
 
     def take_action(self, parsed_args):

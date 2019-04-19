@@ -38,6 +38,7 @@ Added
 Changed
 ^^^^^^^
 
+- Complete --help output (epilog text) in all commands
 - Install a script 'psec' to complement console_script entry point
 - Clarify arguments in --help output
 

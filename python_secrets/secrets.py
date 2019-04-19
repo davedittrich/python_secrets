@@ -312,7 +312,8 @@ class SecretsEnvironment(object):
         """
         if not self.environment_exists():
             raise RuntimeError(
-                'environment "{}" does not exist'.format(self.environment()))
+                'environment "{}" '.format(self.environment()) +
+                'does not exist or is empty')
 
     def keys(self):
         """Return the keys to the secrets dictionary"""
