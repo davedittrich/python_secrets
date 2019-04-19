@@ -4,6 +4,7 @@ import textwrap
 
 from cliff.command import Command
 from cliff.lister import Lister
+from python_secrets.secrets import is_valid_environment
 from python_secrets.secrets import SecretsEnvironment
 from python_secrets.utils import tree
 from stat import S_IMODE
@@ -34,7 +35,9 @@ class EnvironmentsList(Lister):
         data = (
             [(e, _is_default(e, default_environment))
                 for e in os.listdir(basedir)
-                if os.path.isdir(os.path.join(basedir, e))]
+                if is_valid_environment(
+                    os.path.join(basedir, e),
+                    self.app_args.verbose_level)]
         )
         return columns, data
 
@@ -53,7 +56,7 @@ class EnvironmentsCreate(Command):
             default=None,
             help="Environment directory to clone from (default: None)"
         )
-        parser.add_argument('args',
+        parser.add_argument('env',
                             nargs='*',
                             default=[SecretsEnvironment().environment()])
         return parser
@@ -61,9 +64,9 @@ class EnvironmentsCreate(Command):
     def take_action(self, parsed_args):
         self.LOG.debug('creating environment(s)')
         # basedir = self.app.get_secrets_basedir()
-        if len(parsed_args.args) == 0:
-            parsed_args.args = list(self.app.environment)
-        for e in parsed_args.args:
+        if len(parsed_args.env) == 0:
+            parsed_args.env = list(self.app.environment)
+        for e in parsed_args.env:
             se = SecretsEnvironment(environment=e)
             se.environment_create(source=parsed_args.clone_from)
             self.app.LOG.info(

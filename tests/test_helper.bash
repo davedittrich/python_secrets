@@ -1,8 +1,8 @@
 export OS=$(uname -s)
 export PYTHONPATH=$(pwd)
-export PSEC="python3 -m python_secrets.main"
 export D2_ENVIRONMENT="bats"
 export D2_SECRETS_BASEDIR="/tmp/.secrets"
+export PSEC="python3 -m python_secrets.main --debug"
 
 load ../../bats-assert/all
 

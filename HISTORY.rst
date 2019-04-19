@@ -24,13 +24,17 @@ History
 .. Fixed for any bug fixes.
 .. Security in case of vulnerabilities.
 
-Unreleased
-~~~~~~~~~~
+.. Unreleased
+.. ~~~~~~~~~~
+
+19.3.1 (2019-04-06)
+~~~~~~~~~~~~~~~~~~~
 
 Added
 ^^^^^
 
 - Add ``environments rename`` command
+- Add ``utils set-aws-credentials`` command to mirror AWS CLI credentials
 - Use ``autoprogram_cliff`` for self-documentation
 - Add ``cliff.sphinxext`` for documentation
 

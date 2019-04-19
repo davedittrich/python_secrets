@@ -1,9 +1,11 @@
 cliff
+configobj
 jinja2
 lxml
 gnupg
 numpy
 six
+pyflakes
 sphinx
 Pygments
 python_secrets
