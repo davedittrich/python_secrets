@@ -734,25 +734,6 @@ class SecretsShow(Lister):
         # Sorry for the double-negative, but it works better
         # this way for the user as a flag and to have a default
         # of redacting (so they need to turn it off)
-        parser.epilog = textwrap.dedent("""
-
-        .. code-block:: console
-
-            $ psec secrets show
-            +------------------------+----------+-------------------+----------+
-            | Variable               | Type     | Export            | Value    |
-            +------------------------+----------+-------------------+----------+
-            | jenkins_admin_password | password | None              | REDACTED |
-            | myapp_app_password     | password | DEMO_app_password | REDACTED |
-            | myapp_client_psk       | string   | DEMO_client_ssid  | REDACTED |
-            | myapp_client_ssid      | string   | DEMO_client_ssid  | REDACTED |
-            | myapp_pi_password      | password | DEMO_pi_password  | REDACTED |
-            | trident_db_pass        | password | None              | REDACTED |
-            | trident_sysadmin_pass  | password | None              | REDACTED |
-            +------------------------+----------+-------------------+----------+
-
-        ..
-        """)  # noqa
         redact = not (os.getenv('D2_NO_REDACT', "FALSE").upper()
                       in ["true".upper(), "1", "yes".upper()])
 
