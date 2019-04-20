@@ -6,12 +6,12 @@ version_info = pbr.version.VersionInfo('psec')
 try:
     __version__ = version_info.version_string()
 except AttributeError:
-    __version__ = '19.3.1'
+    __version__ = '19.3.2'
 
 try:
     __release__ = version_info.release_string()
 except AttributeError:
-    __release__ = '19.3.1'
+    __release__ = '19.3.2'
 
 __author__ = 'Dave Dittrich'
 __email__ = 'dave.dittrich@gmail.com'
