@@ -27,7 +27,7 @@ History
 .. Unreleased
 .. ~~~~~~~~~~
 
-19.4.0 (2019-04-18)
+19.4.0 (2019-04-19)
 ~~~~~~~~~~~~~~~~~~~
 
 Added
@@ -42,6 +42,10 @@ Changed
 - Install a script 'psec' to complement console_script entry point
 - Clarify arguments in --help output
 
+Deprecated
+^^^^^^^^^^
+
+- The 'python_secrets' command is now just 'psec'
 
 19.3.1 (2019-04-06)
 ~~~~~~~~~~~~~~~~~~~
