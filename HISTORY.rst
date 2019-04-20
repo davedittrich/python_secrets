@@ -27,8 +27,28 @@ History
 .. Unreleased
 .. ~~~~~~~~~~
 
+19.4.0 (2019-04-19)
+~~~~~~~~~~~~~~~~~~~
+
+Added
+^^^^^
+
+- Python 3.7 coverage for Travis CI
+
+Changed
+^^^^^^^
+
+- Complete --help output (epilog text) in all commands
+- Install a script 'psec' to complement console_script entry point
+- Clarify arguments in --help output
+
+Deprecated
+^^^^^^^^^^
+
+- The 'python_secrets' command is now just 'psec'
+
 19.3.1 (2019-04-06)
-~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~
 
 Added
 ^^^^^

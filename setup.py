@@ -48,7 +48,7 @@ def get_absolute_path(*args):
 
 
 setup(
-    name='python_secrets',
+    name='psec',
     pbr=True,
 
     setup_requires=['pbr>=1.9', 'setuptools>=17.1'],
@@ -64,8 +64,8 @@ setup(
 
     namespace_packages=[],
     packages=find_packages(),
-    package_dir={'python_secrets':
-                 'python_secrets'},
+    package_dir={'psec':
+                 'psec'},
     include_package_data=True,
 
     python_requires='>=3.6',
@@ -96,35 +96,34 @@ setup(
     ],
 
     test_suite='tests',
-
+    scripts=['bin/psec'],
     entry_points={
         'console_scripts': [
-            'python_secrets = python_secrets.main:main',
-            'psec = python_secrets.main:main',
+            'psec = psec.main:main',
         ],
-        'python_secrets': [
-            'environments create = python_secrets.environments:EnvironmentsCreate',  # noqa
-            'environments default = python_secrets.environments:EnvironmentsDefault',  # noqa
-            'environments list = python_secrets.environments:EnvironmentsList',
-            'environments path = python_secrets.environments:EnvironmentsPath',
-            'environments rename = python_secrets.environments:EnvironmentsRename',  # noqa
-            'environments tree = python_secrets.environments:EnvironmentsTree',
-            'groups create = python_secrets.groups:GroupsCreate',
-            'groups list = python_secrets.groups:GroupsList',
-            'groups path = python_secrets.groups:GroupsPath',
-            'groups show = python_secrets.groups:GroupsShow',
-            'run = python_secrets.run:Run',
-            'secrets describe = python_secrets.secrets:SecretsDescribe',
-            'secrets generate = python_secrets.secrets:SecretsGenerate',
-            'secrets get = python_secrets.secrets:SecretsGet',
-            'secrets path = python_secrets.secrets:SecretsPath',
-            'secrets send = python_secrets.secrets:SecretsSend',
-            'secrets set = python_secrets.secrets:SecretsSet',
-            'secrets show = python_secrets.secrets:SecretsShow',
-            'template = python_secrets.template:Template',
-            'utils myip = python_secrets.utils:MyIP',
-            'utils set-aws-credentials = python_secrets.utils:SetAWSCredentials',  # noqa
-            'utils tfoutput = python_secrets.utils:TfOutput',
+        'psec': [
+            'environments create = psec.environments:EnvironmentsCreate',  # noqa
+            'environments default = psec.environments:EnvironmentsDefault',  # noqa
+            'environments list = psec.environments:EnvironmentsList',
+            'environments path = psec.environments:EnvironmentsPath',
+            'environments rename = psec.environments:EnvironmentsRename',  # noqa
+            'environments tree = psec.environments:EnvironmentsTree',
+            'groups create = psec.groups:GroupsCreate',
+            'groups list = psec.groups:GroupsList',
+            'groups path = psec.groups:GroupsPath',
+            'groups show = psec.groups:GroupsShow',
+            'run = psec.run:Run',
+            'secrets describe = psec.secrets:SecretsDescribe',
+            'secrets generate = psec.secrets:SecretsGenerate',
+            'secrets get = psec.secrets:SecretsGet',
+            'secrets path = psec.secrets:SecretsPath',
+            'secrets send = psec.secrets:SecretsSend',
+            'secrets set = psec.secrets:SecretsSet',
+            'secrets show = psec.secrets:SecretsShow',
+            'template = psec.template:Template',
+            'utils myip = psec.utils:MyIP',
+            'utils set-aws-credentials = psec.utils:SetAWSCredentials',  # noqa
+            'utils tfoutput = psec.utils:TfOutput',
         ],
     },
     zip_safe=False,

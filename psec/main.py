@@ -8,13 +8,14 @@
 from __future__ import print_function
 
 # Standard library modules.
+import argparse
 import logging
 import os
 import sys
 
-from python_secrets import __version__
-from python_secrets import __release__
-from python_secrets.secrets import SecretsEnvironment
+from psec import __version__
+from psec import __release__
+from psec.secrets import SecretsEnvironment
 
 # External dependencies.
 
@@ -44,7 +45,7 @@ class PythonSecretsApp(App):
             description=__doc__.strip(),
             version=__release__ if __release__ != __version__ else __version__,
             command_manager=CommandManager(
-                namespace='python_secrets'
+                namespace='psec'
             ),
             deferred_help=True,
             )
@@ -58,6 +59,7 @@ class PythonSecretsApp(App):
             description,
             version
         )
+        parser.formatter_class = argparse.RawDescriptionHelpFormatter
         # Global options
         _env = SecretsEnvironment()
         parser.add_argument(
@@ -145,7 +147,7 @@ class PythonSecretsApp(App):
 
 def main(argv=sys.argv[1:]):
     """
-    Command line interface for the ``python_secrets`` program.
+    Command line interface for the ``psec`` program.
     """
 
     myapp = PythonSecretsApp()

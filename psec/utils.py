@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+
+import argparse
 import ipaddress
 import json
 import logging
@@ -75,6 +78,7 @@ class MyIP(Command):
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
+        parser.formatter_class = argparse.RawDescriptionHelpFormatter
         parser.add_argument(
             '-C', '--cidr',
             action='store_true',
@@ -141,27 +145,35 @@ class TfOutput(Lister):
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
+        parser.formatter_class = argparse.RawDescriptionHelpFormatter
+        tfstate = None
+        try:
+            tfstate = os.path.join(self.app.secrets.environment_path(),
+                                   "terraform.tfstate")
+        except AttributeError:
+            pass
         parser.add_argument('tfstate',
                             nargs='?',
-                            default=None,
+                            default=tfstate,
                             help="Path to Terraform state file " +
-                                 "(default: None)"
+                                 "(default: {})".format(tfstate)
                             )
         parser.epilog = textwrap.dedent("""
-        If the ``tfstate`` argument is not provided, this command will attempt to   # noqa
-        search for a ``terraform.tfstate`` file in (1) the active environment's     # noqa
-        secrets storage directory (see ``environments path``), or (2) the current   # noqa
-        working directory. The former is documented preferred location for storing  # noqa
-        this file, since it will contain secrets that _should not_ be stored in     # noqa
-        a source repository directory to avoid potential leaking of those secrets.  # noqa
+            If the ``tfstate`` argument is not provided, this command will
+            attempt to search for a ``terraform.tfstate`` file in (1) the
+            active environment's secrets storage directory (see ``environments
+            path``), or (2) the current working directory. The former is
+            documented preferred location for storing this file, since it
+            will contain secrets that *should not* be stored in a source
+            repository directory to avoid potential leaking of those secrets.
 
-        .. code-block:: console
+            .. code-block:: console
 
-            $ psec environments path
-            /Users/dittrich/.secrets/python_secrets
+                $ psec environments path
+                /Users/dittrich/.secrets/psec
 
-        ..
-        """)
+            ..
+            """)  # noqa
         return parser
 
     def take_action(self, parsed_args):
@@ -182,7 +194,7 @@ class TfOutput(Lister):
             )
         # >> Issue: [B607:start_process_with_partial_path] Starting a process with a partial executable path  # noqa
         #    Severity: Low   Confidence: High
-        #    Location: python_secrets/utils.py:152
+        #    Location: psec/utils.py:152
         p = subprocess.Popen(['terraform',  # nosec
                               'output',
                               '-state={}'.format(tfstate),
@@ -253,13 +265,14 @@ def tree(dir, padding='', print_files=True, isLast=False, isFirst=True):
 class SetAWSCredentials(Command):
     """Set credentials from saved secrets for use by AWS CLI.
 
-    This command directly manipulates the AWS CLI "credentials" INI-style file.
-    The AWS CLI does not support non-interactive manipulation of the
-    credentials file, so this hack is used to do this. Be aware that this might
-    cause some problems (though it shouldn't, since the file is so simple.)
+    This command directly manipulates the AWS CLI "credentials" INI-style
+    file.  The AWS CLI does not support non-interactive manipulation of
+    the credentials file, so this hack is used to do this. Be aware that
+    this might cause some problems (though it shouldn't, since the file
+    is so simple.)
 
-    Use the --user option to select a specific user, otherwise "default" is
-    used.
+    Use the --user option to select a specific user, otherwise "default"
+    is used.
     """
 
     # See https://docs.aws.amazon.com/cli/latest/userguide/cli-config-files.html  # noqa
@@ -268,6 +281,7 @@ class SetAWSCredentials(Command):
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
+        parser.formatter_class = argparse.RawDescriptionHelpFormatter
         parser.add_argument(
             '-U', '--user',
             action='store',
@@ -275,6 +289,8 @@ class SetAWSCredentials(Command):
             default='default',
             help='IAM User who owns credentials (default: "default")'
         )
+        parser.epilog = textwrap.dedent("""
+            """)
         return parser
 
     def take_action(self, parsed_args):
@@ -291,5 +307,5 @@ class SetAWSCredentials(Command):
             config[parsed_args.user][v] = cred
         config.write()
 
-#
+
 # vim: set fileencoding=utf-8 ts=4 sw=4 tw=0 et :

@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 
+import argparse
 import logging
 import os
 import shutil
+import textwrap
 
 from cliff.lister import Lister
 from cliff.command import Command
-from python_secrets.secrets import SecretsEnvironment
+from psec.secrets import SecretsEnvironment
 
 
 class GroupsCreate(Command):
@@ -16,6 +18,7 @@ class GroupsCreate(Command):
 
     def get_parser(self, prog_name):
         parser = super(GroupsCreate, self).get_parser(prog_name)
+        parser.formatter_class = argparse.RawDescriptionHelpFormatter
         parser.add_argument(
             '-C', '--clone-from',
             action='store',
@@ -26,6 +29,40 @@ class GroupsCreate(Command):
         parser.add_argument('group',
                             nargs='?',
                             default=None)
+        parser.epilog = textwrap.dedent("""
+            When integrating a new open source tool or project, you can
+            create a new group and clone its secrets descriptions. This
+            does not copy any values, just the descriptions, allowing
+            the current environment to manage its own values.
+
+            .. code-block:: console
+
+                $ psec groups create newgroup --clone-from ~/git/goSecure/secrets/secrets.d/gosecure.yml
+                created new group "newgroup"
+                $ psec groups list
+                new password variable "gosecure_pi_password" is not defined
+                new password variable "gosecure_app_password" is not defined
+                new string variable "gosecure_client_psk" is not defined
+                new string variable "gosecure_client_ssid" is not defined
+                new string variable "gosecure_vpn_client_id" is not defined
+                new token_hex variable "gosecure_vpn_client_psk" is not defined
+                new string variable "gosecure_pi_pubkey" is not defined
+                new string variable "gosecure_pi_locale" is not defined
+                new string variable "gosecure_pi_timezone" is not defined
+                new string variable "gosecure_pi_wifi_country" is not defined
+                new string variable "gosecure_pi_keyboard_model" is not defined
+                new string variable "gosecure_pi_keyboard_layout" is not defined
+                +----------+-------+
+                | Group    | Items |
+                +----------+-------+
+                | jenkins  |     1 |
+                | myapp    |     4 |
+                | newgroup |    12 |
+                | trident  |     2 |
+                +----------+-------+
+
+            ..
+            """)
         return parser
 
     def take_action(self, parsed_args):
@@ -66,6 +103,25 @@ class GroupsList(Lister):
 
     LOG = logging.getLogger(__name__)
 
+    def get_parser(self, prog_name):
+        parser = super(GroupsList, self).get_parser(prog_name)
+        parser.formatter_class = argparse.RawDescriptionHelpFormatter
+        parser.epilog = textwrap.dedent("""
+            .. code-block:: console
+
+                $ psec groups list
+                +---------+-------+
+                | Group   | Items |
+                +---------+-------+
+                | jenkins |     1 |
+                | myapp   |     4 |
+                | trident |     2 |
+                +---------+-------+
+
+            ..
+            """)
+        return parser
+
     def take_action(self, parsed_args):
         self.LOG.debug('listing secret groups')
         self.app.secrets.requires_environment()
@@ -88,7 +144,28 @@ class GroupsShow(Lister):
 
     def get_parser(self, prog_name):
         parser = super(GroupsShow, self).get_parser(prog_name)
-        parser.add_argument('args', nargs='*', default=None)
+        parser.formatter_class = argparse.RawDescriptionHelpFormatter
+        parser.add_argument('group', nargs='*', default=None)
+        parser.epilog = textwrap.dedent("""
+            The variables in one or more groups can be shown with
+            the ``groups show`` command:
+
+            .. code-block:: console
+
+                $ psec groups show trident myapp
+                +---------+-----------------------+
+                | Group   | Variable              |
+                +---------+-----------------------+
+                | trident | trident_sysadmin_pass |
+                | trident | trident_db_pass       |
+                | myapp   | myapp_pi_password     |
+                | myapp   | myapp_app_password    |
+                | myapp   | myapp_client_psk      |
+                | myapp   | myapp_client_ssid     |
+                +---------+-----------------------+
+
+            ..
+            """)
         return parser
 
     def take_action(self, parsed_args):
@@ -97,7 +174,7 @@ class GroupsShow(Lister):
         self.app.secrets.read_secrets_and_descriptions()
         columns = ('Group', 'Variable')
         data = []
-        for group in parsed_args.args:
+        for group in parsed_args.group:
             for item in self.app.secrets.get_items_from_group(group):
                 data.append((group, item))
         return columns, data
@@ -110,10 +187,19 @@ class GroupsPath(Command):
 
     def get_parser(self, prog_name):
         parser = super(GroupsPath, self).get_parser(prog_name)
+        parser.formatter_class = argparse.RawDescriptionHelpFormatter
         default_environment = SecretsEnvironment().environment()
         parser.add_argument('environment',
                             nargs='?',
                             default=default_environment)
+        parser.epilog = textwrap.dedent("""
+            .. code-block:: console
+
+                $ psec groups path
+                /Users/dittrich/.secrets/psec/secrets.d
+
+            ..
+            """)
         return parser
 
     def take_action(self, parsed_args):

@@ -1,0 +1,16 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+# This is a wrapper with the short name 'psec' to provide a script
+# for installation by 'pip', which is required by 'pipsi' (as it does
+# doesn't use console_scripts entry points, just script.) It is
+# almost exactly the same thing that 'pip' will create, so
+# effectively a NOP.
+
+import sys
+
+from psec.main import main
+
+if __name__ == '__main__':
+    sys.argv[0] = re.sub(r'(-script\.pyw?|\.exe)?$', '', sys.argv[0])
+    sys.exit(main())

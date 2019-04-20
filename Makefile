@@ -1,5 +1,6 @@
 # Makefile for python_secrets
 
+SHELL=bash
 REQUIRED_VENV:=python_secrets
 VENV_DIR=$(HOME)/.virtualenvs/$(REQUIRED_VENV)
 PROJECT:=$(shell basename `pwd`)
@@ -76,6 +77,7 @@ install:
 .PHONY: install
 install-active:
 	python -m pip install -U .
+	psec help | tee docs/psec_help.txt
 
 #HELP docs - build Sphinx docs (NOT INTEGRATED YET FROM OPENSTACK CODE BASE)
 .PHONY: docs

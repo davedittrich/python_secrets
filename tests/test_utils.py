@@ -1,15 +1,15 @@
 #!/usr/bin/env python
 
 """
-test_python_secrets.utils
--------------------------
+test_psec.utils
+---------------
 
-Tests for `python_secrets.utils` module.
+Tests for `psec.utils` module.
 """
 
 import unittest
 
-from python_secrets.utils import *
+from psec.utils import *
 
 class Test_Utils(unittest.TestCase):
 

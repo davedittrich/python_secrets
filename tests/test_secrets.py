@@ -2,17 +2,17 @@
 # -*- coding: utf-8 -*-
 
 """
-test_python_secrets.secrets
----------------------------
+test_psec.secrets
+-----------------
 
-Tests for `python_secrets.secrets` module.
+Tests for `psec.secrets` module.
 """
 
 import unittest
 import os
 import sys
 
-from python_secrets.secrets import SecretsEnvironment
+from psec.secrets import SecretsEnvironment
 from unittest.mock import patch
 
 HOST = 'example.com'
