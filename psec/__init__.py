@@ -2,7 +2,7 @@
 
 import pbr.version
 
-version_info = pbr.version.VersionInfo('python_secrets')
+version_info = pbr.version.VersionInfo('psec')
 try:
     __version__ = version_info.version_string()
 except AttributeError:

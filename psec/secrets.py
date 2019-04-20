@@ -15,12 +15,12 @@ import yaml
 from cliff.command import Command
 from cliff.lister import Lister
 from numpy.random import bytes as np_random_bytes
-from python_secrets.utils import redact, find, prompt_string
-from python_secrets.google_oauth2 import GoogleSMTP
+from psec.utils import redact, find, prompt_string
+from psec.google_oauth2 import GoogleSMTP
 from shutil import copy, copytree
 # >> Issue: [B404:blacklist] Consider possible security implications associated with run module.  # noqa
 #    Severity: Low   Confidence: High
-#    Location: python_secrets/secrets.py:21
+#    Location: psec/secrets.py:21
 #    More Info: https://bandit.readthedocs.io/en/latest/blacklists/blacklist_imports.html#b404-import-subprocess  # noqa
 from subprocess import run, PIPE  # nosec
 from xkcdpass import xkcd_password as xp
@@ -1003,7 +1003,7 @@ class SecretsSet(Command):
             elif v.startswith('!'):
                 # >> Issue: [B603:subprocess_without_shell_equals_true] subprocess call - check for execution of untrusted input.  # noqa
                 #    Severity: Low   Confidence: High
-                #    Location: python_secrets/secrets.py:641
+                #    Location: psec/secrets.py:641
                 p = run(v[1:].split(),
                         stdout=PIPE,
                         stderr=PIPE,

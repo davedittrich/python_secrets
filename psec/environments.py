@@ -7,9 +7,9 @@ import textwrap
 
 from cliff.command import Command
 from cliff.lister import Lister
-from python_secrets.secrets import is_valid_environment
-from python_secrets.secrets import SecretsEnvironment
-from python_secrets.utils import tree
+from psec.secrets import is_valid_environment
+from psec.secrets import SecretsEnvironment
+from psec.utils import tree
 from stat import S_IMODE
 
 
@@ -236,9 +236,9 @@ class EnvironmentsDefault(Command):
 
             .. code-block:: console
 
-                $ cd ~/git/python_secrets
+                $ cd ~/git/psec
                 $ psec environments default
-                default environment is "python_secrets"
+                default environment is "psec"
 
             ..
 
@@ -343,7 +343,7 @@ class EnvironmentsPath(Command):
             .. code-block:: console
 
                 $ psec environments path
-                /Users/dittrich/.secrets/python_secrets
+                /Users/dittrich/.secrets/psec
                 $ psec environments path -e goSecure
                 /Users/dittrich/.secrets/goSecure
 

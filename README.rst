@@ -1,6 +1,6 @@
-==============
-python_secrets
-==============
+=====================
+psec (python_secrets)
+=====================
 
 .. image:: https://img.shields.io/pypi/v/python_secrets.svg
         :target: https://pypi.python.org/pypi/python_secrets
@@ -32,7 +32,7 @@ Features
 
 * Like `python-update-dotdee`_, produces a single master ``.yml`` file for
   use by programs like Ansible (e.g.
-  ``ansible-playbook playbook.yml -e @"$(python_secrets secrets path)"``)
+  ``ansible-playbook playbook.yml -e @"$(psec secrets path)"``)
 
 * Support multiple simultaneous sets of secrets (environments) for
   flexibility and scalability in multi-environment deployments and to
@@ -108,9 +108,9 @@ Limitations
 Usage concepts
 --------------
 
-There is a separate **Usage** chapter with individual command documentation. The
-remainder of this section covers higher level usage concepts necessary
-to best use ``python_secrets`` in your open source software project.
+There is a separate **Usage** chapter with individual command documentation.
+The remainder of this section covers higher level usage concepts necessary to
+best use the ``python_secrets`` package in your open source software project.
 
 
 Directories and files
@@ -137,14 +137,14 @@ regarding secrets storage:
 Root directory
 ^^^^^^^^^^^^^^
 
-By default, ``python_secrets`` expects a root directory in the current user's
+By default, ``psec`` expects a root directory in the current user's
 home directory. Unless you over-ride the name of this directory, it defaults to
 ``.secrets`` on Linux and ``secrets`` on Windows. The ability to change the
 location is supported to allow this directory to be placed on an exported
 file share, in a common location for use by a group on a workstation, or
 to move the contents to a different partition with more disk space.
 
-The first time you use ``python_secrets``, there will likely be no
+The first time you use ``psec``, there will likely be no
 directory:
 
 .. code-block:: console
@@ -191,7 +191,7 @@ directory:
 
     $ pwd
     /Users/dittrich/git/python_secrets
-    $ python_secrets environments create
+    $ psec environments create
     environment directory /Users/dittrich/.secrets/python_secrets created
     $ tree ~/.secrets
     /Users/dittrich/.secrets
@@ -210,13 +210,13 @@ explicitly by (a) giving an argument on the command line, (b) using the ``-e`` o
 
 .. code-block:: console
 
-    $ python_secrets environments create development
+    $ psec environments create development
     environment directory /Users/dittrich/.secrets/development created
 
-    $ python_secrets --environment testing environments create
+    $ psec --environment testing environments create
     environment directory /Users/dittrich/.secrets/testing created
 
-    $ D2_ENVIRONMENT=production python_secrets environments create
+    $ D2_ENVIRONMENT=production psec environments create
     environment directory /Users/dittrich/.secrets/production created
 
     $ tree ~/.secrets
@@ -470,7 +470,7 @@ in this repository using ``cat secrets/secrets.d/myapp.yml``:
 
 ..
 
-The ``python_secrets`` program uses the `openstack/cliff`_ command line
+The ``psec`` program uses the `openstack/cliff`_ command line
 interface framework, which supports multiple output formats. The default
 format the ``table`` format, which makes for nice clean output. (Other
 formats will be described later.)
@@ -982,7 +982,7 @@ Web Services to allow control of instances from your remote laptop).
 
 ..
 
-The ``python_secrets`` program has a utility feature that will return
+The ``psec`` program has a utility feature that will return
 the current routable IP source address as an IP address, or using CIDR
 notation.  The variable can be set in one of two ways:
 
@@ -1034,7 +1034,7 @@ The variable now contains the output of the specified program:
 Sharing secrets
 ~~~~~~~~~~~~~~~
 
-The ``python_secrets`` program has a mechanism for sharing secrets with
+The ``psec`` program has a mechanism for sharing secrets with
 others using GPG encrypted email messages for securing secrets in transit
 and at rest in users' inboxes. Email is sent using Google's OAuth2
 authenticated SMTP services.
@@ -1187,7 +1187,7 @@ Decrypted, it looks like this:
     myapp_app_password=brunt outclass alike turbine
 
     --
-    Sent using python_secrets version 19.3.1
+    Sent using psec version 19.3.1
     https://pypi.org/project/python-secrets/
     https://github.com/davedittrich/python_secrets
 
@@ -1400,7 +1400,7 @@ General or more elaborate potential enhancements are listed here:
 
   .. code-block:: console
 
-      $ python_secrets -d ~/git/mantl --secrets-file security.yml secrets show -f yaml
+      $ psec -d ~/git/mantl --secrets-file security.yml secrets show -f yaml
       secrets descriptions directory not found
       - Value: admin:password
         Variable: chronos_http_credentials
@@ -1504,18 +1504,18 @@ General or more elaborate potential enhancements are listed here:
         Variable: zk_super_user
       - Value: 2DyL/n/GLi3Q0pa75z9OjODGZKC1RCaEiKNV1ZXo1Wpk
         Variable: zk_super_user_secret
-      $ python_secrets -d ~/git/mantl --secrets-file security.yml secrets show -f csv | grep nginx_admin_password
+      $ psec -d ~/git/mantl --secrets-file security.yml secrets show -f csv | grep nginx_admin_password
       secrets descriptions directory not found
       "nginx_admin_password","password"
-      $ python_secrets -d ~/git/mantl --secrets-file security.yml secrets set nginx_admin_password=newpassword
+      $ psec -d ~/git/mantl --secrets-file security.yml secrets set nginx_admin_password=newpassword
       secrets descriptions directory not found
-      $ python_secrets -d ~/git/mantl --secrets-file security.yml secrets show -f csv | grep nginx_admin_password
+      $ psec -d ~/git/mantl --secrets-file security.yml secrets show -f csv | grep nginx_admin_password
       secrets descriptions directory not found
       "nginx_admin_password","newpassword"
 
   ..
 
-  There are a few things that can be done to use ``python_secrets`` as a replacement
+  There are a few things that can be done to use ``psec`` as a replacement
   for the ``security-setup`` script.  These include:
 
   * Produce secrets descriptions in a ``security.d`` directory.

@@ -170,7 +170,7 @@ class TfOutput(Lister):
             .. code-block:: console
 
                 $ psec environments path
-                /Users/dittrich/.secrets/python_secrets
+                /Users/dittrich/.secrets/psec
 
             ..
             """)  # noqa
@@ -194,7 +194,7 @@ class TfOutput(Lister):
             )
         # >> Issue: [B607:start_process_with_partial_path] Starting a process with a partial executable path  # noqa
         #    Severity: Low   Confidence: High
-        #    Location: python_secrets/utils.py:152
+        #    Location: psec/utils.py:152
         p = subprocess.Popen(['terraform',  # nosec
                               'output',
                               '-state={}'.format(tfstate),

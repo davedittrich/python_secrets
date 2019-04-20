@@ -1,13 +1,13 @@
 """
 Generic modular secrets configuration file management.
 
-The :mod:`python_secrets` module provides one class that
+The :mod:`psec` module provides one class that
 implements a mechanism for generating, prompting for, or
 retrieving "secrets" (passwords, API tokens, etc.) that
 are required for access control mechanisms in applications
 or services.
 
-- :class:`Python_Secrets` implements the Python API of the ``python_secrets``
+- :class:`Python_Secrets` implements the Python API of the ``psec``
   program ...
 
 """
@@ -29,7 +29,7 @@ class Python_Secrets(PropertyManager):
 
     """
     The :class:`Python_Secrets` class implements the Python
-    API of `python_secrets`.
+    API of `psec`.
 
     """
 

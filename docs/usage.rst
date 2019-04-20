@@ -16,10 +16,15 @@ of a command is:
 
 .. note::
 
-   When originally written, ``python_secrets`` was the primary command name. That is
-   a little unwieldy to type, so a shorter script name ``psec`` was also included.
-   You can use either name. In this ``README.rst`` file, both names may be used
-   interchangably (but the shorter name is easier to type).
+   When originally written, ``python_secrets`` was the primary command name.
+   And the Python ``secrets`` module did not yet exist. The name
+   ``python_secrets`` is a little unwieldy to type on the command line, so a
+   shorter script name ``psec`` was also included in the original release.  The
+   original ``python_secrets`` program name is now deprecated.
+   
+   In this documentation and command line help, the program name ``psec`` is
+   used. (The PyPi package may be renamed at a later date to avoid confusion
+   between the package and the program.)
 
 ..
 
@@ -27,8 +32,8 @@ The actions are things like ``list``, ``show``, ``generate``, ``set``, etc.
 
 .. note::
 
-    A proof-of-concept for using ``python_secrets`` in an open source
-    project to eliminate default passwords and keep secrets out of the
+    A proof-of-concept for using the ``python_secrets`` package in an open
+    source project to eliminate default passwords and keep secrets out of the
     source code repository directory can be found here:
 
     https://davedittrich.github.io/goSecure/documentation.html
@@ -65,12 +70,12 @@ JSON.
 
     **WITH** formatting options
 
-        .. autoprogram-cliff:: python_secrets
+        .. autoprogram-cliff:: psec
            :command: secrets show
 
     **WITHOUT** formatting options
 
-        .. autoprogram-cliff:: python_secrets
+        .. autoprogram-cliff:: psec
            :command: secrets show
            :ignored: -f,-c,--quote,--noindent,--max-width,--fit-width,--print-empty,--sort-column
 
@@ -262,7 +267,7 @@ Commands
 --------
 
 The following is reduced ``--help`` output for each subcommand supported by
-``python_secrets``. See :ref:`formatting`, or explicitly request ``--help``
+``psec``. See :ref:`formatting`, or explicitly request ``--help``
 output for the subcommand in question on the command line, to see the
 suppressed formatting options.
 
@@ -270,42 +275,42 @@ suppressed formatting options.
 Environments
 ~~~~~~~~~~~~
 
-.. autoprogram-cliff:: python_secrets
+.. autoprogram-cliff:: psec
     :command: environments *
     :ignored: -f,-c,--quote,--noindent,--max-width,--fit-width,--print-empty,--sort-column
 
 Groups
 ~~~~~~
 
-.. autoprogram-cliff:: python_secrets
+.. autoprogram-cliff:: psec
     :command: groups *
     :ignored: -f,-c,--quote,--noindent,--max-width,--fit-width,--print-empty,--sort-column
 
 Run
 ~~~
 
-.. autoprogram-cliff:: python_secrets
+.. autoprogram-cliff:: psec
     :command: run
     :ignored: -f,-c,--quote,--noindent,--max-width,--fit-width,--print-empty,--sort-column
 
 Secrets
 ~~~~~~~
 
-.. autoprogram-cliff:: python_secrets
+.. autoprogram-cliff:: psec
     :command: secrets *
     :ignored: -f,-c,--quote,--noindent,--max-width,--fit-width,--print-empty,--sort-column
 
 Template
 ~~~~~~~~
 
-.. autoprogram-cliff:: python_secrets
+.. autoprogram-cliff:: psec
     :command: template
     :ignored: -f,-c,--quote,--noindent,--max-width,--fit-width,--print-empty,--sort-column
 
 Utils
 ~~~~~
 
-.. autoprogram-cliff:: python_secrets
+.. autoprogram-cliff:: psec
     :command: utils *
     :ignored: -f,-c,--quote,--noindent,--max-width,--fit-width,--print-empty,--sort-column
 

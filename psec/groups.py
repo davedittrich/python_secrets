@@ -8,7 +8,7 @@ import textwrap
 
 from cliff.lister import Lister
 from cliff.command import Command
-from python_secrets.secrets import SecretsEnvironment
+from psec.secrets import SecretsEnvironment
 
 
 class GroupsCreate(Command):
@@ -196,7 +196,7 @@ class GroupsPath(Command):
             .. code-block:: console
 
                 $ psec groups path
-                /Users/dittrich/.secrets/python_secrets/secrets.d
+                /Users/dittrich/.secrets/psec/secrets.d
 
             ..
             """)
