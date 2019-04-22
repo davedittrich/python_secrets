@@ -23,8 +23,8 @@ matrix:
 
 
 before_script:
-  - git clone https://github.com/ztombol/bats-support.git
-  - git clone https://github.com/jasonkarns/bats-assert-1.git
+  - git clone https://github.com/ztombol/bats-support.git ../bats-support
+  - git clone https://github.com/jasonkarns/bats-assert-1.git ../bats-assert-1
 
 branches:
   only:
