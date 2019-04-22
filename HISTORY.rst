@@ -30,6 +30,7 @@ Unreleased
 Changed
 ^^^^^^^
 
+- Generalized exception to fix --version bug
 - Clean up temporary docs/psec_help.txt file
 
 19.4.4 (2019-04-21)
