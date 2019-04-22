@@ -62,7 +62,7 @@ twine-check: bdist_egg
 clean:
 	rm -rf dist build *.egg-info
 	find . -name '*.pyc' -delete
-	(cd docs && make clean)
+	(cd docs && make clean && rm -f psec_help.txt)
 
 #HELP install - install in required Python virtual environment (default $(REQUIRED_VENV))
 .PHONY: install

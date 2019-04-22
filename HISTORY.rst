@@ -24,8 +24,13 @@ History
 .. Fixed for any bug fixes.
 .. Security in case of vulnerabilities.
 
-.. Unreleased
-.. ~~~~~~~~~~
+Unreleased
+~~~~~~~~~~
+
+Changed
+^^^^^^^
+
+- Clean up temporary docs/psec_help.txt file
 
 19.4.4 (2019-04-21)
 ~~~~~~~~~~~~~~~~~~~
