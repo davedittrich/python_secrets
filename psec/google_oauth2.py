@@ -271,7 +271,7 @@ class GoogleSMTP(object):
         # Note: version number is tracked with bumpversion (see "setup.cfg")
         message = message + textwrap.dedent("""\n
         --
-        Sent using psec version 19.4.0
+        Sent using psec version 19.4.1
         https://pypi.org/project/python-secrets/
         https://github.com/davedittrich/python_secrets""")
         # Encrypt message to recipient
