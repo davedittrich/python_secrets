@@ -24,8 +24,19 @@ History
 .. Fixed for any bug fixes.
 .. Security in case of vulnerabilities.
 
-.. Unreleased
-.. ~~~~~~~~~~
+Unreleased
+~~~~~~~~~~
+
+- Partially Bats tests
+
+
+19.4.1 (2019-04-21)
+~~~~~~~~~~~~~~~~~~~
+
+Changed
+^^^^^^^
+
+- Fix messed up release tagging
 
 19.4.0 (2019-04-19)
 ~~~~~~~~~~~~~~~~~~~
