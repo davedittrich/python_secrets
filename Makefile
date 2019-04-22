@@ -13,8 +13,15 @@ test: test-tox test-bats
 test-tox:
 	tox
 
+.PHONY: bats-libraries
+bats-libraries:
+	@[ -f ../bats-support/load.bash ] || \
+		(echo 'bats-support missing; clone from https://github.com/ztombol/bats-support.git'; exit 1)
+	@[ -f ../bats-assert-1/load.bash ] || \
+		(echo 'bats-assert-1/ missing; clone from https://github.com/jasonkarns/bats-assert-1.git'; exit 1)
+
 .PHONY: test-bats
-test-bats:
+test-bats: bats-libraries
 	[ "$(TRAVIS)" != "true" ] && bats tests || true
 
 #HELP release - package and upload a release to pypi

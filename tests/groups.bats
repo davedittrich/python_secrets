@@ -12,12 +12,12 @@ teardown() {
 
 @test "'psec groups list' contains 'oauth'" {
     run $PSEC groups list
-    assert_output_contains oauth
+    assert_output --partial oauth
 }
 
 @test "'psec groups show oauth' contains $COUNT items" {
-    run bash -c "$PSEC groups show oauth -f csv | grep oauth | wc -l"
-    assert_output_contains $COUNT
+    run bash -c "$PSEC -q groups show oauth -f csv | grep oauth | wc -l"
+    assert_output "$COUNT"
 }
 
 # vim: set ts=4 sw=4 tw=0 et :
