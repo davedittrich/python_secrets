@@ -8,8 +8,8 @@ psec (python_secrets)
 .. image:: https://img.shields.io/travis/davedittrich/python_secrets.svg
         :target: https://travis-ci.org/davedittrich/python_secrets
 
-.. image:: https://readthedocs.org/projects/python_secrets/badge/?version=latest
-        :target: https://readthedocs.org/projects/python_secrets/?badge=latest
+.. image:: https://python-secrets.readthedocs.io/badge/?version=latest
+        :target: https://python-secrets.readthedocs.io/?badge=latest
         :alt: Documentation Status
 
 
