@@ -21,6 +21,11 @@ matrix:
     - python: 3.6
       env: TOXENV=pypi
 
+
+before_install:
+        git clean https://github.com/ztombol/bats-support.git
+        git clean https://github.com/jasonkarns/bats-assert-1.git
+
 branches:
   only:
     - master
