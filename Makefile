@@ -81,7 +81,7 @@ install:
 	fi
 
 #HELP install-active - install in the active Python virtual environment
-.PHONY: install
+.PHONY: install-active
 install-active:
 	python -m pip install -U .
 	psec help | tee docs/psec_help.txt
