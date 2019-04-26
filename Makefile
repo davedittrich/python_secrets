@@ -20,6 +20,14 @@ bats-libraries:
 	@[ -f ../bats-assert-1/load.bash ] || \
 		(echo 'bats-assert-1/ missing; clone from https://github.com/jasonkarns/bats-assert-1.git'; exit 1)
 
+.PHONY: install-bats-libraries
+install-bats-libraries:
+	@[ -f ../bats-support/load.bash ] || \
+		(cd ..; git clone https://github.com/ztombol/bats-support.git)
+	@[ -f ../bats-assert-1/load.bash ] || \
+		(cd ..; git clone https://github.com/jasonkarns/bats-assert-1.git)
+
+
 .PHONY: test-bats
 test-bats: bats-libraries
 	[ "$(TRAVIS)" != "true" ] && bats tests || true
