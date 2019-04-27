@@ -13,7 +13,7 @@ Types of Contributions
 Report Bugs
 ~~~~~~~~~~~
 
-Report bugs at this repository's GitHub issues page (https://github.com/davedittrich/python_secrets/issues). [issues]_
+Report bugs at this repository's GitHub issues page (https://github.com/davedittrich/python_secrets/issues). []_
 
 If you are reporting a bug, please include:
 
@@ -25,13 +25,13 @@ If you are reporting a bug, please include:
 Fix Bugs
 ~~~~~~~~
 
-Look through the GitHub issues [issues]_ for bugs. Anything tagged with **bug**
+Look through the GitHub issues [1]_ for bugs. Anything tagged with **bug**
 is open to whoever wants to implement it.
 
 Implement Features
 ~~~~~~~~~~~~~~~~~~
 
-Look through the GitHub issues [issues]_ for features. Anything tagged with **feature**
+Look through the GitHub issues [1]_ for features. Anything tagged with **feature**
 is open to whoever wants to implement it.
 
 Write Documentation
@@ -133,4 +133,4 @@ To run a subset of Bats tests::
     $ bats tests/secrets.bats
 
 
-.. [issues] https://github.com/davedittrich/python_secrets/issues
+.. [1] https://github.com/davedittrich/python_secrets/issues
