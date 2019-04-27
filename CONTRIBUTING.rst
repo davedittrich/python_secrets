@@ -13,7 +13,7 @@ Types of Contributions
 Report Bugs
 ~~~~~~~~~~~
 
-Report bugs at this repository's GitHub issues page (https://github.com/davedittrich/python_secrets/issues). []_
+Report bugs at this repository's GitHub issues page (https://github.com/davedittrich/python_secrets/issues). [1]_
 
 If you are reporting a bug, please include:
 
