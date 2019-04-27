@@ -13,31 +13,33 @@ Types of Contributions
 Report Bugs
 ~~~~~~~~~~~
 
-Report bugs at https://github.com/davedittrich/python_secrets/issues.
+Report bugs at this repository's GitHub issues page (https://github.com/davedittrich/python_secrets/issues). [issues]_
 
 If you are reporting a bug, please include:
 
 * Your operating system name and version.
 * Any details about your local setup that might be helpful in troubleshooting.
+* Output using the ``--debug`` and ``-vvv`` flags.
 * Detailed steps to reproduce the bug.
 
 Fix Bugs
 ~~~~~~~~
 
-Look through the GitHub issues for bugs. Anything tagged with **bug**
+Look through the GitHub issues [issues]_ for bugs. Anything tagged with **bug**
 is open to whoever wants to implement it.
 
 Implement Features
 ~~~~~~~~~~~~~~~~~~
 
-Look through the GitHub issues for features. Anything tagged with **feature**
+Look through the GitHub issues [issues]_ for features. Anything tagged with **feature**
 is open to whoever wants to implement it.
 
 Write Documentation
 ~~~~~~~~~~~~~~~~~~~
 
-``python_secrets`` could always use more documentation, whether as part of the
-official ``python_secrets`` docs, in docstrings, or even on the web in blog posts,
+``python_secrets``, like pretty much every open source project, could always use
+more user-friendly documentation. That includes this official ``python_secrets``
+documentation, docstrings in source code, and around the web in blog posts,
 articles, and such.
 
 Submit Feedback
@@ -48,9 +50,9 @@ The best way to send feedback is to file an issue at https://github.com/daveditt
 If you are proposing a feature:
 
 * Explain in detail how it would work.
-* Keep the scope as narrow as possible, to make it easier to implement.
+* Keep the scope as narrow as possible, to make it easier to implement the feature.
 * Remember that this is a volunteer-driven project, and that contributions
-  (i.e., pull requests) are welcome. :)
+  (i.e., pull requests) *are always welcome*. ;)
 
 Get Started!
 ------------
@@ -111,7 +113,8 @@ Before you submit a pull request, check that it meets these guidelines:
 #. If the pull request adds functionality, the docs should be updated. Put
    your new functionality into a function with a docstring, and add the
    feature to the list of changes in ``HISTORY.rst`` and documentation on use
-   in ``README.rst``.
+   in ``README.rst``, ``docs/usage.rst``, and ``parser.epilog`` for CLI
+   commands.
 
 #. The pull request should work for the versions of Python defined in ``tox.ini``
    and ``.travis.yml``. Check
@@ -121,6 +124,13 @@ Before you submit a pull request, check that it meets these guidelines:
 Tips
 ----
 
-To run a subset of tests::
+To run a subset of Python unit tests::
 
-    $ python -m unittest tests.test_python_secrets
+    $ python -m unittest tests.test_secrets
+
+To run a subset of Bats tests::
+
+    $ bats tests/secrets.bats
+
+
+.. [issues] https://github.com/davedittrich/python_secrets/issues
