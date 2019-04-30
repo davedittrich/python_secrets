@@ -123,6 +123,8 @@ setup(
             'template = psec.template:Template',
             'utils myip = psec.utils:MyIP',
             'utils set-aws-credentials = psec.utils:SetAWSCredentials',  # noqa
+            'utils ssh-known-hosts = psec.utils:SSHKnownHosts',
+            'utils ssh-config = psec.utils:SSHConfig',
             'utils tfoutput = psec.utils:TfOutput',
         ],
     },
