@@ -1,6 +1,7 @@
 boto3
 cliff
 configobj
+configparser
 jinja2
 lxml
 gnupg
@@ -8,6 +9,7 @@ numpy
 six
 pyflakes
 sphinx
+pbr
 Pygments
 python_secrets
 property_manager
