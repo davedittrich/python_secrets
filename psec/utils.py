@@ -7,6 +7,7 @@ import ipaddress
 import json
 import logging
 import os
+import pexpect
 import requests
 import socket
 import subprocess  # nosec
@@ -155,20 +156,14 @@ def _ansible_set_hostkeys(hostkeys, debug=False):
         playbook.flush()
         cmd = ['ansible-playbook',
                '--ask-become-pass',
-               '-e', "{}".format(hostkeys),
+               '-e', "'{}'".format(hostkeys),
                playbook.name
                ]
-        p = subprocess.Popen(cmd,
-                             env=dict(os.environ),
-                             stdout=subprocess.PIPE,
-                             stderr=subprocess.PIPE,
-                             shell=False)
-        p_out, p_err = p.communicate()
-        if debug:
-            print(p_out.decode('utf-8'), file=sys.stdout, flush=True)
-        if p.returncode != 0:
-            print(p_err.decode('utf-8'), file=sys.stderr, flush=True)
-            raise RuntimeError('Ansible error (see stdout and stderr above)')
+        ansible = pexpect.spawnu(
+            " ".join([arg for arg in cmd]))
+        ansible.interact()
+        if ansible.isalive():
+            raise RuntimeError('Ansible did not exit gracefully.')
 
 
 def _ansible_remove_hostkeys(hosts, debug=False):
@@ -180,40 +175,57 @@ def _ansible_remove_hostkeys(hosts, debug=False):
         cmd = ['ansible-playbook',
                '--ask-become-pass',
                '-e', 'remove_keys=true',
-               '-e', 'ssh_hosts="{}"'.format(str(list(hosts))),
+               '-e', '\'ssh_hosts="{}"\''.format(str(list(hosts))),
                playbook.name,
                ]
-        p = subprocess.Popen(cmd,
-                             env=dict(os.environ),
-                             stdout=subprocess.PIPE,
-                             stderr=subprocess.PIPE,
-                             shell=False)
-        p_out, p_err = p.communicate()
-        if debug:
-            print(p_out.decode('utf-8'), file=sys.stdout, flush=True)
-        if p.returncode != 0:
-            print(p_err.decode('utf-8'), file=sys.stderr, flush=True)
-            raise RuntimeError('Ansible error (see stdout and stderr above)')
+        output, exitstatus = pexpect.runu(
+            " ".join([arg for arg in cmd]),
+            withexitstatus=1)
+        if exitstatus == 0:
+            if debug:
+                print(output, file=sys.stdout, flush=True)
+        else:
+            print(output, file=sys.stdout, flush=True)
+            raise RuntimeError('Ansible error ' +
+                               '(see stdout and stderr above)')
+        # p = subprocess.Popen(cmd,
+        #                      env=dict(os.environ),
+        #                      stdout=subprocess.PIPE,
+        #                      stderr=subprocess.PIPE,
+        #                      shell=False)
+        # p_out, p_err = p.communicate()
+        # if debug:
+        #     print(p_out.decode('utf-8'), file=sys.stdout, flush=True)
+        # if p.returncode != 0:
+        #     print(p_err.decode('utf-8'), file=sys.stderr, flush=True)
+        #     raise RuntimeError('Ansible error (see stdout and stderr above)')
 
 
 def _ansible_debug(hostkeys):
     """Debug Ansible"""
     cmd = ['ansible',
-           '-e', "{}".format(hostkeys),
+           '-e', "'{}'".format(hostkeys),
            '-m', 'debug',
            '-a', 'var=vars',
            'all'
            ]
-    p = subprocess.Popen(cmd,
-                         env=dict(os.environ),
-                         stdout=subprocess.PIPE,
-                         stderr=subprocess.PIPE,
-                         shell=False)
-    p_out, p_err = p.communicate()
-    print(p_out.decode('utf-8'), file=sys.stdout, flush=True)
-    if p.returncode != 0:
-        print(p_err.decode('utf-8'), file=sys.stderr, flush=True)
-        raise RuntimeError('Ansible error (see stdout and stderr above)')
+    output, exitstatus = pexpect.runu(
+        " ".join([arg for arg in cmd]),
+        withexitstatus=1)
+    print(output, file=sys.stdout, flush=True)
+    if exitstatus != 0:
+        raise RuntimeError('Ansible error ' +
+                           '(see stdout and stderr above)')
+    # p = subprocess.Popen(cmd,
+    #                      env=dict(os.environ),
+    #                      stdout=subprocess.PIPE,
+    #                      stderr=subprocess.PIPE,
+    #                      shell=False)
+    # p_out, p_err = p.communicate()
+    # print(p_out.decode('utf-8'), file=sys.stdout, flush=True)
+    # if p.returncode != 0:
+    #     print(p_err.decode('utf-8'), file=sys.stderr, flush=True)
+    #     raise RuntimeError('Ansible error (see stdout and stderr above)')
 
 
 def _write_ssh_configd(ssh_config=None,
@@ -323,6 +335,7 @@ class MyIP(Command):
 #   "subnet_id": "subnet-0e642669",
 #   "vpc_id": "vpc-745d6b13"
 # }
+
 
 class TfOutput(Lister):
     """Retrieve current 'terraform output' results."""
@@ -539,19 +552,16 @@ class SSHConfig(Command):
                            aws_privatekey_path=_aws_privatekey_path,
                            public_ip=parsed_args.public_ip,
                            public_dns=parsed_args.public_dns)
-        p = subprocess.Popen(['update-dotdee', ssh_config],
-                             env=dict(os.environ),
-                             stdout=subprocess.PIPE,
-                             stderr=subprocess.PIPE,
-                             shell=False)
-        p_out, p_err = p.communicate()
-        # update-dotdee writes all output to stderr; deal with it
-        if p.returncode == 0 and self.app_args.verbose_level >= 1:
-            print(p_err.decode('utf-8'), file=sys.stdout, flush=True)
-        if p.returncode != 0:
-            print(p_out.decode('utf-8'), file=sys.stdout, flush=True)
-            print(p_err.decode('utf-8'), file=sys.stderr, flush=True)
-            raise RuntimeError('update-dotdee error (see stdout and stderr above)')
+        output, exitstatus = pexpect.runu(
+            'update-dotdee {}'.format(ssh_config),
+            withexitstatus=1)
+        if exitstatus == 0:
+            if self.app_args.verbose_level >= 1:
+                print(output, file=sys.stdout, flush=True)
+        else:
+            print(output, file=sys.stdout, flush=True)
+            raise RuntimeError('update-dotdee error ' +
+                               '(see stdout and stderr above)')
 
 
 class SSHKnownHosts(Command):

@@ -9,6 +9,7 @@ numpy
 six
 pyflakes
 sphinx
+pexpect
 pbr
 Pygments
 python_secrets
