@@ -47,6 +47,11 @@ REKEY_PLAYBOOK = textwrap.dedent("""\
             - ssh_hosts is defined
           when: remove_keys|bool
 
+        - name: Debug ssh_hosts variable
+          debug:
+            var: ssh_hosts
+          when: remove_keys|bool
+
         - name: Assert ssh_host_public_keys is defined when adding
           assert:
             that:
@@ -148,7 +153,18 @@ def prompt_string(prompt="Enter a value",
     return default if _new in [None, ''] else _new
 
 
-def _ansible_set_hostkeys(hostkeys, debug=False):
+def _ansible_verbose(verbose_level=1):
+    """
+    Return an ansible verbose flag for a given Cliff app verbose
+    level to pass along desired verbosity intent.
+    """
+    flag = ''
+    if verbose_level > 1:
+        flag = '-{}'.format("v" * (verbose_level - 1))
+    return flag
+
+
+def _ansible_set_hostkeys(hostkeys, debug=False, verbose_level=1):
     """Use Ansible playbook to set SSH known host keys"""
     with tempfile.NamedTemporaryFile() as playbook:
         playbook.seek(0)
@@ -156,6 +172,7 @@ def _ansible_set_hostkeys(hostkeys, debug=False):
         playbook.flush()
         cmd = ['ansible-playbook',
                '--ask-become-pass',
+               _ansible_verbose(verbose_level),
                '-e', "'{}'".format(hostkeys),
                playbook.name
                ]
@@ -166,7 +183,7 @@ def _ansible_set_hostkeys(hostkeys, debug=False):
             raise RuntimeError('Ansible did not exit gracefully.')
 
 
-def _ansible_remove_hostkeys(hosts, debug=False):
+def _ansible_remove_hostkeys(hosts, debug=False, verbose_level=1):
     """Use Ansible playbook to remove SSH known host keys"""
     with tempfile.NamedTemporaryFile() as playbook:
         playbook.seek(0)
@@ -174,6 +191,7 @@ def _ansible_remove_hostkeys(hosts, debug=False):
         playbook.flush()
         cmd = ['ansible-playbook',
                '--ask-become-pass',
+               _ansible_verbose(verbose_level),
                '-e', 'remove_keys=true',
                '-e', '\'ssh_hosts="{}"\''.format(str(list(hosts))),
                playbook.name,
@@ -639,6 +657,9 @@ class SSHKnownHosts(Command):
                     break
                 time.sleep(_DELAY)
                 tries_left -= 1
+                if self.app.options.debug:
+                    self.log.debug('attempt {} '.format(_TRIES - tries_left) +
+                                   'to get console-log failed')
             if tries_left == 0:
                 raise RuntimeError('Could not get-console-output '+
                                    'in {} seconds'.format(_TRIES * _DELAY) +
@@ -692,10 +713,12 @@ class SSHKnownHosts(Command):
             _ansible_debug(hostkeys_as_json_string)
         if parsed_args.remove_keys:
             _ansible_remove_hostkeys([i for i in [self.host, self.hostname]
-                                      if i is not None])
+                                      if i is not None],
+                                     verbose_level=self.app_args.verbose_level)
         else:
             _ansible_set_hostkeys(hostkeys_as_json_string,
-                                  debug=self.app.options.debug)
+                                  debug=self.app.options.debug,
+                                  verbose_level=self.app_args.verbose_level)
 
     def _dump_hostkeys_to_json(self):
         """
