@@ -8,6 +8,7 @@ import json
 import logging
 import os
 import pexpect
+import re
 import requests
 import socket
 import subprocess  # nosec
@@ -668,7 +669,7 @@ class SSHKnownHosts(Command):
                 continue
             if in_fingerprints:
                 fields = line.split(' ')
-                key_type = fields[4][1:-1].lower()
+                key_type = re.sub('\(|\)', '', fields[-1].lower())
                 fingerprint = "{} {}".format(key_type, fields[1])
                 self.hostfingerprint.append(fingerprint)
                 if self.app.options.debug:
@@ -709,8 +710,6 @@ class SSHKnownHosts(Command):
                 keylist.append("{} {}".format(self.host, key))
             if self.hostname is not None:
                 keylist.append("{} {}".format(self.hostname, key))
-        if len(keylist) == 0:
-            raise RuntimeError('No host public keys found')
         return json.dumps({'ssh_host_public_keys': keylist})
 
 
