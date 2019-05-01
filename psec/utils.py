@@ -52,14 +52,13 @@ REKEY_PLAYBOOK = textwrap.dedent("""\
               - ssh_host_public_keys is defined
           when: not remove_keys|bool
 
-        - name: Define known_hosts_files
+        - name: Define ssh_known_hosts_files
           set_fact:
             ssh_known_hosts_files: '{{ ssh_known_hosts_files|default([]) + [ item ] }}'
           with_items:
             - /etc/ssh/ssh_known_hosts
            #- /root/.ssh/known_hosts
            #- '{{ lookup("pipe", "echo ~{{ ansible_user }}/.ssh/known_hosts") }}'
-          when: not remove_keys|bool
 
         - name: Remove old SSH host keys
           local_action: known_hosts state=absent path={{ item.0 }} host={{ item.1 }}
@@ -178,27 +177,11 @@ def _ansible_remove_hostkeys(hosts, debug=False):
                '-e', '\'ssh_hosts="{}"\''.format(str(list(hosts))),
                playbook.name,
                ]
-        output, exitstatus = pexpect.runu(
-            " ".join([arg for arg in cmd]),
-            withexitstatus=1)
-        if exitstatus == 0:
-            if debug:
-                print(output, file=sys.stdout, flush=True)
-        else:
-            print(output, file=sys.stdout, flush=True)
-            raise RuntimeError('Ansible error ' +
-                               '(see stdout and stderr above)')
-        # p = subprocess.Popen(cmd,
-        #                      env=dict(os.environ),
-        #                      stdout=subprocess.PIPE,
-        #                      stderr=subprocess.PIPE,
-        #                      shell=False)
-        # p_out, p_err = p.communicate()
-        # if debug:
-        #     print(p_out.decode('utf-8'), file=sys.stdout, flush=True)
-        # if p.returncode != 0:
-        #     print(p_err.decode('utf-8'), file=sys.stderr, flush=True)
-        #     raise RuntimeError('Ansible error (see stdout and stderr above)')
+        ansible = pexpect.spawnu(
+            " ".join([arg for arg in cmd]))
+        ansible.interact()
+        if ansible.isalive():
+            raise RuntimeError('Ansible did not exit gracefully.')
 
 
 def _ansible_debug(hostkeys):
@@ -632,6 +615,8 @@ class SSHKnownHosts(Command):
             self.log.debug('extracting/adding SSH known host keys')
         self.app.secrets.requires_environment()
         self.app.secrets.read_secrets_and_descriptions()
+        _TRIES = 45
+        _DELAY = 5
         in_fingerprints = False
         in_pubkeys = False
         fields = list()
@@ -644,15 +629,19 @@ class SSHKnownHosts(Command):
         if parsed_args.instance_id is not None:
             response = dict()
             client = boto3.client('ec2')
-            tries = 5
-            while tries > 0:
+            tries_left = _TRIES
+            while tries_left > 0:
                 response = client.get_console_output(
                     InstanceId=parsed_args.instance_id,
                 )
                 if 'Output' in response:
                     break
-                time.sleep(20)
-                tries -= 1
+                time.sleep(_DELAY)
+                tries_left -= 1
+            if tries_left == 0:
+                raise RuntimeError('Could not get-console-output '+
+                                   'in {} seconds'.format(_TRIES * _DELAY) +
+                                   '\nCheck instance-id or try again.')
             console_output = response['Output'].splitlines()
         else:
             if parsed_args.source is not None:
@@ -713,11 +702,15 @@ class SSHKnownHosts(Command):
         key 'ssh_host_public_key' for use in Ansible playbook.
         """
         keylist = list()
+        if self.host is None or self.hostname is None:
+            raise RuntimeError('No host IP or name found')
         for key in self.hostkey:
             if self.host is not None:
                 keylist.append("{} {}".format(self.host, key))
             if self.hostname is not None:
                 keylist.append("{} {}".format(self.hostname, key))
+        if len(keylist) == 0:
+            raise RuntimeError('No host public keys found')
         return json.dumps({'ssh_host_public_keys': keylist})
 
 
