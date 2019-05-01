@@ -25,7 +25,7 @@ History
 .. Security in case of vulnerabilities.
 
 19.4.5 (Unreleased)
-~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~
 
 Added
 ^^^^^
