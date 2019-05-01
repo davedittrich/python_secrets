@@ -30,9 +30,10 @@ History
 Added
 ^^^^^
 
-- Add command 'utils ssh-config' to manage SSH configuration snippet
+- Add command 'ssh config' to manage SSH configuration snippet
   for use by 'update-dotdee' to generate ~/.ssh/config file
-- Add command 'utils ssh-known-hosts' to manage system known_hosts file
+- Add command 'ssh known-hosts add' and 'ssh known-hosts remove'
+  to manage system known_hosts file(s)
 
 Changed
 ^^^^^^^
