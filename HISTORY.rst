@@ -24,8 +24,15 @@ History
 .. Fixed for any bug fixes.
 .. Security in case of vulnerabilities.
 
-Unreleased
+19.4.5 (Unreleased)
 ~~~~~~~~~~
+
+Added
+^^^^^
+
+- Add command 'utils ssh-config' to manage SSH configuration snippet
+  for use by 'update-dotdee' to generate ~/.ssh/config file
+- Add command 'utils ssh-known-hosts' to manage system known_hosts file
 
 Changed
 ^^^^^^^
