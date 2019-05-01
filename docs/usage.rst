@@ -300,6 +300,13 @@ Secrets
     :command: secrets *
     :ignored: -f,-c,--quote,--noindent,--max-width,--fit-width,--print-empty,--sort-column
 
+SSH
+~~~
+
+.. autoprogram-cliff:: psec
+    :command: ssh *
+    :ignored: -f,-c,--quote,--noindent,--max-width,--fit-width,--print-empty,--sort-column
+
 Template
 ~~~~~~~~
 
