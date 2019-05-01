@@ -189,11 +189,12 @@ def _ansible_remove_hostkeys(hosts, debug=False, verbose_level=1):
         playbook.seek(0)
         playbook.write(REKEY_PLAYBOOK)
         playbook.flush()
+        ssh_hosts = json.dumps({'ssh_hosts': hosts})
         cmd = ['ansible-playbook',
                '--ask-become-pass',
                _ansible_verbose(verbose_level),
+               '-e', "'{}'".format(ssh_hosts),
                '-e', 'remove_keys=true',
-               '-e', '\'ssh_hosts="{}"\''.format(str(list(hosts))),
                playbook.name,
                ]
         ansible = pexpect.spawnu(
