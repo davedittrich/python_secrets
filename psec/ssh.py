@@ -238,7 +238,7 @@ class SSHConfig(Command):
         self.app.secrets.requires_environment()
         self.app.secrets.read_secrets_and_descriptions()
         if parsed_args.public_ip is None or parsed_args.public_dns is None:
-            raise RuntimeError('Must specify --public_ip and --public_dns')
+            raise RuntimeError('Must specify --public-ip and --public-dns')
         _aws_privatekey_path = \
             self.app.secrets.get_secret('aws_privatekey_path')
         home = os.path.expanduser('~')
