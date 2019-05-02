@@ -277,23 +277,7 @@ def tree(dir, padding='', print_files=True, isLast=False, isFirst=True):
 
 
 class SetAWSCredentials(Command):
-    """Set credentials from saved secrets for use by AWS CLI.
-
-    This command directly manipulates the AWS CLI "credentials" INI-style
-    file.  The AWS CLI does not support non-interactive manipulation of
-    the credentials file, so this hack is used to do this. Be aware that
-    this might cause some problems (though it shouldn't, since the file
-    is so simple)::
-
-        [default]
-        aws_access_key_id = [ Harm to Ongoing Matter ]
-        aws_secret_access_key = [        HOM           ]
-    \n
-    For simple use cases, you will not need to switch between different
-    users.  The default is to use the AWS convention of ``default``
-    as seen in the example above.  If you do need to support multiple
-    users, the ``--user`` option will allow you to specify the user.
-    """
+    """Set credentials from saved secrets for use by AWS CLI."""
 
     # See https://docs.aws.amazon.com/cli/latest/userguide/cli-config-files.html  # noqa
 
@@ -310,6 +294,26 @@ class SetAWSCredentials(Command):
             help='IAM User who owns credentials (default: "default")'
         )
         parser.epilog = textwrap.dedent("""
+            This command directly manipulates the AWS CLI "credentials" INI-style
+            file.  The AWS CLI does not support non-interactive manipulation of
+            the credentials file, so this hack is used to do this. Be aware that
+            this might cause some problems (though it shouldn't, since the file
+            is so simple)::
+
+                [default]
+                aws_access_key_id = [ Harm to Ongoing Matter ]
+                aws_secret_access_key = [        HOM           ]
+            \n
+            For simple use cases, you will not need to switch between different
+            users.  The default is to use the AWS convention of ``default``
+            as seen in the example above.  If you do need to support multiple
+            users, the ``--user`` option will allow you to specify the user.
+
+            See also:
+
+              * https://aws.amazon.com/cli/
+              * https://docs.aws.amazon.com/cli/latest/userguide/cli-config-files.html
+            \n
             """)
         return parser
 
