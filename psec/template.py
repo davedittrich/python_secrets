@@ -1,4 +1,5 @@
 import logging
+import textwrap
 
 from cliff.command import Command
 from jinja2 import (Environment, FileSystemLoader,
@@ -27,6 +28,13 @@ class Template(Command):
                             help="templated output destination " +
                                  "('-' for stdout)",
                             default=None)
+        parser.epilog = textwrap.dedent("""
+            For information on the Jinja2 template engine and how to
+            use it, see http://jinja.pocoo.org
+
+            To assist debugging, use ``--check-defined`` to check that
+            all required variables are defined.
+            """)
         return parser
 
     def take_action(self, parsed_args):
