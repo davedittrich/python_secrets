@@ -283,10 +283,16 @@ class SetAWSCredentials(Command):
     file.  The AWS CLI does not support non-interactive manipulation of
     the credentials file, so this hack is used to do this. Be aware that
     this might cause some problems (though it shouldn't, since the file
-    is so simple.)
+    is so simple)::
 
-    Use the --user option to select a specific user, otherwise "default"
-    is used.
+        [default]
+        aws_access_key_id = [ Harm to Ongoing Matter ]
+        aws_secret_access_key = [        HOM           ]
+    \n
+    For simple use cases, you will not need to switch between different
+    users.  The default is to use the AWS convention of ``default``
+    as seen in the example above.  If you do need to support multiple
+    users, the ``--user`` option will allow you to specify the user.
     """
 
     # See https://docs.aws.amazon.com/cli/latest/userguide/cli-config-files.html  # noqa
