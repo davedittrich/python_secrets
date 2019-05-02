@@ -156,16 +156,6 @@ def _ansible_debug(hostkeys):
     if exitstatus != 0:
         raise RuntimeError('Ansible error ' +
                            '(see stdout and stderr above)')
-    # p = subprocess.Popen(cmd,
-    #                      env=dict(os.environ),
-    #                      stdout=subprocess.PIPE,
-    #                      stderr=subprocess.PIPE,
-    #                      shell=False)
-    # p_out, p_err = p.communicate()
-    # print(p_out.decode('utf-8'), file=sys.stdout, flush=True)
-    # if p.returncode != 0:
-    #     print(p_err.decode('utf-8'), file=sys.stderr, flush=True)
-    #     raise RuntimeError('Ansible error (see stdout and stderr above)')
 
 
 def _write_ssh_configd(ssh_config=None,
