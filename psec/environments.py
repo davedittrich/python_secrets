@@ -294,10 +294,13 @@ class EnvironmentsDefault(Command):
                 self.LOG.info('default environment unset')
         elif parsed_args.set:
             # Set default to specified environment
+            default_env = parsed_args.environment
+            if default_env is None:
+                default_env = SecretsEnvironment().environment()
             with open(env_file, 'w') as f:
-                f.write(parsed_args.environment)
+                f.write(default_env)
             self.LOG.info('default environment set to "{}"'.format(
-                parsed_args.environment))
+                default_env))
         elif parsed_args.environment is None:
             # No environment specified, show current setting
             if os.path.exists(env_file):
