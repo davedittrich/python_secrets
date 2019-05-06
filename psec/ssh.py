@@ -153,6 +153,9 @@ def _ansible_remove_hostkeys(hosts,
         ansible = pexpect.spawnu(
             " ".join([arg for arg in cmd]))
         ansible.interact()
+        # Short delay because randomly this causes an exception
+        # to be thrown. (Am I doing something wrong?)
+        time.sleep(3)
         if ansible.isalive():
             raise RuntimeError('Ansible did not exit gracefully.')
 
