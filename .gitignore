@@ -61,3 +61,6 @@ docs/_build/
 
 # PyBuilder
 target/
+
+# python_secrets
+.python_secrets_environment
