@@ -93,6 +93,7 @@ SSH_CONFIG_TEMPLATE = textwrap.dedent("""\
         IdentityFile {{ aws_privatekey_path }}
         Port {{ port }}
         User {{ username }}
+    \n
     """)
 
 
@@ -211,6 +212,18 @@ def _write_ssh_configd(ssh_config=None,
         if verbose_level > 2:
             print(output_text, file=sys.stderr, flush=True)
 
+def get_instance_id_from_source(source=None):
+    """Try to extract the instance ID from the source file name"""
+    filename = getattr(source, 'name')
+    instance_id = None
+    try:
+        offset = filename.find('-console-output.txt')
+        if offset != -1:
+            instance_id = filename[0:-offset]
+    except Exception as e:  # noqa
+        pass
+    return instance_id
+
 
 class PublicKeys(object):
     """Class for managing SSH public keys."""
@@ -229,6 +242,7 @@ class PublicKeys(object):
         self.hostfingerprint = list()
         self.instance_id = instance_id
         self.debug = debug
+        self.client = None
 
     def get_public_ip(self):
         """Return the host IP address"""
@@ -238,15 +252,62 @@ class PublicKeys(object):
         """Return the hostname"""
         return self.public_dns
 
-    def aws_get_console_output(self):
-        response = dict()
-        client = boto3.client('ec2')
-        instance_dict = client.describe_instances().get('Reservations')
-        self.public_ip = instance_dict[0]['Instances'][0]['PublicIpAddress']
-        self.public_dns = instance_dict[0]['Instances'][0]['PublicDnsName']
+    def set_instance_id_from_source(self, source=None):
+        """Set instance ID attribute from the source file name"""
+        self.instance_id = get_instance_id_from_source(source=source)
+        return self.instance_id
+
+    def update_instance_description(self, instance_id=None):
+        """
+        Return specific information about a specific AWS instance, or
+        the first instance found to be running.
+
+        This method only finds the first running instance in the list
+        of reservations (which may include recently terminanted
+        instances.)
+        """
+
+        # TODO(dittrich): Make this capable of handling multi-instance stacks
+        # Return a list or dictionary of multiple public_ip/public_dns sets.
+        if self.client is None:
+            self.client = boto3.client('ec2')
+        stack_list = self.client.describe_instances().get('Reservations')
+        if len(stack_list) == 0:
+            raise RuntimeError("No running instances found")
+        if instance_id is None:
+            for stack in stack_list:
+                for instance in stack['Instances']:
+                    state = instance['State']['Name']
+                    if state != 'running':
+                        self.log.debug('Ignoring {} '.format(state) +
+                                       'instance {}'.format(
+                                            instance['InstanceId']))
+                    else:
+                        self.log.debug('Found running ' +
+                                       'instance {}'.format(
+                                            instance['InstanceId']))
+                        self.public_ip = instance.get(
+                            'PublicIpAddress', None)
+                        self.public_dns = instance.get(
+                            'PublicDnsName', None)
+                        break
+        else:
+            for stack in stack_list:
+                for instance in stack['Instances']:
+                    if instance['InstanceId'] == instance_id:
+                        self.public_ip = instance.get('PublicIpAddress', None)
+                        self.public_dns = instance.get('PublicDnsName', None)
+        return {'public_ip': self.public_ip,
+                'public_dns': self.public_dns}
+
+    def process_aws_console_output(self, instance_id=None):
+        if self.client is None:
+            self.client = boto3.client('ec2')
+        result_dict = self.update_instance_description(instance_id=instance_id)
         tries_left = _TRIES
+        response = None
         while tries_left > 0:
-            response = client.get_console_output(
+            response = self.client.get_console_output(
                 InstanceId=self.instance_id,
             )
             if 'Output' in response:
@@ -256,14 +317,14 @@ class PublicKeys(object):
             if self.debug:
                 self.log.debug('attempt {} '.format(_TRIES - tries_left) +
                                'to get console-log failed')
-        if tries_left == 0:
+        if tries_left == 0 or response is None:
             raise RuntimeError('Could not get-console-output ' +
                                'in {} seconds'.format(_TRIES * _DELAY) +
                                '\nCheck instance-id or try again.')
         self.console_output = response['Output'].splitlines()
         self.extract_keys()
 
-    def get_console_output(self, source=None):
+    def process_saved_console_output(self, source=None):
         """Get console output from stdin or file"""
         if source is None:
             raise RuntimeError('No console-output was found')
@@ -287,7 +348,8 @@ class PublicKeys(object):
                 if _host != "":
                     self.public_ip = _host
                     try:
-                        self.public_dns = socket.gethostbyaddr(self.public_ip)[0]
+                        self.public_dns = \
+                            socket.gethostbyaddr(self.public_ip)[0]
                     except Exception:
                         pass
             elif line.find('BEGIN SSH HOST KEY FINGERPRINTS') >= 0:
@@ -316,7 +378,11 @@ class PublicKeys(object):
                 if self.debug:
                     self.log.info('pubkey: {}'.format(key))
 
-    def _dump_hostkeys_to_json(self):
+    def get_hostfingerprint_list(self):
+        """Return the hostfingerprint list"""
+        return self.hostfingerprint
+
+    def get_hostkey_list_as_json(self):
         """
         Output JSON with host key material in a dictionary with
         key 'ssh_host_public_key' for use in Ansible playbook.
@@ -330,14 +396,6 @@ class PublicKeys(object):
             if self.public_dns is not None:
                 keylist.append("{} {}".format(self.public_dns, key))
         return json.dumps({'ssh_host_public_keys': keylist})
-
-    def get_hostfingerprint_list(self):
-        """Return the hostfingerprint list"""
-        return self.hostfingerprint
-
-    def get_hostkey_list_as_json(self):
-        """Return the hostkey list as JSON string"""
-        return self._dump_hostkeys_to_json()
 
     def get_hostkey_list(self):
         """Return the hostkey list"""
@@ -435,8 +493,6 @@ class SSHKnownHostsAdd(Command):
         super().__init__(app, app_args, cmd_name=None)
         self.public_ip = None
         self.public_dns = None
-        self.hostkey = list()
-        self.hostfingerprint = list()
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
@@ -516,19 +572,43 @@ class SSHKnownHostsAdd(Command):
             print('[+] Playbook for managing SSH known_hosts files')
             print(REKEY_PLAYBOOK.decode('utf-8'))
             return True
+
+        # TODO(dittrich): NOT DRY warning.
+        # Replicates code from 'ssh known-hosts add'
+
         self.app.secrets.requires_environment()
         self.app.secrets.read_secrets_and_descriptions()
-        public_keys = PublicKeys(public_ip=parsed_args.public_ip,
-                                 public_dns=parsed_args.public_dns,
-                                 instance_id=parsed_args.instance_id,
+
+        # Get the instance_id from command line option, or
+        # from console output file name. Avoid a conflict.
+        if (parsed_args.instance_id is not None and
+           not (parsed_args.public_ip is None or parsed_args.public_dns is None)):  # noqa
+            raise RuntimeError('--instance-id cannot be used with ' +
+                               'either --public-ip or --public-dns')
+        if parsed_args.source is not None:
+            instance_id = get_instance_id_from_source(
+                source=parsed_args.source)
+            if parsed_args.instance_id is not None:
+                if parsed_args.instance_id != instance_id:
+                    raise RuntimeError('--instance-id given does not match '
+                                       'name of source console log')
+        else:
+            instance_id = parsed_args.instance_id
+
+        public_ip = parsed_args.public_ip
+        public_dns = parsed_args.public_dns
+        public_keys = PublicKeys(public_ip=public_ip,
+                                 public_dns=public_dns,
+                                 instance_id=instance_id,
                                  debug=self.app.options.debug)
         if parsed_args.source is not None:
-            public_keys.get_console_output(parsed_args.source)
-        elif parsed_args.instance_id is not None:
-            public_keys.aws_get_console_output()
+            public_keys.process_saved_console_output(parsed_args.source)
+        elif instance_id is not None:
+            public_keys.process_aws_console_output()
         hostkeys_as_json_string = public_keys.get_hostkey_list_as_json()
         if self.app.options.debug:
             _ansible_debug(hostkeys_as_json_string)
+
         _ansible_set_hostkeys(hostkeys_as_json_string,
                               debug=self.app.options.debug,
                               ask_become_pass=parsed_args.ask_become_pass,
@@ -628,15 +708,42 @@ class SSHKnownHostsRemove(Command):
             print('[+] Playbook for managing SSH known_hosts files')
             print(REKEY_PLAYBOOK.decode('utf-8'))
             return True
+
+        # TODO(dittrich): NOT DRY warning. Replicates code from 'ssh known-hosts add'
+
         self.app.secrets.requires_environment()
         self.app.secrets.read_secrets_and_descriptions()
-        public_keys = PublicKeys(public_ip=parsed_args.public_ip,
-                                 public_dns=parsed_args.public_dns,
-                                 instance_id=parsed_args.instance_id)
+
+        # Get the instance_id from command line option, or
+        # from console output file name. Avoid a conflict.
+        if (parsed_args.instance_id is not None and
+           not (parsed_args.public_ip is None or parsed_args.public_dns is None)):  # noqa
+            raise RuntimeError('--instance-id cannot be used with ' +
+                               'either --public-ip or --public-dns')
         if parsed_args.source is not None:
-            public_keys.get_console_output(parsed_args.source)
-        elif parsed_args.instance_id is not None:
-            public_keys.aws_get_console_output()
+            instance_id = get_instance_id_from_source(
+                source=parsed_args.source)
+            if parsed_args.instance_id is not None:
+                if parsed_args.instance_id != instance_id:
+                    raise RuntimeError('--instance-id given does not match '
+                                       'name of source console log')
+        else:
+            instance_id = parsed_args.instance_id
+
+        public_ip = parsed_args.public_ip
+        public_dns = parsed_args.public_dns
+        public_keys = PublicKeys(public_ip=public_ip,
+                                 public_dns=public_dns,
+                                 instance_id=instance_id,
+                                 debug=self.app.options.debug)
+        if parsed_args.source is not None:
+            public_keys.process_saved_console_output(parsed_args.source)
+        elif instance_id is not None:
+            public_keys.process_aws_console_output()
+        hostkeys_as_json_string = public_keys.get_hostkey_list_as_json()
+        if self.app.options.debug:
+            _ansible_debug(hostkeys_as_json_string)
+
         _ansible_remove_hostkeys([i for i in [public_keys.get_public_ip(),
                                               public_keys.get_public_dns()]
                                   if i is not None],

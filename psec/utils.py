@@ -314,7 +314,7 @@ class SetAWSCredentials(Command):
               * https://aws.amazon.com/cli/
               * https://docs.aws.amazon.com/cli/latest/userguide/cli-config-files.html
             \n
-            """)
+            """)  # noqa
         return parser
 
     def take_action(self, parsed_args):
