@@ -6,12 +6,12 @@ version_info = pbr.version.VersionInfo('psec')
 try:
     __version__ = version_info.cached_version_string()
 except Exception:
-    __version__ = '19.4.4'
+    __version__ = '19.5.1'
 
 try:
     __release__ = version_info.release_string()
 except Exception:
-    __release__ = '19.4.4'
+    __release__ = '19.5.1'
 
 __author__ = 'Dave Dittrich'
 __email__ = 'dave.dittrich@gmail.com'
