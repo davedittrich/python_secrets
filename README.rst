@@ -105,7 +105,7 @@ Limitations
   (You need to handle that in code, but at least they are less likely
   to end up in a Git commit.)
 
-Usage concepts
+Usage Concepts
 --------------
 
 There is a separate **Usage** chapter with individual command documentation.
