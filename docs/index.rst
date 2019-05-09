@@ -14,6 +14,7 @@ Contents:
    readme
    installation
    usage
+   advanced
    contributing
    authors
    history
