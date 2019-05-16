@@ -159,6 +159,10 @@ class SecretsEnvironment(object):
         self._changed = False
         self._groups = []
 
+    def __str__(self):
+        """Produce string representation of environment identifier"""
+        return str(self.environment())
+
     def environment(self):
         """Returns the environment identifier."""
         return self._environment
