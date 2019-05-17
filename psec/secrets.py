@@ -250,31 +250,50 @@ class SecretsEnvironment(object):
 
         return _path
 
-    def environment_exists(self):
+    def environment_exists(self, path_only=False):
         """Return whether secrets environment directory exists
         and contains files"""
         _ep = self.environment_path()
-        _files = list()
-        for root, directories, filenames in os.walk(_ep):
-            for filename in filenames:
-                _files.append(os.path.join(root, filename))
-        return os.path.exists(_ep) and len(_files) > 0
+        result = False
+        if os.path.exists(_ep):
+            if path_only:
+                result = True
+            else:
+                _files = list()
+                for root, directories, filenames in os.walk(_ep):
+                    for filename in filenames:
+                        _files.append(os.path.join(root, filename))
+                result = len(_files) > 0
+        return result
 
     def environment_create(self,
                            source=None,
+                           alias=False,
                            mode=DEFAULT_MODE):
         """Create secrets environment directory"""
-        _path = self.environment_path()
-        if not os.path.exists(_path):
-            if source is not None:
-                self.clone_from(source)
-            else:
-                os.mkdir(_path, mode=mode)
-                self.descriptions_path_create()
-        else:
+        env_path = self.environment_path()
+        if not alias:
+            # Create a new environment (optionally from an existing environment)
             if self.environment_exists():
-                raise RuntimeError('Environment "{}" exists'.format(
-                    self.environment()))
+                raise RuntimeError(
+                    'Environment "{}" '.format(self.environment()) +
+                    'already exists')
+            else:
+                if source is not None:
+                    self.clone_from(source)
+                else:
+                    os.mkdir(env_path, mode=mode)
+                    self.descriptions_path_create()
+        else:
+            # Just create an alias (symbolic link) to
+            # an existing environment
+            if self.environment_exists():
+                raise RuntimeError(
+                    'Environment "{}" already exists'.format(
+                        self.environment()))
+            source_env = SecretsEnvironment(environment=source)
+            # Create a symlink with a relative path
+            os.symlink(source_env.environment(), env_path)
 
     def secrets_file_path(self):
         """Returns the absolute path to secrets file"""
@@ -300,7 +319,7 @@ class SecretsEnvironment(object):
 
     def descriptions_path_create(self, mode=DEFAULT_MODE):
         """Create secrets descriptions directory"""
-        if not self.environment_exists():
+        if not self.environment_exists(path_only=True):
             self.environment_create(mode=mode)
         if not self.descriptions_path_exists():
             os.mkdir(self.descriptions_path(), mode=mode)

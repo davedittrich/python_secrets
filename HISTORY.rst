@@ -24,6 +24,15 @@ History
 .. Fixed for any bug fixes.
 .. Security in case of vulnerabilities.
 
+Unreleased
+~~~~~~~~~~
+
+Added
+^^^^^
+
+- Ability to create an alias for an existing environment
+
+
 19.4.5 (2019-05-08)
 ~~~~~~~~~~~~~~~~~~~
 

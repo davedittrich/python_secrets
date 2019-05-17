@@ -29,6 +29,13 @@ class EnvironmentsList(Lister):
     def get_parser(self, prog_name):
         parser = super(EnvironmentsList, self).get_parser(prog_name)
         parser.formatter_class = argparse.RawDescriptionHelpFormatter
+        parser.add_argument(
+            '--aliasing',
+            action='store_true',
+            dest='aliasing',
+            default=False,
+            help="Include aliasing (default: False)"
+        )
         parser.epilog = textwrap.dedent("""
             You can get a list of all available environments at any time,
             including which one would be the default used by sub-commands:
@@ -45,6 +52,24 @@ class EnvironmentsList(Lister):
                 +-------------+---------+
 
             ..
+
+            To see which environments are aliases, use the ``--aliasing``
+            option.
+
+            .. code-block:: console
+
+                $ psec -v environments create --alias evaluation testing
+                $ psec environments list --aliasing
+                +-------------+---------+----------+
+                | Environment | Default | AliasFor |
+                +-------------+---------+----------+
+                | development | No      |          |
+                | evaluation  | No      | testing  |
+                | testing     | No      |          |
+                | production  | No      |          |
+                +-------------+---------+----------+
+
+            ..
             """)
 
         return parser
@@ -54,13 +79,24 @@ class EnvironmentsList(Lister):
         default_environment = SecretsEnvironment().environment()
         columns = (['Environment', 'Default'])
         basedir = self.app.secrets.secrets_basedir()
-        data = (
-            [(e, _is_default(e, default_environment))
-                for e in os.listdir(basedir)
-                if is_valid_environment(
-                    os.path.join(basedir, e),
-                    self.app_args.verbose_level)]
-        )
+        if parsed_args.aliasing:
+            columns.append('AliasFor')
+        data = list()
+        environments = os.listdir(basedir)
+        for e in environments:
+            env_path = os.path.join(basedir, e)
+            if is_valid_environment(env_path,
+                                    self.app_args.verbose_level):
+                default = _is_default(e, default_environment)
+                if not parsed_args.aliasing:
+                    item = (e, default)
+                else:
+                    try:
+                        alias_for = os.path.basename(os.readlink(env_path))
+                    except OSError:
+                        alias_for = ''
+                    item = (e, default, alias_for)
+                data.append(item)
         return columns, data
 
 
@@ -72,7 +108,15 @@ class EnvironmentsCreate(Command):
     def get_parser(self, prog_name):
         parser = super(EnvironmentsCreate, self).get_parser(prog_name)
         parser.formatter_class = argparse.RawDescriptionHelpFormatter
-        parser.add_argument(
+        how = parser.add_mutually_exclusive_group(required=False)
+        how.add_argument(
+            '-A', '--alias',
+            action='store',
+            dest='alias',
+            default=None,
+            help="Environment to alias (default: None)"
+        )
+        how.add_argument(
             '-C', '--clone-from',
             action='store',
             dest='clone_from',
@@ -83,9 +127,34 @@ class EnvironmentsCreate(Command):
                             nargs='*',
                             default=[SecretsEnvironment().environment()])
         parser.epilog = textwrap.dedent("""
+            Empty environments can be created as needed, one at a time or
+            several at once. Specify the names on the command line as arguments:
 
-            A set of secrets for an open source project can be bootstrapped
-            using the following steps:
+            .. code-block:: console
+
+                $ psec environments create development testing production
+                environment directory /Users/dittrich/.secrets/development created
+                environment directory /Users/dittrich/.secrets/testing created
+                environment directory /Users/dittrich/.secrets/production created
+
+            ..
+
+            In some special circumstances, it may be necessary to have one set
+            of identical secrets that have different environment names. If
+            this happens, you can create an alias (see also the
+            ``environments list`` command):
+
+            .. code-block:: console
+
+                $ psec environments create --alias evaluation testing
+
+            ..
+
+            To make it easier to bootstrap an open source project, where the
+            use may not be intimately familiar with all necessary secrets
+            and settings, you can make their life easier by preparing an
+            empty set of secret descriptions that will help prompt the
+            user to set them. You can do this following these steps:
 
             #. Create a template secrets environment directory that contains
                just the secrets definitions. This example uses the template
@@ -108,34 +177,36 @@ class EnvironmentsCreate(Command):
 
                ..
 
-            If you want to create more than one environment at once, you will
-            have to specify all of the names on the command line as arguments:
-
-            .. code-block:: console
-
-                $ psec environments create development testing production
-                environment directory /Users/dittrich/.secrets/development created
-                environment directory /Users/dittrich/.secrets/testing created
-                environment directory /Users/dittrich/.secrets/production created
-
-            ..
-
             .. _davedittrich/goSecure: https://github.com/davedittrich/goSecure
             """)
         return parser
 
     def take_action(self, parsed_args):
         self.LOG.debug('creating environment(s)')
-        # basedir = self.app.get_secrets_basedir()
-        if len(parsed_args.env) == 0:
-            parsed_args.env = list(self.app.environment)
-        for e in parsed_args.env:
-            se = SecretsEnvironment(environment=e)
-            se.environment_create(source=parsed_args.clone_from)
-            self.app.LOG.info(
-                'environment "{}" '.format(e) +
-                '({}) created'.format(se.environment_path())
-            )
+        if parsed_args.alias is not None:
+            if len(parsed_args.env) != 1:
+                raise RuntimeError('--alias requires one source environment')
+            se = SecretsEnvironment(environment=parsed_args.alias)
+            se.environment_create(source=parsed_args.env[0],
+                                  alias=True)
+            if se.environment_exists():
+                self.LOG.info(
+                    'environment "{}" '.format(parsed_args.alias) +
+                    'aliased to {}'.format(parsed_args.env[0])
+                )
+            else:
+                raise RuntimeError('Failed')
+        else:
+            # Default to app environment identifier
+            if len(parsed_args.env) == 0:
+                parsed_args.env = list(self.app.environment)
+            for e in parsed_args.env:
+                se = SecretsEnvironment(environment=e)
+                se.environment_create(source=parsed_args.clone_from)
+                self.LOG.info(
+                    'environment "{}" '.format(e) +
+                    '({}) created'.format(se.environment_path())
+                )
 
 
 class EnvironmentsRename(Command):
