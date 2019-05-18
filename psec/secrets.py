@@ -96,8 +96,8 @@ def is_valid_environment(env_path, verbose_level=0):
             contains_expected = True
     is_valid = os.path.exists(env_path) and contains_expected
     if not is_valid and verbose_level > 0:
-        logger.info('[!] directory {} exists '.format(env_path) +
-                    'but does not look like a valid environment')
+        logger.warning('[!] environment directory {} '.format(env_path) +
+                       'exists but is empty')
     return is_valid
 
 
@@ -422,9 +422,9 @@ class SecretsEnvironment(object):
                 s = i['Variable']
                 t = i['Type']
                 if self.get_secret(s, allow_none=True) is None:
-                    self.LOG.info('new {} '.format(t) +
-                                  'variable "{}" '.format(s) +
-                                  'is not defined')
+                    self.LOG.warning('new {} '.format(t) +
+                                     'variable "{}" '.format(s) +
+                                     'is not defined')
                     self._set_secret(s, None)
 
     def read_secrets(self, from_descriptions=False):
