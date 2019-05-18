@@ -3,6 +3,7 @@ import base64
 import binascii
 import errno
 import hashlib
+import json
 import logging
 import os
 import random
@@ -345,6 +346,10 @@ class SecretsEnvironment(object):
     def items(self):
         """Return the items from the secrets dictionary."""
         return self._secrets.items()
+
+    def to_json(self):
+        """Return the items as JSON string."""
+        return json.dumps(self._secrets)
 
     def get_secret(self, secret, allow_none=False):
         """Get the value of secret
