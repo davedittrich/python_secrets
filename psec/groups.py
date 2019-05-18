@@ -40,18 +40,6 @@ class GroupsCreate(Command):
                 $ psec groups create newgroup --clone-from ~/git/goSecure/secrets/secrets.d/gosecure.yml
                 created new group "newgroup"
                 $ psec groups list
-                new password variable "gosecure_pi_password" is not defined
-                new password variable "gosecure_app_password" is not defined
-                new string variable "gosecure_client_psk" is not defined
-                new string variable "gosecure_client_ssid" is not defined
-                new string variable "gosecure_vpn_client_id" is not defined
-                new token_hex variable "gosecure_vpn_client_psk" is not defined
-                new string variable "gosecure_pi_pubkey" is not defined
-                new string variable "gosecure_pi_locale" is not defined
-                new string variable "gosecure_pi_timezone" is not defined
-                new string variable "gosecure_pi_wifi_country" is not defined
-                new string variable "gosecure_pi_keyboard_model" is not defined
-                new string variable "gosecure_pi_keyboard_layout" is not defined
                 +----------+-------+
                 | Group    | Items |
                 +----------+-------+
@@ -68,7 +56,7 @@ class GroupsCreate(Command):
     def take_action(self, parsed_args):
         self.LOG.debug('creating group')
         self.app.secrets.requires_environment()
-        self.app.secrets.read_secrets_and_descriptions()
+        self.app.secrets.read_secrets_descriptions()
         if parsed_args.clone_from is None and parsed_args.group is None:
             raise RuntimeError('No group name specified')
         dest_dir = self.app.secrets.descriptions_path()
@@ -125,7 +113,7 @@ class GroupsList(Lister):
     def take_action(self, parsed_args):
         self.LOG.debug('listing secret groups')
         self.app.secrets.requires_environment()
-        self.app.secrets.read_secrets_and_descriptions()
+        self.app.secrets.read_secrets_descriptions()
         items = {}
         for g in self.app.secrets.get_groups():
             items[g] = self.app.secrets.get_items_from_group(g)
@@ -171,7 +159,7 @@ class GroupsShow(Lister):
     def take_action(self, parsed_args):
         self.LOG.debug('showing secrets in group')
         self.app.secrets.requires_environment()
-        self.app.secrets.read_secrets_and_descriptions()
+        self.app.secrets.read_secrets_descriptions()
         columns = ('Group', 'Variable')
         data = []
         for group in parsed_args.group:
