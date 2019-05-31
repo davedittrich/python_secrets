@@ -329,12 +329,12 @@ class SecretsEnvironment(object):
         """Return the absolute path to secrets descriptions tmp directory"""
         return os.path.join(self.environment_path(), "tmp")
 
-    def requires_environment(self):
+    def requires_environment(self, path_only=False):
         """
         Provide consistent error handling for any commands that require
         an environment actually exist in order to work properly.
         """
-        if not self.environment_exists():
+        if not self.environment_exists(path_only=path_only):
             raise RuntimeError(
                 'environment "{}" '.format(self.environment()) +
                 'does not exist or is empty')

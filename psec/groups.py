@@ -55,7 +55,8 @@ class GroupsCreate(Command):
 
     def take_action(self, parsed_args):
         self.LOG.debug('creating group')
-        self.app.secrets.requires_environment()
+        # An empty environment that exists is OK for this.
+        self.app.secrets.requires_environment(path_only=True)
         self.app.secrets.read_secrets_descriptions()
         if parsed_args.clone_from is None and parsed_args.group is None:
             raise RuntimeError('No group name specified')
