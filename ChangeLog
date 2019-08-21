@@ -1,0 +1,556 @@
+CHANGES
+=======
+
+* Deal with pip upgrade warnings in tox
+* Fix secrets environment check
+* Fix docs test
+* Improve and extend IP address determination
+* Improve template logic
+* Improve code logic
+* Add docs to tests
+* Add final test success message
+* Allow cloning new group into empty environment
+* Switch to warning
+* Make "python -m psec" work
+* Fix bug: 'groups' command doesn't need secrets
+* Improve console output processing
+* Add JSON output method
+* Add meta tags to docs
+* Add environment aliasing feature
+* Add \_\_str\_\_() method (as Guido intended)
+
+19.5.1
+------
+
+* Update HISTORY.rst
+* Bump version: 19.4.4 → 19.5.1
+* Fix testing bug when default env set in repo dir
+* Add documentation on "ssh" subcommand use
+* Fix spelling
+* Add default secrets environment file to .gitignore
+* Improve ability to get IP&DNS from console output
+* Fix bug in 'environments default'
+* Add delay to allow Ansible to exit cleanly
+* Improve documentation
+* Improve documentation
+* Add missing documentation
+* Improve use of Ansible playbook across commands
+* Remove obsolete code
+* Fix RST formatting
+* Fix error message
+* Refactor ssh sub-commands out to their own command
+* Update documentation usage section
+* Fix bug in passing ssh\_hosts as extra vars
+* Improve Ansible debugging output
+* Fix bugs with key parsing
+* Fix bugs in processing known\_hosts file
+* Update HISTORY.rst file
+* Switch to using pexpect for colored output
+* Initial "utils ssh-known-hosts"/"utils ssh-config"
+* Add pbr to requirements
+* Add boto3 requirement
+* Oops
+* Use number, not label, for footnote
+* Update CONTRIBUTING.rst file
+* Add Makefile target 'install-bats-libraries'
+* Fix .PHONY declaration
+* Add missing import
+* Generalize exception to fix --version bug
+* Generalize exception to fix --version bug
+* Clean up temporary psec\_help.txt file
+
+19.4.4
+------
+
+* Bump version: 19.4.3 → 19.4.4
+* Update HISTORY.rst
+
+19.4.3
+------
+
+* Bump version: 19.4.2 → 19.4.3
+* Why did this break?
+* Fix README.rst for ReadTheDocs badge
+* Bump version: 19.4.1 → 19.4.2
+* Update HISTORY.rst
+* Attempt to fix install
+* Duh
+* Fix syntax
+* Add bats dependencies
+
+19.4.1
+------
+
+* Bump version: 19.4.0 → 19.4.1
+* Fix bats tests
+
+19.4.0
+------
+
+
+v19.4.0
+-------
+
+* Bump version: 19.3.2 → 19.4.0
+* Update HISTORY.rst
+
+v19.3.2
+-------
+
+* Bump version: 19.3.1 → 19.3.2
+* Rename CLI program from 'python\_secrets' to 'psec'
+* Complete command --help output (epilog text)
+* Add Python 3.7
+* Add dist tag
+* Add Python 3.7
+* Resolve pep8 findings
+* Remove redundant text from merge conflict
+* Fix help text
+* Add script to complement console\_script entrypoint
+* Oops - left some debugging text in place
+* Clarify arguments in --help output
+* Fix missed Sphinx syntax error
+* Fix HISTORY.rst
+* Fix installing in active virtualenv
+* Update README.rst
+
+19.3.1
+------
+
+* Bump version: 18.12.1 → 19.3.1
+* Fix bug in passing along verbose\_level
+* Include dev release info in --version
+* Fix bug in checking validity of environment dir
+* Add pyflakes for vscode
+* Resolve pep8 findings
+* Move formatting help to usage.rst file
+* Run main module (ala Pycharm) for direct debugging
+* Use 'psec' instead of 'python\_secrets' for autoprogram-cliff
+* Split tests
+* Add "utils set-aws-credentials" command to mirror AWS CLI credentials
+
+v18.12.1
+--------
+
+* Update HISTORY.rst
+* Don't use 'pip' directly
+* Bump version: 18.11.5 → 18.12.1
+* Add "environments rename" command
+* Refactor tox.ini file
+* Disable bats tests on travis-ci
+* Bump version: 18.11.5 → 18.11.6
+* Add bats (integration, etc.) tests
+* Fix bug with over-riding default environment with -e
+* Add readthedocs.yml to get Python 3.6
+* Add property\_manager to requirements.txt for ReadTheDocs
+
+v18.11.5
+--------
+
+* Bump version: 18.11.4 → 18.11.5
+* PyPi doesn't like :ref: :(
+
+v18.11.4
+--------
+
+* Bump version: 18.11.3 → 18.11.4
+* Add python\_secrets for autoprogram\_cliff to work on ReadTheDocs
+* Fix README.rst file structure
+* Add Pygments
+
+v18.11.3
+--------
+
+* Bump version: 18.11.2 → 18.11.3
+* Start refactoring documentation to use auto-generated command help
+* Use pbr for version number
+
+v18.11.2
+--------
+
+* Bump version: 18.11.1 → 18.11.2
+* Fix tfoutput command
+* Refactor SecretsEnvironment() so autoprogram\_cliff works
+* Set up for using autoprogram\_cliff
+* Add cliff.sphinxext for documentation
+* Add file to preserve directory
+* Bump version: 18.11.0 → 18.11.1
+* Switch to using image:: to work on PyPi
+* Update release identifier in history
+* Bump version: 18.9.7 → 18.11.0
+* Handle null group
+* Add "--type" option to extend "secrets describe" to describe variables
+* Resolve pep8 finding
+* Bump version: 18.9.6 → 18.9.7
+* Fix bug related to malformed group file name (.yml.yml)
+* Bump version: 18.9.5 → 18.9.6
+* Move links to bottom and move todo items to GitHub Projects
+* Add PyPi RST check to .travis.yml
+* Bump version: 18.9.4 → 18.9.5
+* Move RST check to tox.ini
+* Resolve tox tests findings
+* Add documentation of "environments default" improvements
+* Forgot to save edits. :(
+* Update HISTORY
+* Bump version: 18.9.3 → 18.9.4
+* Improve visibility into default environment
+
+v18.9.3
+-------
+
+* Bump version: 18.9.2 → 18.9.3
+* Add test of RST file(s)
+* Switch from "shell" to "console" lexer
+* Add --json output option to "environments path" command
+* Update history
+* Add note linking to a proof-of-concept example
+* Bump version: 18.9.2 → 18.9.3
+* Resolve pep8 findings
+* Embed links to asciinema screencasts in README.rst
+* Add check for required Python version
+* Bump version: 18.9.1 → 18.9.2
+* Add example of quoting values with spaces in them
+* Don't limit "secrets set" to just string type
+* Bump version: 18.9.0 → 18.9.1
+* Fix broken README.rst file
+* Add twine check to Makefile
+* Add documentation of "environments default" command
+* Remove another descriptor
+* Remove erroneous descriptor
+
+18.9.0
+------
+
+* Bump version: 0.17.3 → 18.9.0
+* Update history and status, description
+* Add quoting in email in case values have spaces in them
+* Resolve pep8 finding
+* Bump version: 0.17.2 → 0.17.3
+* Add more details to email for "secrets send"
+* Add GPG email to feature list
+* Typo in list item
+* Complete documentation on using "secrets send"
+* Bump version: 0.17.1 → 0.17.2
+* Update documentation
+* Get GPG encrypted email delivery working
+* Bump version: 0.17.0 → 0.17.1
+* Add "groups create" command
+* Fix typo
+* Handle missing crypt module
+* Update history
+* Bump version: 0.16.0 → 0.17.0
+* Resolve pep8 errors
+* Improve error handling consistency when no environment
+* Add long long\_description\_content\_type
+* Clarification
+* Update history
+
+v0.16.0
+-------
+
+* Bump version: 0.15.6 → 0.16.0
+* Add README.rst to bumpversion support
+* Bump version: 0.15.5 → 0.15.6
+* Add attribute maps
+* Fix typos in comments
+* Fix method name
+* Add prompt attributes to descriptions
+* Update documentation
+* Update README.rst per new features
+* Add more history
+* Bump version: 0.15.4 → 0.15.5
+* Resolve pep8 test failures
+* Identify newly created secrets
+* Bump version: 0.15.3 → 0.15.4
+* Note and/or set newly defined missing secrets
+* Add note about Python security issues
+* Bump version: 0.15.2 → 0.15.3
+* When exporting vars, also export PYTHON\_SECRETS\_ENVIRONMENT w/env
+* Bump version: 0.15.1 → 0.15.2
+* Update documentation on contributing
+* Refactor documentation
+* Add more history
+* Bump version: 0.15.0 → 0.15.1
+* Fix import
+* Add 'environments tree' command
+* Simplify checks
+* Bump version: 0.14.3 → 0.15.0
+* Add explicit cwd specification (for API) and subdirectory paths
+* Refactor to add "groups path" command for consistency
+* Bump version: 0.14.2 → 0.14.3
+* Add "environments path" command
+* Bump version: 0.14.1 → 0.14.2
+* Add "secrets get" command
+* Bump version: 0.14.0 → 0.14.1
+* Add 'environment default' command
+* Allow localized defaulting of environment via file
+* Add modules required for releasing
+
+v0.14.0
+-------
+
+* Bump version: 0.13.5 → 0.14.0
+* Resolve pep8 failure
+* Bump version: 0.13.4 → 0.13.5
+* Fix string handling for command line options
+* Add exporting defined environment variables
+* Fix reference to global option
+* Unset changed on write
+* Drop Python 3.4 and 3.5, since secrets module only in >=3.6
+* Bump version: 0.13.3 → 0.13.4
+* Bump version: 0.13.2 → 0.13.3
+* Add 'utils tfouput' command
+* Resolve bandit issues
+* Bump version: 0.13.1 → 0.13.2
+* Missed one update to README.rst
+* Bump version: 0.13.0 → 0.13.1
+* Allow setting variables from simple command lines
+* Update documentation per new features
+
+v0.13.0
+-------
+
+* Bump version: 0.12.0 → 0.13.0
+* Add --cidr option for 'utils myip'
+* Make 'utils' command plural like other commands
+* Add secrets/ template directory
+
+v0.12.0
+-------
+
+* Bump version: 0.11.0 → 0.12.0
+* Fix "secrets generate" bug related to non-existent secrets.yml file
+* Fix virtualenv selection
+
+v0.11.0
+-------
+
+* Bump version: 0.10.0 → 0.11.0
+* Add 'util myip' command
+* FIx module name
+* Restrict to only Python >= 3.6 due to use of secrets module
+* Add 'run' command
+* Add ability to export (prefixed) secrets into environment
+* Fix bug in examples
+
+v0.10.0
+-------
+
+* Bump version: 0.9.1 → 0.10.0
+* Add manual setting of string variables
+* Add "string" type requiring manual setting
+* Resolve failed tests
+* Add "secrets path" command and documentation
+* Add "template" command
+* Default environment to basename of cwd
+* Add cloning of environment from source (e.g., a repo)
+* Forgot to remove WIP
+
+v0.9.1
+------
+
+* Bump version: 0.9.0 → 0.9.1
+* Fix test
+* Travis not ready for Python 3.7
+* Update Travis config
+* Also drop Python 2.7 support on Travis
+* Drop Python 2.7 support (at least for now)
+
+v0.9.0
+------
+
+* Bump version: 0.8.1 → 0.9.0
+* Update tests
+* Update documentation
+* Refactor environment management into SecretsEnvironment class
+* Add 'secrets describe' command
+* Add "environments create" and "environments list" commands
+* Add Python 3.7
+* Switch virtualenv to use for debugging
+* Expand secret generation methods
+* Fix main functions
+* Fix tests
+* Update README.rst example
+* Bug fixes
+* Add final initial test and debug others
+* Add "secrets init" command
+* Start adding unit tests for python\_secrets.main
+* Fix modeline
+* Add feature for sending secrets via email using Google OAuth2 SMTP
+* Add argument checking function
+* Add six for securing "input" call
+* Sort command entry points
+* Fix .gitignore for venv/
+* Fix modelines
+* Add missing import
+* Bump version: 0.8.0 → 0.8.1
+* Fix docstring
+* Add more tests
+* Remove unused function
+
+0.8
+---
+
+* Bump version: 0.7.2 → 0.8.0
+* Fix default path/environment handling
+* Add grant acknowledgement
+* Use -delete switch
+* pep8 fixes
+* Add grant acknowledgement
+* Use -delete switch
+* pep8 fixes
+* Add variables to \_\_all\_\_
+* Bump version: 0.7.1 → 0.7.2
+* Bump version: 0.7.0 → 0.7.1
+* Fix bug introduced by change in secrets descriptions
+
+0.7
+---
+
+* Bump version: 0.6.1 → 0.7.0
+* Add ability to show variables by group(s)
+* Add documentation for "groups show"
+* Remove unused variable
+* Bump version: 0.6.0 → 0.6.1
+* Add "groups show" functionality
+* Remove unused requirements
+
+0.6
+---
+
+
+v0.6.0
+------
+
+* Bump version: 0.5.2 → 0.6.0
+* Bump version: 0.5.1 → 0.5.2
+* Fix variable selector
+
+v0.5.1
+------
+
+* Bump version: 0.5.0 → 0.5.1
+* Add other tested Python versions
+* Add develop branch to Travis
+
+0.5
+---
+
+
+v0.5.0
+------
+
+* Bump version: 0.4.2 → 0.5.0
+
+v0.4.2
+------
+
+* Bump version: 0.4.1 → 0.4.2
+* Fix pep8 finding
+* It's getting late, did I mention that?
+* Refining matrix
+* Continue to tweak tests for Travis
+* Add back environments
+* Missed something
+* Again with the fixes
+* Attempting to fix travis error
+* Fixing travis error
+
+v0.4.1
+------
+
+* Bump version: 0.4.0 → 0.4.1
+* Rename tests
+* Fix erroneous pep8 fixes
+* Update Makefile to handle test and release
+
+v0.4.0
+------
+
+* Bump version: 0.3.6 → 0.4.0
+* Add pep8, flake8, bandit tests
+* Remove unused variable
+* Don't try to load files on "help"
+* Fix imports
+* Add test for .find()
+
+v0.3.6
+------
+
+* Bump version: 0.3.5 → 0.3.6
+* Narrow tox environments
+* Unset env vars
+
+v0.3.5
+------
+
+* Bump version: 0.3.4 → 0.3.5
+* Add requirements.txt
+
+v0.3.4
+------
+
+* Bump version: 0.3.3 → 0.3.4
+* Working tests
+* Switch to setup.py test from tox for now
+* Update travis.ci config
+* Add Python 3.6
+* Fix example
+
+v0.3.3
+------
+
+* Bump version: 0.3.2 → 0.3.3
+* Switch code-block type to shell
+
+v0.3.2
+------
+
+* Bump version: 0.3.1 → 0.3.2
+* Update documenation
+* Update HISTORY
+* Add shorter command alias
+* Fix license description
+* Add targets for twine upload to pypi
+* Allow showing a specified subset of secrets
+* Only allow manual setting of a variable that has a description
+
+v0.3.1
+------
+
+* Bump version: 0.3.0 → 0.3.1
+* Add environment variable D2\_NO\_REDACT to control --no-redact default
+* Prepare for pypi distribution
+* Fix command examples (new syntax)
+* Fix code-block
+
+v0.3.0
+------
+
+* Bump version: 0.2.1 → 0.3.0
+* Add more todo items
+* Redact on all output types (unless --no-redact set)
+* Move closer to openstack client command structure
+* Add description of command set model
+* Use explicit YAML format (leading "---")
+* Improve exception handling for reading secrets descriptions
+* Add future work section
+* Update README.rst
+
+v0.2.1
+------
+
+* Bump version: 0.2.0 → 0.2.1
+* Add documentation
+* Allow environment to be null
+* Be quiet with logging unless error or -v
+
+v0.2.0
+------
+
+* Bump version: 0.1.0 → 0.2.0
+* Remove file not tracked by bumpversion
+* Add ability to manually set or generate secrets by type
+* Add method description strings
+* Add target to install into current virtualenv
+* Initial load
