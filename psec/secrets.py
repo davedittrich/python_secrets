@@ -9,6 +9,7 @@ import os
 import random
 import re
 import secrets
+import stat
 import textwrap
 import uuid
 import yaml
@@ -163,6 +164,30 @@ class SecretsEnvironment(object):
     def __str__(self):
         """Produce string representation of environment identifier"""
         return str(self.environment())
+
+    @classmethod
+    def permissions_check(cls, basedir='.'):
+        """Check for presense of perniscious overly-permissive permissions."""
+        any_other = stat.S_IROTH | stat.S_IWOTH | stat.S_IXOTH
+        for root, dirs, files in os.walk(basedir, topdown=True):
+            for name in files:
+                path = os.path.join(root, name)
+                try:
+                    st = os.stat(path)
+                    if (st.st_mode & any_other):
+                        print('[!] file {} '.format(path) +
+                              'is mode {}'.format(oct(st.st_mode)))
+                except OSError:
+                    pass
+                for name in dirs:
+                    path = os.path.join(root, name)
+                    try:
+                        st = os.stat(path)
+                        if (st.st_mode & any_other):
+                            print('[!] directory {} '.format(path) +
+                                  'is mode {}'.format(oct(st.st_mode)))
+                    except OSError:
+                        pass
 
     def environment(self):
         """Returns the environment identifier."""

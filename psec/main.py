@@ -125,6 +125,7 @@ class PythonSecretsApp(App):
             self.options.environment))
         self.environment = self.options.environment
         self.secrets_basedir = self.options.secrets_basedir
+        SecretsEnvironment.permissions_check(self.secrets_basedir)
         self.secrets_file = self.options.secrets_file
         self.secrets = SecretsEnvironment(
             environment=self.environment,
