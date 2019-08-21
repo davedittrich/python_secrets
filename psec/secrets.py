@@ -255,8 +255,8 @@ class SecretsEnvironment(object):
         """Return whether secrets environment directory exists
         and contains files"""
         _ep = self.environment_path()
-        result = False
-        if os.path.exists(_ep):
+        result = self.descriptions_path_exists()
+        if not result and os.path.exists(_ep):
             if path_only:
                 result = True
             else:
