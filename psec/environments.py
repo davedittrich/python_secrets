@@ -254,7 +254,9 @@ class EnvironmentsRename(Command):
         self.LOG.debug('renaming environment')
         basedir = self.app.secrets.secrets_basedir()
         source = parsed_args.source[0]
+        source_path = os.path.join(basedir, source)
         dest = parsed_args.dest[0]
+        dest_path = os.path.join(basedir, dest)
         if source is None:
             raise RuntimeError('No source name provided')
         if dest is None:
@@ -267,8 +269,7 @@ class EnvironmentsRename(Command):
             raise RuntimeError(
                 'Desitnation environment "{}"'.format(dest) +
                 ' already exist')
-        os.rename(os.path.join(basedir, source),
-                  os.path.join(basedir, dest))
+        os.rename(source_path, dest_path)
         self.LOG.info(
             'environment "{}" '.format(source) +
             'renamed to "{}"' .format(dest)
