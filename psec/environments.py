@@ -375,17 +375,24 @@ class EnvironmentsDefault(Command):
                 default_env = SecretsEnvironment().environment()
             with open(env_file, 'w') as f:
                 f.write(default_env)
-            self.LOG.info('default environment set to "{}"'.format(
+            self.LOG.info('default environment set explicitly to "{}"'.format(
                 default_env))
         elif parsed_args.environment is None:
             # No environment specified, show current setting
             if os.path.exists(env_file):
                 with open(env_file, 'r') as f:
                     env_string = f.read().replace('\n', '')
-                print(env_string)
+                if self.app_args.verbose_level > 1:
+                    self.LOG.info('default environment set explicitly to "{}"'.format(
+                        env_string))
+                else:
+                    print(env_string)
             else:
-                self.LOG.info('default environment is "{}"'.format(
-                    SecretsEnvironment().environment()))
+                if self.app_args.verbose_level > 1:
+                    self.LOG.info('default environment is implicitly "{}"'.format(
+                        SecretsEnvironment().environment()))
+                else:
+                    print(SecretsEnvironment().environment())
 
 
 class EnvironmentsPath(Command):
