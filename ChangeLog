@@ -1,6 +1,11 @@
 CHANGES
 =======
 
+* Be more explicit about default environment
+* Tighten permissions on cloned environments/groups
+* Provide feedback on myip method
+* Add insecure permissions checking
+* Add ChangeLog (autogen from pbr)
 * Deal with pip upgrade warnings in tox
 * Fix secrets environment check
 * Fix docs test
