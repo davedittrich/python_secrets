@@ -1,6 +1,8 @@
 CHANGES
 =======
 
+* Bump version: 19.5.1 → 19.8.0
+* Update ChangeLog
 * Be more explicit about default environment
 * Tighten permissions on cloned environments/groups
 * Provide feedback on myip method
