@@ -17,7 +17,7 @@ import yaml
 from cliff.command import Command
 from cliff.lister import Lister
 from numpy.random import bytes as np_random_bytes
-from psec.utils import redact, find, prompt_string
+from psec.utils import redact, find, prompt_string, get_output
 from psec.google_oauth2 import GoogleSMTP
 from shutil import copy, copytree
 # >> Issue: [B404:blacklist] Consider possible security implications associated with run module.  # noqa
@@ -51,6 +51,10 @@ DEFAULT_MODE = 0o710
 
 logger = logging.getLogger(__name__)
 
+def remove_other_perms(dst):
+    """Make all files in path ``dst`` have ``o-rwx`` permissions."""
+    # TODO(dittrich): Test on Windows. Should work on all Linux.
+    get_output(['chmod', '-R', 'o-rwx', dst])
 
 def copyanything(src, dst):
     try:
@@ -62,6 +66,8 @@ def copyanything(src, dst):
             copy(src, dst)
         else:
             raise
+    finally:
+        remove_other_perms(dst)
 
 
 def _identify_environment(environment=None):

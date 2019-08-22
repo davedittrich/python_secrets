@@ -178,6 +178,10 @@ class EnvironmentsCreate(Command):
                ..
 
             .. _davedittrich/goSecure: https://github.com/davedittrich/goSecure
+
+            Note: Directory and file permissions on cloned environments will prevent
+            ``other`` from having read/write/execute permissions (i.e., ``o-rwx`` in
+            terms of the ``chmod`` command.)
             """)
         return parser
 

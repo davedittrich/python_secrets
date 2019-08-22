@@ -50,6 +50,10 @@ class GroupsCreate(Command):
                 +----------+-------+
 
             ..
+
+            Note: Directory and file permissions on cloned groups will prevent
+            ``other`` from having read/write/execute permissions (i.e., ``o-rwx``
+            in terms of the ``chmod`` command.)
             """)
         return parser
 
