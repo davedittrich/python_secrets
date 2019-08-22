@@ -2,6 +2,7 @@
 
 import argparse
 import boto3
+import glob
 import json
 import logging
 import os
@@ -212,6 +213,7 @@ def _write_ssh_configd(ssh_config=None,
         if verbose_level > 2:
             print(output_text, file=sys.stderr, flush=True)
 
+
 def get_instance_id_from_source(source=None):
     """Try to extract the instance ID from the source file name"""
     filename = getattr(source, 'name')
@@ -223,6 +225,22 @@ def get_instance_id_from_source(source=None):
     except Exception as e:  # noqa
         pass
     return instance_id
+
+
+# This function only handles AWS at present. Will need to generalize
+# to Digital Ocean (already working with ansible-dims-playbooks) and
+# Azure (yet to be completed).
+#
+def _get_latest_console_output():
+    """Find the most recently written console log file"""
+    _latest_console_output = None
+    try:
+        files = glob.glob("i*-console-output.txt")
+        files.sort(key=os.path.getmtime)
+        _latest_console_output = files[0]
+    except Exception:
+        pass
+    return _latest_console_output
 
 
 class PublicKeys(object):
@@ -300,7 +318,7 @@ class PublicKeys(object):
         return {'public_ip': self.public_ip,
                 'public_dns': self.public_dns}
 
-    def process_aws_console_output(self, instance_id=None):
+    def retrieve_aws_console_output(self, instance_id=None):
         if self.client is None:
             self.client = boto3.client('ec2')
         result_dict = self.update_instance_description(instance_id=instance_id)
@@ -315,14 +333,14 @@ class PublicKeys(object):
             time.sleep(_DELAY)
             tries_left -= 1
             if self.debug:
-                self.log.debug('attempt {} '.format(_TRIES - tries_left) +
-                               'to get console-log failed')
+                self.log.debug('get-console-output: ' +
+                               'attempt {} failed'.format(_TRIES - tries_left))
         if tries_left == 0 or response is None:
             raise RuntimeError('Could not get-console-output ' +
                                'in {} seconds'.format(_TRIES * _DELAY) +
                                '\nCheck instance-id or try again.')
         self.console_output = response['Output'].splitlines()
-        self.extract_keys()
+        return self.console_output
 
     def process_saved_console_output(self, source=None):
         """Get console output from stdin or file"""
@@ -534,11 +552,12 @@ class SSHKnownHostsAdd(Command):
             help='Ask for sudo password for Ansible privilege escalation ' +
                  '(default: do not ask)'
         )
+        _latest_console_output = _get_latest_console_output()
         parser.add_argument('source',
                             nargs="?",
                             type=argparse.FileType('r'),
                             help="console output to process",
-                            default=None)  # sys.stdin)
+                            default=_latest_console_output)  # sys.stdin)
         parser.epilog = textwrap.dedent("""
             Use ``--show-playbook`` to just see the Ansible playbook without
             running it. Use ``-vvv`` to see the Ansible playbook while it is
@@ -604,7 +623,8 @@ class SSHKnownHostsAdd(Command):
         if parsed_args.source is not None:
             public_keys.process_saved_console_output(parsed_args.source)
         elif instance_id is not None:
-            public_keys.process_aws_console_output()
+            source = public_keys.retrieve_aws_console_output()
+            public_keys.process_saved_console_output(source)
         hostkeys_as_json_string = public_keys.get_hostkey_list_as_json()
         if self.app.options.debug:
             _ansible_debug(hostkeys_as_json_string)

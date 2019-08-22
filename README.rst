@@ -15,7 +15,7 @@ psec (python_secrets)
 
 Python CLI for managing secrets (passwords, API keys, etc)
 
-Version: 19.5.1
+Version: 19.8.0
 
 * Free software: Apache 2.0 License
 * Documentation: https://python_secrets.readthedocs.org.
@@ -518,19 +518,7 @@ to manage its own values.
 
     $ psec groups create newgroup --clone-from ~/git/goSecure/secrets/secrets.d/gosecure.yml
     created new group "newgroup"
-    $ psec groups list
-    new password variable "gosecure_pi_password" is not defined
-    new password variable "gosecure_app_password" is not defined
-    new string variable "gosecure_client_psk" is not defined
-    new string variable "gosecure_client_ssid" is not defined
-    new string variable "gosecure_vpn_client_id" is not defined
-    new token_hex variable "gosecure_vpn_client_psk" is not defined
-    new string variable "gosecure_pi_pubkey" is not defined
-    new string variable "gosecure_pi_locale" is not defined
-    new string variable "gosecure_pi_timezone" is not defined
-    new string variable "gosecure_pi_wifi_country" is not defined
-    new string variable "gosecure_pi_keyboard_model" is not defined
-    new string variable "gosecure_pi_keyboard_layout" is not defined
+    $ psec groups list 2>/dev/null
     +----------+-------+
     | Group    | Items |
     +----------+-------+
@@ -866,13 +854,14 @@ following steps:
 
    .. note::
 
-      If you ever want to suppress messages about new variables, etc.,
-      just add the ``-q`` flag:
+      The warnings about undefined new variables are presented on the standard
+      error file handle (a.k.a., ``&2``). You get rid of them on the console by
+      redirecting ``stderr`` to ``/dev/null`` or a file:
 
       .. code-block:: console
 
-          $ psec -q environments create test --clone-from ~/git/goSecure/secrets
-          $
+          $ psec environments create test --clone-from ~/git/goSecure/secrets 2>/dev/null
+          environment directory /Users/dittrich/.secrets/test created
 
       ..
 
@@ -1187,7 +1176,7 @@ Decrypted, it looks like this:
     myapp_app_password=brunt outclass alike turbine
 
     --
-    Sent using psec version 19.5.1
+    Sent using psec version 19.8.0
     https://pypi.org/project/python-secrets/
     https://github.com/davedittrich/python_secrets
 

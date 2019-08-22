@@ -3,11 +3,13 @@ import base64
 import binascii
 import errno
 import hashlib
+import json
 import logging
 import os
 import random
 import re
 import secrets
+import stat
 import textwrap
 import uuid
 import yaml
@@ -15,7 +17,7 @@ import yaml
 from cliff.command import Command
 from cliff.lister import Lister
 from numpy.random import bytes as np_random_bytes
-from psec.utils import redact, find, prompt_string
+from psec.utils import redact, find, prompt_string, get_output
 from psec.google_oauth2 import GoogleSMTP
 from shutil import copy, copytree
 # >> Issue: [B404:blacklist] Consider possible security implications associated with run module.  # noqa
@@ -49,6 +51,10 @@ DEFAULT_MODE = 0o710
 
 logger = logging.getLogger(__name__)
 
+def remove_other_perms(dst):
+    """Make all files in path ``dst`` have ``o-rwx`` permissions."""
+    # TODO(dittrich): Test on Windows. Should work on all Linux.
+    get_output(['chmod', '-R', 'o-rwx', dst])
 
 def copyanything(src, dst):
     try:
@@ -60,6 +66,8 @@ def copyanything(src, dst):
             copy(src, dst)
         else:
             raise
+    finally:
+        remove_other_perms(dst)
 
 
 def _identify_environment(environment=None):
@@ -96,8 +104,8 @@ def is_valid_environment(env_path, verbose_level=0):
             contains_expected = True
     is_valid = os.path.exists(env_path) and contains_expected
     if not is_valid and verbose_level > 0:
-        logger.info('[!] directory {} exists '.format(env_path) +
-                    'but does not look like a valid environment')
+        logger.warning('[!] environment directory {} '.format(env_path) +
+                       'exists but is empty')
     return is_valid
 
 
@@ -158,6 +166,34 @@ class SecretsEnvironment(object):
         self._descriptions = dict()
         self._changed = False
         self._groups = []
+
+    def __str__(self):
+        """Produce string representation of environment identifier"""
+        return str(self.environment())
+
+    @classmethod
+    def permissions_check(cls, basedir='.'):
+        """Check for presense of perniscious overly-permissive permissions."""
+        any_other = stat.S_IROTH | stat.S_IWOTH | stat.S_IXOTH
+        for root, dirs, files in os.walk(basedir, topdown=True):
+            for name in files:
+                path = os.path.join(root, name)
+                try:
+                    st = os.stat(path)
+                    if (st.st_mode & any_other):
+                        print('[!] file {} '.format(path) +
+                              'is mode {}'.format(oct(st.st_mode)))
+                except OSError:
+                    pass
+                for name in dirs:
+                    path = os.path.join(root, name)
+                    try:
+                        st = os.stat(path)
+                        if (st.st_mode & any_other):
+                            print('[!] directory {} '.format(path) +
+                                  'is mode {}'.format(oct(st.st_mode)))
+                    except OSError:
+                        pass
 
     def environment(self):
         """Returns the environment identifier."""
@@ -246,31 +282,50 @@ class SecretsEnvironment(object):
 
         return _path
 
-    def environment_exists(self):
+    def environment_exists(self, path_only=False):
         """Return whether secrets environment directory exists
         and contains files"""
         _ep = self.environment_path()
-        _files = list()
-        for root, directories, filenames in os.walk(_ep):
-            for filename in filenames:
-                _files.append(os.path.join(root, filename))
-        return os.path.exists(_ep) and len(_files) > 0
+        result = self.descriptions_path_exists()
+        if not result and os.path.exists(_ep):
+            if path_only:
+                result = True
+            else:
+                _files = list()
+                for root, directories, filenames in os.walk(_ep):
+                    for filename in filenames:
+                        _files.append(os.path.join(root, filename))
+                result = len(_files) > 0
+        return result
 
     def environment_create(self,
                            source=None,
+                           alias=False,
                            mode=DEFAULT_MODE):
         """Create secrets environment directory"""
-        _path = self.environment_path()
-        if not os.path.exists(_path):
-            if source is not None:
-                self.clone_from(source)
-            else:
-                os.mkdir(_path, mode=mode)
-                self.descriptions_path_create()
-        else:
+        env_path = self.environment_path()
+        if not alias:
+            # Create a new environment (optionally from an existing environment)
             if self.environment_exists():
-                raise RuntimeError('Environment "{}" exists'.format(
-                    self.environment()))
+                raise RuntimeError(
+                    'Environment "{}" '.format(self.environment()) +
+                    'already exists')
+            else:
+                if source is not None:
+                    self.clone_from(source)
+                else:
+                    os.mkdir(env_path, mode=mode)
+                    self.descriptions_path_create()
+        else:
+            # Just create an alias (symbolic link) to
+            # an existing environment
+            if self.environment_exists():
+                raise RuntimeError(
+                    'Environment "{}" already exists'.format(
+                        self.environment()))
+            source_env = SecretsEnvironment(environment=source)
+            # Create a symlink with a relative path
+            os.symlink(source_env.environment(), env_path)
 
     def secrets_file_path(self):
         """Returns the absolute path to secrets file"""
@@ -296,7 +351,7 @@ class SecretsEnvironment(object):
 
     def descriptions_path_create(self, mode=DEFAULT_MODE):
         """Create secrets descriptions directory"""
-        if not self.environment_exists():
+        if not self.environment_exists(path_only=True):
             self.environment_create(mode=mode)
         if not self.descriptions_path_exists():
             os.mkdir(self.descriptions_path(), mode=mode)
@@ -305,12 +360,12 @@ class SecretsEnvironment(object):
         """Return the absolute path to secrets descriptions tmp directory"""
         return os.path.join(self.environment_path(), "tmp")
 
-    def requires_environment(self):
+    def requires_environment(self, path_only=False):
         """
         Provide consistent error handling for any commands that require
         an environment actually exist in order to work properly.
         """
-        if not self.environment_exists():
+        if not self.environment_exists(path_only=path_only):
             raise RuntimeError(
                 'environment "{}" '.format(self.environment()) +
                 'does not exist or is empty')
@@ -322,6 +377,10 @@ class SecretsEnvironment(object):
     def items(self):
         """Return the items from the secrets dictionary."""
         return self._secrets.items()
+
+    def to_json(self):
+        """Return the items as JSON string."""
+        return json.dumps(self._secrets)
 
     def get_secret(self, secret, allow_none=False):
         """Get the value of secret
@@ -399,9 +458,9 @@ class SecretsEnvironment(object):
                 s = i['Variable']
                 t = i['Type']
                 if self.get_secret(s, allow_none=True) is None:
-                    self.LOG.info('new {} '.format(t) +
-                                  'variable "{}" '.format(s) +
-                                  'is not defined')
+                    self.LOG.warning('new {} '.format(t) +
+                                     'variable "{}" '.format(s) +
+                                     'is not defined')
                     self._set_secret(s, None)
 
     def read_secrets(self, from_descriptions=False):

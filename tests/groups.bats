@@ -16,6 +16,7 @@ teardown() {
 }
 
 @test "'psec groups show oauth' contains $COUNT items" {
+    bash -c "$PSEC -q groups show oauth -f csv"  >&2
     run bash -c "$PSEC -q groups show oauth -f csv | grep oauth | wc -l"
     assert_output "$COUNT"
 }

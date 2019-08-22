@@ -3,6 +3,12 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+.. meta::
+   :description: Python CLI for managing secrets in open source code projects
+   :robots: index, follow
+   :keywords: python, secrets, python_secrets, psec
+
+
 psec
 ====
 
