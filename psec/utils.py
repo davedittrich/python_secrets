@@ -157,6 +157,8 @@ class MyIP(Command):
             method = random.choice(self.get_myip_methods())
         func = self.myip_methods.get(method, lambda: None)
         if func is not None:
+            LOG.debug('[+] determining IP address using ' +
+                      'method "{}" '.format(method))
             return func()
         else:
             raise RuntimeError('Method "{}" '.format(method) +
