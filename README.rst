@@ -88,7 +88,7 @@ Limitations
 
 * Secrets are stored in *unencrypted* form in the environments
   directories.  Permissions are set to limit access, but this is not an
-  "encrypt data data at rest" solution like `Vault by Hashicorp`_.
+  "encrypt data at rest" solution like `Vault by Hashicorp`_.
 
 * Does not handle secure distributed access for users on remote systems. You
   must use something like `Vault by Hashicorp`_ or `libfuse/sshfs`_ for secure
