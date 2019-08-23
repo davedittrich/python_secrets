@@ -1,6 +1,18 @@
 CHANGES
 =======
 
+* Bump version to 19.8.2
+* Workaround bug in pbr version discovery
+* Change bumpversion defaults
+* Fix typo in README
+
+19.8.1
+------
+
+
+19.8.0
+------
+
 * Bump version: 19.5.1 → 19.8.0
 * Update ChangeLog
 * Be more explicit about default environment
