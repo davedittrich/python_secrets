@@ -60,6 +60,7 @@ import urllib
 
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from psec import __version__
 from six.moves import input
 
 """
@@ -271,9 +272,9 @@ class GoogleSMTP(object):
         # Note: version number is tracked with bumpversion (see "setup.cfg")
         message = message + textwrap.dedent("""\n
         --
-        Sent using psec version 19.8.0
+        Sent using psec version {version}
         https://pypi.org/project/python-secrets/
-        https://github.com/davedittrich/python_secrets""")
+        https://github.com/davedittrich/python_secrets""".format(version=__version__))
         # Encrypt message to recipient
         keyid = self.find_keyid(toaddr)
         if not keyid:
