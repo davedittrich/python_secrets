@@ -1,6 +1,12 @@
 CHANGES
 =======
 
+* Ensure more secure permissions
+
+19.8.2
+------
+
+* Update ChangeLog for release
 * Bump version to 19.8.2
 * Workaround bug in pbr version discovery
 * Change bumpversion defaults

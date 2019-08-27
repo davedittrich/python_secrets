@@ -16,6 +16,8 @@ from cliff.lister import Lister
 from configobj import ConfigObj
 from os import listdir, sep
 from os.path import abspath, basename, isdir
+from shutil import copy
+from shutil import copytree
 from six.moves import input
 
 
@@ -96,6 +98,26 @@ def default_environment():
             f.write(default_env)
         LOG.info('default environment set to "{}"'.format(
             default_env))
+
+
+def copyanything(src, dst):
+    try:
+        copytree(src, dst)
+    except FileExistsError as e:  # noqa
+        pass
+    except OSError as exc:  # python >2.5
+        if exc.errno == errno.ENOTDIR:
+            copy(src, dst)
+        else:
+            raise
+    finally:
+        remove_other_perms(dst)
+
+
+def remove_other_perms(dst):
+    """Make all files in path ``dst`` have ``o-rwx`` permissions."""
+    # TODO(dittrich): Test on Windows. Should work on all Linux.
+    get_output(['chmod', '-R', 'o-rwx', dst])
 
 
 class MyIP(Command):
