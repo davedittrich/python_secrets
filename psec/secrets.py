@@ -17,9 +17,13 @@ import yaml
 from cliff.command import Command
 from cliff.lister import Lister
 from numpy.random import bytes as np_random_bytes
-from psec.utils import redact, find, prompt_string, get_output
+from psec.utils import copyanything
+from psec.utils import find
+from psec.utils import get_output
+from psec.utils import prompt_string
+from psec.utils import redact
+from psec.utils import remove_other_perms
 from psec.google_oauth2 import GoogleSMTP
-from shutil import copy, copytree
 # >> Issue: [B404:blacklist] Consider possible security implications associated with run module.  # noqa
 #    Severity: Low   Confidence: High
 #    Location: psec/secrets.py:21
@@ -50,25 +54,6 @@ SECRET_ATTRIBUTES = [
 DEFAULT_MODE = 0o710
 
 logger = logging.getLogger(__name__)
-
-def remove_other_perms(dst):
-    """Make all files in path ``dst`` have ``o-rwx`` permissions."""
-    # TODO(dittrich): Test on Windows. Should work on all Linux.
-    get_output(['chmod', '-R', 'o-rwx', dst])
-
-def copyanything(src, dst):
-    try:
-        copytree(src, dst)
-    except FileExistsError as e:  # noqa
-        pass
-    except OSError as exc:  # python >2.5
-        if exc.errno == errno.ENOTDIR:
-            copy(src, dst)
-        else:
-            raise
-    finally:
-        remove_other_perms(dst)
-
 
 def _identify_environment(environment=None):
     """
@@ -503,6 +488,7 @@ class SecretsEnvironment(object):
                           default_flow_style=False
                           )
             self._changed = False
+            remove_other_perms(_fname)
         else:
             self.LOG.debug('not writing secrets (unchanged)')
 

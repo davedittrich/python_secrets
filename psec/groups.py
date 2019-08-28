@@ -9,6 +9,7 @@ import textwrap
 from cliff.lister import Lister
 from cliff.command import Command
 from psec.secrets import SecretsEnvironment
+from psec.utils import remove_other_perms
 
 
 class GroupsCreate(Command):
@@ -81,9 +82,11 @@ class GroupsCreate(Command):
                                'already exists')
         if parsed_args.clone_from is not None:
             shutil.copy2(parsed_args.clone_from, new_file)
+            remove_other_perms(new_file)
         else:
             with open(new_file, 'w') as f:
                 f.writelines(['---\n', '\n', '\n'])
+            remove_other_perms(new_file)
         self.LOG.info('created new group "{}"'.format(
             os.path.splitext(os.path.basename(new_file))[0]))
 
