@@ -1,6 +1,9 @@
 CHANGES
 =======
 
+19.8.3
+------
+
 * Bump version
 * Dynamically get version number
 * Fix bats unit tests
