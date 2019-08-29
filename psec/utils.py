@@ -7,6 +7,7 @@ import logging
 import os
 import random
 import requests
+import psec.secrets
 import subprocess  # nosec
 import textwrap
 
@@ -16,8 +17,6 @@ from cliff.lister import Lister
 from configobj import ConfigObj
 from os import listdir, sep
 from os.path import abspath, basename, isdir
-from shutil import copy
-from shutil import copytree
 from six.moves import input
 
 
@@ -78,7 +77,7 @@ def prompt_string(prompt="Enter a value",
     return default if _new in [None, ''] else _new
 
 
-def default_environment():
+def default_environment(parsed_args=None):
     """Return the default environment for this cwd"""
     env_file = os.path.join(os.getcwd(),
                             '.python_secrets_environment')
@@ -93,31 +92,11 @@ def default_environment():
         # Set default to specified environment
         default_env = parsed_args.environment
         if default_env is None:
-            default_env = SecretsEnvironment().environment()
+            default_env = psec.secrets.SecretsEnvironment().environment()
         with open(env_file, 'w') as f:
             f.write(default_env)
         LOG.info('default environment set to "{}"'.format(
             default_env))
-
-
-def copyanything(src, dst):
-    try:
-        copytree(src, dst)
-    except FileExistsError as e:  # noqa
-        pass
-    except OSError as exc:  # python >2.5
-        if exc.errno == errno.ENOTDIR:
-            copy(src, dst)
-        else:
-            raise
-    finally:
-        remove_other_perms(dst)
-
-
-def remove_other_perms(dst):
-    """Make all files in path ``dst`` have ``o-rwx`` permissions."""
-    # TODO(dittrich): Test on Windows. Should work on all Linux.
-    get_output(['chmod', '-R', 'o-rwx', dst])
 
 
 class MyIP(Command):
@@ -176,7 +155,7 @@ class MyIP(Command):
 
     def get_myip(self, method='myip_opendns_resolver'):
         if method is None:
-            method = random.choice(self.get_myip_methods())
+            method = random.choice(self.get_myip_methods())  # nosec
         func = self.myip_methods.get(method, lambda: None)
         if func is not None:
             LOG.debug('[+] determining IP address using ' +
@@ -186,6 +165,7 @@ class MyIP(Command):
             raise RuntimeError('Method "{}" '.format(method) +
                                'for obtaining IP address is ' +
                                'not implemented')
+
     @classmethod
     def myip_opendns_com(cls):
         URL = 'http://diagnostic.opendns.com/myip'
@@ -225,7 +205,6 @@ class MyIP(Command):
         return interface
 
 
-
 # The TfOutput Lister assumes `terraform output` structured as
 # shown here:
 #
@@ -262,7 +241,7 @@ class MyIP(Command):
 #         }
 #     }
 # }
-
+#
 # Pulumi output:
 # $ pulumi stack output --json
 # {
