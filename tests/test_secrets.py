@@ -10,9 +10,9 @@ Tests for `psec.secrets` module.
 
 import unittest
 import os
+import psec.secrets
 import sys
 
-from psec.secrets import SecretsEnvironment
 from unittest.mock import patch
 
 HOST = 'example.com'
@@ -59,7 +59,7 @@ class Test_SecretsEnvironment_general(unittest.TestCase):
                     del os.environ[v]
                 except KeyError as e:
                     pass
-            self.secrets_env = SecretsEnvironment()
+            self.secrets_env = psec.secrets.SecretsEnvironment()
 
     def tearDown(self):
         pass
@@ -110,7 +110,7 @@ class Test_SecretsEnvironment_no_env_vars(unittest.TestCase):
                     del os.environ[v]
                 except KeyError as e:
                     pass
-            self.secrets_env = SecretsEnvironment()
+            self.secrets_env = psec.secrets.SecretsEnvironment()
 
     def tearDown(self):
         pass
@@ -151,7 +151,7 @@ class Test_SecretsEnvironment_with_env_vars(unittest.TestCase):
             self.keys_dir = keys_dir(secrets_dir=self.secrets_dir)
             self.keys_with_host_dir = keys_with_host_dir(keys_dir=self.keys_dir,
                                                          host=self.host)
-            self.secrets_env = SecretsEnvironment()
+            self.secrets_env = psec.secrets.SecretsEnvironment()
 
     def tearDown(self):
         pass
@@ -195,7 +195,7 @@ class Test_SecretsEnvironment_args(unittest.TestCase):
             self.keys_dir = keys_dir(secrets_dir=self.secrets_dir)
             self.keys_with_host_dir = keys_with_host_dir(keys_dir=self.keys_dir,
                                                          host=self.host)
-            self.secrets_env = SecretsEnvironment(
+            self.secrets_env = psec.secrets.SecretsEnvironment(
                 environment=self.envname,
                 secrets_basedir=self.basedir
             )
