@@ -1,6 +1,17 @@
 CHANGES
 =======
 
+* Bump version
+* Dynamically get version number
+* Fix bats unit tests
+* Fix tests per earlier refactor
+* Resolve pep8 and bandit findings
+* Fix tox test configuration
+* Resolve circular import dependencies
+* Update Makefile
+* Forgot to update path in tox.ini (oops!)
+* Add .vscode dir to .gitignore
+* Add .gitignore for bats libraries
 * Ensure more secure permissions
 
 19.8.2

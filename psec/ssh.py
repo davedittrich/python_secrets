@@ -109,7 +109,7 @@ def _ansible_verbose(verbose_level=1):
     return flag
 
 
-def _ansible_set_hostkeys(hostkeys,
+def _ansible_set_hostkeys(hostkeys,  # nosec
                           debug=False,
                           ask_become_pass='--ask-become-pass',
                           verbose_level=1):
@@ -133,7 +133,7 @@ def _ansible_set_hostkeys(hostkeys,
             raise RuntimeError('Ansible did not exit gracefully.')
 
 
-def _ansible_remove_hostkeys(hosts,
+def _ansible_remove_hostkeys(hosts,  # nosec
                              debug=False,
                              ask_become_pass='--ask-become-pass',
                              verbose_level=1):
@@ -321,7 +321,7 @@ class PublicKeys(object):
     def retrieve_aws_console_output(self, instance_id=None):
         if self.client is None:
             self.client = boto3.client('ec2')
-        result_dict = self.update_instance_description(instance_id=instance_id)
+        _ = self.update_instance_description(instance_id=instance_id)
         tries_left = _TRIES
         response = None
         while tries_left > 0:
@@ -729,7 +729,7 @@ class SSHKnownHostsRemove(Command):
             print(REKEY_PLAYBOOK.decode('utf-8'))
             return True
 
-        # TODO(dittrich): NOT DRY warning. Replicates code from 'ssh known-hosts add'
+        # TODO(dittrich): NOT DRY! Replicates code from 'ssh known-hosts add'
 
         self.app.secrets.requires_environment()
         self.app.secrets.read_secrets_and_descriptions()

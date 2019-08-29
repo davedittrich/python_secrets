@@ -274,7 +274,7 @@ class GoogleSMTP(object):
         --
         Sent using psec version {version}
         https://pypi.org/project/python-secrets/
-        https://github.com/davedittrich/python_secrets""".format(version=__version__))
+        https://github.com/davedittrich/python_secrets""".format(version=__version__))  # noqa
         # Encrypt message to recipient
         keyid = self.find_keyid(toaddr)
         if not keyid:

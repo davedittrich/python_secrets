@@ -1,11 +1,11 @@
 import argparse
 import base64
 import binascii
-import errno
 import hashlib
 import json
 import logging
 import os
+import psec.utils
 import random
 import re
 import secrets
@@ -17,17 +17,13 @@ import yaml
 from cliff.command import Command
 from cliff.lister import Lister
 from numpy.random import bytes as np_random_bytes
-from psec.utils import copyanything
-from psec.utils import find
-from psec.utils import get_output
-from psec.utils import prompt_string
-from psec.utils import redact
-from psec.utils import remove_other_perms
 from psec.google_oauth2 import GoogleSMTP
 # >> Issue: [B404:blacklist] Consider possible security implications associated with run module.  # noqa
 #    Severity: Low   Confidence: High
 #    Location: psec/secrets.py:21
 #    More Info: https://bandit.readthedocs.io/en/latest/blacklists/blacklist_imports.html#b404-import-subprocess  # noqa
+from shutil import copy
+from shutil import copytree
 from subprocess import run, PIPE  # nosec
 from xkcdpass import xkcd_password as xp
 
@@ -54,6 +50,27 @@ SECRET_ATTRIBUTES = [
 DEFAULT_MODE = 0o710
 
 logger = logging.getLogger(__name__)
+
+
+def copyanything(src, dst):
+    try:
+        copytree(src, dst)
+    except FileExistsError as e:  # noqa
+        pass
+    except OSError as err:
+        if err.errno == os.errno.ENOTDIR:
+            copy(src, dst)
+        else:
+            raise
+    finally:
+        remove_other_perms(dst)
+
+
+def remove_other_perms(dst):
+    """Make all files in path ``dst`` have ``o-rwx`` permissions."""
+    # TODO(dittrich): Test on Windows. Should work on all Linux.
+    psec.utils.get_output(['chmod', '-R', 'o-rwx', dst])
+
 
 def _identify_environment(environment=None):
     """
@@ -290,7 +307,8 @@ class SecretsEnvironment(object):
         """Create secrets environment directory"""
         env_path = self.environment_path()
         if not alias:
-            # Create a new environment (optionally from an existing environment)
+            # Create a new environment (optionally from an
+            # existing environment)
             if self.environment_exists():
                 raise RuntimeError(
                     'Environment "{}" '.format(self.environment()) +
@@ -580,7 +598,7 @@ class SecretsEnvironment(object):
     def get_secret_type(self, variable):
         """Get the Type of variable from set of secrets descriptions"""
         for g in self._descriptions.keys():
-            i = find(
+            i = psec.utils.find(
                 self._descriptions[g],
                 'Variable',
                 variable)
@@ -599,7 +617,7 @@ class SecretsEnvironment(object):
     def get_secret_arguments(self, variable):
         """Get the Arguments of variable from set of secrets descriptions"""
         for g in self._descriptions.keys():
-            i = find(
+            i = psec.utils.find(
                 self._descriptions[g],
                 'Variable',
                 variable)
@@ -616,7 +634,7 @@ class SecretsEnvironment(object):
 
     def is_item_in_group(self, item, group):
         """Return true or false based on item being in group"""
-        return find(
+        return psec.utils.find(
                 self._descriptions[group],
                 'Variable',
                 item) is not None
@@ -651,23 +669,23 @@ def generate_secret(secret_type=None, unique=False, **kwargs):
     if secret_type not in _secret_types:
         raise TypeError("Secret type " +
                         "'{}' is not supported".format(secret_type))
-    if secret_type == "string":
+    if secret_type == "string":  # nosec
         return None
-    if secret_type == 'password':
+    if secret_type == 'password':  # nosec
         return generate_password(unique)
-    if secret_type == 'crypt_6':
+    if secret_type == 'crypt_6':  # nosec
         return generate_crypt6(unique, **kwargs)
-    elif secret_type == 'token_hex':
+    elif secret_type == 'token_hex':  # nosec
         return generate_token_hex(unique, **kwargs)
-    elif secret_type == 'token_urlsafe':
+    elif secret_type == 'token_urlsafe':  # nosec
         return generate_token_urlsafe(unique, **kwargs)
-    elif secret_type == 'consul_key':
+    elif secret_type == 'consul_key':  # nosec
         return generate_consul_key(unique)
-    elif secret_type == 'zookeeper_digest':
+    elif secret_type == 'zookeeper_digest':  # nosec
         return generate_zookeeper_digest(unique, **kwargs)
-    elif secret_type == 'uuid4':
+    elif secret_type == 'uuid4':  # nosec
         return generate_uuid4(unique, **kwargs)
-    elif secret_type == 'random_base64':
+    elif secret_type == 'random_base64':  # nosec
         return generate_random_base64(unique, **kwargs)
     else:
         raise TypeError("Secret type " +
@@ -862,7 +880,7 @@ class SecretsShow(Lister):
                 [(k,
                   self.app.secrets.get_secret_type(k),
                   self.app.secrets.get_secret_export(k),
-                  redact(v, parsed_args.redact))
+                  psec.utils.redact(v, parsed_args.redact))
                     for k, v in self.app.secrets.items()
                     if k in variables]
         )
@@ -1032,7 +1050,7 @@ class SecretsSet(Command):
                 raise RuntimeError('variable "{}" '.format(k) +
                                    'has no description')
             if '=' not in arg:
-                v = prompt_string(
+                v = psec.utils.prompt_string(
                     prompt=self.app.secrets.get_prompt(k),
                     default=v)
                 if v is None:

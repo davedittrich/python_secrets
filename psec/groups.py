@@ -3,13 +3,13 @@
 import argparse
 import logging
 import os
+import psec.utils
+import psec.secrets
 import shutil
 import textwrap
 
 from cliff.lister import Lister
 from cliff.command import Command
-from psec.secrets import SecretsEnvironment
-from psec.utils import remove_other_perms
 
 
 class GroupsCreate(Command):
@@ -55,7 +55,7 @@ class GroupsCreate(Command):
             Note: Directory and file permissions on cloned groups will prevent
             ``other`` from having read/write/execute permissions (i.e., ``o-rwx``
             in terms of the ``chmod`` command.)
-            """)
+            """)  # noqa
         return parser
 
     def take_action(self, parsed_args):
@@ -82,11 +82,11 @@ class GroupsCreate(Command):
                                'already exists')
         if parsed_args.clone_from is not None:
             shutil.copy2(parsed_args.clone_from, new_file)
-            remove_other_perms(new_file)
+            psec.utils.remove_other_perms(new_file)
         else:
             with open(new_file, 'w') as f:
                 f.writelines(['---\n', '\n', '\n'])
-            remove_other_perms(new_file)
+            psec.utils.remove_other_perms(new_file)
         self.LOG.info('created new group "{}"'.format(
             os.path.splitext(os.path.basename(new_file))[0]))
 
@@ -184,7 +184,7 @@ class GroupsPath(Command):
     def get_parser(self, prog_name):
         parser = super(GroupsPath, self).get_parser(prog_name)
         parser.formatter_class = argparse.RawDescriptionHelpFormatter
-        default_environment = SecretsEnvironment().environment()
+        default_environment = psec.secrets.SecretsEnvironment().environment()
         parser.add_argument('environment',
                             nargs='?',
                             default=default_environment)
@@ -200,7 +200,8 @@ class GroupsPath(Command):
 
     def take_action(self, parsed_args):
         self.LOG.debug('returning groups path')
-        e = SecretsEnvironment(environment=parsed_args.environment)
+        e = psec.secrets.SecretsEnvironment(
+                environment=parsed_args.environment)
         print(e.descriptions_path())
 
 

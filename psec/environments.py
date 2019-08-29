@@ -3,13 +3,12 @@
 import argparse
 import logging
 import os
+import psec.secrets
+import psec.utils
 import textwrap
 
 from cliff.command import Command
 from cliff.lister import Lister
-from psec.secrets import is_valid_environment
-from psec.secrets import SecretsEnvironment
-from psec.utils import tree
 from stat import S_IMODE
 
 
@@ -76,7 +75,7 @@ class EnvironmentsList(Lister):
 
     def take_action(self, parsed_args):
         self.LOG.debug('listing environment(s)')
-        default_environment = SecretsEnvironment().environment()
+        default_environment = psec.secrets.SecretsEnvironment().environment()
         columns = (['Environment', 'Default'])
         basedir = self.app.secrets.secrets_basedir()
         if parsed_args.aliasing:
@@ -85,8 +84,8 @@ class EnvironmentsList(Lister):
         environments = os.listdir(basedir)
         for e in environments:
             env_path = os.path.join(basedir, e)
-            if is_valid_environment(env_path,
-                                    self.app_args.verbose_level):
+            if psec.secrets.is_valid_environment(env_path,
+                                                 self.app_args.verbose_level):
                 default = _is_default(e, default_environment)
                 if not parsed_args.aliasing:
                     item = (e, default)
@@ -123,9 +122,10 @@ class EnvironmentsCreate(Command):
             default=None,
             help="Environment directory to clone from (default: None)"
         )
+        default_environment = psec.secrets.SecretsEnvironment().environment()
         parser.add_argument('env',
                             nargs='*',
-                            default=[SecretsEnvironment().environment()])
+                            default=[default_environment])
         parser.epilog = textwrap.dedent("""
             Empty environments can be created as needed, one at a time or
             several at once. Specify the names on the command line as arguments:
@@ -182,7 +182,7 @@ class EnvironmentsCreate(Command):
             Note: Directory and file permissions on cloned environments will prevent
             ``other`` from having read/write/execute permissions (i.e., ``o-rwx`` in
             terms of the ``chmod`` command.)
-            """)
+            """)  # noqa
         return parser
 
     def take_action(self, parsed_args):
@@ -190,7 +190,7 @@ class EnvironmentsCreate(Command):
         if parsed_args.alias is not None:
             if len(parsed_args.env) != 1:
                 raise RuntimeError('--alias requires one source environment')
-            se = SecretsEnvironment(environment=parsed_args.alias)
+            se = psec.secrets.SecretsEnvironment(environment=parsed_args.alias)
             se.environment_create(source=parsed_args.env[0],
                                   alias=True)
             if se.environment_exists():
@@ -205,7 +205,7 @@ class EnvironmentsCreate(Command):
             if len(parsed_args.env) == 0:
                 parsed_args.env = list(self.app.environment)
             for e in parsed_args.env:
-                se = SecretsEnvironment(environment=e)
+                se = psec.secrets.SecretsEnvironment(environment=e)
                 se.environment_create(source=parsed_args.clone_from)
                 self.LOG.info(
                     'environment "{}" '.format(e) +
@@ -265,11 +265,13 @@ class EnvironmentsRename(Command):
             raise RuntimeError('No source name provided')
         if dest is None:
             raise RuntimeError('No destination name provided')
-        if not SecretsEnvironment(environment=source).environment_exists():
+        if not psec.secrets.SecretsEnvironment(
+                environment=source).environment_exists():
             raise RuntimeError(
                 'Source environment "{}"'.format(source) +
                 ' does not exist')
-        if SecretsEnvironment(environment=dest).environment_exists():
+        if psec.secrets.SecretsEnvironment(
+                environment=dest).environment_exists():
             raise RuntimeError(
                 'Desitnation environment "{}"'.format(dest) +
                 ' already exist')
@@ -372,27 +374,29 @@ class EnvironmentsDefault(Command):
             # Set default to specified environment
             default_env = parsed_args.environment
             if default_env is None:
-                default_env = SecretsEnvironment().environment()
+                default_env = psec.secrets.SecretsEnvironment().environment()
             with open(env_file, 'w') as f:
                 f.write(default_env)
-            self.LOG.info('default environment set explicitly to "{}"'.format(
-                default_env))
+            self.LOG.info('default environment set explicitly to ' +
+                          '"{}"'.format(default_env))
         elif parsed_args.environment is None:
             # No environment specified, show current setting
             if os.path.exists(env_file):
                 with open(env_file, 'r') as f:
                     env_string = f.read().replace('\n', '')
                 if self.app_args.verbose_level > 1:
-                    self.LOG.info('default environment set explicitly to "{}"'.format(
-                        env_string))
+                    self.LOG.info('default environment set explicitly to ' +
+                                  '"{}"'.format(env_string))
                 else:
                     print(env_string)
             else:
                 if self.app_args.verbose_level > 1:
-                    self.LOG.info('default environment is implicitly "{}"'.format(
-                        SecretsEnvironment().environment()))
+                    env_string = \
+                            psec.secrets.SecretsEnvironment().environment()
+                    self.LOG.info('default environment is implicitly ' +
+                                  '"{}"'.format(env_string))
                 else:
-                    print(SecretsEnvironment().environment())
+                    print(psec.secrets.SecretsEnvironment().environment())
 
 
 class EnvironmentsPath(Command):
@@ -452,7 +456,8 @@ class EnvironmentsPath(Command):
 
     def take_action(self, parsed_args):
         self.LOG.debug('returning environment path')
-        e = SecretsEnvironment(environment=self.app.options.environment)
+        e = psec.secrets.SecretsEnvironment(
+                environment=self.app.options.environment)
         if parsed_args.tmpdir:
             tmpdir = e.tmpdir_path()
             tmpdir_mode = 0o700
@@ -480,7 +485,7 @@ class EnvironmentsTree(Command):
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
         parser.formatter_class = argparse.RawDescriptionHelpFormatter
-        default_environment = SecretsEnvironment().environment()
+        default_environment = psec.secrets.SecretsEnvironment().environment()
         parser.add_argument(
             '--no-files',
             action='store_true',
@@ -559,10 +564,11 @@ class EnvironmentsTree(Command):
 
     def take_action(self, parsed_args):
         self.LOG.debug('outputting environment tree')
-        e = SecretsEnvironment(environment=parsed_args.environment)
+        e = psec.secrets.SecretsEnvironment(
+                environment=parsed_args.environment)
         e.requires_environment()
         print_files = bool(parsed_args.no_files is False)
-        tree(e.environment_path(), print_files=print_files)
+        psec.utils.tree(e.environment_path(), print_files=print_files)
 
 
 # vim: set fileencoding=utf-8 ts=4 sw=4 tw=0 et :
