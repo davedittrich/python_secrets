@@ -1,6 +1,7 @@
 CHANGES
 =======
 
+* Bump version
 * Dynamically get version number
 * Fix bats unit tests
 * Fix tests per earlier refactor
