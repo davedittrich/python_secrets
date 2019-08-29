@@ -7,7 +7,7 @@ PROJECT:=$(shell basename `pwd`)
 
 #HELP test - run 'tox' for testing
 .PHONY: test
-test: test-tox test-bats docs-tests
+test: test-tox test-bats test-bats-runtime
 	@echo '[+] All tests succeeded'
 
 .PHONY: test-tox
@@ -21,14 +21,17 @@ test-bats: bats-libraries
 		if ! type bats 2>/dev/null >/dev/null; then \
 			echo "[-] Skipping bats tests"; \
 		else \
-			echo "[+] Running bats tests: $(shell cd tests && echo [0-9][0-9]*.bats)"; \
+			echo "[+] Running bats unit tests:"; \
+			(cd tests && ls -1 [0-9][0-9]*.bats); \
 			bats --tap tests/[0-9][0-9]*.bats; \
 		fi \
 	 fi
 
 .PHONY: test-bats-runtime
 test-bats-runtime: bats-libraries
-	bats --tap tests/runtime.bats
+	@echo "[+] Running bats runtime tests:"
+	@cd tests && ls -1 runtime_[0-9][0-9]*.bats
+	bats --tap tests/runtime_*.bats || true
 
 .PHONY: no-diffs
 no-diffs:
@@ -102,6 +105,17 @@ install:
 install-active:
 	python -m pip install -U .
 	psec help | tee docs/psec_help.txt
+
+#HELP docs-tests - generate bats test output for documentation
+.PHONY: docs-tests
+PR=pr --omit-header --omit-pagination --page-width 80
+docs-tests:
+	(echo '$$ make test-tox' && $(MAKE) test-tox) |\
+	       $(PR) | tee docs/test-tox.txt
+	$(MAKE) test-bats | $(PR) | tee docs/test-bats.txt
+	(echo '$$ make test-bats-runtime' && $(MAKE) test-bats-runtime) |\
+	       $(PR) | tee docs/test-bats-runtime.txt
+
 
 #HELP docs - build Sphinx docs (NOT INTEGRATED YET FROM OPENSTACK CODE BASE)
 .PHONY: docs

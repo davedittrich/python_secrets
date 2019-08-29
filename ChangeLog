@@ -1,6 +1,8 @@
 CHANGES
 =======
 
+* Fix bats unit tests
+* Fix tests per earlier refactor
 * Resolve pep8 and bandit findings
 * Fix tox test configuration
 * Resolve circular import dependencies
