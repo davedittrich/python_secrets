@@ -1,6 +1,7 @@
 CHANGES
 =======
 
+* Dynamically get version number
 * Fix bats unit tests
 * Fix tests per earlier refactor
 * Resolve pep8 and bandit findings
