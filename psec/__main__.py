@@ -5,7 +5,8 @@
 
 # Make this module work with "python -m"
 
-from psec.main import *
+import sys
+from psec.main import main
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv[1:]))
