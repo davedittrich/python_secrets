@@ -97,7 +97,7 @@ def _identify_environment(environment=None):
     return environment
 
 
-def is_valid_environment(env_path, verbose_level=0):
+def is_valid_environment(env_path, verbose_level=1):
     """Check to see if this looks like a valid environment
     directory based on contents."""
     contains_expected = False
@@ -105,7 +105,7 @@ def is_valid_environment(env_path, verbose_level=0):
         if 'secrets.yml' in filenames or 'secrets.d' in directories:
             contains_expected = True
     is_valid = os.path.exists(env_path) and contains_expected
-    if not is_valid and verbose_level > 0:
+    if not is_valid and verbose_level > 1:
         logger.warning('[!] environment directory {} '.format(env_path) +
                        'exists but is empty')
     return is_valid
@@ -126,7 +126,7 @@ class SecretsEnvironment(object):
                  export_env_vars=False,
                  env_var_prefix=None,
                  source=None,
-                 verbose_level=0,
+                 verbose_level=1,
                  cwd=os.getcwd()):
         self._cwd = cwd
         self._environment = _identify_environment(environment)
@@ -461,9 +461,10 @@ class SecretsEnvironment(object):
                 s = i['Variable']
                 t = i['Type']
                 if self.get_secret(s, allow_none=True) is None:
-                    self.LOG.warning('new {} '.format(t) +
-                                     'variable "{}" '.format(s) +
-                                     'is not defined')
+                    if self.verbose_level > 1:
+                        self.LOG.warning('new {} '.format(t) +
+                                         'variable "{}" '.format(s) +
+                                         'is not defined')
                     self._set_secret(s, None)
 
     def read_secrets(self, from_descriptions=False):

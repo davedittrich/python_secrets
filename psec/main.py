@@ -132,6 +132,7 @@ class PythonSecretsApp(App):
             secrets_basedir=self.secrets_basedir,
             secrets_file=self.secrets_file,
             export_env_vars=self.options.export_env_vars,
+            verbose_level=self.options.verbose_level,
             env_var_prefix=self.options.env_var_prefix,
             )
 
