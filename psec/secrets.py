@@ -24,6 +24,7 @@ from psec.google_oauth2 import GoogleSMTP
 #    More Info: https://bandit.readthedocs.io/en/latest/blacklists/blacklist_imports.html#b404-import-subprocess  # noqa
 from shutil import copy
 from shutil import copytree
+from shutil import Error
 from subprocess import run, PIPE  # nosec
 from xkcdpass import xkcd_password as xp
 
@@ -52,7 +53,14 @@ DEFAULT_MODE = 0o710
 logger = logging.getLogger(__name__)
 
 
+def remove_other_perms(dst):
+    """Make all files in path ``dst`` have ``o-rwx`` permissions."""
+    # TODO(dittrich): Test on Windows. Should work on all Linux.
+    psec.utils.get_output(['chmod', '-R', 'o-rwx', dst])
+
+
 def copyanything(src, dst):
+    """Copy anything from src to dst."""
     try:
         copytree(src, dst)
     except FileExistsError as e:  # noqa
@@ -66,10 +74,30 @@ def copyanything(src, dst):
         remove_other_perms(dst)
 
 
-def remove_other_perms(dst):
-    """Make all files in path ``dst`` have ``o-rwx`` permissions."""
-    # TODO(dittrich): Test on Windows. Should work on all Linux.
-    psec.utils.get_output(['chmod', '-R', 'o-rwx', dst])
+def copydescriptions(src, dst):
+    """
+    Just copy the descriptions portion of an environment
+    directory from src to dst.
+    """
+
+    srcname = os.path.join(src, 'secrets.d')
+    dstname = os.path.join(dst, 'secrets.d')
+    os.makedirs(dst)
+    errors = []
+    try:
+        if os.path.isdir(srcname):
+            copytree(srcname, dstname)
+        else:
+            raise RuntimeError('"{}" is not a directory'.format(srcname))
+    except OSError as err:
+        errors.append((srcname, dstname, str(err)))
+    # catch the Error from the recursive copytree so that we can
+    # continue with other files
+    except Error as err:
+        errors.extend(err.args[0])
+    if errors:
+        raise Error(errors)
+    remove_other_perms(dst)
 
 
 def _identify_environment(environment=None):
@@ -250,10 +278,12 @@ class SecretsEnvironment(object):
         """Create secrets root directory"""
         os.mkdir(self.secrets_basedir(), mode=mode)
 
-    def environment_path(self, subdir=None, host=None):
+    def environment_path(self, env=None, subdir=None, host=None):
         """Returns the absolute path to secrets environment directory
         or subdirectories within it"""
-        _path = os.path.join(self.secrets_basedir(), self.environment())
+        if env is None:
+            env = self.environment()
+        _path = os.path.join(self.secrets_basedir(), env)
 
         if not (subdir is None and host is None):
             valid_subdir = 'a-zA-Z0-9_/'
@@ -284,10 +314,10 @@ class SecretsEnvironment(object):
 
         return _path
 
-    def environment_exists(self, path_only=False):
+    def environment_exists(self, env=None, path_only=False):
         """Return whether secrets environment directory exists
         and contains files"""
-        _ep = self.environment_path()
+        _ep = self.environment_path(env=env)
         result = self.descriptions_path_exists()
         if not result and os.path.exists(_ep):
             if path_only:
@@ -330,8 +360,10 @@ class SecretsEnvironment(object):
             # Create a symlink with a relative path
             os.symlink(source_env.environment(), env_path)
 
-    def secrets_file_path(self):
+    def secrets_file_path(self, env=None):
         """Returns the absolute path to secrets file"""
+        if env is None:
+            env = self.environment()
         if self.environment() is None:
             return os.path.join(self.secrets_basedir(), self._secrets_file)
         else:
@@ -343,14 +375,18 @@ class SecretsEnvironment(object):
         """Return whether secrets file exists"""
         return os.path.exists(self.secrets_file_path())
 
-    def descriptions_path(self):
+    def descriptions_path(self, env=None):
         """Return the absolute path to secrets descriptions directory"""
+        if env is None:
+            env = self.environment()
         return os.path.join(self.environment_path(),
                             self._secrets_descriptions)
 
-    def descriptions_path_exists(self):
+    def descriptions_path_exists(self, env=None):
         """Return whether secrets descriptions directory exists"""
-        return os.path.exists(self.descriptions_path())
+        if env is None:
+            env = self.environment()
+        return os.path.exists(self.descriptions_path(env=env))
 
     def descriptions_path_create(self, mode=DEFAULT_MODE):
         """Create secrets descriptions directory"""
@@ -515,7 +551,16 @@ class SecretsEnvironment(object):
         """Clone an existing environment directory (or facsimile there of)"""
         dest = self.environment_path()
         if source is not None:
-            copyanything(source, dest)
+            if self.environment_exists(env=source):
+                # Only copy descriptions when cloning from environment.
+                copydescriptions(os.path.join(self.secrets_basedir(), source),
+                                 dest)
+            elif os.path.exists(source):
+                # Copy anything when cloning from directory.
+                copyanything(source, dest)
+            else:
+                raise RuntimeError(
+                    'Could not clone from "{}"'.format(source))
         self.read_secrets_descriptions()
         self.find_new_secrets()
 
