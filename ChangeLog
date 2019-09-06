@@ -1,6 +1,7 @@
 CHANGES
 =======
 
+* Add 'environments delete' subcommand
 * Allow cloning environment from an existing one
 * Reduce verbosity for warnings
 

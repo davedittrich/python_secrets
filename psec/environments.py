@@ -5,6 +5,8 @@ import logging
 import os
 import psec.secrets
 import psec.utils
+import shutil
+import sys
 import textwrap
 
 from cliff.command import Command
@@ -211,6 +213,74 @@ class EnvironmentsCreate(Command):
                     'environment "{}" '.format(e) +
                     '({}) created'.format(se.environment_path())
                 )
+
+
+class EnvironmentsDelete(Command):
+    """Delete environment"""
+
+    LOG = logging.getLogger(__name__)
+
+    def get_parser(self, prog_name):
+        parser = super(EnvironmentsDelete, self).get_parser(prog_name)
+        parser.formatter_class = argparse.RawDescriptionHelpFormatter
+        parser.add_argument(
+            '--force',
+            action='store_true',
+            dest='force',
+            default=False,
+            help="Mandatory confirmation (default: False)"
+        )
+        default_environment = psec.secrets.SecretsEnvironment().environment()
+        parser.add_argument('environment',
+                            nargs=1,
+                            default=default_environment)
+        parser.epilog = textwrap.dedent("""
+            Deleting an environment requires use of the ``--force`` flag.
+
+            .. code-block:: console
+
+                $ psec environments delete testenv
+                [-] must use "--force" flag to delete an environment.
+                [-] the following will be deleted:
+                /Users/dittrich/.secrets/testenv
+                ├── secrets.d
+                │   ├── ansible.yml
+                │   ├── ca.yml
+                │   ├── consul.yml
+                │   ├── do.yml
+                │   ├── jenkins.yml
+                │   ├── opendkim.yml
+                │   ├── rabbitmq.yml
+                │   └── trident.yml
+                └── token.json
+
+            ..
+
+            .. code-block:: console
+
+                $ psec environments delete --force testenv
+                [+] deleted directory path /Users/dittrich/.secrets/testenv
+
+            ..
+            """)
+        return parser
+
+    def take_action(self, parsed_args):
+        self.LOG.debug('deleting environment')
+        e = psec.secrets.SecretsEnvironment(
+                environment=parsed_args.environment[0])
+        env_path = e.environment_path()
+        if not parsed_args.force:
+            output = psec.utils.tree(env_path,
+                                     outfile=None,
+                                     print_files=True)
+            raise RuntimeError(
+                '[-] must use "--force" flag to delete an environment.\n' +
+                '[-] the following will be deleted: \n' +
+                ''.join([line for line in output]))
+        else:
+            shutil.rmtree(env_path)
+            self.LOG.info('[+] deleted directory path {}'.format(env_path))
 
 
 class EnvironmentsRename(Command):
@@ -568,7 +638,9 @@ class EnvironmentsTree(Command):
                 environment=parsed_args.environment)
         e.requires_environment()
         print_files = bool(parsed_args.no_files is False)
-        psec.utils.tree(e.environment_path(), print_files=print_files)
+        psec.utils.tree(e.environment_path(),
+                        print_files=print_files,
+                        outputfile=sys.stdout)
 
 
 # vim: set fileencoding=utf-8 ts=4 sw=4 tw=0 et :
