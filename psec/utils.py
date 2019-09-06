@@ -328,9 +328,16 @@ class TfOutput(Lister):
         return columns, data
 
 
-def tree(dir, padding='', print_files=True, isLast=False, isFirst=True):
+def tree(dir,
+         padding='',
+         print_files=True,
+         isLast=False,
+         isFirst=True,
+         outfile=None):
     """
-    Prints the tree structure for the path specified on the command line
+    Produces the tree structure for the path specified on the command
+    line. If output is specified (e.g., as sys.stdout) it will be used,
+    otherwise a list of strings is returned.
 
     Modified code from tree.py written by Doug Dahms
     https://stackoverflow.com/a/36253753
@@ -338,18 +345,22 @@ def tree(dir, padding='', print_files=True, isLast=False, isFirst=True):
     :param dir:
     :param padding:
     :param print_files:
+    :param outfile:
     :param isLast:
     :param isFirst:
-    :return:
+    :return: str
     """
 
+    output = []
     if isFirst:
-        print(padding[:-1] + dir)
+        output.append((padding[:-1] + dir + '\n'))
     else:
         if isLast:
-            print(padding[:-1] + str('└── ') + basename(abspath(dir)))
+            output.append(
+                (padding[:-1] + str('└── ') + basename(abspath(dir) + '\n')))
         else:
-            print(padding[:-1] + str('├── ') + basename(abspath(dir)))
+            output.append(
+                (padding[:-1] + str('├── ') + basename(abspath(dir) + '\n')))
     files = []
     if print_files:
         files = listdir(dir)
@@ -367,16 +378,36 @@ def tree(dir, padding='', print_files=True, isLast=False, isFirst=True):
         if isdir(path):
             if count == len(files):
                 if isFirst:
-                    tree(path, padding, print_files, isLast, False)
+                    output.extend(tree(path,
+                                       padding=padding,
+                                       print_files=print_files,
+                                       isLast=isLast,
+                                       isFirst=False,
+                                       outfile=outfile))
                 else:
-                    tree(path, padding + ' ', print_files, isLast, False)
+                    output.extend(tree(path,
+                                       padding=padding + ' ',
+                                       print_files=print_files,
+                                       isLast=isLast,
+                                       isFirst=False,
+                                       outfile=outfile))
             else:
-                tree(path, padding + '│', print_files, isLast, False)
+                output.extend(tree(path,
+                                   padding=padding + '│',
+                                   print_files=print_files,
+                                   isLast=isLast,
+                                   isFirst=False,
+                                   outfile=outfile))
         else:
             if isLast:
-                print(padding + '└── ' + file)
+                output.append((padding + '└── ' + file + '\n'))
             else:
-                print(padding + '├── ' + file)
+                output.append((padding + '├── ' + file + '\n'))
+    if outfile is not None:
+        for line in output:
+            print(line, file=outfile)
+    else:
+        return output
 
 
 class SetAWSCredentials(Command):

@@ -104,6 +104,7 @@ setup(
         'psec': [
             'environments create = psec.environments:EnvironmentsCreate',  # noqa
             'environments default = psec.environments:EnvironmentsDefault',  # noqa
+            'environments delete = psec.environments:EnvironmentsDelete',
             'environments list = psec.environments:EnvironmentsList',
             'environments path = psec.environments:EnvironmentsPath',
             'environments rename = psec.environments:EnvironmentsRename',  # noqa
