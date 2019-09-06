@@ -84,7 +84,7 @@ class EnvironmentsList(Lister):
             columns.append('AliasFor')
         data = list()
         environments = os.listdir(basedir)
-        for e in environments:
+        for e in sorted(environments):
             env_path = os.path.join(basedir, e)
             if psec.secrets.is_valid_environment(env_path,
                                                  self.app_args.verbose_level):
