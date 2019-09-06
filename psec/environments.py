@@ -232,7 +232,7 @@ class EnvironmentsDelete(Command):
         )
         default_environment = psec.secrets.SecretsEnvironment().environment()
         parser.add_argument('environment',
-                            nargs=1,
+                            nargs='?',
                             default=default_environment)
         parser.epilog = textwrap.dedent("""
             Deleting an environment requires use of the ``--force`` flag.
@@ -268,7 +268,7 @@ class EnvironmentsDelete(Command):
     def take_action(self, parsed_args):
         self.LOG.debug('deleting environment')
         e = psec.secrets.SecretsEnvironment(
-                environment=parsed_args.environment[0])
+                environment=parsed_args.environment)
         env_path = e.environment_path()
         if not parsed_args.force:
             output = psec.utils.tree(env_path,
