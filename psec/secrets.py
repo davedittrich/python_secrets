@@ -10,6 +10,7 @@ import random
 import re
 import secrets
 import stat
+import sys
 import textwrap
 import uuid
 import yaml
@@ -212,7 +213,8 @@ class SecretsEnvironment(object):
                     st = os.stat(path)
                     if (st.st_mode & any_other):
                         print('[!] file {} '.format(path) +
-                              'is mode {}'.format(oct(st.st_mode)))
+                              'is mode {}'.format(oct(st.st_mode)),
+                              file=sys.stderr)
                 except OSError:
                     pass
                 for name in dirs:
@@ -221,7 +223,8 @@ class SecretsEnvironment(object):
                         st = os.stat(path)
                         if (st.st_mode & any_other):
                             print('[!] directory {} '.format(path) +
-                                  'is mode {}'.format(oct(st.st_mode)))
+                                  'is mode {}'.format(oct(st.st_mode)),
+                                  file=sys.stderr)
                     except OSError:
                         pass
 
@@ -452,6 +455,11 @@ class SecretsEnvironment(object):
         self._secrets[secret] = value  # DEPRECATED
         getattr(self, 'Variable')[secret] = value
         if self.export_env_vars:
+            # Export with secrets name first.
+            os.environ[secret] = str(value)
+            # See if an alternate environment variable name is
+            # defined and also export as that.
+            # TODO(dittrich): Support more than one, someday, maybe?
             _env_var = self.get_secret_export(secret)
             if _env_var is None:
                 if self.env_var_prefix is not None:
@@ -1110,7 +1118,7 @@ class SecretsSet(Command):
                 $ psec secrets set --undefined --from-environment goSecure
 
             ..
-            """)
+            """)  # noqa
         return parser
 
     def take_action(self, parsed_args):

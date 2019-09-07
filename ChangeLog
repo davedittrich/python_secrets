@@ -1,6 +1,11 @@
 CHANGES
 =======
 
+* Allow setting secrets by copying from another env
+* Sort environments when listing
+* Fix defaulting environment name
+* Update ChangeLog (there has to be a better way)
+
 19.9.0
 ------
 
