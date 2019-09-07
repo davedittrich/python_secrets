@@ -1057,6 +1057,14 @@ class SecretsSet(Command):
         parser = super(SecretsSet, self).get_parser(prog_name)
         parser.formatter_class = argparse.RawDescriptionHelpFormatter
         parser.add_argument(
+            '--from-environment',
+            metavar='<environment>',
+            dest='from_environment',
+            default=None,
+            help="Environment from which to copy " +
+                 "secret value(s) (default: None)"
+        )
+        parser.add_argument(
             '--undefined',
             action='store_true',
             dest='undefined',
@@ -1065,28 +1073,66 @@ class SecretsSet(Command):
         )
         parser.add_argument('arg', nargs='*', default=None)
         parser.epilog = textwrap.dedent("""
-            To set one or more secrets directly, specify them as
-            ``variable=value`` pairs as the arguments to this command.
+            One or more secrets can be set directly by specifying them
+            as ``variable=value`` pairs as the arguments to this command.
 
-            ``$ psec secrets set trident_db_pass="rural coffee purple sedan"``
+            .. code-block:: console
+
+                $ psec secrets set trident_db_pass="rural coffee purple sedan"
+
+            ..
 
             If no secrets as specified, you will be prompted for each
-            secrets. Adding the ``--undefined`` flag will limit the secrets
-            you are prompted to set to only those that are currently
-            not set.
+            secrets.
+
+            Adding the ``--undefined`` flag will limit the secrets being set
+            to only those that are currently not set.  If values are not set,
+            you are prompted for the value.
+
+            When cloning an environment from definitions in a source repository
+            or an existing environment, you can set secrets by copying them
+            from another existing environment using the ``--from-environment``
+            option.
+
+            .. code-block:: console
+
+                $ psec secrets set gosecure_pi_password --from-environment goSecure
+
+            ..
+
+            When you are doing this immediately after cloning (when all variables
+            are undefined) you can set all undefined variables at once from
+            another environment this way:
+
+            .. code-block:: console
+
+                $ psec environments create --clone-from goSecure
+                $ psec secrets set --undefined --from-environment goSecure
+
+            ..
             """)
         return parser
 
     def take_action(self, parsed_args):
         self.LOG.debug('setting secrets')
         self.app.secrets.read_secrets_and_descriptions()
+        from_env = None
+        if parsed_args.from_environment is not None:
+            from_env = SecretsEnvironment(
+                environment=parsed_args.from_environment)
+            from_env.read_secrets()
         if parsed_args.undefined:
             args = [k for k, v in self.app.secrets.items()
                     if v in [None, '']]
         else:
             args = parsed_args.arg
         for arg in args:
-            if '=' in arg:
+            v = None
+            if from_env is not None:
+                # Get value from a different environment
+                k = arg
+                v = from_env.get_secret(k)
+            elif '=' in arg:
                 k, v = arg.split('=')
             else:
                 k, v = arg, self.app.secrets.get_secret(arg, allow_none=True)
@@ -1095,7 +1141,7 @@ class SecretsSet(Command):
                 self.LOG.info('no description for {}'.format(k))
                 raise RuntimeError('variable "{}" '.format(k) +
                                    'has no description')
-            if '=' not in arg:
+            if '=' not in arg and from_env is None:
                 v = psec.utils.prompt_string(
                     prompt=self.app.secrets.get_prompt(k),
                     default=v)
