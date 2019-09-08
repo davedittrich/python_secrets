@@ -127,7 +127,8 @@ setup(
             'template = psec.template:Template',
             'utils myip = psec.utils:MyIP',
             'utils set-aws-credentials = psec.utils:SetAWSCredentials',  # noqa
-            'utils tfoutput = psec.utils:TfOutput',
+            'utils tfstate backend = psec.utils:TfBackend',
+            'utils tfstate output = psec.utils:TfOutput',
         ],
     },
     zip_safe=False,

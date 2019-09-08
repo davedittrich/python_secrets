@@ -255,6 +255,61 @@ class MyIP(Command):
 # }
 
 
+class TfBackend(Command):
+    """
+    Enable Terraform backend support to move terraform.tfstate file
+    out of current working directory into environment path.
+    """
+
+    log = logging.getLogger(__name__)
+
+    def get_parser(self, prog_name):
+        parser = super().get_parser(prog_name)
+        parser.formatter_class = argparse.RawDescriptionHelpFormatter
+        parser.add_argument(
+            '--path',
+            action='store_true',
+            dest='path',
+            default=False,
+            help="Print path and exit (default: False)"
+        )
+        # tfstate = None
+        # try:
+        #     tfstate = os.path.join(self.app.secrets.environment_path(),
+        #                            "terraform.tfstate")
+        # except AttributeError:
+        #     pass
+        parser.epilog = textwrap.dedent("""
+            TBD(dittrich): Write this...
+            """)  # noqa
+        return parser
+
+    def take_action(self, parsed_args):
+        e = psec.secrets.SecretsEnvironment(
+                environment=self.app.options.environment)
+        tmpdir = e.tmpdir_path()
+        backend_file = os.path.join(os.getcwd(), 'tfbackend.tf')
+        backend_text = textwrap.dedent("""\
+            terraform {{
+              backend "local" {{
+              path = "{tmpdir}/terraform.tfstate"
+              }}
+            }}
+            """.format(tmpdir=tmpdir))
+
+        if parsed_args.path:
+            self.log.debug('showing terraform state file path')
+            print(backend_file)
+        else:
+            self.log.debug('setting up terraform backend')
+            if os.path.exists(backend_file):
+                LOG.debug('updating {}'.format(backend_file))
+            else:
+                LOG.debug('creating {}'.format(backend_file))
+            with open(backend_file, 'w') as f:
+                f.write(backend_text)
+
+
 class TfOutput(Lister):
     """Retrieve current 'terraform output' results."""
 
@@ -265,7 +320,7 @@ class TfOutput(Lister):
         parser.formatter_class = argparse.RawDescriptionHelpFormatter
         tfstate = None
         try:
-            tfstate = os.path.join(self.app.secrets.environment_path(),
+            tfstate = os.path.join(self.app.secrets.tmpdir_path(),
                                    "terraform.tfstate")
         except AttributeError:
             pass
