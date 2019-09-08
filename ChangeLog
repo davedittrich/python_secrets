@@ -1,6 +1,10 @@
 CHANGES
 =======
 
+* Add control of umask for better file perm security
+* Fixed formatters, so comment no longer needed
+* Support configuring Terraform tfstate backend
+* Put warnings on stdout for inline cmd substitution
 * Allow setting secrets by copying from another env
 * Sort environments when listing
 * Fix defaulting environment name

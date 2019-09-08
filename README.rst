@@ -1330,11 +1330,64 @@ and understand the types and sources of security vulnerabilities related to
 Python programs. Keep these ideas in mind when using and/or modifying this
 program.
 
+As part of testing, the `Bandit`_ security validation program is used.
+(See `Getting started with Bandit`_).
+
+.. _Bandit: https://pypi.org/project/bandit/
+.. _Getting started with Bandit: https://developer.rackspace.com/blog/getting-started-with-bandit/
+
+In situations where Bandit warnings can safely be ignored, the ``# nosec``
+comment appears on source code lines. Comments as to why these can be
+safely ignored are included in the code. (Please feel free to issue pull
+requests if you disagree.)
+
+One runtime security mechanism employed by ``psec`` is control of the process'
+``umask``. This is important when running programs that create files, which
+will inherit their permissions per the process ``umask``. The ``umask`` will be
+inherited by every new child process and can be set in the user's ``.bashrc``
+(or other shell initialization) file.
+
+The ``psec run`` command can be used to run programs as child processes,
+optionally exporting environment variables as well, so controlling the
+``umask`` results in improved file permission security regardless of
+whether the user knows to set their process ``umask``.
+
+You can see the effect in these two examples.
+
+First, by setting the ``umask`` to ``0`` you see the very permissive file
+permissions (as well as getting a warning from ``psec`` about finding a file
+with lax permissions):
+
+.. code-block:: console
+
+    $ psec --umask 0o000 run -- dd if=/dev/random count=1 of=$(psec environments path --tmpdir)/foo
+    1+0 records in
+    1+0 records out
+    512 bytes copied, 0.000019 s, 2.7 MB/s
+    $ ls -l $(psec environments path --tmpdir)/foo
+    [!] file /Users/dittrich/.secrets/python_secrets/tmp/foo is mode 0o100666
+    -rw-rw-rw- 1 dittrich staff 512 Sep  8 13:05 /Users/dittrich/.secrets/python_secrets/tmp/foo
+    $ rm $(psec environments path --tmpdir)/foo
+
+..
+
+Now when using the default ``--umask`` value, the file permissions are restricted
+(and thus no more warning):
+
+.. code-block:: console
+
+    $ psec run -- dd if=/dev/random count=1 of=$(psec environments path --tmpdir)/foo
+    1+0 records in
+    1+0 records out
+    512 bytes copied, 0.000243 s, 2.1 MB/s
+    $ ls -l $(psec environments path --tmpdir)/foo
+    -rw------- 1 dittrich staff 512 Sep  8 13:04 /Users/dittrich/.secrets/python_secrets/tmp/foo
+    $ rm $(psec environments path --tmpdir)/foo
+
+..
 
 Bugs, Enhancements, and Future Work
 -----------------------------------
-
-
 
 Feature requests (and of course bug reports) are highly encouraged. You can
 do that by `opening an issue`_ on GitHub. Better yet, make a `pull

@@ -12,6 +12,7 @@ import argparse
 import logging
 import os
 import sys
+import textwrap
 
 from psec import __version__
 from psec import __release__
@@ -32,6 +33,23 @@ if sys.version_info < (3, 6, 0):
 # Use syslog for logging?
 # TODO(dittrich) Make this configurable, since it can fail on Mac OS X
 SYSLOG = False
+
+DEFAULT_UMASK = 0o077
+MAX_UMASK = 0o777
+
+
+def umask(value):
+    if value.lower().find("o") < 0:
+        raise argparse.ArgumentTypeError(
+                'value ({}) must be expressed in ' +
+                'octal form (e.g., "0o077")')
+    ivalue = int(value, base=8)
+    if ivalue < 0 or ivalue > MAX_UMASK:
+        raise argparse.ArgumentTypeError(
+                "value ({}) must be between 0 and " +
+                "0o777".format(value))
+    return ivalue
+
 
 # Initialize a logger for this module.
 logger = logging.getLogger(__name__)
@@ -111,6 +129,28 @@ class PythonSecretsApp(App):
             default=False,
             help="Initialize directory for holding secrets."
         )
+        parser.add_argument(
+            '--umask',
+            metavar='<umask>',
+            type=umask,
+            dest='umask',
+            default=DEFAULT_UMASK,
+            help="Mask to apply during app execution " +
+                 "(default: {:#05o})".format(DEFAULT_UMASK)
+        )
+        parser.epilog = textwrap.dedent("""\
+            For programs that inherit values through environment variables, you can
+            export secrets using the ``-E`` option to the ``run`` subcommand, e.g.
+            ``psec -E run -- terraform plan -out=$(psec environments path --tmpdir)/tfplan``
+
+            To improve overall security when doing this, a default process umask of
+            {:#05o} is set when the app initializes. When running programs like the
+            example above where they create sensitive files in the environment
+            directory, this reduces the chance that secrets created during execution
+            will end up with overly broad permissions.  If you need to relax these
+            permissions, use the ``--umask`` option to apply the desired mask.
+            """.format(DEFAULT_UMASK))  # noqa
+
         return parser
 
     def initialize_app(self, argv):
@@ -121,6 +161,7 @@ class PythonSecretsApp(App):
 
     def prepare_to_run_command(self, cmd):
         self.LOG.debug('prepare_to_run_command %s', cmd.__class__.__name__)
+        os.umask(self.options.umask)
         self.LOG.debug('using environment "{}"'.format(
             self.options.environment))
         self.environment = self.options.environment
