@@ -264,6 +264,13 @@ class PublicKeys(object):
         self.instance_id = instance_id
         self.debug = debug
         self.client = None
+        self.ansi_escape = re.compile(r'(\x9B|\x1B\[)[0-?]*[ -\/]*[@-~]')
+        self.digital_ocean_name = re.compile(
+            r'digitalocean_droplet\.([a-zA-Z]+):{0,1} ')
+
+    def _strip_ansi_escapes(self, line):
+        # https://www.tutorialspoint.com/How-can-I-remove-the-ANSI-escape-sequences-from-a-string-in-python
+        return self.ansi_escape.sub('', line)
 
     def get_public_ip(self):
         """Return the host IP address"""
@@ -349,41 +356,80 @@ class PublicKeys(object):
         """Get console output from stdin or file"""
         if source is None:
             raise RuntimeError('No console-output was found')
-        self.console_output = [line.strip() for line in source]
-        self.extract_keys()
+        # Sort out just the console output for instances to
+        # then process individually to extract SSH key information.
 
-    def extract_keys(self):
-        """Extract public keys from console-output text"""
-        if self.console_output is None:
+        console_output = dict()
+        for line in source:
+            line = self._strip_ansi_escapes(line.strip())
+            match = self.digital_ocean_name.match(line)
+            if match is None:
+                short_name = 'None'
+            else:
+                short_name = match.group(1)
+            try:
+                console_output[short_name].append(line)
+            except KeyError:
+                console_output[short_name] = [line]
+
+        for k, v in console_output.items():
+            if len(console_output) > 1 and k == "None":
+                continue
+            self.extract_keys(console_output=v,
+                              short_name=k)
+
+    def _id_host_from_line(self, line):
+        re.match(r'digitalocean_droplet\.([a-zA-Z]+) ', line)
+
+    def extract_keys(self, console_output=[], short_name=None):
+        """
+        Extract public keys from console-output text.
+
+        I will grant that this is a complicated method, which needs to
+        be simplified at some point. But not now. Just trying to get
+        both multi-host Terraform+DigitalOcean and single-host
+        (prototype) Pulumi+AWS SSH key processing to both work at
+        the same time. Make it work now. Make it pretty later.
+        """
+
+        # TODO(dittrich): Simplify logic here.
+
+        if console_output is None:
             raise RuntimeError('No console output to process')
         in_fingerprints = False
         in_pubkeys = False
         fields = list()
-        for line in self.console_output:
+        public_dns = None
+        public_ip = None
+        for line in console_output:
+            # Find short_name at first opportunity.
+            if short_name is None:
+                match = self.digital_ocean_name.match(line)
+                short_name = match.group(1)
             if line.startswith('ec2: '):
                 line = line[5:].strip()
             else:
                 line = line.strip()
             if line.find('(remote-exec):   Host: ') >= 0:
+                if public_dns is not None:
+                    continue
                 # DigitalOcean style from Terraform
                 _host = line.split(' Host: ')[1]
-                match = re.match(r'digitalocean_droplet\.([a-zA-Z]+) ', line)
                 if _host != "":
-                    self.public_ip = _host
-                    self.short_name = match.group(1)
-                    self.public_dns = '{}.{}'.format(self.short_name,
-                                                     self.domain)
-                    self.hostdict[self.short_name] = dict()
-                    self.hostdict[self.short_name]['public_ip'] = self.public_ip  # noqa
-                    self.hostdict[self.short_name]['public_dns'] = self.public_dns  # noqa
+                    public_ip = _host
+                    public_dns = '{}.{}'.format(short_name,
+                                                self.domain)
+                    if short_name not in self.hostdict:
+                        self.hostdict[short_name] = dict()
+                        self.hostdict[short_name]['public_ip'] = public_ip  # noqa
+                        self.hostdict[short_name]['public_dns'] = public_dns  # noqa
             elif line.find('[+] Host: ') >= 0:
                 # AWS style from Pulumi
                 _host = line.split(' Host: ')[1]
                 if _host != "":
-                    self.public_ip = _host
+                    public_ip = _host
                     try:
-                        self.public_dns = \
-                            socket.gethostbyaddr(self.public_ip)[0]
+                        public_dns = socket.gethostbyaddr(public_ip)[0]
                     except Exception:
                         pass
             elif line.find('BEGIN SSH HOST KEY FINGERPRINTS') >= 0:
@@ -401,23 +447,25 @@ class PublicKeys(object):
             if in_fingerprints:
                 fields = line.split(' ')
                 # '\x1b[0m\x1b[0mdigitalocean_droplet.red (remote-exec): 256 SHA256:rCmQ36fZmrMW5PRdrmAwqbFZVUSMM0AyQ1EFUGjcKsc root@debian.example.com (ED25519)'  # noqa
-                if not fields[0].endswith(self.short_name):
+                if not fields[0].endswith(short_name):
                     continue
                 if fields[1] == '(remote-exec):':
                     key_hash = fields[3]
-                    key_type = fields[-1].upper()
+                    key_type = re.sub(r'[()]', '', fields[-1].lower())
                 else:
-                    key_type = re.sub(r'(|)', '', fields[-1].lower())
+                    key_type = re.sub(r'[()]', '', fields[-1].lower())
                     key_hash = fields[1]
-                fingerprint = "{} {}".format(key_type, key_hash)
+                hostid = "{},{}".format(public_dns, public_ip)
+                fingerprint = "{} {} {}".format(hostid,
+                                                key_type,
+                                                key_hash)
                 self.hostfingerprint.append(fingerprint)
                 try:
-                    self.hostdict[self.short_name]['hostkey'].append([fingerprint])  # noqa
+                    self.hostdict[short_name]['hostkey'].extend([fingerprint])
                 except KeyError:
-                    self.hostdict[self.short_name]['hostkey'] = [fingerprint]
+                    self.hostdict[short_name]['hostkey'] = [fingerprint]
                 if self.debug:
-                    self.log.info('fingerprint: {} {}'.format(self.short_name,
-                                                              fingerprint))
+                    self.log.info('fingerprint: {}'.format(fingerprint))
             elif in_pubkeys:
                 fields = line.split(' ')
                 key = "{} {}".format(fields[0], fields[1])
@@ -435,13 +483,19 @@ class PublicKeys(object):
         key 'ssh_host_public_key' for use in Ansible playbook.
         """
         keylist = list()
-        if self.public_ip is None or self.public_dns is None:
-            raise RuntimeError('No host IP or name found')
-        for key in self.hostkey:
-            if self.public_ip is not None:
-                keylist.append("{} {}".format(self.public_ip, key))
-            if self.public_dns is not None:
-                keylist.append("{} {}".format(self.public_dns, key))
+        if len(self.hostdict) > 0:
+            # New multi-host feature.
+            # TODO(dittrich): extend this to previous single-host handling.
+            for k, v in self.hostdict.items():
+                keylist.extend(v['hostkey'])
+        else:
+            if self.public_ip is None or self.public_dns is None:
+                raise RuntimeError('No host IP or name found')
+            for key in self.hostkey:
+                if self.public_ip is not None:
+                    keylist.append("{} {}".format(self.public_ip, key))
+                if self.public_dns is not None:
+                    keylist.append("{} {}".format(self.public_dns, key))
         return json.dumps({'ssh_host_public_keys': keylist})
 
     def get_hostkey_list(self):
