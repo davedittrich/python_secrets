@@ -251,13 +251,16 @@ class PublicKeys(object):
     def __init__(self,
                  public_ip=None,
                  public_dns=None,
+                 domain=None,
                  instance_id=None,
                  debug=False):
         self.console_output = None
         self.public_ip = public_ip
         self.public_dns = public_dns
+        self.domain = domain
         self.hostkey = list()
-        self.hostfingerprint = list()
+        self.hostfingerprint = list()  # TODO(dittrich): This is DEPRECATED
+        self.hostdict = dict()         # TODO(dittrich): Replace with this.
         self.instance_id = instance_id
         self.debug = debug
         self.client = None
@@ -361,8 +364,21 @@ class PublicKeys(object):
                 line = line[5:].strip()
             else:
                 line = line.strip()
-            if line.find(' Host: ') >= 0:
-                _host = line.split(': ')[1]
+            if line.find('(remote-exec):   Host: ') >= 0:
+                # DigitalOcean style from Terraform
+                _host = line.split(' Host: ')[1]
+                match = re.match(r'digitalocean_droplet\.([a-zA-Z]+) ', line)
+                if _host != "":
+                    self.public_ip = _host
+                    self.short_name = match.group(1)
+                    self.public_dns = '{}.{}'.format(self.short_name,
+                                                     self.domain)
+                    self.hostdict[self.short_name] = dict()
+                    self.hostdict[self.short_name]['public_ip'] = self.public_ip  # noqa
+                    self.hostdict[self.short_name]['public_dns'] = self.public_dns  # noqa
+            elif line.find('[+] Host: ') >= 0:
+                # AWS style from Pulumi
+                _host = line.split(' Host: ')[1]
                 if _host != "":
                     self.public_ip = _host
                     try:
@@ -384,11 +400,24 @@ class PublicKeys(object):
                 continue
             if in_fingerprints:
                 fields = line.split(' ')
-                key_type = re.sub(r'(|)', '', fields[-1].lower())
-                fingerprint = "{} {}".format(key_type, fields[1])
+                # '\x1b[0m\x1b[0mdigitalocean_droplet.red (remote-exec): 256 SHA256:rCmQ36fZmrMW5PRdrmAwqbFZVUSMM0AyQ1EFUGjcKsc root@debian.example.com (ED25519)'  # noqa
+                if not fields[0].endswith(self.short_name):
+                    continue
+                if fields[1] == '(remote-exec):':
+                    key_hash = fields[3]
+                    key_type = fields[-1].upper()
+                else:
+                    key_type = re.sub(r'(|)', '', fields[-1].lower())
+                    key_hash = fields[1]
+                fingerprint = "{} {}".format(key_type, key_hash)
                 self.hostfingerprint.append(fingerprint)
+                try:
+                    self.hostdict[self.short_name]['hostkey'].append([fingerprint])  # noqa
+                except KeyError:
+                    self.hostdict[self.short_name]['hostkey'] = [fingerprint]
                 if self.debug:
-                    self.log.info('fingerprint: {}'.format(fingerprint))
+                    self.log.info('fingerprint: {} {}'.format(self.short_name,
+                                                              fingerprint))
             elif in_pubkeys:
                 fields = line.split(' ')
                 key = "{} {}".format(fields[0], fields[1])
@@ -598,6 +627,40 @@ class SSHKnownHostsAdd(Command):
         self.app.secrets.requires_environment()
         self.app.secrets.read_secrets_and_descriptions()
 
+        # TODO(dittrich): OK, this is hacky, but I am in a hurry right now.
+        # Need to merge the former Bash script multi-host Terraform on
+        # DigitalOcean output processing in ansible-dims-playbooks with
+        # the prototype single-host Pulumi on AWS processing originally
+        # coded here.  For now, just call a different method based on
+        # whether the file name includes 'terraform' vs. 'console-output'
+        # from each source.
+
+        # NOTE: parsed_args.source is a TextIOWrapper.
+        if parsed_args.source.name.find('terraform') >= 0:
+            self._do_it_terraform_digitalocean_style(parsed_args)
+        elif parsed_args.source.name.find('console-output') >= 0:
+            self._do_it_pulumi_aws_style(parsed_args)
+        else:
+            raise RuntimeError(
+                "don't know how to process " +
+                "'{}'".format(parsed_args.source))
+
+    def _do_it_terraform_digitalocean_style(self, parsed_args):
+        public_keys = PublicKeys(
+            domain=self.app.secrets.get_secret('do_domain'),
+            debug=self.app.options.debug)
+        if parsed_args.source is not None:
+            public_keys.process_saved_console_output(parsed_args.source)
+        hostkeys_as_json_string = public_keys.get_hostkey_list_as_json()
+        if self.app.options.debug:
+            _ansible_debug(hostkeys_as_json_string)
+
+        _ansible_set_hostkeys(hostkeys_as_json_string,
+                              debug=self.app.options.debug,
+                              ask_become_pass=parsed_args.ask_become_pass,
+                              verbose_level=self.app_args.verbose_level)
+
+    def _do_it_pulumi_aws_style(self, parsed_args):
         # Get the instance_id from command line option, or
         # from console output file name. Avoid a conflict.
         if (parsed_args.instance_id is not None and
