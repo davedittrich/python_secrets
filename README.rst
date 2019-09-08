@@ -1335,33 +1335,6 @@ Bugs, Enhancements, and Future Work
 -----------------------------------
 
 
-There is a known bug in the complex way that `argparse` and `cliff` handle the
-epilog (returned by `get_epilog()` method in command classes.) The result is
-that Sphinx documentation looks great, but command line help looks like a
-jumbled mess.  For example,
-
-.. code-block:: console
-
-   usage: psec run [-h] [arg [arg ...]]
-
-   Run a command using exported secrets
-
-    positional arguments:
-      arg         command arguments (default: "psec run --help")
-
-    optional arguments:
-      -h, --help  show this help message and exit
-
-    .. code-block:: shell $ psec run usage: psec run [-h] [arg [arg ...]] Run a
-    command using exported secrets positional arguments: arg command arguments
-    (default: "psec run --help") optional arguments: -h, --help show this help
-    message and exit ..
-
-..
-
-The solution is supposed to be setting
-``formatter_class=argparse.RawDescriptionHelpFormatter``, but this didn't seem
-to be easy to do with ``cliff`` in a way that worked as expected.
 
 Feature requests (and of course bug reports) are highly encouraged. You can
 do that by `opening an issue`_ on GitHub. Better yet, make a `pull
