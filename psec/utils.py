@@ -289,17 +289,18 @@ class TfBackend(Command):
                 environment=self.app.options.environment)
         tmpdir = e.tmpdir_path()
         backend_file = os.path.join(os.getcwd(), 'tfbackend.tf')
+        tfstate_file = os.path.join(tmpdir, 'terraform.tfstate')
         backend_text = textwrap.dedent("""\
             terraform {{
               backend "local" {{
-              path = "{tmpdir}/terraform.tfstate"
+              path = "{tfstate_file}"
               }}
             }}
-            """.format(tmpdir=tmpdir))
+            """.format(tfstate_file=tfstate_file))
 
         if parsed_args.path:
             self.log.debug('showing terraform state file path')
-            print(backend_file)
+            print(tfstate_file)
         else:
             self.log.debug('setting up terraform backend')
             if os.path.exists(backend_file):
