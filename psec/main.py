@@ -17,6 +17,7 @@ import textwrap
 from psec import __version__
 from psec import __release__
 from psec.secrets import SecretsEnvironment
+from psec.utils import Timer
 
 # External dependencies.
 
@@ -71,6 +72,7 @@ class PythonSecretsApp(App):
         self.environment = None
         self.secrets_basedir = None
         self.secrets_file = None
+        self.timer = Timer()
 
     def build_option_parser(self, description, version):
         parser = super(PythonSecretsApp, self).build_option_parser(
@@ -79,6 +81,13 @@ class PythonSecretsApp(App):
         )
         parser.formatter_class = argparse.RawDescriptionHelpFormatter
         # Global options
+        parser.add_argument(
+            '--elapsed',
+            action='store_true',
+            dest='elapsed',
+            default=False,
+            help='Print elapsed time on exit (default: False)'
+        )
         _env = SecretsEnvironment()
         parser.add_argument(
             '-d', '--secrets-basedir',
@@ -161,6 +170,7 @@ class PythonSecretsApp(App):
 
     def prepare_to_run_command(self, cmd):
         self.LOG.debug('prepare_to_run_command %s', cmd.__class__.__name__)
+        self.timer.start()
         os.umask(self.options.umask)
         self.LOG.debug('using environment "{}"'.format(
             self.options.environment))
@@ -186,6 +196,15 @@ class PythonSecretsApp(App):
         else:
             if self.secrets.changed():
                 self.secrets.write_secrets()
+            if self.options.elapsed or \
+                    (self.options.verbose_level > 1 \
+                    and cmd.__class__.__name__ != "CompleteCommand"):
+                self.timer.stop()
+                elapsed = self.timer.elapsed()
+                self.stdout.write('[+] Elapsed time {}\n'.format(elapsed))
+                if sys.stdout.isatty():
+                    sys.stdout.write('\a')
+                    sys.stdout.flush()
 
 
 def main(argv=sys.argv[1:]):
