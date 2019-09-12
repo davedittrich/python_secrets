@@ -17,6 +17,8 @@ import time
 from cliff.command import Command
 from jinja2 import Template
 
+LOG = logging.getLogger(__name__)
+
 # Delay variables for reading AWS console-output
 _TRIES = 45
 _DELAY = 5
@@ -98,6 +100,43 @@ SSH_CONFIG_TEMPLATE = textwrap.dedent("""\
     """)
 
 
+def _write_fingerprints_pubkeys_to_files(hostdict):
+    """
+    Write out SSH host public keys and fingerprints into
+    files in directories 'fingerprints/' and 'known_hosts/'.
+    """
+
+    for dir in ['known_hosts', 'fingerprints']:
+        if not os.path.exists(dir):
+            os.mkdir(dir)
+            LOG.debug('[+] created directory "{}"'.format(dir))
+        else:
+            if not os.path.isdir(dir):
+                raise RuntimeError(
+                    '"{}" exists '.format(dir) +
+                    'and is not a directory')
+    for host, v in hostdict.items():
+        for fingerprint in v['fingerprint']:
+            dir = os.path.join('fingerprints', host)
+            if not os.path.exists(dir):
+                os.mkdir(dir)
+            ktype = fingerprint.split()[0]
+            fp_file = os.path.join(dir, '{}.fingerprint'.format(ktype))
+            with open(fp_file, 'w') as f:
+                f.write('{}\n'.format(fingerprint))
+                LOG.debug('[+] wrote fingerprint to {}'.format(fp_file))
+        for hostkey in v['hostkey']:
+            dir = os.path.join('known_hosts', host)
+            if not os.path.exists(dir):
+                os.mkdir(dir)
+            ktype = hostkey.split()[1]
+            hk_file = os.path.join(dir, '{}.known_hosts'.format(ktype))
+            with open(hk_file, 'w') as f:
+                f.write('{}\n'.format(hostkey))
+                LOG.debug('[+] wrote hostkey to {}'.format(hk_file))
+    pass
+
+
 def _ansible_verbose(verbose_level=1):
     """
     Return an ansible verbose flag for a given Cliff app verbose
@@ -120,6 +159,7 @@ def _ansible_set_hostkeys(hostkeys,  # nosec
         playbook.flush()
         if verbose_level > 2:
             print(REKEY_PLAYBOOK, file=sys.stderr, flush=True)
+        # TODO(dittrich): Look for local ansible.cfg file
         cmd = ['ansible-playbook',
                ask_become_pass,
                _ansible_verbose(verbose_level),
@@ -145,6 +185,7 @@ def _ansible_remove_hostkeys(hosts,  # nosec
             print(REKEY_PLAYBOOK, file=sys.stderr, flush=True)
         playbook.flush()
         ssh_hosts = json.dumps({'ssh_hosts': hosts})
+        # TODO(dittrich): Look for local ansible.cfg file
         cmd = ['ansible-playbook',
                ask_become_pass,
                _ansible_verbose(verbose_level),
@@ -411,8 +452,6 @@ class PublicKeys(object):
             else:
                 line = line.strip()
             if line.find('(remote-exec):   Host: ') >= 0:
-                if public_dns is not None:
-                    continue
                 # DigitalOcean style from Terraform
                 _host = line.split(' Host: ')[1]
                 if _host != "":
@@ -421,8 +460,8 @@ class PublicKeys(object):
                                                 self.domain)
                     if short_name not in self.hostdict:
                         self.hostdict[short_name] = dict()
-                        self.hostdict[short_name]['public_ip'] = public_ip  # noqa
-                        self.hostdict[short_name]['public_dns'] = public_dns  # noqa
+                    self.hostdict[short_name]['public_ip'] = public_ip  # noqa
+                    self.hostdict[short_name]['public_dns'] = public_dns  # noqa
             elif line.find('[+] Host: ') >= 0:
                 # AWS style from Pulumi
                 _host = line.split(' Host: ')[1]
@@ -438,13 +477,14 @@ class PublicKeys(object):
             elif line.find('END SSH HOST KEY FINGERPRINTS') >= 0:
                 in_fingerprints = False
                 continue
-            elif line.find('BEGIN SSH HOST KEY KEYS') >= 0:
+            elif line.find('BEGIN SSH HOST PUBLIC KEYS') >= 0:
                 in_pubkeys = True
                 continue
-            elif line.find('END SSH HOST KEY KEYS') >= 0:
+            elif line.find('END SSH HOST PUBLIC KEYS') >= 0:
                 in_pubkeys = False
                 continue
             if in_fingerprints:
+                # TODO(dittrich): Should use regex instead.
                 fields = line.split(' ')
                 # '\x1b[0m\x1b[0mdigitalocean_droplet.red (remote-exec): 256 SHA256:rCmQ36fZmrMW5PRdrmAwqbFZVUSMM0AyQ1EFUGjcKsc root@debian.example.com (ED25519)'  # noqa
                 if not fields[0].endswith(short_name):
@@ -456,22 +496,30 @@ class PublicKeys(object):
                     key_type = re.sub(r'[()]', '', fields[-1].lower())
                     key_hash = fields[1]
                 hostid = "{},{}".format(public_dns, public_ip)
-                fingerprint = "{} {} {}".format(hostid,
-                                                key_type,
-                                                key_hash)
-                self.hostfingerprint.append(fingerprint)
+                fingerprint = "{} {}".format(key_type,
+                                             key_hash)
+                # self.hostfingerprint.append(fingerprint)
                 try:
-                    self.hostdict[short_name]['hostkey'].extend([fingerprint])
+                    self.hostdict[short_name]['fingerprint'].extend([fingerprint])  # noqa
                 except KeyError:
-                    self.hostdict[short_name]['hostkey'] = [fingerprint]
+                    self.hostdict[short_name]['fingerprint'] = [fingerprint]
                 if self.debug:
                     self.log.info('fingerprint: {}'.format(fingerprint))
             elif in_pubkeys:
+                # TODO(dittrich): Should use regex instead.
                 fields = line.split(' ')
-                key = "{} {}".format(fields[0], fields[1])
-                self.hostkey.append(key)
+                # 'digitalocean_droplet.red (remote-exec): ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIA69uuX+ItFoAAe+xE9c+XggGw7Z2Z7t3YVRJxSHMupv root@debian.example.com'  # noqa
+                hostid = "{},{}".format(public_dns, public_ip)
+                if fields[1] == '(remote-exec):':
+                    pubkey = "{} {} {}".format(hostid, fields[2], fields[3])
+                else:
+                    pubkey = "{} {} {}".format(hostid, fields[0], fields[1])
+                try:
+                    self.hostdict[short_name]['hostkey'].extend([pubkey])
+                except KeyError:
+                    self.hostdict[short_name]['hostkey'] = [pubkey]
                 if self.debug:
-                    self.log.info('pubkey: {}'.format(key))
+                    self.log.info('pubkey: {}'.format(pubkey))
 
     def get_hostfingerprint_list(self):
         """Return the hostfingerprint list"""
@@ -490,7 +538,7 @@ class PublicKeys(object):
                 keylist.extend(v['hostkey'])
         else:
             if self.public_ip is None or self.public_dns is None:
-                raise RuntimeError('No host IP or name found')
+                raise RuntimeError('No host IP or name found or specified')
             for key in self.hostkey:
                 if self.public_ip is not None:
                     keylist.append("{} {}".format(self.public_ip, key))
@@ -628,6 +676,14 @@ class SSHKnownHostsAdd(Command):
             help="Show the playbook on standard output and exit."
         )
         parser.add_argument(
+            '--save-to-files',
+            action='store_true',
+            dest='save_to_files',
+            default=False,
+            help="Write extracted fingerprints and public " +
+                 "keys out to files (default: False)"
+        )
+        parser.add_argument(
             '--ask-become-pass',
             action='store_const',
             const='--ask-become-pass',
@@ -705,10 +761,11 @@ class SSHKnownHostsAdd(Command):
             debug=self.app.options.debug)
         if parsed_args.source is not None:
             public_keys.process_saved_console_output(parsed_args.source)
+        if parsed_args.save_to_files:
+            _write_fingerprints_pubkeys_to_files(public_keys.hostdict)
         hostkeys_as_json_string = public_keys.get_hostkey_list_as_json()
         if self.app.options.debug:
             _ansible_debug(hostkeys_as_json_string)
-
         _ansible_set_hostkeys(hostkeys_as_json_string,
                               debug=self.app.options.debug,
                               ask_become_pass=parsed_args.ask_become_pass,
@@ -742,10 +799,11 @@ class SSHKnownHostsAdd(Command):
         elif instance_id is not None:
             source = public_keys.retrieve_aws_console_output()
             public_keys.process_saved_console_output(source)
+        if parsed_args.save_to_files:
+            _write_fingerprints_pubkeys_to_files(public_keys.hostdict)
         hostkeys_as_json_string = public_keys.get_hostkey_list_as_json()
         if self.app.options.debug:
             _ansible_debug(hostkeys_as_json_string)
-
         _ansible_set_hostkeys(hostkeys_as_json_string,
                               debug=self.app.options.debug,
                               ask_become_pass=parsed_args.ask_become_pass,

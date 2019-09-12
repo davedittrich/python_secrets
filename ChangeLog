@@ -1,6 +1,9 @@
 CHANGES
 =======
 
+* Fix bug in tfstate backend path
+* Fix SSH key fingerprint parsing for terraform+do
+* Resolve pep8 findings
 * Add control of umask for better file perm security
 * Fixed formatters, so comment no longer needed
 * Support configuring Terraform tfstate backend
