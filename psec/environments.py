@@ -9,6 +9,9 @@ import shutil
 import sys
 import textwrap
 
+from bullet import Bullet
+from bullet import Input
+from bullet import colors
 from cliff.command import Command
 from cliff.lister import Lister
 from stat import S_IMODE
@@ -230,10 +233,10 @@ class EnvironmentsDelete(Command):
             default=False,
             help="Mandatory confirmation (default: False)"
         )
-        default_environment = psec.secrets.SecretsEnvironment().environment()
+        # default_environment = psec.secrets.SecretsEnvironment().environment()
         parser.add_argument('environment',
                             nargs='?',
-                            default=default_environment)
+                            default=None)
         parser.epilog = textwrap.dedent("""
             Deleting an environment requires use of the ``--force`` flag.
 
@@ -267,20 +270,45 @@ class EnvironmentsDelete(Command):
 
     def take_action(self, parsed_args):
         self.LOG.debug('deleting environment')
-        e = psec.secrets.SecretsEnvironment(
-                environment=parsed_args.environment)
-        env_path = e.environment_path()
-        if not parsed_args.force:
-            output = psec.utils.tree(env_path,
-                                     outfile=None,
-                                     print_files=True)
-            raise RuntimeError(
-                '[-] must use "--force" flag to delete an environment.\n' +
-                '[-] the following will be deleted: \n' +
-                ''.join([line for line in output]))
+        if parsed_args.environment is not None:
+            choice = parsed_args.environment
         else:
-            shutil.rmtree(env_path)
-            self.LOG.info('[+] deleted directory path {}'.format(env_path))
+            environments = os.listdir(self.app.secrets.secrets_basedir())
+            choices = ['<CANCEL>'] + sorted(environments)
+            cli = Bullet(prompt="\nSelect environment to delete:",
+                         choices=choices,
+                         indent=0,
+                         align=2,
+                         margin=1,
+                         shift=0,
+                         bullet="→",
+                         pad_right=5)
+            choice = cli.launch()
+        if choice == "<CANCEL>":
+            self.LOG.info('cancelled deleting environment')
+        elif choice is not None:
+            e = psec.secrets.SecretsEnvironment(choice)
+            env_path = e.environment_path()
+            if parsed_args.environment is not None and not parsed_args.force:
+                output = psec.utils.tree(env_path,
+                                         outfile=None,
+                                         print_files=True)
+                raise RuntimeError(
+                    '[-] must use "--force" flag to delete an environment.\n' +
+                    '[-] the following will be deleted: \n' +
+                    ''.join([line for line in output]))
+            else:
+                prompt = 'Retype the name "{}" to confirm:'.format(choice)
+                cli = Input(prompt,
+                            default="",
+                            word_color=colors.foreground["yellow"])
+                confirm = cli.launch()
+                if confirm != choice:
+                    self.LOG.info('cancelled deleting environment')
+                else:
+                    shutil.rmtree(env_path)
+                    self.LOG.info('[+] deleted directory path ' +
+                                  '{}'.format(env_path))
 
 
 class EnvironmentsRename(Command):
@@ -441,14 +469,25 @@ class EnvironmentsDefault(Command):
             else:
                 self.LOG.info('default environment unset')
         elif parsed_args.set:
-            # Set default to specified environment
-            default_env = parsed_args.environment
-            if default_env is None:
-                default_env = psec.secrets.SecretsEnvironment().environment()
-            with open(env_file, 'w') as f:
-                f.write(default_env)
-            self.LOG.info('default environment set explicitly to ' +
-                          '"{}"'.format(default_env))
+            if parsed_args.environment is None:
+                environments = os.listdir(self.app.secrets.secrets_basedir())
+                choices = ['<CANCEL>'] + sorted(environments)
+                cli = Bullet(prompt="\nChose a new default environment:",
+                             choices=choices,
+                             indent=0,
+                             align=2,
+                             margin=1,
+                             shift=0,
+                             bullet="→",
+                             pad_right=5)
+                choice = cli.launch()
+                if choice == "<CANCEL>":
+                    self.LOG.info('cancelled setting default')
+                else:
+                    with open(env_file, 'w') as f:
+                        f.write(choice)
+                    self.LOG.info('default environment set explicitly to ' +
+                                  '"{}"'.format(choice))
         elif parsed_args.environment is None:
             # No environment specified, show current setting
             if os.path.exists(env_file):
