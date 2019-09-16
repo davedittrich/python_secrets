@@ -123,6 +123,7 @@ setup(
             'secrets show = psec.secrets:SecretsShow',
             'ssh config = psec.ssh:SSHConfig',
             'ssh known-hosts add = psec.ssh:SSHKnownHostsAdd',
+            'ssh known-hosts extract = psec.ssh:SSHKnownHostsExtract',
             'ssh known-hosts remove = psec.ssh:SSHKnownHostsRemove',
             'template = psec.template:Template',
             'utils myip = psec.utils:MyIP',

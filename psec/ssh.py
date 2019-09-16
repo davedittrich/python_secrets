@@ -93,23 +93,79 @@ REKEY_PLAYBOOK = textwrap.dedent("""\
 SSH_CONFIG_TEMPLATE = textwrap.dedent("""\
     Host {{ shortname  }} {{ public_ip }} {{ public_dns }}
         Hostname {{ public_ip }}
-        IdentityFile {{ aws_privatekey_path }}
+        IdentityFile {{ identity_file }}
         Port {{ port }}
         User {{ username }}
     \n
     """)
 
 
-def _write_fingerprints_pubkeys_to_files(hostdict):
+def _get_type(line):
+    """Get SSH key or fingerprint type."""
+
+    _match1 = re.search(r'[ ]*(ssh-[A-Za-z0-9]+) ', line)
+    if _match1:
+        return _match1.group(1)
+    _match2 = re.search(r' \(([A-Za-z0-9]+)\)$', line, re.M)
+    if _match2:
+        return _match2.group(1)
+    return None
+
+
+# Example of key output in the form of a string for pep8.
+"""
+digitalocean_droplet.red (remote-exec): ----- BEGIN SSH HOST KEY FINGERPRINTS -----
+digitalocean_droplet.red (remote-exec): ssh-ed25519 SHA256:8v65hZhe0e207BQaoltof+QJv9dDfQAMhXoL4DYfRw0. root@debian-8-11-1-amd64
+digitalocean_droplet.red (remote-exec): ssh-rsa SHA256:FU1eQ29nUT88vZyWDqi+eLG3+BstP87p2gerThBpj4M. root@debian-8-11-1-amd64
+digitalocean_droplet.red (remote-exec): ----- END SSH HOST KEY FINGERPRINTS -----
+""" # noqa
+
+
+def _parse_fingerprint_terraform(line, host=None):
+    """Parse SSH host fingerprint from terraform output line"""
+    fingerprint = None
+    if line.find('(remote-exec)') > 0:
+        host = line.split(' ')[0].split('.')[-1]
+        fingerprint = line.split(': ', 2)[1]
+    return host, fingerprint
+
+
+# Example of key output in the form of a string for pep8.
+"""
+ec2: -----BEGIN SSH HOST KEY FINGERPRINTS-----
+ec2: 1024 SHA256:LTiTXefHVhoT0/ueGYqySync6tev2VTRqSEFoQhEL0w root@ip-172-31-34-76 (DSA)
+ec2: 256 SHA256:2Ww7AQqN94ySGqzji9kKSFdz/U+IzMGdZpJsqklAsV0 root@ip-172-31-34-76 (ECDSA)
+ec2: 256 SHA256:Lo44FsL/leHOmx1UeyWahpT5MWmNj0/phfeu4cdcaIA no comment (ED25519)
+ec2: 2048 SHA256:xBvRCJWJa101vImgK+GnVOjwJoHFW5stc4bN3O1Bqwg root@ip-172-31-34-76 (RSA)
+ec2: -----END SSH HOST KEY FINGERPRINTS-----
+"""  # noqa
+
+
+def _parse_fingerprint_awsconsole(line, host=None):
+    """Parse SSH host fingerprint from AWS console output"""
+    fingerprint = None
+    if line.startswith('ec2:'):
+        host = host
+        fingerprint = line.split(': ', 2)[1]
+    return host, fingerprint
+
+
+def _write_fingerprints_pubkeys_to_files(hostdict=None,
+                                         known_hosts_root=None):
     """
     Write out SSH host public keys and fingerprints into
     files in directories 'fingerprints/' and 'known_hosts/'.
     """
 
-    for dir in ['known_hosts', 'fingerprints']:
+    if hostdict is None:
+        raise RuntimeError('hostdict not specified')
+    if known_hosts_root is None:
+        known_hosts_root = os.getcwd()
+    for subdir in ['known_hosts', 'fingerprints']:
+        dir = os.path.join(known_hosts_root, subdir)
         if not os.path.exists(dir):
-            os.mkdir(dir)
-            LOG.debug('[+] created directory "{}"'.format(dir))
+            LOG.debug('[+] creating directory "{}"'.format(dir))
+            os.makedirs(dir, exist_ok=True)
         else:
             if not os.path.isdir(dir):
                 raise RuntimeError(
@@ -117,19 +173,18 @@ def _write_fingerprints_pubkeys_to_files(hostdict):
                     'and is not a directory')
     for host, v in hostdict.items():
         for fingerprint in v['fingerprint']:
-            dir = os.path.join('fingerprints', host)
-            if not os.path.exists(dir):
-                os.mkdir(dir)
-            ktype = fingerprint.split()[0]
+            dir = os.path.join(known_hosts_root, 'fingerprints', host)
+            os.makedirs(dir, exist_ok=True)
+            ktype = _get_type(fingerprint)
             fp_file = os.path.join(dir, '{}.fingerprint'.format(ktype))
             with open(fp_file, 'w') as f:
                 f.write('{}\n'.format(fingerprint))
                 LOG.debug('[+] wrote fingerprint to {}'.format(fp_file))
+
         for hostkey in v['hostkey']:
-            dir = os.path.join('known_hosts', host)
-            if not os.path.exists(dir):
-                os.mkdir(dir)
-            ktype = hostkey.split()[1]
+            dir = os.path.join(known_hosts_root, 'known_hosts', host)
+            os.makedirs(dir, exist_ok=True)
+            ktype = _get_type(hostkey)
             hk_file = os.path.join(dir, '{}.known_hosts'.format(ktype))
             with open(hk_file, 'w') as f:
                 f.write('{}\n'.format(hostkey))
@@ -173,7 +228,7 @@ def _ansible_set_hostkeys(hostkeys,  # nosec
             raise RuntimeError('Ansible did not exit gracefully.')
 
 
-def _ansible_remove_hostkeys(hosts,  # nosec
+def _ansible_remove_hostkeys(hostkeys,  # nosec
                              debug=False,
                              ask_become_pass='--ask-become-pass',
                              verbose_level=1):
@@ -184,7 +239,9 @@ def _ansible_remove_hostkeys(hosts,  # nosec
         if verbose_level > 2:
             print(REKEY_PLAYBOOK, file=sys.stderr, flush=True)
         playbook.flush()
-        ssh_hosts = json.dumps({'ssh_hosts': hosts})
+        hosts = [i.split()[0]
+                 for i in json.loads(hostkeys)['ssh_host_public_keys']]
+        ssh_hosts = json.dumps({'ssh_hosts': list(set(hosts))})
         # TODO(dittrich): Look for local ansible.cfg file
         cmd = ['ansible-playbook',
                ask_become_pass,
@@ -220,9 +277,66 @@ def _ansible_debug(hostkeys):
                            '(see stdout and stderr above)')
 
 
+def _parse_known_hosts(root=None):
+    """
+    Walk root directory parsing extracted known_hosts info.
+
+    Returns a dictionary that looks like this:
+
+    host_info
+    {'black': {'hostkey': [...], 'public_dns': 'black.dotteekay.tk', 'public_ip': '157.245.165.101'}, 'purple': {'hostkey': [...], 'public_dns': 'purple.dotteekay.tk', 'public_ip': '165.22.163.0'}, 'red': {'hostkey': [...], 'public_dns': 'red.dotteekay.tk', 'public_ip': '165.22.163.3'}}
+    'black':{'hostkey': ['AAAAC3NzaC1lZDI1NTE...nirEHVEUA', 'AAAAB3NzaC1yc2EAAAA...7yk8Hgu9j'], 'public_dns': 'black.dotteekay.tk', 'public_ip': '157.245.165.101'}
+        'hostkey':['AAAAC3NzaC1lZDI1NTE...nirEHVEUA', 'AAAAB3NzaC1yc2EAAAA...7yk8Hgu9j']
+        'public_dns':'black.dotteekay.tk'
+        'public_ip':'157.245.165.101'
+        __len__:3
+    'purple':{'hostkey': ['AAAAC3NzaC1lZDI1NTE...bCVlbdfuG', 'AAAAB3NzaC1yc2EAAAA...6NCMexJe5'], 'public_dns': 'purple.dotteekay.tk', 'public_ip': '165.22.163.0'}
+        'hostkey':['AAAAC3NzaC1lZDI1NTE...bCVlbdfuG', 'AAAAB3NzaC1yc2EAAAA...6NCMexJe5']
+        'public_dns':'purple.dotteekay.tk'
+        'public_ip':'165.22.163.0'
+        __len__:3
+    'red':{'hostkey': ['AAAAC3NzaC1lZDI1NTE...bCVlbdfuG', 'AAAAB3NzaC1yc2EAAAA...6NCMexJe5'], 'public_dns': 'red.dotteekay.tk', 'public_ip': '165.22.163.3'}
+        'hostkey':['AAAAC3NzaC1lZDI1NTE...bCVlbdfuG', 'AAAAB3NzaC1yc2EAAAA...6NCMexJe5']
+        'public_dns':'red.dotteekay.tk'
+        'public_ip':'165.22.163.3'
+        __len__:3
+    __len__:3
+
+    """  # noqa
+
+    host_info = dict()
+    for root, dirs, files in os.walk(root, topdown=True):
+        for name in files:
+            path = os.path.join(root, name)
+            with open(path, 'r') as f:
+                info = f.read().strip()
+            fields = info.split(' ')
+            public_dns, public_ip = fields[0].split(',')
+            public_key_type = fields[-2]
+            public_key = fields[-1]
+            shortname = os.path.split(root)[-1]
+            if shortname not in host_info:
+                host_info[shortname] = {
+                    'public_dns': public_dns,
+                    'public_ip': public_ip
+                }
+            if 'hostkey' in host_info[shortname]:
+                host_info[shortname]['hostkey'].append(public_key)
+            else:
+                host_info[shortname]['hostkey'] = [public_key]
+            full_public_key = " ".join([public_key_type, public_key])
+            if 'full_hostkey' in host_info[shortname]:
+                host_info[shortname]['full_hostkey'].append(full_public_key)
+            else:
+                host_info[shortname]['full_hostkey'] = [full_public_key]
+    return host_info
+
+
 def _write_ssh_configd(ssh_config=None,
-                       name="testing",
-                       aws_privatekey_path=None,
+                       name=None,
+                       shortname=None,
+                       user='root',
+                       identity_file=None,
                        public_ip=None,
                        public_dns=None,
                        verbose_level=1):
@@ -232,11 +346,16 @@ def _write_ssh_configd(ssh_config=None,
     This supports construction of a user's ``~/.ssh/config`` file using
     ``update-dotdee``.
     """
+
+    if shortname is None:
+        shortname = name
+    if name is None:
+        raise RuntimeError('Must specify "name" for file name')
     template_vars = dict()
-    template_vars['aws_privatekey_path'] = aws_privatekey_path
+    template_vars['identity_file'] = identity_file
     template_vars['port'] = 22
-    template_vars['username'] = 'ec2-user'
-    template_vars['shortname'] = name
+    template_vars['username'] = user
+    template_vars['shortname'] = shortname
     template_vars['public_ip'] = public_ip
     template_vars['public_dns'] = public_dns
     for k, v in template_vars.items():
@@ -285,11 +404,12 @@ def _get_latest_console_output():
 
 
 class PublicKeys(object):
-    """Class for managing SSH public keys."""
+    """Class for managing SSH public keys"""
 
     log = logging.getLogger(__name__)
 
     def __init__(self,
+                 known_hosts_root=None,
                  public_ip=None,
                  public_dns=None,
                  domain=None,
@@ -308,6 +428,19 @@ class PublicKeys(object):
         self.ansi_escape = re.compile(r'(\x9B|\x1B\[)[0-?]*[ -\/]*[@-~]')
         self.digital_ocean_name = re.compile(
             r'digitalocean_droplet\.([a-zA-Z]+):{0,1} ')
+        self.host_info = None
+        if known_hosts_root is not None:
+            self.host_info = _parse_known_hosts(root=known_hosts_root)
+            for host, info in self.host_info.items():
+                for item in ['public_dns', 'public_ip']:
+                    for key in info['full_hostkey']:
+                        pubkey = "{} {}".format(info[item], key)
+                        if host not in self.hostdict:
+                            self.hostdict[host] = dict()
+                        try:
+                            self.hostdict[host]['hostkey'].extend([pubkey])
+                        except KeyError:
+                            self.hostdict[host]['hostkey'] = [pubkey]
 
     def _strip_ansi_escapes(self, line):
         # https://www.tutorialspoint.com/How-can-I-remove-the-ANSI-escape-sequences-from-a-string-in-python
@@ -484,21 +617,12 @@ class PublicKeys(object):
                 in_pubkeys = False
                 continue
             if in_fingerprints:
-                # TODO(dittrich): Should use regex instead.
-                fields = line.split(' ')
-                # '\x1b[0m\x1b[0mdigitalocean_droplet.red (remote-exec): 256 SHA256:rCmQ36fZmrMW5PRdrmAwqbFZVUSMM0AyQ1EFUGjcKsc root@debian.example.com (ED25519)'  # noqa
-                if not fields[0].endswith(short_name):
-                    continue
-                if fields[1] == '(remote-exec):':
-                    key_hash = fields[3]
-                    key_type = re.sub(r'[()]', '', fields[-1].lower())
+                if line.startswith('ec2:'):
+                    hostid, fingerprint = _parse_fingerprint_awsconsole(
+                        line,
+                        name=short_name)
                 else:
-                    key_type = re.sub(r'[()]', '', fields[-1].lower())
-                    key_hash = fields[1]
-                hostid = "{},{}".format(public_dns, public_ip)
-                fingerprint = "{} {}".format(key_type,
-                                             key_hash)
-                # self.hostfingerprint.append(fingerprint)
+                    hostid, fingerprint = _parse_fingerprint_terraform(line)
                 try:
                     self.hostdict[short_name]['fingerprint'].extend([fingerprint])  # noqa
                 except KeyError:
@@ -553,11 +677,20 @@ class PublicKeys(object):
 
 class SSHConfig(Command):
     """
-    Create an SSH configuration snippet for use by ``update-dotdee``.
+    Create SSH configuration snippets for use by ``update-dotdee``
 
-    This snippet will reside in the directory ``~/.ssh/config.d/``
-    and ``update-dotdee`` will be run after creating it to apply
-    the new configuration for immediate use.
+    Names of the snippets will start with ``psec_`` followed by the
+    environment name and host name (separated by ``_``) in order
+    to support global removal of existing snippets for a given
+    environment, while avoiding name clashes with other environments.
+
+    These configuration snippets will reside in the directory
+    ``~/.ssh/config.d/`` and ``update-dotdee`` will be run after
+    creating them to apply the new configuration(s) for immediate use.
+
+    To ensure that no inactive instances still have configurations,
+    the ``--clean`` option will delete all existing snippets with
+    the prefix for this environment prior to creating new files.
     """
 
     log = logging.getLogger(__name__)
@@ -566,18 +699,41 @@ class SSHConfig(Command):
         parser = super().get_parser(prog_name)
         parser.formatter_class = argparse.RawDescriptionHelpFormatter
         parser.add_argument(
+            '--clean',
+            action='store_true',
+            dest='clean',
+            default=False,
+            help="Clean out all existing snippets before writing " +
+                 "new files (default: False)"
+        )
+        parser.add_argument(
             '--public-ip',
             action='store',
             dest='public_ip',
             default=None,
             help='IP address of host (default: None)'
         )
+        _known_hosts_root = os.path.join(os.getcwd(), 'known_hosts')
+        parser.add_argument(
+            '--known-hosts-root',
+            action='store',
+            dest='known_hosts_root',
+            default=_known_hosts_root,
+            help='Root for extracted known_hosts files ' +
+                 '(default: {})'.format(_known_hosts_root)
+        )
+        parser.add_argument(
+            '--ssh-user',
+            action='store',
+            dest='ssh_user',
+            default='root',
+            help='SSH user account (default: "root")'
+        )
         parser.add_argument(
             '--public-dns',
             action='store',
             dest='public_dns',
             default=None,
-            help='DNS name of host (default: None)'
         )
         parser.add_argument(
             '--show-config',
@@ -593,23 +749,41 @@ class SSHConfig(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.log.debug('creating SSH configuration snippet')
+        self.log.debug('creating SSH configuration snippet(s)')
         self.app.secrets.requires_environment()
         self.app.secrets.read_secrets_and_descriptions()
-        if parsed_args.public_ip is None or parsed_args.public_dns is None:
-            raise RuntimeError('Must specify --public-ip and --public-dns')
-        _aws_privatekey_path = \
-            self.app.secrets.get_secret('aws_privatekey_path')
+        # if parsed_args.public_ip is None or parsed_args.public_dns is None:
+        #     raise RuntimeError('Must specify --public-ip and --public-dns')
+        # TODO(dittrich): Need to pass key name explicitly...
+        # _aws_privatekey_path = \
+        #     self.app.secrets.get_secret('aws_privatekey_path')
         home = os.path.expanduser('~')
-        ssh_config = os.path.join(home, '.ssh/config')
-        if parsed_args.show_config:
-            # TODO(dittrich): finish this...
-            pass
-        _write_ssh_configd(ssh_config=ssh_config,
-                           name=self.app.secrets._environment,
-                           aws_privatekey_path=_aws_privatekey_path,
-                           public_ip=parsed_args.public_ip,
-                           public_dns=parsed_args.public_dns)
+        ssh_config = os.path.join(home, '.ssh', 'config')
+        snippet_prefix = 'psec.{}'.format(self.app.secrets._environment)
+        if parsed_args.clean:
+            files = glob.glob(os.path.join(ssh_config + '.d',
+                                           snippet_prefix + ".*"))
+            for f in files:
+                if self.app_args.verbose_level > 1:
+                    self.log.info('[+] deleting "{}"'.format(f))
+                os.remove(f)
+        host_info = _parse_known_hosts(root=parsed_args.known_hosts_root)
+        private_key_file = self._get_private_key_file()
+        if private_key_file is None:
+            raise RuntimeError('No SSH private key specified')
+        for host, info in host_info.items():
+            snippet = 'psec.{}.{}'.format(self.app.secrets._environment, host)
+            if parsed_args.show_config:
+                # TODO(dittrich): finish this...
+                print()
+            _write_ssh_configd(ssh_config=ssh_config,
+                               shortname=host,
+                               name=snippet,
+                               user=parsed_args.ssh_user,
+                               identity_file=private_key_file,
+                               public_ip=info['public_ip'],
+                               public_dns=info['public_dns'])
+
         output, exitstatus = pexpect.runu(
             'update-dotdee {}'.format(ssh_config),
             withexitstatus=1)
@@ -621,10 +795,19 @@ class SSHConfig(Command):
             raise RuntimeError('update-dotdee error ' +
                                '(see stdout and stderr above)')
 
+    def _get_private_key_file(self):
+        """HACK to get private key."""
+        # TODO(dittrich): Should make this more robust.
+        private_key_file = None
+        for k, v in self.app.secrets._secrets.items():
+            if k.find('private_key_file') > 0:
+                private_key_file = v
+        return private_key_file
+
 
 class SSHKnownHostsAdd(Command):
     """
-    Add public SSH keys to known_hosts file(s).
+    Add public SSH keys to known_hosts file(s)
 
     This command will either extract SSH public host keys and fingerprints
     from a cloud service console output (either directly via an API or
@@ -646,6 +829,15 @@ class SSHKnownHostsAdd(Command):
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
         parser.formatter_class = argparse.RawDescriptionHelpFormatter
+        _known_hosts_root = os.path.join(os.getcwd(), 'known_hosts')
+        parser.add_argument(
+            '--known-hosts-root',
+            action='store',
+            dest='known_hosts_root',
+            default=_known_hosts_root,
+            help='Root for extracted known_hosts files ' +
+                 '(default: {})'.format(_known_hosts_root)
+        )
         parser.add_argument(
             '--public-ip',
             action='store',
@@ -669,6 +861,14 @@ class SSHKnownHostsAdd(Command):
                  'console output (default: None)'
         )
         parser.add_argument(
+            '--ask-become-pass',
+            action='store_const',
+            const='--ask-become-pass',
+            default='',
+            help='Ask for sudo password for Ansible privilege escalation ' +
+                 '(default: do not ask)'
+        )
+        parser.add_argument(
             '--show-playbook',
             action='store_true',
             dest='show_playbook',
@@ -683,20 +883,13 @@ class SSHKnownHostsAdd(Command):
             help="Write extracted fingerprints and public " +
                  "keys out to files (default: False)"
         )
-        parser.add_argument(
-            '--ask-become-pass',
-            action='store_const',
-            const='--ask-become-pass',
-            default='',
-            help='Ask for sudo password for Ansible privilege escalation ' +
-                 '(default: do not ask)'
-        )
-        _latest_console_output = _get_latest_console_output()
+        # _latest_console_output = _get_latest_console_output()
         parser.add_argument('source',
                             nargs="?",
                             type=argparse.FileType('r'),
                             help="console output to process",
-                            default=_latest_console_output)  # sys.stdin)
+                            # default=_latest_console_output)  # sys.stdin)
+                            default=None)
         parser.epilog = textwrap.dedent("""
             Use ``--show-playbook`` to just see the Ansible playbook without
             running it. Use ``-vvv`` to see the Ansible playbook while it is
@@ -725,15 +918,62 @@ class SSHKnownHostsAdd(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.log.debug('extracting/adding SSH known host keys')
+        self.log.debug('adding SSH known host keys')
         if parsed_args.show_playbook:
             print('[+] Playbook for managing SSH known_hosts files')
             print(REKEY_PLAYBOOK.decode('utf-8'))
             return True
+        self.app.secrets.requires_environment()
+        self.app.secrets.read_secrets_and_descriptions()
+        public_keys = PublicKeys(
+            known_hosts_root=parsed_args.known_hosts_root,
+            debug=self.app.options.debug)
+        hostkeys_as_json_string = public_keys.get_hostkey_list_as_json()
+        if self.app.options.debug:
+            _ansible_debug(hostkeys_as_json_string)
+        _ansible_set_hostkeys(
+                hostkeys_as_json_string,
+                debug=self.app.options.debug,
+                ask_become_pass=parsed_args.ask_become_pass,
+                verbose_level=self.app_args.verbose_level)
 
-        # TODO(dittrich): NOT DRY warning.
-        # Replicates code from 'ssh known-hosts add'
 
+class SSHKnownHostsExtract(Command):
+    """
+    Extract SSH keys from cloud provider console logs
+
+    Log output may come from stdout (as it does with Terraform), or
+    it may need to be extracted (e.g., after Pulumi creates AWS
+    instances, you need to manually extract the instance log(s)
+    in order to post-process them.
+    """
+
+    log = logging.getLogger(__name__)
+
+    def get_parser(self, prog_name):
+        parser = super().get_parser(prog_name)
+        parser.formatter_class = argparse.RawDescriptionHelpFormatter
+        _latest_console_output = _get_latest_console_output()
+        _known_hosts_root = os.path.join(os.getcwd(), 'known_hosts')
+        parser.add_argument(
+            '--known-hosts-root',
+            action='store',
+            dest='known_hosts_root',
+            default=_known_hosts_root,
+            help='Root for extracted known_hosts files ' +
+                 '(default: {})'.format(_known_hosts_root)
+        )
+        parser.add_argument('source',
+                            nargs="?",
+                            type=argparse.FileType('r'),
+                            help="console output to process",
+                            default=_latest_console_output)  # sys.stdin)
+        parser.epilog = textwrap.dedent("""
+            """)  # noqa
+        return parser
+
+    def take_action(self, parsed_args):
+        self.log.debug('extracting SSH known host keys')
         self.app.secrets.requires_environment()
         self.app.secrets.read_secrets_and_descriptions()
 
@@ -747,31 +987,28 @@ class SSHKnownHostsAdd(Command):
 
         # NOTE: parsed_args.source is a TextIOWrapper.
         if parsed_args.source.name.find('terraform') >= 0:
-            self._do_it_terraform_digitalocean_style(parsed_args)
+            self._extract_keys_terraform_digitalocean_style(parsed_args)
         elif parsed_args.source.name.find('console-output') >= 0:
-            self._do_it_pulumi_aws_style(parsed_args)
+            self._extract_keys_pulumi_aws_style(parsed_args)
         else:
             raise RuntimeError(
                 "don't know how to process " +
                 "'{}'".format(parsed_args.source))
 
-    def _do_it_terraform_digitalocean_style(self, parsed_args):
+    def _extract_keys_terraform_digitalocean_style(self, parsed_args):
+        # TODO(dittrich): The domain is assumed to be defined by do_domain
+        # This should probably be generalized better, but need to move
+        # quicky to get this running.
         public_keys = PublicKeys(
             domain=self.app.secrets.get_secret('do_domain'),
             debug=self.app.options.debug)
         if parsed_args.source is not None:
             public_keys.process_saved_console_output(parsed_args.source)
-        if parsed_args.save_to_files:
-            _write_fingerprints_pubkeys_to_files(public_keys.hostdict)
-        hostkeys_as_json_string = public_keys.get_hostkey_list_as_json()
-        if self.app.options.debug:
-            _ansible_debug(hostkeys_as_json_string)
-        _ansible_set_hostkeys(hostkeys_as_json_string,
-                              debug=self.app.options.debug,
-                              ask_become_pass=parsed_args.ask_become_pass,
-                              verbose_level=self.app_args.verbose_level)
+        _write_fingerprints_pubkeys_to_files(
+            hostdict=public_keys.hostdict,
+            known_hosts_root=parsed_args.known_hosts_root)
 
-    def _do_it_pulumi_aws_style(self, parsed_args):
+    def _extract_keys_pulumi_aws_style(self, parsed_args):
         # Get the instance_id from command line option, or
         # from console output file name. Avoid a conflict.
         if (parsed_args.instance_id is not None and
@@ -800,7 +1037,9 @@ class SSHKnownHostsAdd(Command):
             source = public_keys.retrieve_aws_console_output()
             public_keys.process_saved_console_output(source)
         if parsed_args.save_to_files:
-            _write_fingerprints_pubkeys_to_files(public_keys.hostdict)
+            _write_fingerprints_pubkeys_to_files(
+                hostdict=public_keys.hostdict,
+                known_hosts_root=parsed_args.known_hosts_root)
         hostkeys_as_json_string = public_keys.get_hostkey_list_as_json()
         if self.app.options.debug:
             _ansible_debug(hostkeys_as_json_string)
@@ -812,7 +1051,7 @@ class SSHKnownHostsAdd(Command):
 
 class SSHKnownHostsRemove(Command):
     """
-    Remove SSH keys from known_hosts file(s).
+    Remove SSH keys from known_hosts file(s)
 
     This command indirectly manipulates the known hosts file
     using an embedded Ansible playbook.
@@ -828,28 +1067,37 @@ class SSHKnownHostsRemove(Command):
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
         parser.formatter_class = argparse.RawDescriptionHelpFormatter
+        _known_hosts_root = os.path.join(os.getcwd(), 'known_hosts')
         parser.add_argument(
-            '--public-ip',
+            '--known-hosts-root',
             action='store',
-            dest='public_ip',
-            default=None,
-            help='IP address of host (default: None)'
+            dest='known_hosts_root',
+            default=_known_hosts_root,
+            help='Root for extracted known_hosts files ' +
+                 '(default: {})'.format(_known_hosts_root)
         )
-        parser.add_argument(
-            '--public-dns',
-            action='store',
-            dest='public_dns',
-            default=None,
-            help='DNS name of host (default: None)'
-        )
-        parser.add_argument(
-            '--instance-id',
-            action='store',
-            dest='instance_id',
-            default=None,
-            help='instance ID for getting direct AWS ' +
-                 'console output (default: None)'
-        )
+        # parser.add_argument(
+        #     '--public-ip',
+        #     action='store',
+        #     dest='public_ip',
+        #     default=None,
+        #     help='IP address of host (default: None)'
+        # )
+        # parser.add_argument(
+        #     '--public-dns',
+        #     action='store',
+        #     dest='public_dns',
+        #     default=None,
+        #     help='DNS name of host (default: None)'
+        # )
+        # parser.add_argument(
+        #     '--instance-id',
+        #     action='store',
+        #     dest='instance_id',
+        #     default=None,
+        #     help='instance ID for getting direct AWS ' +
+        #          'console output (default: None)'
+        # )
         parser.add_argument(
             '--ask-become-pass',
             action='store_const',
@@ -858,11 +1106,6 @@ class SSHKnownHostsRemove(Command):
             help='Ask for sudo password for Ansible privilege escalation ' +
                  '(default: do not ask)'
         )
-        parser.add_argument('source',
-                            nargs="?",
-                            type=argparse.FileType('r'),
-                            help="console output to process",
-                            default=None)  # sys.stdin)
         parser.add_argument(
             '--show-playbook',
             action='store_true',
@@ -870,6 +1113,11 @@ class SSHKnownHostsRemove(Command):
             default=False,
             help="Show the playbook on standard output and exit."
         )
+        parser.add_argument('source',
+                            nargs="?",
+                            type=argparse.FileType('r'),
+                            help="console output to process",
+                            default=None)  # sys.stdin)
         parser.epilog = textwrap.dedent("""
             Use ``--show-playbook`` to just see the Ansible playbook without
             running it. Use ``-vvv`` to see the Ansible playbook while it is
@@ -903,48 +1151,61 @@ class SSHKnownHostsRemove(Command):
             print('[+] Playbook for managing SSH known_hosts files')
             print(REKEY_PLAYBOOK.decode('utf-8'))
             return True
-
-        # TODO(dittrich): NOT DRY! Replicates code from 'ssh known-hosts add'
-
         self.app.secrets.requires_environment()
         self.app.secrets.read_secrets_and_descriptions()
-
+        if parsed_args.source is None:
+            # If no arguments provided, assume that files in the
+            # directory "known_hosts/" are to be used.
+            public_keys = PublicKeys(
+                known_hosts_root=parsed_args.known_hosts_root,
+                debug=self.app.options.debug)
+            hostkeys_as_json_string = public_keys.get_hostkey_list_as_json()
+            if self.app.options.debug:
+                _ansible_debug(hostkeys_as_json_string)
+            _ansible_remove_hostkeys(
+                    hostkeys_as_json_string,
+                    debug=self.app.options.debug,
+                    ask_become_pass=parsed_args.ask_become_pass,
+                    verbose_level=self.app_args.verbose_level)
+        else:
+            raise RuntimeError('TODO(dittrich): NOT YET IMPLEMENTED')
+        #
+        # TODO(dittrich): Commenting this out until there is time to complete
+        #
         # Get the instance_id from command line option, or
         # from console output file name. Avoid a conflict.
-        if (parsed_args.instance_id is not None and
-           not (parsed_args.public_ip is None or parsed_args.public_dns is None)):  # noqa
-            raise RuntimeError('--instance-id cannot be used with ' +
-                               'either --public-ip or --public-dns')
-        if parsed_args.source is not None:
-            instance_id = get_instance_id_from_source(
-                source=parsed_args.source)
-            if parsed_args.instance_id is not None:
-                if parsed_args.instance_id != instance_id:
-                    raise RuntimeError('--instance-id given does not match '
-                                       'name of source console log')
-        else:
-            instance_id = parsed_args.instance_id
 
-        public_ip = parsed_args.public_ip
-        public_dns = parsed_args.public_dns
-        public_keys = PublicKeys(public_ip=public_ip,
-                                 public_dns=public_dns,
-                                 instance_id=instance_id,
-                                 debug=self.app.options.debug)
-        if parsed_args.source is not None:
-            public_keys.process_saved_console_output(parsed_args.source)
-        elif instance_id is not None:
-            public_keys.process_aws_console_output()
-        hostkeys_as_json_string = public_keys.get_hostkey_list_as_json()
-        if self.app.options.debug:
-            _ansible_debug(hostkeys_as_json_string)
+        # if (parsed_args.instance_id is not None and
+        #    not (parsed_args.public_ip is None or parsed_args.public_dns is None)):  # noqa
+        #     raise RuntimeError('--instance-id cannot be used with ' +
+        #                        'either --public-ip or --public-dns')
+        # else:
+        #     instance_id = get_instance_id_from_source(
+        #         source=parsed_args.source)
+        #     if parsed_args.instance_id is not None:
+        #         if parsed_args.instance_id != instance_id:
+        #             raise RuntimeError('--instance-id given does not match '
+        #                                'name of source console log')
+        # public_ip = parsed_args.public_ip
+        # public_dns = parsed_args.public_dns
+        # public_keys = PublicKeys(public_ip=public_ip,
+        #                          public_dns=public_dns,
+        #                          instance_id=instance_id,
+        #                          debug=self.app.options.debug)
+        # if parsed_args.source is not None:
+        #     public_keys.process_saved_console_output(parsed_args.source)
+        # elif instance_id is not None:
+        #     public_keys.process_aws_console_output()
+        # hostkeys_as_json_string = public_keys.get_hostkey_list_as_json()
+        # if self.app.options.debug:
+        #     _ansible_debug(hostkeys_as_json_string)
 
-        _ansible_remove_hostkeys([i for i in [public_keys.get_public_ip(),
-                                              public_keys.get_public_dns()]
-                                  if i is not None],
-                                 debug=self.app.options.debug,
-                                 ask_become_pass=parsed_args.ask_become_pass,
-                                 verbose_level=self.app_args.verbose_level)
+        # _ansible_remove_hostkeys([i for i in [public_keys.get_public_ip(),
+        #                                       public_keys.get_public_dns()]
+        #                           if i is not None],
+        #                          debug=self.app.options.debug,
+        #                          ask_become_pass=parsed_args.ask_become_pass,
+        #                          verbose_level=self.app_args.verbose_level)
 
 
 # vim: set fileencoding=utf-8 ts=4 sw=4 tw=0 et :
