@@ -516,9 +516,14 @@ class EnvironmentsPath(Command):
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
         parser.formatter_class = argparse.RawDescriptionHelpFormatter
-        parser.add_argument('environment',
-                            nargs='?',
-                            default=None)
+        parser.add_argument(
+            '--exists',
+            action='store_true',
+            dest='exists',
+            default=False,
+            help="Check to see if environment exists and" +
+                 "return exit code (0==exists, 1==not)"
+        )
         parser.add_argument(
             '--json',
             action='store_true',
@@ -535,6 +540,9 @@ class EnvironmentsPath(Command):
             help='Create and/or return tmpdir for this environment ' +
                  '(default: False)'
         )
+        parser.add_argument('environment',
+                            nargs='?',
+                            default=None)
         parser.epilog = textwrap.dedent("""
             Provides the full absolute path to the environment directory
             for the environment.
@@ -565,8 +573,18 @@ class EnvironmentsPath(Command):
 
     def take_action(self, parsed_args):
         self.LOG.debug('returning environment path')
-        e = psec.secrets.SecretsEnvironment(
-                environment=self.app.options.environment)
+        environment = parsed_args.environment
+        if environment is None:
+            environment = self.app.options.environment
+        e = psec.secrets.SecretsEnvironment(environment)
+        exists = e.environment_exists()
+        if parsed_args.exists:
+            if self.app_args.verbose_level > 1:
+                status = "exists" if exists else "does not exist"
+                self.LOG.info('environment ' +
+                              '"{}" '.format(environment) +
+                              '{}'.format(status))
+            return 0 if exists else 1
         if parsed_args.tmpdir:
             tmpdir = e.tmpdir_path()
             tmpdir_mode = 0o700
