@@ -298,7 +298,7 @@ class EnvironmentsDelete(Command):
                     '[-] the following will be deleted: \n' +
                     ''.join([line for line in output]))
             else:
-                prompt = 'Retype the name "{}" to confirm:'.format(choice)
+                prompt = 'Type the name "{}" to confirm: '.format(choice)
                 cli = Input(prompt,
                             default="",
                             word_color=colors.foreground["yellow"])
