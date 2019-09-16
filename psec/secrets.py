@@ -1123,6 +1123,8 @@ class SecretsSet(Command):
 
     def take_action(self, parsed_args):
         self.LOG.debug('setting secrets')
+        if len(parsed_args.arg) == 0 and not parsed_args.undefined:
+            raise RuntimeError('no secrets specified to be set')
         self.app.secrets.read_secrets_and_descriptions()
         from_env = None
         if parsed_args.from_environment is not None:
