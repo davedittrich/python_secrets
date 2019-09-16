@@ -1141,7 +1141,7 @@ class SecretsSet(Command):
             if from_env is not None:
                 # Get value from a different environment
                 k = arg
-                v = from_env.get_secret(k)
+                v = from_env.get_secret(k, allow_none=True)
             elif '=' in arg:
                 k, v = arg.split('=')
             else:
@@ -1158,14 +1158,14 @@ class SecretsSet(Command):
                 if v is None:
                     self.LOG.info('no user input for "{}"'.format(k))
                     return None
-            if v.startswith('@'):
+            if v is not None and v.startswith('@'):
                 if v[1] == '~':
                     _path = os.path.expanduser(v[1:])
                 else:
                     _path = v[1:]
                 with open(_path, 'r') as f:
                     v = f.read().strip()
-            elif v.startswith('!'):
+            elif v is not None and v.startswith('!'):
                 # >> Issue: [B603:subprocess_without_shell_equals_true] subprocess call - check for execution of untrusted input.  # noqa
                 #    Severity: Low   Confidence: High
                 #    Location: psec/secrets.py:641
