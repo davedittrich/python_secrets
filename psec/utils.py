@@ -10,6 +10,7 @@ import requests
 import time
 import psec.secrets
 import subprocess  # nosec
+import sys
 import textwrap
 
 from bs4 import BeautifulSoup
