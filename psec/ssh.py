@@ -306,7 +306,8 @@ def _parse_known_hosts(root=None):
 
     host_info = dict()
     for root, dirs, files in os.walk(root, topdown=True):
-        for name in files:
+        for name in [f for f in files
+                     if f.endswith('.known_hosts')]:
             path = os.path.join(root, name)
             with open(path, 'r') as f:
                 info = f.read().strip()
@@ -954,7 +955,7 @@ class SSHKnownHostsExtract(Command):
         parser = super().get_parser(prog_name)
         parser.formatter_class = argparse.RawDescriptionHelpFormatter
         _latest_console_output = _get_latest_console_output()
-        _known_hosts_root = os.path.join(os.getcwd(), 'known_hosts')
+        _known_hosts_root = os.getcwd()
         parser.add_argument(
             '--known-hosts-root',
             action='store',
