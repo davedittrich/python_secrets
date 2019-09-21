@@ -28,6 +28,14 @@ from shutil import copytree
 from shutil import Error
 from subprocess import run, PIPE  # nosec
 from xkcdpass import xkcd_password as xp
+from xkcdpass.xkcd_password import CASE_METHODS
+
+# This module relies in part on features from the xkcdpass module.
+#
+# Copyright (c) 2011 - 2019, Steven Tobin and Contributors.
+# All rights reserved.
+#
+# https://github.com/redacted/XKCD-password-generator
 
 DEFAULT_SIZE = 18
 SECRET_TYPES = [
@@ -50,8 +58,23 @@ SECRET_ATTRIBUTES = [
     'Prompt'
 ]
 DEFAULT_MODE = 0o710
+# XKCD password defaults
+MIN_WORDS_LENGTH = 4
+MAX_WORDS_LENGTH = 8
+MIN_ACROSTIC_LENGTH = 4
+MAX_ACROSTIC_LENGTH = 4
+DELIMITER = '.'
+
 
 logger = logging.getLogger(__name__)
+
+
+def natural_number(value):
+    ivalue = int(value)
+    if ivalue <= 0:
+        raise argparse.ArgumentTypeError(
+            "{} is not a positive integer".format(value))
+    return ivalue
 
 
 def remove_other_perms(dst):
@@ -717,55 +740,94 @@ class Memoize:
         return self.memo[args]
 
 
-def generate_secret(secret_type=None, unique=False, **kwargs):
+def generate_secret(secret_type=None, *arguments, **kwargs):
     """Generate secret for the type of key"""
     _secret_types = [i['Type'] for i in SECRET_TYPES]
+    unique = kwargs.get('unique', False)
+    case = kwargs.get('case', 'lower')
+    acrostic = kwargs.get('acrostic', None)
+    numwords = kwargs.get('numwords', 5)
+    delimiter = kwargs.get('delimiter', DELIMITER)
+    min_words_length = kwargs.get('min_words_length', MIN_WORDS_LENGTH)
+    max_words_length = kwargs.get('max_words_length', MAX_WORDS_LENGTH)
+    min_acrostic_length = kwargs.get('min_acrostic_length',
+                                     MIN_ACROSTIC_LENGTH)
+    max_acrostic_length = kwargs.get('max_acrostic_length',
+                                     MAX_ACROSTIC_LENGTH)
+    wordfile = kwargs.get('wordfile', None)
+
     if secret_type not in _secret_types:
         raise TypeError("Secret type " +
                         "'{}' is not supported".format(secret_type))
+    # The generation functions are memoized, so they can't take keyword
+    # arguments. They are instead turned into positional arguments.
     if secret_type == "string":  # nosec
         return None
     if secret_type == 'password':  # nosec
-        return generate_password(unique)
+        return generate_password(unique,
+                                 acrostic,
+                                 numwords,
+                                 case,
+                                 delimiter,
+                                 min_words_length,
+                                 max_words_length,
+                                 min_acrostic_length,
+                                 max_acrostic_length,
+                                 wordfile)
     if secret_type == 'crypt_6':  # nosec
-        return generate_crypt6(unique, **kwargs)
+        return generate_crypt6(unique)
     elif secret_type == 'token_hex':  # nosec
-        return generate_token_hex(unique, **kwargs)
+        return generate_token_hex(unique)
     elif secret_type == 'token_urlsafe':  # nosec
-        return generate_token_urlsafe(unique, **kwargs)
+        return generate_token_urlsafe(unique)
     elif secret_type == 'consul_key':  # nosec
         return generate_consul_key(unique)
     elif secret_type == 'zookeeper_digest':  # nosec
-        return generate_zookeeper_digest(unique, **kwargs)
+        return generate_zookeeper_digest(unique)
     elif secret_type == 'uuid4':  # nosec
-        return generate_uuid4(unique, **kwargs)
+        return generate_uuid4(unique)
     elif secret_type == 'random_base64':  # nosec
-        return generate_random_base64(unique, **kwargs)
+        return generate_random_base64(unique)
     else:
         raise TypeError("Secret type " +
                         "'{}' is not supported".format(secret_type))
 
 
 @Memoize
-def generate_password(unique=False):
+def generate_password(unique,
+                      acrostic,
+                      numwords,
+                      case,
+                      delimiter,
+                      min_words_length,
+                      max_words_length,
+                      min_acrostic_length,
+                      max_acrostic_length,
+                      wordfile):
     """Generate an XKCD style password"""
-    # create a wordlist from the default wordfile
-    # use words between 5 and 8 letters long
-    wordfile = xp.locate_wordfile()
+
+    # Create a wordlist from the default wordfile.
+    if wordfile is None:
+        wordfile = xp.locate_wordfile()
     mywords = xp.generate_wordlist(
         wordfile=wordfile,
-        min_length=5,
-        max_length=8)
-    # Chose a random four-letter word for acrostic
-    acword = random.choice(  # nosec
-        xp.generate_wordlist(
-            wordfile=wordfile,
-            min_length=4,
-            max_length=4)
-    )
-    # create a password with acrostic word
-    pword = xp.generate_xkcdpassword(mywords, acrostic=acword)
-    return pword
+        min_length=min_words_length,
+        max_length=max_words_length)
+    if acrostic is None:
+        # Chose a random word for acrostic
+        acrostic = random.choice(  # nosec
+            xp.generate_wordlist(
+                wordfile=wordfile,
+                min_length=min_acrostic_length,
+                max_length=max_acrostic_length)
+        )
+    # Create a password with acrostic word
+    password = xp.generate_xkcdpassword(mywords,
+                                        numwords=numwords,
+                                        acrostic=acrostic,
+                                        case=case,
+                                        delimiter=delimiter)
+    return password
 
 
 @Memoize
@@ -1023,6 +1085,70 @@ class SecretsGenerate(Command):
         parser = super(SecretsGenerate, self).get_parser(prog_name)
         parser.formatter_class = argparse.RawDescriptionHelpFormatter
         parser.add_argument(
+            '--min-words-length',
+            action='store',
+            type=natural_number,
+            dest='min_words_length',
+            default=MIN_WORDS_LENGTH,
+            help='Minimum word length for XKCD words list ' +
+                 '(default: {})'.format(MIN_WORDS_LENGTH)
+        )
+        parser.add_argument(
+            '--max-words-length',
+            action='store',
+            type=natural_number,
+            dest='max_words_length',
+            default=MAX_WORDS_LENGTH,
+            help='Maximum word length for XKCD words list ' +
+                 '(default: {})'.format(MIN_WORDS_LENGTH)
+        )
+        parser.add_argument(
+            '--min-acrostic-length',
+            action='store',
+            type=natural_number,
+            dest='min_acrostic_length',
+            default=MIN_ACROSTIC_LENGTH,
+            help='Minimum length of acrostic word for XKCD password' +
+                 '(default: {})'.format(MIN_ACROSTIC_LENGTH)
+        )
+        parser.add_argument(
+            '--max-acrostic-length',
+            action='store',
+            type=natural_number,
+            dest='max_acrostic_length',
+            default=MAX_ACROSTIC_LENGTH,
+            help='Maximum length of acrostic word for XKCD password' +
+                 '(default: {})'.format(MAX_ACROSTIC_LENGTH)
+        )
+        parser.add_argument(
+            '--acrostic',
+            action='store',
+            dest='acrostic',
+            default=None,
+            help='Acrostic word for XKCD password ' +
+                 '(default: None)'
+        )
+        parser.add_argument(
+            '--delimiter',
+            action='store',
+            dest='delimiter',
+            default=DELIMITER,
+            help='Delimiter for XKCD password ' +
+                 '(default: "{}")'.format(DELIMITER)
+        )
+        parser.add_argument(
+            "-C", "--case",
+            dest="case",
+            type=str,
+            metavar="CASE",
+            choices=list(CASE_METHODS.keys()), default="lower",
+            help=(
+                "Choose the method for setting the case of each word "
+                "in the passphrase. "
+                "Choices: {cap_meths} (default: 'lower').".format(
+                    cap_meths=list(CASE_METHODS.keys())
+                )))
+        parser.add_argument(
             '-U', '--unique',
             action='store_true',
             dest='unique',
@@ -1045,15 +1171,19 @@ class SecretsGenerate(Command):
         to_change = parsed_args.arg \
             if len(parsed_args.arg) > 0 \
             else [k for k, v in self.app.secrets.items()]
-        for k in to_change:
-            t = self.app.secrets.get_secret_type(k)
-            arguments = self.app.secrets.get_secret_arguments(k)
-            v = generate_secret(secret_type=t,
-                                unique=parsed_args.unique,
-                                **arguments)
-            if v is not None:
-                self.LOG.debug("generated {} for {}".format(t, k))
-                self.app.secrets.set_secret(k, v)
+        for secret in to_change:
+            secret_type = self.app.secrets.get_secret_type(secret)
+            if secret_type is None:
+                raise TypeError('Secret "{}" '.format(secret) +
+                                'has no type definition')
+            arguments = self.app.secrets.get_secret_arguments(secret)
+            value = generate_secret(secret_type=secret_type,
+                                    *arguments,
+                                    **dict(parsed_args._get_kwargs()))
+            if value is not None:
+                self.LOG.debug("generated {} for {}".format(secret_type,
+                                                            secret))
+                self.app.secrets.set_secret(secret, value)
 
 
 class SecretsSet(Command):
