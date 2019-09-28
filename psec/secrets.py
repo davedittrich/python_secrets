@@ -941,6 +941,13 @@ class SecretsShow(Lister):
             default=False,
             help="Include prompts (default: False)"
         )
+        parser.add_argument(
+            '--undefined',
+            action='store_true',
+            dest='undefined',
+            default=False,
+            help="Only show variables that are not yet defined (default: False)"
+        )
         parser.add_argument('arg', nargs='*', default=None)
         parser.epilog = textwrap.dedent("""\
             To get show a subset of secrets, specify their names as
@@ -965,6 +972,8 @@ class SecretsShow(Lister):
                 | trident_sysadmin_pass  | password | None              | REDACTED |
                 +------------------------+----------+-------------------+----------+
 
+            Visually finding undefined variables in a very long list can be difficult.
+            You can show just undefined variables with the ``--undefined`` option.
             ..
             """)  # noqa
 
@@ -998,7 +1007,10 @@ class SecretsShow(Lister):
                   self.app.secrets.get_secret_export(k),
                   psec.utils.redact(v, parsed_args.redact))
                     for k, v in self.app.secrets.items()
-                    if k in variables]
+                    if (k in variables and
+                        (not parsed_args.undefined or
+                         (parsed_args.undefined and v in [None, ''])))
+                ]
         )
         return columns, data
 
