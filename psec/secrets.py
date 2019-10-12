@@ -96,7 +96,7 @@ def is_valid_environment(env_path, verbose_level=0):
         if 'secrets.yml' in filenames or 'secrets.d' in directories:
             contains_expected = True
     is_valid = os.path.exists(env_path) and contains_expected
-    if not is_valid and verbose_level > 0:
+    if not is_valid and verbose_level > 1:
         logger.info('[!] directory {} exists '.format(env_path) +
                     'but does not look like a valid environment')
     return is_valid
@@ -422,11 +422,13 @@ class SecretsEnvironment(object):
         :return:
         """
         # TODO(dittrich): Replace this with simpler use of attribute maps
+        verbose_level = self.app_args.verbose_level
         for group in self._descriptions.keys():
             for i in self._descriptions[group]:
                 s = i['Variable']
                 t = i['Type']
-                if self.get_secret(s, allow_none=True) is None:
+                if self.get_secret(s, allow_none=True) is None
+                        and verbose_level > 1:
                     self.LOG.info('new {} '.format(t) +
                                   'variable "{}" '.format(s) +
                                   'is not defined')
