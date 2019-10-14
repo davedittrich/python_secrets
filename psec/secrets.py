@@ -946,7 +946,8 @@ class SecretsShow(Lister):
             action='store_true',
             dest='undefined',
             default=False,
-            help="Only show variables that are not yet defined (default: False)"
+            help="Only show variables that are not yet " +
+                 "defined (default: False)"
         )
         parser.add_argument('arg', nargs='*', default=None)
         parser.epilog = textwrap.dedent("""\
@@ -1001,17 +1002,14 @@ class SecretsShow(Lister):
                 if len(parsed_args.arg) > 0 \
                 else [k for k, v in self.app.secrets.items()]
         columns = ('Variable', 'Type', 'Export', 'Value')
-        data = (
-                [(k,
+        data = ([(k,
                   self.app.secrets.get_secret_type(k),
                   self.app.secrets.get_secret_export(k),
                   psec.utils.redact(v, parsed_args.redact))
-                    for k, v in self.app.secrets.items()
-                    if (k in variables and
-                        (not parsed_args.undefined or
-                         (parsed_args.undefined and v in [None, ''])))
-                ]
-        )
+                for k, v in self.app.secrets.items()
+                if (k in variables and
+                    (not parsed_args.undefined or
+                     (parsed_args.undefined and v in [None, ''])))])
         return columns, data
 
 
