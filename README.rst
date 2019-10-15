@@ -15,7 +15,7 @@ psec (python_secrets)
 
 Python CLI for managing secrets (passwords, API keys, etc)
 
-Version: 19.9.0
+Version: 19.10.0
 
 * Free software: Apache 2.0 License
 * Documentation: https://python_secrets.readthedocs.org.
@@ -1176,7 +1176,7 @@ Decrypted, it looks like this:
     myapp_app_password=brunt.outclass.alike.turbine
 
     --
-    Sent using psec version 19.9.0
+    Sent using psec version 19.10.0
     https://pypi.org/project/python-secrets/
     https://github.com/davedittrich/python_secrets
 
