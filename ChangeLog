@@ -1,6 +1,37 @@
 CHANGES
 =======
 
+* Bump version
+* Fix documentation
+* Resolve pep8 findings
+* Add option to only show undefined variables
+* Add options/change default for xkcd password gen
+* Fix typo in kwarg name
+* Fix bug in directory traversal logic
+* Fix bug when copying None values from environment
+* Fix bug when no secrets provided to be set
+* Add environment existence check option
+* Working ssh key and configuration management
+* Clarify prompt
+* Add missing import
+* Don't do runtime tests as part of "test" target
+* Adding Bullet for dynamic list selection
+* Add runtime temp dirs to .gitignore
+* Add elapsed timer functionality
+* Initial SSH key extraction logic
+* Add elapsed timer functionality
+* Fix bug in tfstate backend path
+* Fix SSH key fingerprint parsing for terraform+do
+* Resolve pep8 findings
+* Add control of umask for better file perm security
+* Fixed formatters, so comment no longer needed
+* Support configuring Terraform tfstate backend
+* Put warnings on stdout for inline cmd substitution
+* Allow setting secrets by copying from another env
+* Sort environments when listing
+* Fix defaulting environment name
+* Update ChangeLog (there has to be a better way)
+
 19.9.0
 ------
 

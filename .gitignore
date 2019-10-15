@@ -1,3 +1,7 @@
+# psec related temp directories and files
+known_hosts/
+fingerprints/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

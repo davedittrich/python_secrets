@@ -7,13 +7,16 @@ import logging
 import os
 import random
 import requests
+import time
 import psec.secrets
 import subprocess  # nosec
+import sys
 import textwrap
 
 from bs4 import BeautifulSoup
 from cliff.command import Command
 from cliff.lister import Lister
+from collections import OrderedDict
 from configobj import ConfigObj
 from os import listdir, sep
 from os.path import abspath, basename, isdir
@@ -255,6 +258,62 @@ class MyIP(Command):
 # }
 
 
+class TfBackend(Command):
+    """
+    Enable Terraform backend support to move terraform.tfstate file
+    out of current working directory into environment path.
+    """
+
+    log = logging.getLogger(__name__)
+
+    def get_parser(self, prog_name):
+        parser = super().get_parser(prog_name)
+        parser.formatter_class = argparse.RawDescriptionHelpFormatter
+        parser.add_argument(
+            '--path',
+            action='store_true',
+            dest='path',
+            default=False,
+            help="Print path and exit (default: False)"
+        )
+        # tfstate = None
+        # try:
+        #     tfstate = os.path.join(self.app.secrets.environment_path(),
+        #                            "terraform.tfstate")
+        # except AttributeError:
+        #     pass
+        parser.epilog = textwrap.dedent("""
+            TBD(dittrich): Write this...
+            """)  # noqa
+        return parser
+
+    def take_action(self, parsed_args):
+        e = psec.secrets.SecretsEnvironment(
+                environment=self.app.options.environment)
+        tmpdir = e.tmpdir_path()
+        backend_file = os.path.join(os.getcwd(), 'tfbackend.tf')
+        tfstate_file = os.path.join(tmpdir, 'terraform.tfstate')
+        backend_text = textwrap.dedent("""\
+            terraform {{
+              backend "local" {{
+              path = "{tfstate_file}"
+              }}
+            }}
+            """.format(tfstate_file=tfstate_file))
+
+        if parsed_args.path:
+            self.log.debug('showing terraform state file path')
+            print(tfstate_file)
+        else:
+            self.log.debug('setting up terraform backend')
+            if os.path.exists(backend_file):
+                LOG.debug('updating {}'.format(backend_file))
+            else:
+                LOG.debug('creating {}'.format(backend_file))
+            with open(backend_file, 'w') as f:
+                f.write(backend_text)
+
+
 class TfOutput(Lister):
     """Retrieve current 'terraform output' results."""
 
@@ -265,7 +324,7 @@ class TfOutput(Lister):
         parser.formatter_class = argparse.RawDescriptionHelpFormatter
         tfstate = None
         try:
-            tfstate = os.path.join(self.app.secrets.environment_path(),
+            tfstate = os.path.join(self.app.secrets.tmpdir_path(),
                                    "terraform.tfstate")
         except AttributeError:
             pass
@@ -408,6 +467,95 @@ def tree(dir,
             print(line, file=outfile)
     else:
         return output
+
+
+class Timer(object):
+    """
+    Timer object usable as a context manager, or for manual timing.
+    Based on code from http://coreygoldberg.blogspot.com/2012/06/python-timer-class-context-manager-for.html  # noqa
+
+    As a context manager, do:
+
+        from timer import Timer
+
+        url = 'https://github.com/timeline.json'
+
+        with Timer() as t:
+            r = requests.get(url)
+
+        print 'fetched %r in %.2f millisecs' % (url, t.elapsed*1000)
+
+    """
+
+    def __init__(self, task_description='elapsed time', verbose=False):
+        self.verbose = verbose
+        self.task_description = task_description
+        self.laps = OrderedDict()
+
+    def __enter__(self):
+        """Record initial time."""
+        self.start(lap="__enter__")
+        if self.verbose:
+            sys.stdout.write('{}...'.format(self.task_description))
+            sys.stdout.flush()
+        return self
+
+    def __exit__(self, *args):
+        """Record final time."""
+        self.stop()
+        backspace = '\b\b\b'
+        if self.verbose:
+            sys.stdout.flush()
+            if self.elapsed_raw() < 1.0:
+                sys.stdout.write(backspace + ':' + '{:.2f}ms\n'.format(
+                    self.elapsed_raw() * 1000))
+            else:
+                sys.stdout.write(backspace + ': ' + '{}\n'.format(
+                    self.elapsed()))
+            sys.stdout.flush()
+
+    def start(self, lap=None):
+        """Record starting time."""
+        t = time.time()
+        first = None if len(self.laps) == 0 \
+            else self.laps.iteritems().next()[0]
+        if first is None:
+            self.laps["__enter__"] = t
+        if lap is not None:
+            self.laps[lap] = t
+        return t
+
+    def lap(self, lap="__lap__"):
+        """
+        Records a lap time.
+        If no lap label is specified, a single 'last lap' counter will be
+        (re)used. To keep track of more laps, provide labels yourself.
+        """
+        t = time.time()
+        self.laps[lap] = t
+        return t
+
+    def stop(self):
+        """Record stop time."""
+        return self.lap(lap="__exit__")
+
+    def get_lap(self, lap="__exit__"):
+        """Get the timer for label specified by 'lap'"""
+        return self.lap[lap]
+
+    def elapsed_raw(self, start="__enter__", end="__exit__"):
+        """Return the elapsed time as a raw value."""
+        return self.laps[end] - self.laps[start]
+
+    def elapsed(self, start="__enter__", end="__exit__"):
+        """
+        Return a formatted string with elapsed time between 'start'
+        and 'end' kwargs (if specified) in HH:MM:SS.SS format.
+        """
+        hours, rem = divmod(self.elapsed_raw(start, end), 3600)
+        minutes, seconds = divmod(rem, 60)
+        return "{:0>2}:{:0>2}:{:05.2f}".format(
+            int(hours), int(minutes), seconds)
 
 
 class SetAWSCredentials(Command):
