@@ -562,13 +562,13 @@ the values in clear text in the terminal output, add the ``--no-redact`` flag:
     +------------------------+----------+-------------------+------------------------------+
     | Variable               | Type     | Export            | Value                        |
     +------------------------+----------+-------------------+------------------------------+
-    | jenkins_admin_password | password | None              | fetch outsider awning maroon |
-    | myapp_app_password     | password | DEMO_app_password | fetch outsider awning maroon |
+    | jenkins_admin_password | password | None              | fetch.outsider.awning.maroon |
+    | myapp_app_password     | password | DEMO_app_password | fetch.outsider.awning.maroon |
     | myapp_client_psk       | string   | DEMO_client_ssid  | PSK                          |
     | myapp_client_ssid      | string   | DEMO_client_ssid  | SSID                         |
-    | myapp_pi_password      | password | DEMO_pi_password  | fetch outsider awning maroon |
-    | trident_db_pass        | password | None              | fetch outsider awning maroon |
-    | trident_sysadmin_pass  | password | None              | fetch outsider awning maroon |
+    | myapp_pi_password      | password | DEMO_pi_password  | fetch.outsider.awning.maroon |
+    | trident_db_pass        | password | None              | fetch.outsider.awning.maroon |
+    | trident_sysadmin_pass  | password | None              | fetch.outsider.awning.maroon |
     +------------------------+----------+-------------------+------------------------------+
 
 ..
@@ -596,8 +596,8 @@ subset of secrets, you have two ways to do this.
        +----------------------------+----------+--------------------------------------+
        | Variable                   | Type     | Value                                |
        +----------------------------+----------+--------------------------------------+
-       | rabbitmq_default_user_pass | password | handheld angrily letdown frisk       |
-       | rabbitmq_admin_user_pass   | password | handheld angrily letdown frisk       |
+       | rabbitmq_default_user_pass | password | handheld.angrily.letdown.frisk       |
+       | rabbitmq_admin_user_pass   | password | handheld.angrily.letdown.frisk       |
        +----------------------------+----------+--------------------------------------+
 
    ..
@@ -611,9 +611,9 @@ subset of secrets, you have two ways to do this.
        +----------------------------+----------+--------------------------------------+
        | Variable                   | Type     | Value                                |
        +----------------------------+----------+--------------------------------------+
-       | jenkins_admin_password     | password | handheld angrily letdown frisk       |
-       | trident_db_pass            | password | handheld angrily letdown frisk       |
-       | trident_sysadmin_pass      | password | handheld angrily letdown frisk       |
+       | jenkins_admin_password     | password | handheld.angrily.letdown.frisk       |
+       | trident_db_pass            | password | handheld.angrily.letdown.frisk       |
+       | trident_sysadmin_pass      | password | handheld.angrily.letdown.frisk       |
        +----------------------------+----------+--------------------------------------+
 
    ..
@@ -735,13 +735,13 @@ each type of secret to simplify things, use the ``secrets generate`` command:
     +----------------------------+--------------------------------------+
     | Variable                   | Value                                |
     +----------------------------+--------------------------------------+
-    | trident_db_pass            | gargle earlobe eggplant kissable     |
+    | trident_db_pass            | gargle.earlobe.eggplant.kissable     |
     | consul_key                 | zQvSe0kdf0Xarbhb80XULQ==             |
-    | jenkins_admin_password     | gargle earlobe eggplant kissable     |
-    | rabbitmq_default_user_pass | gargle earlobe eggplant kissable     |
-    | rabbitmq_admin_user_pass   | gargle earlobe eggplant kissable     |
-    | trident_sysadmin_pass      | gargle earlobe eggplant kissable     |
-    | vncserver_password         | gargle earlobe eggplant kissable     |
+    | jenkins_admin_password     | gargle.earlobe.eggplant.kissable     |
+    | rabbitmq_default_user_pass | gargle.earlobe.eggplant.kissable     |
+    | rabbitmq_admin_user_pass   | gargle.earlobe.eggplant.kissable     |
+    | trident_sysadmin_pass      | gargle.earlobe.eggplant.kissable     |
+    | vncserver_password         | gargle.earlobe.eggplant.kissable     |
     | zookeeper_uuid4            | 769a77ad-b06f-4018-857e-23f970c777c2 |
     +----------------------------+--------------------------------------+
 
@@ -757,14 +757,14 @@ specifying the variable and value in the form ``variable=value``:
     +----------------------------+--------------------------------------+
     | Variable                   | Value                                |
     +----------------------------+--------------------------------------+
-    | trident_db_pass            | rural coffee purple sedan            |
-    | ca_rootca_password         | gargle earlobe eggplant kissable     |
+    | trident_db_pass            | rural.coffee.purple.sedan            |
+    | ca_rootca_password         | gargle.earlobe.eggplant.kissable     |
     | consul_key                 | zQvSe0kdf0Xarbhb80XULQ==             |
-    | jenkins_admin_password     | gargle earlobe eggplant kissable     |
-    | rabbitmq_default_user_pass | gargle earlobe eggplant kissable     |
-    | rabbitmq_admin_user_pass   | gargle earlobe eggplant kissable     |
-    | trident_sysadmin_pass      | gargle earlobe eggplant kissable     |
-    | vncserver_password         | gargle earlobe eggplant kissable     |
+    | jenkins_admin_password     | gargle.earlobe.eggplant.kissable     |
+    | rabbitmq_default_user_pass | gargle.earlobe.eggplant.kissable     |
+    | rabbitmq_admin_user_pass   | gargle.earlobe.eggplant.kissable     |
+    | trident_sysadmin_pass      | gargle.earlobe.eggplant.kissable     |
+    | vncserver_password         | gargle.earlobe.eggplant.kissable     |
     | zookeeper_uuid4            | 769a77ad-b06f-4018-857e-23f970c777c2 |
     +----------------------------+--------------------------------------+
 
@@ -814,14 +814,14 @@ them to the command line as arguments to ``secrets generate``:
     +----------------------------+--------------------------------------+
     | Variable                   | Value                                |
     +----------------------------+--------------------------------------+
-    | trident_db_pass            | rural coffee purple sedan            |
-    | ca_rootca_password         | gargle earlobe eggplant kissable     |
+    | trident_db_pass            | rural.coffee.purple.sedan            |
+    | ca_rootca_password         | gargle.earlobe.eggplant.kissable     |
     | consul_key                 | zQvSe0kdf0Xarbhb80XULQ==             |
-    | jenkins_admin_password     | gargle earlobe eggplant kissable     |
-    | rabbitmq_default_user_pass | embezzle xerox excess skydiver       |
-    | rabbitmq_admin_user_pass   | embezzle xerox excess skydiver       |
-    | trident_sysadmin_pass      | gargle earlobe eggplant kissable     |
-    | vncserver_password         | gargle earlobe eggplant kissable     |
+    | jenkins_admin_password     | gargle.earlobe.eggplant.kissable     |
+    | rabbitmq_default_user_pass | embezzle.xerox.excess.skydiver       |
+    | rabbitmq_admin_user_pass   | embezzle.xerox.excess.skydiver       |
+    | trident_sysadmin_pass      | gargle.earlobe.eggplant.kissable     |
+    | vncserver_password         | gargle.earlobe.eggplant.kissable     |
     | zookeeper_uuid4            | 769a77ad-b06f-4018-857e-23f970c777c2 |
     +----------------------------+--------------------------------------+
 
@@ -896,10 +896,10 @@ following steps:
        +-----------------------+----------+------------------------------+
        | Variable              | Type     | Value                        |
        +-----------------------+----------+------------------------------+
-       | gosecure_app_password | password | brunt outclass alike turbine |
+       | gosecure_app_password | password | brunt.outclass.alike.turbine |
        | gosecure_client_psk   | string   | None                         |
        | gosecure_client_ssid  | string   | None                         |
-       | gosecure_pi_password  | password | brunt outclass alike turbine |
+       | gosecure_pi_password  | password | brunt.outclass.alike.turbine |
        | gosecure_pi_pubkey    | string   | None                         |
        +-----------------------+----------+------------------------------+
 
@@ -921,10 +921,10 @@ following steps:
        +-----------------------+----------+------------------------------------------------------------------------------------------+
        | Variable              | Type     | Value                                                                                    |
        +-----------------------+----------+------------------------------------------------------------------------------------------+
-       | gosecure_app_password | password | brunt outclass alike turbine                                                             |
+       | gosecure_app_password | password | brunt.outclass.alike.turbine                                                             |
        | gosecure_client_psk   | string   | atjhK5AlsQMw3Zh
        | gosecure_client_ssid  | string   | YourWiFiSSID                                                                             |
-       | gosecure_pi_password  | password | brunt outclass alike turbine                                                             |
+       | gosecure_pi_password  | password | brunt.outclass.alike.turbine                                                             |
        | gosecure_pi_pubkey    | string   | ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC+qUIucrPvRkTmY0tgxr9ac/VtBUHhYHfOdDVpU99AcryLMWiU |
        |                       |          | uQ2/NVikfOfPo5mt9YTQyqRbeBzKlNgbHnsxh0AZatjhK5AlsQMw3ZhZUcLYZbt7szuQy8ineN0potlCJoVaMSOb |
        |                       |          | 9htf9gAPvzwxUnHxg35jPCzAXYAi3Erc6y338+CL0XxQvCogXOA+MwH7wZGgdT3WpupLG/7HAr/3KJEQQk1FlS2m |
@@ -1173,7 +1173,7 @@ Decrypted, it looks like this:
 
     The following secret is being shared with you:
 
-    myapp_app_password=brunt outclass alike turbine
+    myapp_app_password=brunt.outclass.alike.turbine
 
     --
     Sent using psec version 19.9.0
@@ -1305,8 +1305,8 @@ shell prompt.
     TEST_gosecure_pi_pubkey=ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC+qUIucrPvRkTmY0tgxr9ac/VtBUHhYHfOdDVpU99AcryLMWiU [...]
     TEST_gosecure_client_psk=atjhK5AlsQMw3Zh
     TEST_gosecure_client_ssid=YourWiFiSSID
-    TEST_gosecure_pi_password=brunt outclass alike turbine
-    TEST_gosecure_app_password=brunt outclass alike turbine
+    TEST_gosecure_pi_password=brunt.outclass.alike.turbine
+    TEST_gosecure_app_password=brunt.outclass.alike.turbine
     $ exit
     test>
 
