@@ -176,16 +176,21 @@ class PythonSecretsApp(App):
             self.options.environment))
         self.environment = self.options.environment
         self.secrets_basedir = self.options.secrets_basedir
-        SecretsEnvironment.permissions_check(self.secrets_basedir)
-        self.secrets_file = self.options.secrets_file
-        self.secrets = SecretsEnvironment(
-            environment=self.environment,
-            secrets_basedir=self.secrets_basedir,
-            secrets_file=self.secrets_file,
-            export_env_vars=self.options.export_env_vars,
-            verbose_level=self.options.verbose_level,
-            env_var_prefix=self.options.env_var_prefix,
-            )
+        # Don't output error messages when "complete" command used
+        if cmd.__class__.__name__ != 'CompleteCommand':
+            SecretsEnvironment.permissions_check(
+                self.secrets_basedir,
+                verbose_level=self.options.verbose_level,
+                )
+            self.secrets_file = self.options.secrets_file
+            self.secrets = SecretsEnvironment(
+                environment=self.environment,
+                secrets_basedir=self.secrets_basedir,
+                secrets_file=self.secrets_file,
+                export_env_vars=self.options.export_env_vars,
+                verbose_level=self.options.verbose_level,
+                env_var_prefix=self.options.env_var_prefix,
+                )
 
     def clean_up(self, cmd, result, err):
         self.LOG.debug('clean_up %s', cmd.__class__.__name__)
@@ -193,7 +198,7 @@ class PythonSecretsApp(App):
             self.LOG.debug('got an error: %s', err)
             if self.secrets.changed():
                 self.LOG.info('not writing secrets out due to error')
-        else:
+        elif cmd.__class__.__name__ != 'CompleteCommand':
             if self.secrets.changed():
                 self.secrets.write_secrets()
             if (self.options.elapsed or

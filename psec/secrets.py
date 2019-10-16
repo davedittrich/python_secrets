@@ -226,7 +226,7 @@ class SecretsEnvironment(object):
         return str(self.environment())
 
     @classmethod
-    def permissions_check(cls, basedir='.'):
+    def permissions_check(cls, basedir='.', verbose_level=0):
         """Check for presense of perniscious overly-permissive permissions."""
         any_other = stat.S_IROTH | stat.S_IWOTH | stat.S_IXOTH
         for root, dirs, files in os.walk(basedir, topdown=True):
@@ -234,7 +234,7 @@ class SecretsEnvironment(object):
                 path = os.path.join(root, name)
                 try:
                     st = os.stat(path)
-                    if (st.st_mode & any_other):
+                    if (st.st_mode & any_other) and verbose_level >= 1:
                         print('[!] file {} '.format(path) +
                               'is mode {}'.format(oct(st.st_mode)),
                               file=sys.stderr)
@@ -244,7 +244,7 @@ class SecretsEnvironment(object):
                     path = os.path.join(root, name)
                     try:
                         st = os.stat(path)
-                        if (st.st_mode & any_other):
+                        if (st.st_mode & any_other) and verbose_level >= 1:
                             print('[!] directory {} '.format(path) +
                                   'is mode {}'.format(oct(st.st_mode)),
                                   file=sys.stderr)
