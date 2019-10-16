@@ -234,7 +234,8 @@ class SecretsEnvironment(object):
                 path = os.path.join(root, name)
                 try:
                     st = os.stat(path)
-                    if (st.st_mode & any_other) and verbose_level >= 1:
+                    open_perms = (st.st_mode & 0o777) & any_other
+                    if (open_perms != 0 and verbose_level >= 1):
                         print('[!] file {} '.format(path) +
                               'is mode {}'.format(oct(st.st_mode)),
                               file=sys.stderr)
