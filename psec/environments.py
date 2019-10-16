@@ -15,6 +15,7 @@ from bullet import colors
 from cliff.command import Command
 from cliff.lister import Lister
 from stat import S_IMODE
+from sys import stdin
 
 
 def _is_default(a, b):
@@ -270,9 +271,14 @@ class EnvironmentsDelete(Command):
 
     def take_action(self, parsed_args):
         self.LOG.debug('deleting environment')
+        choice = None
         if parsed_args.environment is not None:
             choice = parsed_args.environment
+        elif not stdin.isatty():
+            # Can't involve user in getting a choice.
+            raise RuntimeError('[-] no environment specified to delete')
         else:
+            # Give user a chance to choose.
             environments = os.listdir(self.app.secrets.secrets_basedir())
             choices = ['<CANCEL>'] + sorted(environments)
             cli = Bullet(prompt="\nSelect environment to delete:",
@@ -469,6 +475,8 @@ class EnvironmentsDefault(Command):
             else:
                 self.LOG.info('default environment unset')
         elif parsed_args.set:
+            if parsed_args.environment is None and not stdin.isatty():
+                raise RuntimeError('[-] no environment specified')
             if parsed_args.environment is None:
                 environments = os.listdir(self.app.secrets.secrets_basedir())
                 choices = ['<CANCEL>'] + sorted(environments)
