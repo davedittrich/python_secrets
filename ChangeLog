@@ -1,6 +1,16 @@
 CHANGES
 =======
 
+* Update testing to integrate bats into tox
+* Move bats unit test into tox testing
+* Avoid attempting interactive things when no tty
+* Clarify permissions logic
+* Just check r/w/x perms
+* Don't let "complete" have unnecessary error msgs
+
+19.10.0
+-------
+
 * Bump version
 * Fix documentation
 * Resolve pep8 findings
