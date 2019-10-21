@@ -7,7 +7,7 @@ PROJECT:=$(shell basename `pwd`)
 
 #HELP test - run 'tox' for testing
 .PHONY: test
-test: test-tox test-bats
+test: test-tox
 	@echo '[+] All tests succeeded'
 
 .PHONY: test-tox
