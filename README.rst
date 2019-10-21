@@ -757,7 +757,7 @@ specifying the variable and value in the form ``variable=value``:
     +----------------------------+--------------------------------------+
     | Variable                   | Value                                |
     +----------------------------+--------------------------------------+
-    | trident_db_pass            | rural.coffee.purple.sedan            |
+    | trident_db_pass            | rural coffee purple sedan            |
     | ca_rootca_password         | gargle.earlobe.eggplant.kissable     |
     | consul_key                 | zQvSe0kdf0Xarbhb80XULQ==             |
     | jenkins_admin_password     | gargle.earlobe.eggplant.kissable     |
