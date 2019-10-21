@@ -40,13 +40,13 @@ no-diffs:
 
 #HELP release - package and upload a release to pypi
 .PHONY: release
-release: clean docs-tests docs sdist bdist_egg bdist_wheel test twine-check
+release: clean test docs-tests docs sdist bdist_egg bdist_wheel twine-check
 	$(MAKE) no-diffs
 	twine upload dist/* -r pypi
 
 #HELP release-test - upload to "testpypi"
 .PHONY: release-test
-release-test: clean docs-tests docs sdist test twine-check
+release-test: clean test docs-tests docs sdist twine-check
 	$(MAKE) no-diffs
 	twine upload dist/* -r testpypi
 
@@ -113,8 +113,6 @@ docs-tests:
 	(echo '$$ make test-tox' && $(MAKE) test-tox) |\
 	       $(PR) | tee docs/test-tox.txt
 	$(MAKE) test-bats | $(PR) | tee docs/test-bats.txt
-	(echo '$$ make test-bats-runtime' && $(MAKE) test-bats-runtime) |\
-	       $(PR) | tee docs/test-bats-runtime.txt
 
 
 #HELP docs - build Sphinx docs (NOT INTEGRATED YET FROM OPENSTACK CODE BASE)
