@@ -7,53 +7,64 @@ PROJECT:=$(shell basename `pwd`)
 
 #HELP test - run 'tox' for testing
 .PHONY: test
-test: test-tox test-bats
+test: test-tox
+	@echo '[+] All tests succeeded'
 
 .PHONY: test-tox
 test-tox:
 	@if [ -f .python_secrets_environment ]; then (echo '[!] Remove .python_secrets_environment prior to testing'; exit 1); fi
 	tox
 
-.PHONY: bats-libraries
-bats-libraries:
-	@[ -f ../bats-support/load.bash ] || \
-		(echo 'bats-support missing; clone from https://github.com/ztombol/bats-support.git'; exit 1)
-	@[ -f ../bats-assert-1/load.bash ] || \
-		(echo 'bats-assert-1/ missing; clone from https://github.com/jasonkarns/bats-assert-1.git'; exit 1)
-
-.PHONY: install-bats-libraries
-install-bats-libraries:
-	@[ -f ../bats-support/load.bash ] || \
-		(cd ..; git clone https://github.com/ztombol/bats-support.git)
-	@[ -f ../bats-assert-1/load.bash ] || \
-		(cd ..; git clone https://github.com/jasonkarns/bats-assert-1.git)
-
-
 .PHONY: test-bats
 test-bats: bats-libraries
-	[ "$(TRAVIS)" != "true" ] && bats tests || true
+	@if [ "$(TRAVIS)" != "true" ]; then \
+		if ! type bats 2>/dev/null >/dev/null; then \
+			echo "[-] Skipping bats tests"; \
+		else \
+			echo "[+] Running bats unit tests:"; \
+			(cd tests && ls -1 [0-9][0-9]*.bats); \
+			bats --tap tests/[0-9][0-9]*.bats; \
+		fi \
+	 fi
+
+.PHONY: test-bats-runtime
+test-bats-runtime: bats-libraries
+	@echo "[+] Running bats runtime tests:"
+	@cd tests && ls -1 runtime_[0-9][0-9]*.bats
+	bats --tap tests/runtime_*.bats || true
+
+.PHONY: no-diffs
+no-diffs:
+	@echo 'Checking Git for uncommitted changes'
+	git diff --quiet HEAD
 
 #HELP release - package and upload a release to pypi
 .PHONY: release
-release: clean sdist bdist_egg bdist_wheel test twine-check
+release: clean test docs-tests docs sdist bdist_egg bdist_wheel twine-check
+	$(MAKE) no-diffs
 	twine upload dist/* -r pypi
 
 #HELP release-test - upload to "testpypi"
 .PHONY: release-test
-release-test: clean bdist_wheel test
+release-test: clean test docs-tests docs sdist twine-check
+	$(MAKE) no-diffs
 	twine upload dist/* -r testpypi
 
 #HELP bdist_egg - build an egg package
 .PHONY: bdist_egg
 bdist_egg:
+	rm -f dist/.LATEST_EGG
 	python setup.py bdist_egg
-	ls -l dist/*.egg
+	(cd dist && ls -t *.egg 2>/dev/null | head -n 1) > dist/.LATEST_EGG
+	ls -lt dist/*.egg
 
 #HELP bdist_wheel - build a wheel package
 .PHONY: bdist_wheel
 bdist_wheel:
+	rm -f dist/.LATEST_WHEEL
 	python setup.py bdist_wheel
-	ls -l dist/*.whl
+	(cd dist && ls -t *.whl 2>/dev/null | head -n 1) > dist/.LATEST_WHEEL
+	ls -lt dist/*.whl
 
 #HELP sdist - build a source package
 .PHONY: sdist
@@ -95,7 +106,36 @@ install-active:
 	python -m pip install -U .
 	psec help | tee docs/psec_help.txt
 
+#HELP docs-tests - generate bats test output for documentation
+.PHONY: docs-tests
+PR=pr --omit-header --omit-pagination --page-width 80
+docs-tests:
+	(echo '$$ make test-tox' && $(MAKE) test-tox) |\
+	       $(PR) | tee docs/test-tox.txt
+	$(MAKE) test-bats | $(PR) | tee docs/test-bats.txt
+
+
 #HELP docs - build Sphinx docs (NOT INTEGRATED YET FROM OPENSTACK CODE BASE)
 .PHONY: docs
 docs:
 	(cd docs && make clean html)
+
+# Git submodules and subtrees are both a huge PITA. This is way simpler.
+
+.PHONY: bats-libraries
+bats-libraries: bats bats-support bats-assert
+
+bats:
+	@[ -d tests/libs/bats ] || \
+		(mkdir -p tests/libs/bats; git clone http://github.com/sstephenson/bats tests/libs/bats)
+
+
+bats-support:
+	@[ -d tests/libs/bats-support ] || \
+		(mkdir -p tests/libs/bats-support; git clone https://github.com/ztombol/bats-support tests/libs/bats-support)
+
+bats-assert:
+	@[ -d tests/libs/bats-assert ] || \
+		(mkdir -p tests/libs/bats-assert; git clone https://github.com/ztombol/bats-assert tests/libs/bats-assert)
+
+#EOF

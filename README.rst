@@ -15,7 +15,7 @@ psec (python_secrets)
 
 Python CLI for managing secrets (passwords, API keys, etc)
 
-Version: 19.5.1
+Version: 19.10.1
 
 * Free software: Apache 2.0 License
 * Documentation: https://python_secrets.readthedocs.org.
@@ -88,7 +88,7 @@ Limitations
 
 * Secrets are stored in *unencrypted* form in the environments
   directories.  Permissions are set to limit access, but this is not an
-  "encrypt data data at rest" solution like `Vault by Hashicorp`_.
+  "encrypt data at rest" solution like `Vault by Hashicorp`_.
 
 * Does not handle secure distributed access for users on remote systems. You
   must use something like `Vault by Hashicorp`_ or `libfuse/sshfs`_ for secure
@@ -518,19 +518,7 @@ to manage its own values.
 
     $ psec groups create newgroup --clone-from ~/git/goSecure/secrets/secrets.d/gosecure.yml
     created new group "newgroup"
-    $ psec groups list
-    new password variable "gosecure_pi_password" is not defined
-    new password variable "gosecure_app_password" is not defined
-    new string variable "gosecure_client_psk" is not defined
-    new string variable "gosecure_client_ssid" is not defined
-    new string variable "gosecure_vpn_client_id" is not defined
-    new token_hex variable "gosecure_vpn_client_psk" is not defined
-    new string variable "gosecure_pi_pubkey" is not defined
-    new string variable "gosecure_pi_locale" is not defined
-    new string variable "gosecure_pi_timezone" is not defined
-    new string variable "gosecure_pi_wifi_country" is not defined
-    new string variable "gosecure_pi_keyboard_model" is not defined
-    new string variable "gosecure_pi_keyboard_layout" is not defined
+    $ psec groups list 2>/dev/null
     +----------+-------+
     | Group    | Items |
     +----------+-------+
@@ -574,13 +562,13 @@ the values in clear text in the terminal output, add the ``--no-redact`` flag:
     +------------------------+----------+-------------------+------------------------------+
     | Variable               | Type     | Export            | Value                        |
     +------------------------+----------+-------------------+------------------------------+
-    | jenkins_admin_password | password | None              | fetch outsider awning maroon |
-    | myapp_app_password     | password | DEMO_app_password | fetch outsider awning maroon |
+    | jenkins_admin_password | password | None              | fetch.outsider.awning.maroon |
+    | myapp_app_password     | password | DEMO_app_password | fetch.outsider.awning.maroon |
     | myapp_client_psk       | string   | DEMO_client_ssid  | PSK                          |
     | myapp_client_ssid      | string   | DEMO_client_ssid  | SSID                         |
-    | myapp_pi_password      | password | DEMO_pi_password  | fetch outsider awning maroon |
-    | trident_db_pass        | password | None              | fetch outsider awning maroon |
-    | trident_sysadmin_pass  | password | None              | fetch outsider awning maroon |
+    | myapp_pi_password      | password | DEMO_pi_password  | fetch.outsider.awning.maroon |
+    | trident_db_pass        | password | None              | fetch.outsider.awning.maroon |
+    | trident_sysadmin_pass  | password | None              | fetch.outsider.awning.maroon |
     +------------------------+----------+-------------------+------------------------------+
 
 ..
@@ -608,8 +596,8 @@ subset of secrets, you have two ways to do this.
        +----------------------------+----------+--------------------------------------+
        | Variable                   | Type     | Value                                |
        +----------------------------+----------+--------------------------------------+
-       | rabbitmq_default_user_pass | password | handheld angrily letdown frisk       |
-       | rabbitmq_admin_user_pass   | password | handheld angrily letdown frisk       |
+       | rabbitmq_default_user_pass | password | handheld.angrily.letdown.frisk       |
+       | rabbitmq_admin_user_pass   | password | handheld.angrily.letdown.frisk       |
        +----------------------------+----------+--------------------------------------+
 
    ..
@@ -623,9 +611,9 @@ subset of secrets, you have two ways to do this.
        +----------------------------+----------+--------------------------------------+
        | Variable                   | Type     | Value                                |
        +----------------------------+----------+--------------------------------------+
-       | jenkins_admin_password     | password | handheld angrily letdown frisk       |
-       | trident_db_pass            | password | handheld angrily letdown frisk       |
-       | trident_sysadmin_pass      | password | handheld angrily letdown frisk       |
+       | jenkins_admin_password     | password | handheld.angrily.letdown.frisk       |
+       | trident_db_pass            | password | handheld.angrily.letdown.frisk       |
+       | trident_sysadmin_pass      | password | handheld.angrily.letdown.frisk       |
        +----------------------------+----------+--------------------------------------+
 
    ..
@@ -747,13 +735,13 @@ each type of secret to simplify things, use the ``secrets generate`` command:
     +----------------------------+--------------------------------------+
     | Variable                   | Value                                |
     +----------------------------+--------------------------------------+
-    | trident_db_pass            | gargle earlobe eggplant kissable     |
+    | trident_db_pass            | gargle.earlobe.eggplant.kissable     |
     | consul_key                 | zQvSe0kdf0Xarbhb80XULQ==             |
-    | jenkins_admin_password     | gargle earlobe eggplant kissable     |
-    | rabbitmq_default_user_pass | gargle earlobe eggplant kissable     |
-    | rabbitmq_admin_user_pass   | gargle earlobe eggplant kissable     |
-    | trident_sysadmin_pass      | gargle earlobe eggplant kissable     |
-    | vncserver_password         | gargle earlobe eggplant kissable     |
+    | jenkins_admin_password     | gargle.earlobe.eggplant.kissable     |
+    | rabbitmq_default_user_pass | gargle.earlobe.eggplant.kissable     |
+    | rabbitmq_admin_user_pass   | gargle.earlobe.eggplant.kissable     |
+    | trident_sysadmin_pass      | gargle.earlobe.eggplant.kissable     |
+    | vncserver_password         | gargle.earlobe.eggplant.kissable     |
     | zookeeper_uuid4            | 769a77ad-b06f-4018-857e-23f970c777c2 |
     +----------------------------+--------------------------------------+
 
@@ -769,14 +757,14 @@ specifying the variable and value in the form ``variable=value``:
     +----------------------------+--------------------------------------+
     | Variable                   | Value                                |
     +----------------------------+--------------------------------------+
-    | trident_db_pass            | rural coffee purple sedan            |
-    | ca_rootca_password         | gargle earlobe eggplant kissable     |
+    | trident_db_pass            | rural.coffee.purple.sedan            |
+    | ca_rootca_password         | gargle.earlobe.eggplant.kissable     |
     | consul_key                 | zQvSe0kdf0Xarbhb80XULQ==             |
-    | jenkins_admin_password     | gargle earlobe eggplant kissable     |
-    | rabbitmq_default_user_pass | gargle earlobe eggplant kissable     |
-    | rabbitmq_admin_user_pass   | gargle earlobe eggplant kissable     |
-    | trident_sysadmin_pass      | gargle earlobe eggplant kissable     |
-    | vncserver_password         | gargle earlobe eggplant kissable     |
+    | jenkins_admin_password     | gargle.earlobe.eggplant.kissable     |
+    | rabbitmq_default_user_pass | gargle.earlobe.eggplant.kissable     |
+    | rabbitmq_admin_user_pass   | gargle.earlobe.eggplant.kissable     |
+    | trident_sysadmin_pass      | gargle.earlobe.eggplant.kissable     |
+    | vncserver_password         | gargle.earlobe.eggplant.kissable     |
     | zookeeper_uuid4            | 769a77ad-b06f-4018-857e-23f970c777c2 |
     +----------------------------+--------------------------------------+
 
@@ -826,14 +814,14 @@ them to the command line as arguments to ``secrets generate``:
     +----------------------------+--------------------------------------+
     | Variable                   | Value                                |
     +----------------------------+--------------------------------------+
-    | trident_db_pass            | rural coffee purple sedan            |
-    | ca_rootca_password         | gargle earlobe eggplant kissable     |
+    | trident_db_pass            | rural.coffee.purple.sedan            |
+    | ca_rootca_password         | gargle.earlobe.eggplant.kissable     |
     | consul_key                 | zQvSe0kdf0Xarbhb80XULQ==             |
-    | jenkins_admin_password     | gargle earlobe eggplant kissable     |
-    | rabbitmq_default_user_pass | embezzle xerox excess skydiver       |
-    | rabbitmq_admin_user_pass   | embezzle xerox excess skydiver       |
-    | trident_sysadmin_pass      | gargle earlobe eggplant kissable     |
-    | vncserver_password         | gargle earlobe eggplant kissable     |
+    | jenkins_admin_password     | gargle.earlobe.eggplant.kissable     |
+    | rabbitmq_default_user_pass | embezzle.xerox.excess.skydiver       |
+    | rabbitmq_admin_user_pass   | embezzle.xerox.excess.skydiver       |
+    | trident_sysadmin_pass      | gargle.earlobe.eggplant.kissable     |
+    | vncserver_password         | gargle.earlobe.eggplant.kissable     |
     | zookeeper_uuid4            | 769a77ad-b06f-4018-857e-23f970c777c2 |
     +----------------------------+--------------------------------------+
 
@@ -866,13 +854,14 @@ following steps:
 
    .. note::
 
-      If you ever want to suppress messages about new variables, etc.,
-      just add the ``-q`` flag:
+      The warnings about undefined new variables are presented on the standard
+      error file handle (a.k.a., ``&2``). You get rid of them on the console by
+      redirecting ``stderr`` to ``/dev/null`` or a file:
 
       .. code-block:: console
 
-          $ psec -q environments create test --clone-from ~/git/goSecure/secrets
-          $
+          $ psec environments create test --clone-from ~/git/goSecure/secrets 2>/dev/null
+          environment directory /Users/dittrich/.secrets/test created
 
       ..
 
@@ -907,10 +896,10 @@ following steps:
        +-----------------------+----------+------------------------------+
        | Variable              | Type     | Value                        |
        +-----------------------+----------+------------------------------+
-       | gosecure_app_password | password | brunt outclass alike turbine |
+       | gosecure_app_password | password | brunt.outclass.alike.turbine |
        | gosecure_client_psk   | string   | None                         |
        | gosecure_client_ssid  | string   | None                         |
-       | gosecure_pi_password  | password | brunt outclass alike turbine |
+       | gosecure_pi_password  | password | brunt.outclass.alike.turbine |
        | gosecure_pi_pubkey    | string   | None                         |
        +-----------------------+----------+------------------------------+
 
@@ -932,10 +921,10 @@ following steps:
        +-----------------------+----------+------------------------------------------------------------------------------------------+
        | Variable              | Type     | Value                                                                                    |
        +-----------------------+----------+------------------------------------------------------------------------------------------+
-       | gosecure_app_password | password | brunt outclass alike turbine                                                             |
+       | gosecure_app_password | password | brunt.outclass.alike.turbine                                                             |
        | gosecure_client_psk   | string   | atjhK5AlsQMw3Zh
        | gosecure_client_ssid  | string   | YourWiFiSSID                                                                             |
-       | gosecure_pi_password  | password | brunt outclass alike turbine                                                             |
+       | gosecure_pi_password  | password | brunt.outclass.alike.turbine                                                             |
        | gosecure_pi_pubkey    | string   | ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC+qUIucrPvRkTmY0tgxr9ac/VtBUHhYHfOdDVpU99AcryLMWiU |
        |                       |          | uQ2/NVikfOfPo5mt9YTQyqRbeBzKlNgbHnsxh0AZatjhK5AlsQMw3ZhZUcLYZbt7szuQy8ineN0potlCJoVaMSOb |
        |                       |          | 9htf9gAPvzwxUnHxg35jPCzAXYAi3Erc6y338+CL0XxQvCogXOA+MwH7wZGgdT3WpupLG/7HAr/3KJEQQk1FlS2m |
@@ -1184,10 +1173,10 @@ Decrypted, it looks like this:
 
     The following secret is being shared with you:
 
-    myapp_app_password=brunt outclass alike turbine
+    myapp_app_password=brunt.outclass.alike.turbine
 
     --
-    Sent using psec version 19.5.1
+    Sent using psec version 19.10.1
     https://pypi.org/project/python-secrets/
     https://github.com/davedittrich/python_secrets
 
@@ -1316,8 +1305,8 @@ shell prompt.
     TEST_gosecure_pi_pubkey=ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC+qUIucrPvRkTmY0tgxr9ac/VtBUHhYHfOdDVpU99AcryLMWiU [...]
     TEST_gosecure_client_psk=atjhK5AlsQMw3Zh
     TEST_gosecure_client_ssid=YourWiFiSSID
-    TEST_gosecure_pi_password=brunt outclass alike turbine
-    TEST_gosecure_app_password=brunt outclass alike turbine
+    TEST_gosecure_pi_password=brunt.outclass.alike.turbine
+    TEST_gosecure_app_password=brunt.outclass.alike.turbine
     $ exit
     test>
 
@@ -1341,38 +1330,64 @@ and understand the types and sources of security vulnerabilities related to
 Python programs. Keep these ideas in mind when using and/or modifying this
 program.
 
+As part of testing, the `Bandit`_ security validation program is used.
+(See `Getting started with Bandit`_).
 
-Bugs, Enhancements, and Future Work
------------------------------------
+.. _Bandit: https://pypi.org/project/bandit/
+.. _Getting started with Bandit: https://developer.rackspace.com/blog/getting-started-with-bandit/
 
+In situations where Bandit warnings can safely be ignored, the ``# nosec``
+comment appears on source code lines. Comments as to why these can be
+safely ignored are included in the code. (Please feel free to issue pull
+requests if you disagree.)
 
-There is a known bug in the complex way that `argparse` and `cliff` handle the
-epilog (returned by `get_epilog()` method in command classes.) The result is
-that Sphinx documentation looks great, but command line help looks like a
-jumbled mess.  For example,
+One runtime security mechanism employed by ``psec`` is control of the process'
+``umask``. This is important when running programs that create files, which
+will inherit their permissions per the process ``umask``. The ``umask`` will be
+inherited by every new child process and can be set in the user's ``.bashrc``
+(or other shell initialization) file.
+
+The ``psec run`` command can be used to run programs as child processes,
+optionally exporting environment variables as well, so controlling the
+``umask`` results in improved file permission security regardless of
+whether the user knows to set their process ``umask``.
+
+You can see the effect in these two examples.
+
+First, by setting the ``umask`` to ``0`` you see the very permissive file
+permissions (as well as getting a warning from ``psec`` about finding a file
+with lax permissions):
 
 .. code-block:: console
 
-   usage: psec run [-h] [arg [arg ...]]
-
-   Run a command using exported secrets
-
-    positional arguments:
-      arg         command arguments (default: "psec run --help")
-
-    optional arguments:
-      -h, --help  show this help message and exit
-
-    .. code-block:: shell $ psec run usage: psec run [-h] [arg [arg ...]] Run a
-    command using exported secrets positional arguments: arg command arguments
-    (default: "psec run --help") optional arguments: -h, --help show this help
-    message and exit ..
+    $ psec --umask 0o000 run -- dd if=/dev/random count=1 of=$(psec environments path --tmpdir)/foo
+    1+0 records in
+    1+0 records out
+    512 bytes copied, 0.000019 s, 2.7 MB/s
+    $ ls -l $(psec environments path --tmpdir)/foo
+    [!] file /Users/dittrich/.secrets/python_secrets/tmp/foo is mode 0o100666
+    -rw-rw-rw- 1 dittrich staff 512 Sep  8 13:05 /Users/dittrich/.secrets/python_secrets/tmp/foo
+    $ rm $(psec environments path --tmpdir)/foo
 
 ..
 
-The solution is supposed to be setting
-``formatter_class=argparse.RawDescriptionHelpFormatter``, but this didn't seem
-to be easy to do with ``cliff`` in a way that worked as expected.
+Now when using the default ``--umask`` value, the file permissions are restricted
+(and thus no more warning):
+
+.. code-block:: console
+
+    $ psec run -- dd if=/dev/random count=1 of=$(psec environments path --tmpdir)/foo
+    1+0 records in
+    1+0 records out
+    512 bytes copied, 0.000243 s, 2.1 MB/s
+    $ ls -l $(psec environments path --tmpdir)/foo
+    -rw------- 1 dittrich staff 512 Sep  8 13:04 /Users/dittrich/.secrets/python_secrets/tmp/foo
+    $ rm $(psec environments path --tmpdir)/foo
+
+..
+
+Bugs, Enhancements, and Future Work
+-----------------------------------
 
 Feature requests (and of course bug reports) are highly encouraged. You can
 do that by `opening an issue`_ on GitHub. Better yet, make a `pull

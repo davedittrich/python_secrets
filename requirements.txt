@@ -1,4 +1,6 @@
 boto3
+beautifulsoup4
+bullet
 cliff
 configobj
 configparser

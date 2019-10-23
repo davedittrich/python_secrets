@@ -6,9 +6,12 @@ import hashlib
 import json
 import logging
 import os
+import psec.utils
 import random
 import re
 import secrets
+import stat
+import sys
 import textwrap
 import uuid
 import yaml
@@ -16,15 +19,24 @@ import yaml
 from cliff.command import Command
 from cliff.lister import Lister
 from numpy.random import bytes as np_random_bytes
-from psec.utils import redact, find, prompt_string
 from psec.google_oauth2 import GoogleSMTP
-from shutil import copy, copytree
 # >> Issue: [B404:blacklist] Consider possible security implications associated with run module.  # noqa
 #    Severity: Low   Confidence: High
 #    Location: psec/secrets.py:21
 #    More Info: https://bandit.readthedocs.io/en/latest/blacklists/blacklist_imports.html#b404-import-subprocess  # noqa
+from shutil import copy
+from shutil import copytree
+from shutil import Error
 from subprocess import run, PIPE  # nosec
 from xkcdpass import xkcd_password as xp
+from xkcdpass.xkcd_password import CASE_METHODS
+
+# This module relies in part on features from the xkcdpass module.
+#
+# Copyright (c) 2011 - 2019, Steven Tobin and Contributors.
+# All rights reserved.
+#
+# https://github.com/redacted/XKCD-password-generator
 
 DEFAULT_SIZE = 18
 SECRET_TYPES = [
@@ -47,20 +59,70 @@ SECRET_ATTRIBUTES = [
     'Prompt'
 ]
 DEFAULT_MODE = 0o710
+# XKCD password defaults
+MIN_WORDS_LENGTH = 4
+MAX_WORDS_LENGTH = 8
+MIN_ACROSTIC_LENGTH = 4
+MAX_ACROSTIC_LENGTH = 4
+DELIMITER = '.'
+
 
 logger = logging.getLogger(__name__)
 
 
+def natural_number(value):
+    ivalue = int(value)
+    if ivalue <= 0:
+        raise argparse.ArgumentTypeError(
+            "{} is not a positive integer".format(value))
+    return ivalue
+
+
+def remove_other_perms(dst):
+    """Make all files in path ``dst`` have ``o-rwx`` permissions."""
+    # TODO(dittrich): Test on Windows. Should work on all Linux.
+    psec.utils.get_output(['chmod', '-R', 'o-rwx', dst])
+
+
 def copyanything(src, dst):
+    """Copy anything from src to dst."""
     try:
         copytree(src, dst)
     except FileExistsError as e:  # noqa
         pass
-    except OSError as exc:  # python >2.5
-        if exc.errno == errno.ENOTDIR:
+    except OSError as err:
+        if err.errno == os.errno.ENOTDIR:
             copy(src, dst)
         else:
             raise
+    finally:
+        remove_other_perms(dst)
+
+
+def copydescriptions(src, dst):
+    """
+    Just copy the descriptions portion of an environment
+    directory from src to dst.
+    """
+
+    srcname = os.path.join(src, 'secrets.d')
+    dstname = os.path.join(dst, 'secrets.d')
+    os.makedirs(dst)
+    errors = []
+    try:
+        if os.path.isdir(srcname):
+            copytree(srcname, dstname)
+        else:
+            raise RuntimeError('"{}" is not a directory'.format(srcname))
+    except OSError as err:
+        errors.append((srcname, dstname, str(err)))
+    # catch the Error from the recursive copytree so that we can
+    # continue with other files
+    except Error as err:
+        errors.extend(err.args[0])
+    if errors:
+        raise Error(errors)
+    remove_other_perms(dst)
 
 
 def _identify_environment(environment=None):
@@ -88,7 +150,7 @@ def _identify_environment(environment=None):
     return environment
 
 
-def is_valid_environment(env_path, verbose_level=0):
+def is_valid_environment(env_path, verbose_level=1):
     """Check to see if this looks like a valid environment
     directory based on contents."""
     contains_expected = False
@@ -97,8 +159,8 @@ def is_valid_environment(env_path, verbose_level=0):
             contains_expected = True
     is_valid = os.path.exists(env_path) and contains_expected
     if not is_valid and verbose_level > 1:
-        logger.info('[!] directory {} exists '.format(env_path) +
-                    'but does not look like a valid environment')
+        logger.warning('[!] environment directory {} '.format(env_path) +
+                       'exists but is empty')
     return is_valid
 
 
@@ -117,7 +179,7 @@ class SecretsEnvironment(object):
                  export_env_vars=False,
                  env_var_prefix=None,
                  source=None,
-                 verbose_level=0,
+                 verbose_level=1,
                  cwd=os.getcwd()):
         self._cwd = cwd
         self._environment = _identify_environment(environment)
@@ -163,6 +225,36 @@ class SecretsEnvironment(object):
     def __str__(self):
         """Produce string representation of environment identifier"""
         return str(self.environment())
+
+    @classmethod
+    def permissions_check(cls, basedir='.', verbose_level=0):
+        """Check for presense of perniscious overly-permissive permissions."""
+        any_other_perms = stat.S_IROTH | stat.S_IWOTH | stat.S_IXOTH
+        for root, dirs, files in os.walk(basedir, topdown=True):
+            for name in files:
+                path = os.path.join(root, name)
+                try:
+                    st = os.stat(path)
+                    perms = st.st_mode & 0o777
+                    open_perms = (perms & any_other_perms) != 0
+                    if (open_perms and verbose_level >= 1):
+                        print('[!] file {} '.format(path) +
+                              'is mode {}'.format(oct(perms)),
+                              file=sys.stderr)
+                except OSError:
+                    pass
+                for name in dirs:
+                    path = os.path.join(root, name)
+                    try:
+                        st = os.stat(path)
+                        perms = st.st_mode & 0o777
+                        open_perms = (perms & any_other_perms) != 0
+                        if (open_perms and verbose_level >= 1):
+                            print('[!] directory {} '.format(path) +
+                                  'is mode {}'.format(oct(perms)),
+                                  file=sys.stderr)
+                    except OSError:
+                        pass
 
     def environment(self):
         """Returns the environment identifier."""
@@ -217,10 +309,12 @@ class SecretsEnvironment(object):
         """Create secrets root directory"""
         os.mkdir(self.secrets_basedir(), mode=mode)
 
-    def environment_path(self, subdir=None, host=None):
+    def environment_path(self, env=None, subdir=None, host=None):
         """Returns the absolute path to secrets environment directory
         or subdirectories within it"""
-        _path = os.path.join(self.secrets_basedir(), self.environment())
+        if env is None:
+            env = self.environment()
+        _path = os.path.join(self.secrets_basedir(), env)
 
         if not (subdir is None and host is None):
             valid_subdir = 'a-zA-Z0-9_/'
@@ -251,12 +345,12 @@ class SecretsEnvironment(object):
 
         return _path
 
-    def environment_exists(self, path_only=False):
+    def environment_exists(self, env=None, path_only=False):
         """Return whether secrets environment directory exists
         and contains files"""
-        _ep = self.environment_path()
-        result = False
-        if os.path.exists(_ep):
+        _ep = self.environment_path(env=env)
+        result = self.descriptions_path_exists()
+        if not result and os.path.exists(_ep):
             if path_only:
                 result = True
             else:
@@ -274,7 +368,8 @@ class SecretsEnvironment(object):
         """Create secrets environment directory"""
         env_path = self.environment_path()
         if not alias:
-            # Create a new environment (optionally from an existing environment)
+            # Create a new environment (optionally from an
+            # existing environment)
             if self.environment_exists():
                 raise RuntimeError(
                     'Environment "{}" '.format(self.environment()) +
@@ -296,8 +391,10 @@ class SecretsEnvironment(object):
             # Create a symlink with a relative path
             os.symlink(source_env.environment(), env_path)
 
-    def secrets_file_path(self):
+    def secrets_file_path(self, env=None):
         """Returns the absolute path to secrets file"""
+        if env is None:
+            env = self.environment()
         if self.environment() is None:
             return os.path.join(self.secrets_basedir(), self._secrets_file)
         else:
@@ -309,14 +406,18 @@ class SecretsEnvironment(object):
         """Return whether secrets file exists"""
         return os.path.exists(self.secrets_file_path())
 
-    def descriptions_path(self):
+    def descriptions_path(self, env=None):
         """Return the absolute path to secrets descriptions directory"""
+        if env is None:
+            env = self.environment()
         return os.path.join(self.environment_path(),
                             self._secrets_descriptions)
 
-    def descriptions_path_exists(self):
+    def descriptions_path_exists(self, env=None):
         """Return whether secrets descriptions directory exists"""
-        return os.path.exists(self.descriptions_path())
+        if env is None:
+            env = self.environment()
+        return os.path.exists(self.descriptions_path(env=env))
 
     def descriptions_path_create(self, mode=DEFAULT_MODE):
         """Create secrets descriptions directory"""
@@ -329,12 +430,12 @@ class SecretsEnvironment(object):
         """Return the absolute path to secrets descriptions tmp directory"""
         return os.path.join(self.environment_path(), "tmp")
 
-    def requires_environment(self):
+    def requires_environment(self, path_only=False):
         """
         Provide consistent error handling for any commands that require
         an environment actually exist in order to work properly.
         """
-        if not self.environment_exists():
+        if not self.environment_exists(path_only=path_only):
             raise RuntimeError(
                 'environment "{}" '.format(self.environment()) +
                 'does not exist or is empty')
@@ -382,6 +483,11 @@ class SecretsEnvironment(object):
         self._secrets[secret] = value  # DEPRECATED
         getattr(self, 'Variable')[secret] = value
         if self.export_env_vars:
+            # Export with secrets name first.
+            os.environ[secret] = str(value)
+            # See if an alternate environment variable name is
+            # defined and also export as that.
+            # TODO(dittrich): Support more than one, someday, maybe?
             _env_var = self.get_secret_export(secret)
             if _env_var is None:
                 if self.env_var_prefix is not None:
@@ -427,11 +533,11 @@ class SecretsEnvironment(object):
             for i in self._descriptions[group]:
                 s = i['Variable']
                 t = i['Type']
-                if self.get_secret(s, allow_none=True) is None
-                        and verbose_level > 1:
-                    self.LOG.info('new {} '.format(t) +
-                                  'variable "{}" '.format(s) +
-                                  'is not defined')
+                if self.get_secret(s, allow_none=True) is None:
+                    if self.verbose_level > 1:
+                        self.LOG.warning('new {} '.format(t) +
+                                         'variable "{}" '.format(s) +
+                                         'is not defined')
                     self._set_secret(s, None)
 
     def read_secrets(self, from_descriptions=False):
@@ -474,6 +580,7 @@ class SecretsEnvironment(object):
                           default_flow_style=False
                           )
             self._changed = False
+            remove_other_perms(_fname)
         else:
             self.LOG.debug('not writing secrets (unchanged)')
 
@@ -481,7 +588,16 @@ class SecretsEnvironment(object):
         """Clone an existing environment directory (or facsimile there of)"""
         dest = self.environment_path()
         if source is not None:
-            copyanything(source, dest)
+            if self.environment_exists(env=source):
+                # Only copy descriptions when cloning from environment.
+                copydescriptions(os.path.join(self.secrets_basedir(), source),
+                                 dest)
+            elif os.path.exists(source):
+                # Copy anything when cloning from directory.
+                copyanything(source, dest)
+            else:
+                raise RuntimeError(
+                    'Could not clone from "{}"'.format(source))
         self.read_secrets_descriptions()
         self.find_new_secrets()
 
@@ -565,7 +681,7 @@ class SecretsEnvironment(object):
     def get_secret_type(self, variable):
         """Get the Type of variable from set of secrets descriptions"""
         for g in self._descriptions.keys():
-            i = find(
+            i = psec.utils.find(
                 self._descriptions[g],
                 'Variable',
                 variable)
@@ -584,7 +700,7 @@ class SecretsEnvironment(object):
     def get_secret_arguments(self, variable):
         """Get the Arguments of variable from set of secrets descriptions"""
         for g in self._descriptions.keys():
-            i = find(
+            i = psec.utils.find(
                 self._descriptions[g],
                 'Variable',
                 variable)
@@ -601,7 +717,7 @@ class SecretsEnvironment(object):
 
     def is_item_in_group(self, item, group):
         """Return true or false based on item being in group"""
-        return find(
+        return psec.utils.find(
                 self._descriptions[group],
                 'Variable',
                 item) is not None
@@ -630,55 +746,94 @@ class Memoize:
         return self.memo[args]
 
 
-def generate_secret(secret_type=None, unique=False, **kwargs):
+def generate_secret(secret_type=None, *arguments, **kwargs):
     """Generate secret for the type of key"""
     _secret_types = [i['Type'] for i in SECRET_TYPES]
+    unique = kwargs.get('unique', False)
+    case = kwargs.get('case', 'lower')
+    acrostic = kwargs.get('acrostic', None)
+    numwords = kwargs.get('numwords', 5)
+    delimiter = kwargs.get('delimiter', DELIMITER)
+    min_words_length = kwargs.get('min_words_length', MIN_WORDS_LENGTH)
+    max_words_length = kwargs.get('max_words_length', MAX_WORDS_LENGTH)
+    min_acrostic_length = kwargs.get('min_acrostic_length',
+                                     MIN_ACROSTIC_LENGTH)
+    max_acrostic_length = kwargs.get('max_acrostic_length',
+                                     MAX_ACROSTIC_LENGTH)
+    wordfile = kwargs.get('wordfile', None)
+
     if secret_type not in _secret_types:
         raise TypeError("Secret type " +
                         "'{}' is not supported".format(secret_type))
-    if secret_type == "string":
+    # The generation functions are memoized, so they can't take keyword
+    # arguments. They are instead turned into positional arguments.
+    if secret_type == "string":  # nosec
         return None
-    if secret_type == 'password':
-        return generate_password(unique)
-    if secret_type == 'crypt_6':
-        return generate_crypt6(unique, **kwargs)
-    elif secret_type == 'token_hex':
-        return generate_token_hex(unique, **kwargs)
-    elif secret_type == 'token_urlsafe':
-        return generate_token_urlsafe(unique, **kwargs)
-    elif secret_type == 'consul_key':
+    if secret_type == 'password':  # nosec
+        return generate_password(unique,
+                                 acrostic,
+                                 numwords,
+                                 case,
+                                 delimiter,
+                                 min_words_length,
+                                 max_words_length,
+                                 min_acrostic_length,
+                                 max_acrostic_length,
+                                 wordfile)
+    if secret_type == 'crypt_6':  # nosec
+        return generate_crypt6(unique)
+    elif secret_type == 'token_hex':  # nosec
+        return generate_token_hex(unique)
+    elif secret_type == 'token_urlsafe':  # nosec
+        return generate_token_urlsafe(unique)
+    elif secret_type == 'consul_key':  # nosec
         return generate_consul_key(unique)
-    elif secret_type == 'zookeeper_digest':
-        return generate_zookeeper_digest(unique, **kwargs)
-    elif secret_type == 'uuid4':
-        return generate_uuid4(unique, **kwargs)
-    elif secret_type == 'random_base64':
-        return generate_random_base64(unique, **kwargs)
+    elif secret_type == 'zookeeper_digest':  # nosec
+        return generate_zookeeper_digest(unique)
+    elif secret_type == 'uuid4':  # nosec
+        return generate_uuid4(unique)
+    elif secret_type == 'random_base64':  # nosec
+        return generate_random_base64(unique)
     else:
         raise TypeError("Secret type " +
                         "'{}' is not supported".format(secret_type))
 
 
 @Memoize
-def generate_password(unique=False):
+def generate_password(unique,
+                      acrostic,
+                      numwords,
+                      case,
+                      delimiter,
+                      min_words_length,
+                      max_words_length,
+                      min_acrostic_length,
+                      max_acrostic_length,
+                      wordfile):
     """Generate an XKCD style password"""
-    # create a wordlist from the default wordfile
-    # use words between 5 and 8 letters long
-    wordfile = xp.locate_wordfile()
+
+    # Create a wordlist from the default wordfile.
+    if wordfile is None:
+        wordfile = xp.locate_wordfile()
     mywords = xp.generate_wordlist(
         wordfile=wordfile,
-        min_length=5,
-        max_length=8)
-    # Chose a random four-letter word for acrostic
-    acword = random.choice(  # nosec
-        xp.generate_wordlist(
-            wordfile=wordfile,
-            min_length=4,
-            max_length=4)
-    )
-    # create a password with acrostic word
-    pword = xp.generate_xkcdpassword(mywords, acrostic=acword)
-    return pword
+        min_length=min_words_length,
+        max_length=max_words_length)
+    if acrostic is None:
+        # Chose a random word for acrostic
+        acrostic = random.choice(  # nosec
+            xp.generate_wordlist(
+                wordfile=wordfile,
+                min_length=min_acrostic_length,
+                max_length=max_acrostic_length)
+        )
+    # Create a password with acrostic word
+    password = xp.generate_xkcdpassword(mywords,
+                                        numwords=numwords,
+                                        acrostic=acrostic,
+                                        case=case,
+                                        delimiter=delimiter)
+    return password
 
 
 @Memoize
@@ -792,6 +947,14 @@ class SecretsShow(Lister):
             default=False,
             help="Include prompts (default: False)"
         )
+        parser.add_argument(
+            '--undefined',
+            action='store_true',
+            dest='undefined',
+            default=False,
+            help="Only show variables that are not yet " +
+                 "defined (default: False)"
+        )
         parser.add_argument('arg', nargs='*', default=None)
         parser.epilog = textwrap.dedent("""\
             To get show a subset of secrets, specify their names as
@@ -816,6 +979,8 @@ class SecretsShow(Lister):
                 | trident_sysadmin_pass  | password | None              | REDACTED |
                 +------------------------+----------+-------------------+----------+
 
+            Visually finding undefined variables in a very long list can be difficult.
+            You can show just undefined variables with the ``--undefined`` option.
             ..
             """)  # noqa
 
@@ -843,14 +1008,14 @@ class SecretsShow(Lister):
                 if len(parsed_args.arg) > 0 \
                 else [k for k, v in self.app.secrets.items()]
         columns = ('Variable', 'Type', 'Export', 'Value')
-        data = (
-                [(k,
+        data = ([(k,
                   self.app.secrets.get_secret_type(k),
                   self.app.secrets.get_secret_export(k),
-                  redact(v, parsed_args.redact))
-                    for k, v in self.app.secrets.items()
-                    if k in variables]
-        )
+                  psec.utils.redact(v, parsed_args.redact))
+                for k, v in self.app.secrets.items()
+                if (k in variables and
+                    (not parsed_args.undefined or
+                     (parsed_args.undefined and v in [None, ''])))])
         return columns, data
 
 
@@ -936,6 +1101,70 @@ class SecretsGenerate(Command):
         parser = super(SecretsGenerate, self).get_parser(prog_name)
         parser.formatter_class = argparse.RawDescriptionHelpFormatter
         parser.add_argument(
+            '--min-words-length',
+            action='store',
+            type=natural_number,
+            dest='min_words_length',
+            default=MIN_WORDS_LENGTH,
+            help='Minimum word length for XKCD words list ' +
+                 '(default: {})'.format(MIN_WORDS_LENGTH)
+        )
+        parser.add_argument(
+            '--max-words-length',
+            action='store',
+            type=natural_number,
+            dest='max_words_length',
+            default=MAX_WORDS_LENGTH,
+            help='Maximum word length for XKCD words list ' +
+                 '(default: {})'.format(MIN_WORDS_LENGTH)
+        )
+        parser.add_argument(
+            '--min-acrostic-length',
+            action='store',
+            type=natural_number,
+            dest='min_acrostic_length',
+            default=MIN_ACROSTIC_LENGTH,
+            help='Minimum length of acrostic word for XKCD password' +
+                 '(default: {})'.format(MIN_ACROSTIC_LENGTH)
+        )
+        parser.add_argument(
+            '--max-acrostic-length',
+            action='store',
+            type=natural_number,
+            dest='max_acrostic_length',
+            default=MAX_ACROSTIC_LENGTH,
+            help='Maximum length of acrostic word for XKCD password' +
+                 '(default: {})'.format(MAX_ACROSTIC_LENGTH)
+        )
+        parser.add_argument(
+            '--acrostic',
+            action='store',
+            dest='acrostic',
+            default=None,
+            help='Acrostic word for XKCD password ' +
+                 '(default: None)'
+        )
+        parser.add_argument(
+            '--delimiter',
+            action='store',
+            dest='delimiter',
+            default=DELIMITER,
+            help='Delimiter for XKCD password ' +
+                 '(default: "{}")'.format(DELIMITER)
+        )
+        parser.add_argument(
+            "-C", "--case",
+            dest="case",
+            type=str,
+            metavar="CASE",
+            choices=list(CASE_METHODS.keys()), default="lower",
+            help=(
+                "Choose the method for setting the case of each word "
+                "in the passphrase. "
+                "Choices: {cap_meths} (default: 'lower').".format(
+                    cap_meths=list(CASE_METHODS.keys())
+                )))
+        parser.add_argument(
             '-U', '--unique',
             action='store_true',
             dest='unique',
@@ -958,15 +1187,19 @@ class SecretsGenerate(Command):
         to_change = parsed_args.arg \
             if len(parsed_args.arg) > 0 \
             else [k for k, v in self.app.secrets.items()]
-        for k in to_change:
-            t = self.app.secrets.get_secret_type(k)
-            arguments = self.app.secrets.get_secret_arguments(k)
-            v = generate_secret(secret_type=t,
-                                unique=parsed_args.unique,
-                                **arguments)
-            if v is not None:
-                self.LOG.debug("generated {} for {}".format(t, k))
-                self.app.secrets.set_secret(k, v)
+        for secret in to_change:
+            secret_type = self.app.secrets.get_secret_type(secret)
+            if secret_type is None:
+                raise TypeError('Secret "{}" '.format(secret) +
+                                'has no type definition')
+            arguments = self.app.secrets.get_secret_arguments(secret)
+            value = generate_secret(secret_type=secret_type,
+                                    *arguments,
+                                    **dict(parsed_args._get_kwargs()))
+            if value is not None:
+                self.LOG.debug("generated {} for {}".format(secret_type,
+                                                            secret))
+                self.app.secrets.set_secret(secret, value)
 
 
 class SecretsSet(Command):
@@ -978,6 +1211,14 @@ class SecretsSet(Command):
         parser = super(SecretsSet, self).get_parser(prog_name)
         parser.formatter_class = argparse.RawDescriptionHelpFormatter
         parser.add_argument(
+            '--from-environment',
+            metavar='<environment>',
+            dest='from_environment',
+            default=None,
+            help="Environment from which to copy " +
+                 "secret value(s) (default: None)"
+        )
+        parser.add_argument(
             '--undefined',
             action='store_true',
             dest='undefined',
@@ -986,28 +1227,68 @@ class SecretsSet(Command):
         )
         parser.add_argument('arg', nargs='*', default=None)
         parser.epilog = textwrap.dedent("""
-            To set one or more secrets directly, specify them as
-            ``variable=value`` pairs as the arguments to this command.
+            One or more secrets can be set directly by specifying them
+            as ``variable=value`` pairs as the arguments to this command.
 
-            ``$ psec secrets set trident_db_pass="rural coffee purple sedan"``
+            .. code-block:: console
+
+                $ psec secrets set trident_db_pass="rural coffee purple sedan"
+
+            ..
 
             If no secrets as specified, you will be prompted for each
-            secrets. Adding the ``--undefined`` flag will limit the secrets
-            you are prompted to set to only those that are currently
-            not set.
-            """)
+            secrets.
+
+            Adding the ``--undefined`` flag will limit the secrets being set
+            to only those that are currently not set.  If values are not set,
+            you are prompted for the value.
+
+            When cloning an environment from definitions in a source repository
+            or an existing environment, you can set secrets by copying them
+            from another existing environment using the ``--from-environment``
+            option.
+
+            .. code-block:: console
+
+                $ psec secrets set gosecure_pi_password --from-environment goSecure
+
+            ..
+
+            When you are doing this immediately after cloning (when all variables
+            are undefined) you can set all undefined variables at once from
+            another environment this way:
+
+            .. code-block:: console
+
+                $ psec environments create --clone-from goSecure
+                $ psec secrets set --undefined --from-environment goSecure
+
+            ..
+            """)  # noqa
         return parser
 
     def take_action(self, parsed_args):
         self.LOG.debug('setting secrets')
+        if len(parsed_args.arg) == 0 and not parsed_args.undefined:
+            raise RuntimeError('no secrets specified to be set')
         self.app.secrets.read_secrets_and_descriptions()
+        from_env = None
+        if parsed_args.from_environment is not None:
+            from_env = SecretsEnvironment(
+                environment=parsed_args.from_environment)
+            from_env.read_secrets()
         if parsed_args.undefined:
             args = [k for k, v in self.app.secrets.items()
                     if v in [None, '']]
         else:
             args = parsed_args.arg
         for arg in args:
-            if '=' in arg:
+            v = None
+            if from_env is not None:
+                # Get value from a different environment
+                k = arg
+                v = from_env.get_secret(k, allow_none=True)
+            elif '=' in arg:
                 k, v = arg.split('=')
             else:
                 k, v = arg, self.app.secrets.get_secret(arg, allow_none=True)
@@ -1016,21 +1297,21 @@ class SecretsSet(Command):
                 self.LOG.info('no description for {}'.format(k))
                 raise RuntimeError('variable "{}" '.format(k) +
                                    'has no description')
-            if '=' not in arg:
-                v = prompt_string(
+            if '=' not in arg and from_env is None:
+                v = psec.utils.prompt_string(
                     prompt=self.app.secrets.get_prompt(k),
                     default=v)
                 if v is None:
                     self.LOG.info('no user input for "{}"'.format(k))
                     return None
-            if v.startswith('@'):
+            if v is not None and v.startswith('@'):
                 if v[1] == '~':
                     _path = os.path.expanduser(v[1:])
                 else:
                     _path = v[1:]
                 with open(_path, 'r') as f:
                     v = f.read().strip()
-            elif v.startswith('!'):
+            elif v is not None and v.startswith('!'):
                 # >> Issue: [B603:subprocess_without_shell_equals_true] subprocess call - check for execution of untrusted input.  # noqa
                 #    Severity: Low   Confidence: High
                 #    Location: psec/secrets.py:641

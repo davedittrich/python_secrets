@@ -3,12 +3,13 @@
 import argparse
 import logging
 import os
+import psec.utils
+import psec.secrets
 import shutil
 import textwrap
 
 from cliff.lister import Lister
 from cliff.command import Command
-from psec.secrets import SecretsEnvironment
 
 
 class GroupsCreate(Command):
@@ -40,18 +41,6 @@ class GroupsCreate(Command):
                 $ psec groups create newgroup --clone-from ~/git/goSecure/secrets/secrets.d/gosecure.yml
                 created new group "newgroup"
                 $ psec groups list
-                new password variable "gosecure_pi_password" is not defined
-                new password variable "gosecure_app_password" is not defined
-                new string variable "gosecure_client_psk" is not defined
-                new string variable "gosecure_client_ssid" is not defined
-                new string variable "gosecure_vpn_client_id" is not defined
-                new token_hex variable "gosecure_vpn_client_psk" is not defined
-                new string variable "gosecure_pi_pubkey" is not defined
-                new string variable "gosecure_pi_locale" is not defined
-                new string variable "gosecure_pi_timezone" is not defined
-                new string variable "gosecure_pi_wifi_country" is not defined
-                new string variable "gosecure_pi_keyboard_model" is not defined
-                new string variable "gosecure_pi_keyboard_layout" is not defined
                 +----------+-------+
                 | Group    | Items |
                 +----------+-------+
@@ -62,13 +51,18 @@ class GroupsCreate(Command):
                 +----------+-------+
 
             ..
-            """)
+
+            Note: Directory and file permissions on cloned groups will prevent
+            ``other`` from having read/write/execute permissions (i.e., ``o-rwx``
+            in terms of the ``chmod`` command.)
+            """)  # noqa
         return parser
 
     def take_action(self, parsed_args):
         self.LOG.debug('creating group')
-        self.app.secrets.requires_environment()
-        self.app.secrets.read_secrets_and_descriptions()
+        # An empty environment that exists is OK for this.
+        self.app.secrets.requires_environment(path_only=True)
+        self.app.secrets.read_secrets_descriptions()
         if parsed_args.clone_from is None and parsed_args.group is None:
             raise RuntimeError('No group name specified')
         dest_dir = self.app.secrets.descriptions_path()
@@ -88,9 +82,11 @@ class GroupsCreate(Command):
                                'already exists')
         if parsed_args.clone_from is not None:
             shutil.copy2(parsed_args.clone_from, new_file)
+            psec.utils.remove_other_perms(new_file)
         else:
             with open(new_file, 'w') as f:
                 f.writelines(['---\n', '\n', '\n'])
+            psec.utils.remove_other_perms(new_file)
         self.LOG.info('created new group "{}"'.format(
             os.path.splitext(os.path.basename(new_file))[0]))
 
@@ -125,7 +121,7 @@ class GroupsList(Lister):
     def take_action(self, parsed_args):
         self.LOG.debug('listing secret groups')
         self.app.secrets.requires_environment()
-        self.app.secrets.read_secrets_and_descriptions()
+        self.app.secrets.read_secrets_descriptions()
         items = {}
         for g in self.app.secrets.get_groups():
             items[g] = self.app.secrets.get_items_from_group(g)
@@ -171,7 +167,7 @@ class GroupsShow(Lister):
     def take_action(self, parsed_args):
         self.LOG.debug('showing secrets in group')
         self.app.secrets.requires_environment()
-        self.app.secrets.read_secrets_and_descriptions()
+        self.app.secrets.read_secrets_descriptions()
         columns = ('Group', 'Variable')
         data = []
         for group in parsed_args.group:
@@ -188,7 +184,7 @@ class GroupsPath(Command):
     def get_parser(self, prog_name):
         parser = super(GroupsPath, self).get_parser(prog_name)
         parser.formatter_class = argparse.RawDescriptionHelpFormatter
-        default_environment = SecretsEnvironment().environment()
+        default_environment = psec.secrets.SecretsEnvironment().environment()
         parser.add_argument('environment',
                             nargs='?',
                             default=default_environment)
@@ -204,7 +200,8 @@ class GroupsPath(Command):
 
     def take_action(self, parsed_args):
         self.LOG.debug('returning groups path')
-        e = SecretsEnvironment(environment=parsed_args.environment)
+        e = psec.secrets.SecretsEnvironment(
+                environment=parsed_args.environment)
         print(e.descriptions_path())
 
 

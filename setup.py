@@ -104,6 +104,7 @@ setup(
         'psec': [
             'environments create = psec.environments:EnvironmentsCreate',  # noqa
             'environments default = psec.environments:EnvironmentsDefault',  # noqa
+            'environments delete = psec.environments:EnvironmentsDelete',
             'environments list = psec.environments:EnvironmentsList',
             'environments path = psec.environments:EnvironmentsPath',
             'environments rename = psec.environments:EnvironmentsRename',  # noqa
@@ -122,11 +123,13 @@ setup(
             'secrets show = psec.secrets:SecretsShow',
             'ssh config = psec.ssh:SSHConfig',
             'ssh known-hosts add = psec.ssh:SSHKnownHostsAdd',
+            'ssh known-hosts extract = psec.ssh:SSHKnownHostsExtract',
             'ssh known-hosts remove = psec.ssh:SSHKnownHostsRemove',
             'template = psec.template:Template',
             'utils myip = psec.utils:MyIP',
             'utils set-aws-credentials = psec.utils:SetAWSCredentials',  # noqa
-            'utils tfoutput = psec.utils:TfOutput',
+            'utils tfstate backend = psec.utils:TfBackend',
+            'utils tfstate output = psec.utils:TfOutput',
         ],
     },
     zip_safe=False,

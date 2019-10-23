@@ -5,12 +5,18 @@ import ipaddress
 import json
 import logging
 import os
+import random
 import requests
+import time
+import psec.secrets
 import subprocess  # nosec
+import sys
 import textwrap
 
+from bs4 import BeautifulSoup
 from cliff.command import Command
 from cliff.lister import Lister
+from collections import OrderedDict
 from configobj import ConfigObj
 from os import listdir, sep
 from os.path import abspath, basename, isdir
@@ -18,7 +24,6 @@ from six.moves import input
 
 
 AWS_CONFIG_FILE = os.path.join(os.path.expanduser('~'), '.aws', 'credentials')
-OPENDNS_URL = 'https://diagnostic.opendns.com/myip'
 
 # NOTE: While calling subprocess.call() with shell=True can have security
 # implications, the person running this command already has control of her
@@ -28,11 +33,13 @@ LOG = logging.getLogger(__name__)
 
 
 def get_output(cmd=['echo', 'NO COMMAND SPECIFIED'],
+               cwd=os.getcwd(),
                stderr=subprocess.STDOUT,
                shell=False):
     """Use subprocess.check_ouput to run subcommand"""
     output = subprocess.check_output(  # nosec
             cmd,
+            cwd=cwd,
             stderr=stderr,
             shell=shell
         ).decode('UTF-8').splitlines()
@@ -73,14 +80,56 @@ def prompt_string(prompt="Enter a value",
     return default if _new in [None, ''] else _new
 
 
+def default_environment(parsed_args=None):
+    """Return the default environment for this cwd"""
+    env_file = os.path.join(os.getcwd(),
+                            '.python_secrets_environment')
+    if parsed_args.unset:
+        try:
+            os.remove(env_file)
+        except Exception as e:  # noqa
+            LOG.info('no default environment was set')
+        else:
+            LOG.info('default environment unset')
+    elif parsed_args.set:
+        # Set default to specified environment
+        default_env = parsed_args.environment
+        if default_env is None:
+            default_env = psec.secrets.SecretsEnvironment().environment()
+        with open(env_file, 'w') as f:
+            f.write(default_env)
+        LOG.info('default environment set to "{}"'.format(
+            default_env))
+
+
 class MyIP(Command):
-    """Get current internet routable source address."""
+    """Get currently active internet routable IPv4 address."""
 
     log = logging.getLogger(__name__)
+
+    def __init__(self, app, app_args, cmd_name=None):
+        super().__init__(app, app_args, cmd_name=cmd_name)
+        # Function map
+        self.myip_methods = {
+            'opendns_resolver': self.myip_opendns_resolver,
+            'opendns_com': self.myip_opendns_com,
+            'whatismyip_host': self.myip_opendns_resolver,
+        }
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
         parser.formatter_class = argparse.RawDescriptionHelpFormatter
+        default_method = self.get_myip_methods()[0]
+        parser.add_argument(
+            '-M', '--method',
+            action='store',
+            dest='method',
+            choices=self.get_myip_methods() + ['random'],
+            type=lambda m: m if m != 'random' else None,
+            default=default_method,
+            help="Method to use for determining IP address " +
+                 "(default: {})".format(default_method)
+        )
         parser.add_argument(
             '-C', '--cidr',
             action='store_true',
@@ -90,17 +139,74 @@ class MyIP(Command):
                  "(default: False)"
         )
         parser.epilog = textwrap.dedent("""
+          KNOWN LIMITATION: Does not support IPv6 at this point, just IPv4.
         """)
         return parser
 
     def take_action(self, parsed_args):
         self.log.debug('getting current internet source IP address')
-        r = requests.get(OPENDNS_URL, stream=True)
-        interface = ipaddress.ip_interface(r.text)
+        interface = ipaddress.ip_interface(
+            self.get_myip(method=parsed_args.method))
         if parsed_args.cidr:
             print(str(interface.with_prefixlen))
         else:
             print(str(interface.ip))
+
+    def get_myip_methods(self):
+        """Return list of available method ids for getting IP address."""
+        return [m for m in self.myip_methods.keys()]
+
+    def get_myip(self, method='myip_opendns_resolver'):
+        if method is None:
+            method = random.choice(self.get_myip_methods())  # nosec
+        func = self.myip_methods.get(method, lambda: None)
+        if func is not None:
+            LOG.debug('[+] determining IP address using ' +
+                      'method "{}" '.format(method))
+            return func()
+        else:
+            raise RuntimeError('Method "{}" '.format(method) +
+                               'for obtaining IP address is ' +
+                               'not implemented')
+
+    @classmethod
+    def myip_opendns_com(cls):
+        URL = 'http://diagnostic.opendns.com/myip'
+        page = requests.get(URL, stream=True)
+        interface = ipaddress.ip_interface(page.text)
+        return interface
+
+    @classmethod
+    def myip_opendns_resolver(cls):
+        cmd = ['dig',
+               '@resolver1.opendns.com',
+               'ANY',
+               'myip.opendns.com',
+               '+short']
+        output = get_output(cmd=cmd)
+        interface = ipaddress.ip_interface(output[0])
+        return interface
+
+    @classmethod
+    def myip_whatismyip_host(cls):
+        """Use whatismyip.host to get IP address."""
+        URL = 'http://whatismyip.host'
+        page = requests.get(URL, stream=True)
+        LOG.debug('[+] got page: "{}"'.format(page.text))
+        soup = BeautifulSoup(page.text, 'html.parser')
+        interface = None
+        for div_ipshow in soup.findAll('div', {"class": "ipshow"}):
+            LOG.debug('[+] found div "{}"'.format(div_ipshow.text))
+            # TODO(dittrich): Only handles IPv4 addresses at the moment...
+            try:
+                (label, addr) = div_ipshow.text.split('\n')[1:3]
+                if interface is None \
+                        and label.lower() == 'your ip v4 address:':
+                    interface = ipaddress.ip_interface(addr)
+            except Exception as err:  # noqa
+                pass
+        return interface
+
 
 # The TfOutput Lister assumes `terraform output` structured as
 # shown here:
@@ -138,7 +244,7 @@ class MyIP(Command):
 #         }
 #     }
 # }
-
+#
 # Pulumi output:
 # $ pulumi stack output --json
 # {
@@ -152,6 +258,62 @@ class MyIP(Command):
 # }
 
 
+class TfBackend(Command):
+    """
+    Enable Terraform backend support to move terraform.tfstate file
+    out of current working directory into environment path.
+    """
+
+    log = logging.getLogger(__name__)
+
+    def get_parser(self, prog_name):
+        parser = super().get_parser(prog_name)
+        parser.formatter_class = argparse.RawDescriptionHelpFormatter
+        parser.add_argument(
+            '--path',
+            action='store_true',
+            dest='path',
+            default=False,
+            help="Print path and exit (default: False)"
+        )
+        # tfstate = None
+        # try:
+        #     tfstate = os.path.join(self.app.secrets.environment_path(),
+        #                            "terraform.tfstate")
+        # except AttributeError:
+        #     pass
+        parser.epilog = textwrap.dedent("""
+            TBD(dittrich): Write this...
+            """)  # noqa
+        return parser
+
+    def take_action(self, parsed_args):
+        e = psec.secrets.SecretsEnvironment(
+                environment=self.app.options.environment)
+        tmpdir = e.tmpdir_path()
+        backend_file = os.path.join(os.getcwd(), 'tfbackend.tf')
+        tfstate_file = os.path.join(tmpdir, 'terraform.tfstate')
+        backend_text = textwrap.dedent("""\
+            terraform {{
+              backend "local" {{
+              path = "{tfstate_file}"
+              }}
+            }}
+            """.format(tfstate_file=tfstate_file))
+
+        if parsed_args.path:
+            self.log.debug('showing terraform state file path')
+            print(tfstate_file)
+        else:
+            self.log.debug('setting up terraform backend')
+            if os.path.exists(backend_file):
+                LOG.debug('updating {}'.format(backend_file))
+            else:
+                LOG.debug('creating {}'.format(backend_file))
+            with open(backend_file, 'w') as f:
+                f.write(backend_text)
+
+
 class TfOutput(Lister):
     """Retrieve current 'terraform output' results."""
 
@@ -162,7 +324,7 @@ class TfOutput(Lister):
         parser.formatter_class = argparse.RawDescriptionHelpFormatter
         tfstate = None
         try:
-            tfstate = os.path.join(self.app.secrets.environment_path(),
+            tfstate = os.path.join(self.app.secrets.tmpdir_path(),
                                    "terraform.tfstate")
         except AttributeError:
             pass
@@ -225,9 +387,16 @@ class TfOutput(Lister):
         return columns, data
 
 
-def tree(dir, padding='', print_files=True, isLast=False, isFirst=True):
+def tree(dir,
+         padding='',
+         print_files=True,
+         isLast=False,
+         isFirst=True,
+         outfile=None):
     """
-    Prints the tree structure for the path specified on the command line
+    Produces the tree structure for the path specified on the command
+    line. If output is specified (e.g., as sys.stdout) it will be used,
+    otherwise a list of strings is returned.
 
     Modified code from tree.py written by Doug Dahms
     https://stackoverflow.com/a/36253753
@@ -235,18 +404,22 @@ def tree(dir, padding='', print_files=True, isLast=False, isFirst=True):
     :param dir:
     :param padding:
     :param print_files:
+    :param outfile:
     :param isLast:
     :param isFirst:
-    :return:
+    :return: str
     """
 
+    output = []
     if isFirst:
-        print(padding[:-1] + dir)
+        output.append((padding[:-1] + dir + '\n'))
     else:
         if isLast:
-            print(padding[:-1] + str('└── ') + basename(abspath(dir)))
+            output.append(
+                (padding[:-1] + str('└── ') + basename(abspath(dir) + '\n')))
         else:
-            print(padding[:-1] + str('├── ') + basename(abspath(dir)))
+            output.append(
+                (padding[:-1] + str('├── ') + basename(abspath(dir) + '\n')))
     files = []
     if print_files:
         files = listdir(dir)
@@ -264,16 +437,125 @@ def tree(dir, padding='', print_files=True, isLast=False, isFirst=True):
         if isdir(path):
             if count == len(files):
                 if isFirst:
-                    tree(path, padding, print_files, isLast, False)
+                    output.extend(tree(path,
+                                       padding=padding,
+                                       print_files=print_files,
+                                       isLast=isLast,
+                                       isFirst=False,
+                                       outfile=outfile))
                 else:
-                    tree(path, padding + ' ', print_files, isLast, False)
+                    output.extend(tree(path,
+                                       padding=padding + ' ',
+                                       print_files=print_files,
+                                       isLast=isLast,
+                                       isFirst=False,
+                                       outfile=outfile))
             else:
-                tree(path, padding + '│', print_files, isLast, False)
+                output.extend(tree(path,
+                                   padding=padding + '│',
+                                   print_files=print_files,
+                                   isLast=isLast,
+                                   isFirst=False,
+                                   outfile=outfile))
         else:
             if isLast:
-                print(padding + '└── ' + file)
+                output.append((padding + '└── ' + file + '\n'))
             else:
-                print(padding + '├── ' + file)
+                output.append((padding + '├── ' + file + '\n'))
+    if outfile is not None:
+        for line in output:
+            print(line, file=outfile)
+    else:
+        return output
+
+
+class Timer(object):
+    """
+    Timer object usable as a context manager, or for manual timing.
+    Based on code from http://coreygoldberg.blogspot.com/2012/06/python-timer-class-context-manager-for.html  # noqa
+
+    As a context manager, do:
+
+        from timer import Timer
+
+        url = 'https://github.com/timeline.json'
+
+        with Timer() as t:
+            r = requests.get(url)
+
+        print 'fetched %r in %.2f millisecs' % (url, t.elapsed*1000)
+
+    """
+
+    def __init__(self, task_description='elapsed time', verbose=False):
+        self.verbose = verbose
+        self.task_description = task_description
+        self.laps = OrderedDict()
+
+    def __enter__(self):
+        """Record initial time."""
+        self.start(lap="__enter__")
+        if self.verbose:
+            sys.stdout.write('{}...'.format(self.task_description))
+            sys.stdout.flush()
+        return self
+
+    def __exit__(self, *args):
+        """Record final time."""
+        self.stop()
+        backspace = '\b\b\b'
+        if self.verbose:
+            sys.stdout.flush()
+            if self.elapsed_raw() < 1.0:
+                sys.stdout.write(backspace + ':' + '{:.2f}ms\n'.format(
+                    self.elapsed_raw() * 1000))
+            else:
+                sys.stdout.write(backspace + ': ' + '{}\n'.format(
+                    self.elapsed()))
+            sys.stdout.flush()
+
+    def start(self, lap=None):
+        """Record starting time."""
+        t = time.time()
+        first = None if len(self.laps) == 0 \
+            else self.laps.iteritems().next()[0]
+        if first is None:
+            self.laps["__enter__"] = t
+        if lap is not None:
+            self.laps[lap] = t
+        return t
+
+    def lap(self, lap="__lap__"):
+        """
+        Records a lap time.
+        If no lap label is specified, a single 'last lap' counter will be
+        (re)used. To keep track of more laps, provide labels yourself.
+        """
+        t = time.time()
+        self.laps[lap] = t
+        return t
+
+    def stop(self):
+        """Record stop time."""
+        return self.lap(lap="__exit__")
+
+    def get_lap(self, lap="__exit__"):
+        """Get the timer for label specified by 'lap'"""
+        return self.lap[lap]
+
+    def elapsed_raw(self, start="__enter__", end="__exit__"):
+        """Return the elapsed time as a raw value."""
+        return self.laps[end] - self.laps[start]
+
+    def elapsed(self, start="__enter__", end="__exit__"):
+        """
+        Return a formatted string with elapsed time between 'start'
+        and 'end' kwargs (if specified) in HH:MM:SS.SS format.
+        """
+        hours, rem = divmod(self.elapsed_raw(start, end), 3600)
+        minutes, seconds = divmod(rem, 60)
+        return "{:0>2}:{:0>2}:{:05.2f}".format(
+            int(hours), int(minutes), seconds)
 
 
 class SetAWSCredentials(Command):

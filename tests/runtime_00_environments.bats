@@ -14,6 +14,19 @@ teardown() {
     [ -d $D2_SECRETS_BASEDIR/$D2_ENVIRONMENT/secrets.d ]
 }
 
+# TODO(dittrich): Disabling as the new Bullet feature doesn't time out. :(
+# @test "'psec environments delete testenv' produces error message" {
+#     run $PSEC -vvv environments create testenv --clone-from secrets 1>&2
+#     run $PSEC -vvv environments delete testenv 1>&2
+#     assert_output --partial 'must use "--force" flag to delete an environment'
+# }
+
+@test "'psec environments delete --force testenv' removes $D2_SECRETS_BASEDIR/testenv" {
+    run $PSEC -vvv environments -e testenv create --clone-from secrets 1>&2
+    run $PSEC -vvv environments delete --force testenv 1>&2
+    [ ! -d $D2_SECRETS_BASEDIR/testenv ]
+}
+
 @test "'psec environments list' does not show aliases" {
     run $PSEC environments create --clone-from secrets 1>&2
     run $PSEC environments create --alias alias $D2_ENVIRONMENT 1>&2

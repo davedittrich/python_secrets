@@ -19,6 +19,12 @@ class Template(Command):
                             dest='check_defined',
                             default=False,
                             help="Just check for undefined variables")
+        parser.add_argument('--no-env',
+                            action='store_true',
+                            dest='no_env',
+                            default=False,
+                            help="Do not require and load an " +
+                                 "environment (default: False)")
         parser.add_argument('source',
                             nargs="?",
                             help="input Jinja2 template source",
@@ -39,9 +45,12 @@ class Template(Command):
 
     def take_action(self, parsed_args):
         self.LOG.debug('templating file(s)')
-        self.app.secrets.requires_environment()
-        self.app.secrets.read_secrets_and_descriptions()
-        template_vars = self.app.secrets.items()
+        if parsed_args.no_env:
+            template_vars = dict()
+        else:
+            self.app.secrets.requires_environment()
+            self.app.secrets.read_secrets_and_descriptions()
+            template_vars = self.app.secrets.items()
         template_loader = FileSystemLoader('.')
         base = Undefined if parsed_args.check_defined is True \
             else StrictUndefined
