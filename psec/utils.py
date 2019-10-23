@@ -13,13 +13,13 @@ import subprocess  # nosec
 import sys
 import textwrap
 
+from anytree import Node
+from anytree import RenderTree
 from bs4 import BeautifulSoup
 from cliff.command import Command
 from cliff.lister import Lister
 from collections import OrderedDict
 from configobj import ConfigObj
-from os import listdir, sep
-from os.path import abspath, basename, isdir
 from six.moves import input
 
 
@@ -387,81 +387,38 @@ class TfOutput(Lister):
         return columns, data
 
 
-def tree(dir,
-         padding='',
-         print_files=True,
-         isLast=False,
-         isFirst=True,
-         outfile=None):
+def atree(dir,
+          print_files=True,
+          outfile=None):
     """
     Produces the tree structure for the path specified on the command
     line. If output is specified (e.g., as sys.stdout) it will be used,
     otherwise a list of strings is returned.
 
-    Modified code from tree.py written by Doug Dahms
-    https://stackoverflow.com/a/36253753
+    Uses anytree: https://anytree.readthedocs.io/en/latest/
 
     :param dir:
-    :param padding:
     :param print_files:
     :param outfile:
-    :param isLast:
-    :param isFirst:
     :return: str
     """
 
+    nodes = dict()
+    nodes[dir] = Node(dir)
+    root_node = nodes[dir]
+    for root, dirs, files in os.walk(dir, topdown=True):
+        if root not in nodes:
+            nodes[root] = Node(root)
+        for name in files:
+            if print_files:
+                nodes[os.path.join(root, name)] = \
+                    Node(name, parent=nodes[root])
+        for name in dirs:
+            nodes[os.path.join(root, name)] = Node(name, parent=nodes[root])
+
     output = []
-    if isFirst:
-        output.append((padding[:-1] + dir + '\n'))
-    else:
-        if isLast:
-            output.append(
-                (padding[:-1] + str('└── ') + basename(abspath(dir) + '\n')))
-        else:
-            output.append(
-                (padding[:-1] + str('├── ') + basename(abspath(dir) + '\n')))
-    files = []
-    if print_files:
-        files = listdir(dir)
-    else:
-        files = [x for x in listdir(dir) if isdir(dir + sep + x)]
-    if not isFirst:
-        padding = padding + '   '
-    files = sorted(files, key=lambda s: s.lower())
-    count = 0
-    last = len(files) - 1
-    for i, file in enumerate(files):
-        count += 1
-        path = dir + sep + file
-        isLast = (i == last)
-        if isdir(path):
-            if count == len(files):
-                if isFirst:
-                    output.extend(tree(path,
-                                       padding=padding,
-                                       print_files=print_files,
-                                       isLast=isLast,
-                                       isFirst=False,
-                                       outfile=outfile))
-                else:
-                    output.extend(tree(path,
-                                       padding=padding + ' ',
-                                       print_files=print_files,
-                                       isLast=isLast,
-                                       isFirst=False,
-                                       outfile=outfile))
-            else:
-                output.extend(tree(path,
-                                   padding=padding + '│',
-                                   print_files=print_files,
-                                   isLast=isLast,
-                                   isFirst=False,
-                                   outfile=outfile))
-        else:
-            if isLast:
-                output.append((padding + '└── ' + file + '\n'))
-            else:
-                output.append((padding + '├── ' + file + '\n'))
+    for pre, fill, node in RenderTree(root_node):
+        output.append(('{}{}'.format(pre, node.name, file=outfile)))
     if outfile is not None:
         for line in output:
             print(line, file=outfile)

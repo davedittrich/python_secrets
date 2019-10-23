@@ -703,9 +703,9 @@ class EnvironmentsTree(Command):
                 environment=parsed_args.environment)
         e.requires_environment()
         print_files = bool(parsed_args.no_files is False)
-        psec.utils.tree(e.environment_path(),
-                        print_files=print_files,
-                        outfile=sys.stdout)
+        psec.utils.atree(e.environment_path(),
+                         print_files=print_files,
+                         outfile=sys.stdout)
 
 
 # vim: set fileencoding=utf-8 ts=4 sw=4 tw=0 et :
