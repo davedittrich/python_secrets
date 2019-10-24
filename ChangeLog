@@ -3,6 +3,7 @@ CHANGES
 
 * Resolve pep8 findings
 * Improve  broken 'environments tree' code
+* Undo edit that is not correct for example
 
 19.10.1
 -------
