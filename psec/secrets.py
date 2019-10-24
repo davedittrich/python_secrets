@@ -1,7 +1,6 @@
 import argparse
 import base64
 import binascii
-import errno
 import hashlib
 import json
 import logging
@@ -528,7 +527,6 @@ class SecretsEnvironment(object):
         :return:
         """
         # TODO(dittrich): Replace this with simpler use of attribute maps
-        verbose_level = self.app_args.verbose_level
         for group in self._descriptions.keys():
             for i in self._descriptions[group]:
                 s = i['Variable']
