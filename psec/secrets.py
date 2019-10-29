@@ -989,6 +989,7 @@ class SecretsShow(Lister):
         self.app.secrets.requires_environment()
         self.app.secrets.read_secrets_and_descriptions()
         variables = []
+        all_items = [k for k, v in self.app.secrets.items()]
         if parsed_args.args_group:
             if not len(parsed_args.arg):
                 raise RuntimeError('No group specified')
@@ -1002,6 +1003,11 @@ class SecretsShow(Lister):
                     raise RuntimeError('Group {} '.format(str(e)) +
                                        'does not exist')
         else:
+            for v in parsed_args.arg:
+                if v not in all_items:
+                    # Validate requested variables exist.
+                    raise RuntimeError('"{}" '.format(v) +
+                                       'is not defined in this environment')
             variables = parsed_args.arg \
                 if len(parsed_args.arg) > 0 \
                 else [k for k, v in self.app.secrets.items()]
