@@ -1,8 +1,10 @@
 CHANGES
 =======
 
+* Expose terraform command on -v
 * Resolve pep8 findings
 * Improve  broken 'environments tree' code
+* Extend pep8 checks
 * Undo edit that is not correct for example
 
 19.10.1

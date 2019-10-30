@@ -368,6 +368,12 @@ class TfOutput(Lister):
             raise RuntimeError('File does not exist: "{}"'.format(
                 tfstate)
             )
+        if self.app_args.verbose_level > 1:
+            # NOTE(dittrich): Not DRY, but spend time fixing later.
+            self.log.info(' '.join(['terraform',
+                                    'output',
+                                    '-state={}'.format(tfstate),
+                                    '-json']))
         # >> Issue: [B607:start_process_with_partial_path] Starting a process with a partial executable path  # noqa
         #    Severity: Low   Confidence: High
         #    Location: psec/utils.py:152
