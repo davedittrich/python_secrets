@@ -290,12 +290,15 @@ class EnvironmentsDelete(Command):
                          bullet="→",
                          pad_right=5)
             choice = cli.launch()
-        if choice == "<CANCEL>":
-            self.LOG.info('cancelled deleting environment')
-        elif choice is not None:
-            e = psec.secrets.SecretsEnvironment(choice)
-            env_path = e.environment_path()
-            if parsed_args.environment is not None and not parsed_args.force:
+            if choice == "<CANCEL>":
+                self.LOG.info('cancelled deleting environment')
+                return
+
+        # Environment chosen. Now do we need to confirm?
+        e = psec.secrets.SecretsEnvironment(choice)
+        env_path = e.environment_path()
+        if not parsed_args.force:
+            if not stdin.isatty():
                 output = psec.utils.tree(env_path,
                                          outfile=None,
                                          print_files=True)
@@ -311,10 +314,12 @@ class EnvironmentsDelete(Command):
                 confirm = cli.launch()
                 if confirm != choice:
                     self.LOG.info('cancelled deleting environment')
-                else:
-                    shutil.rmtree(env_path)
-                    self.LOG.info('[+] deleted directory path ' +
-                                  '{}'.format(env_path))
+                    return
+
+        # We have confirmation or --force. Now safe to delete.
+        shutil.rmtree(env_path)
+        self.LOG.info('[+] deleted directory path ' +
+                      '{}'.format(env_path))
 
 
 class EnvironmentsRename(Command):
