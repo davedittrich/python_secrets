@@ -11,11 +11,9 @@ gnupg
 numpy
 six
 pyflakes
-sphinx
 pexpect
 pbr
 Pygments
-python_secrets
 property_manager
 requests
 tox
