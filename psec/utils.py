@@ -32,6 +32,12 @@ AWS_CONFIG_FILE = os.path.join(os.path.expanduser('~'), '.aws', 'credentials')
 LOG = logging.getLogger(__name__)
 
 
+def remove_other_perms(dst):
+    """Make all files in path ``dst`` have ``o-rwx`` permissions."""
+    # TODO(dittrich): Test on Windows. Should work on all Linux.
+    get_output(['chmod', '-R', 'o-rwx', dst])
+
+
 def get_output(cmd=['echo', 'NO COMMAND SPECIFIED'],
                cwd=os.getcwd(),
                stderr=subprocess.STDOUT,

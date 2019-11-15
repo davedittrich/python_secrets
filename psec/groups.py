@@ -3,13 +3,13 @@
 import argparse
 import logging
 import os
-import psec.utils
 import psec.secrets
 import shutil
 import textwrap
 
 from cliff.lister import Lister
 from cliff.command import Command
+from psec.utils import remove_other_perms
 
 
 class GroupsCreate(Command):
@@ -63,30 +63,51 @@ class GroupsCreate(Command):
         # An empty environment that exists is OK for this.
         self.app.secrets.requires_environment(path_only=True)
         self.app.secrets.read_secrets_descriptions()
-        if parsed_args.clone_from is None and parsed_args.group is None:
-            raise RuntimeError('No group name specified')
-        dest_dir = self.app.secrets.descriptions_path()
+        # Cloning inherits name from file, otherwise name required.
+        # Source group file may be determined from environment.
+        group_source = None
         if parsed_args.clone_from is not None:
-            data = self.app.secrets.get_descriptions(parsed_args.clone_from)
-            self.app.secrets.check_duplicates(data)
-            dest_file = os.path.basename(parsed_args.clone_from)
-            if not os.path.exists(parsed_args.clone_from):
+            # Cloning a group from an existing environment?
+            clonefrom_environment = psec.secrets.SecretsEnvironment(
+                environment=parsed_args.clone_from
+            )
+            clonefrom_environment.read_secrets_descriptions()
+            if parsed_args.group in clonefrom_environment.get_groups():
+                group_source = os.path.join(
+                    clonefrom_environment.descriptions_path(),
+                    '{0}.yml'.format(parsed_args.group)
+                )
+                descriptions = clonefrom_environment.get_descriptions(
+                    group_source)
+            else:
+                group_source = parsed_args.clone_from
+                descriptions = self.app.secrets.get_descriptions(group_source)
+            self.app.secrets.check_duplicates(descriptions)
+            dest_file = os.path.basename(group_source)
+            if not os.path.exists(group_source):
                 raise RuntimeError('Group description file ' +
-                                   '"{}" '.format(parsed_args.clone_from) +
+                                   '"{}" '.format(group_source) +
                                    'does not exist')
-        if parsed_args.group is not None:
-            dest_file = parsed_args.group + '.yml'
+        elif parsed_args.group is not None:
+            if not parsed_args.group.endswith('.yml'):
+                dest_file = parsed_args.group + '.yml'
+            else:
+                dest_file = parsed_args.group
+        else:
+            raise RuntimeError('No group name or file specified')
+
+        dest_dir = self.app.secrets.descriptions_path()
         new_file = os.path.join(dest_dir, dest_file)
         if os.path.exists(new_file):
             raise RuntimeError('Group file "{}" '.format(new_file) +
                                'already exists')
         if parsed_args.clone_from is not None:
-            shutil.copy2(parsed_args.clone_from, new_file)
-            psec.utils.remove_other_perms(new_file)
+            shutil.copy2(group_source, new_file)
+            remove_other_perms(new_file)
         else:
             with open(new_file, 'w') as f:
                 f.writelines(['---\n', '\n', '\n'])
-            psec.utils.remove_other_perms(new_file)
+            remove_other_perms(new_file)
         self.LOG.info('created new group "{}"'.format(
             os.path.splitext(os.path.basename(new_file))[0]))
 

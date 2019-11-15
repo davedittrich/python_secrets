@@ -265,7 +265,7 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "psec groups create --clone-from hypriot.yml",
+            "name": "psec groups create --clone-from /tmp/gosecure.yml",
             "type": "python",
             "request": "launch",
             "module": "psec.main",
@@ -274,12 +274,29 @@
             },
             "args": [
                 "--debug",
-                "-e",
-                "hypriot",
                 "groups",
                 "create",
                 "--clone-from",
-                "hypriot.yml"
+                "/tmp/gosecure.yml"
+            ],
+            "stopOnEntry": true,
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "psec groups create gosecure --clone-from do",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "args": [
+                "--debug",
+                "groups",
+                "create",
+                "gosecure",
+                "--clone-from",
+                "do"
             ],
             "stopOnEntry": true,
             "console": "integratedTerminal"

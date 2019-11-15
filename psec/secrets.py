@@ -18,6 +18,7 @@ import yaml
 from cliff.command import Command
 from cliff.lister import Lister
 from numpy.random import bytes as np_random_bytes
+from psec.utils import remove_other_perms
 from psec.google_oauth2 import GoogleSMTP
 # >> Issue: [B404:blacklist] Consider possible security implications associated with run module.  # noqa
 #    Severity: Low   Confidence: High
@@ -75,12 +76,6 @@ def natural_number(value):
         raise argparse.ArgumentTypeError(
             "{} is not a positive integer".format(value))
     return ivalue
-
-
-def remove_other_perms(dst):
-    """Make all files in path ``dst`` have ``o-rwx`` permissions."""
-    # TODO(dittrich): Test on Windows. Should work on all Linux.
-    psec.utils.get_output(['chmod', '-R', 'o-rwx', dst])
 
 
 def copyanything(src, dst):
