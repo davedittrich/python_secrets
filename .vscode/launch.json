@@ -1,0 +1,670 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "psec help",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "args": [
+                "--debug",
+                "help"
+            ],
+            "stopOnEntry": true,
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "psec -q complete",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "args": [
+                "--debug",
+                "-q",
+                "complete"
+            ],
+            "stopOnEntry": true,
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "psec environments list --aliasing",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "args": [
+                "--debug",
+                "environments",
+                "list",
+                "--aliasing"
+            ],
+            "stopOnEntry": true,
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "psec environments default",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "args": [
+                "--debug",
+                "environments",
+                "default"
+            ],
+            "stopOnEntry": true,
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "psec environments default --set",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "args": [
+                "--debug",
+                "environments",
+                "default",
+                "--set"
+            ],
+            "stopOnEntry": true,
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "psec environments create notanalias",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "args": [
+                "--debug",
+                "environments",
+                "create",
+                "notanalias"
+            ],
+            "stopOnEntry": false,
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "psec environments create --alias alias notanalias",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "args": [
+                "--debug",
+                "environments",
+                "create",
+                "--alias",
+                "alias",
+                "notanalias"
+            ],
+            "stopOnEntry": false,
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "psec environments rename alias renamed_alias",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "args": [
+                "--debug",
+                "environments",
+                "rename",
+                "alias",
+                "renamed_alias"
+            ],
+            "stopOnEntry": false,
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "psec environments create aclone --clone-from do",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "args": [
+                "--debug",
+                "environments",
+                "create",
+                "aclone",
+                "--clone-from",
+                "do"
+            ],
+            "stopOnEntry": false,
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "psec environments delete",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "args": [
+                "--debug",
+                "environments",
+                "delete"
+            ],
+            "stopOnEntry": false,
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "psec environments delete aclone",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "args": [
+                "--debug",
+                "environments",
+                "delete",
+                "aclone"
+            ],
+            "stopOnEntry": false,
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "psec environments create notanalias --clone-from secrets",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "args": [
+                "--debug",
+                "environments",
+                "create",
+                "notanalias",
+                "--clone-from",
+                "secrets"
+            ],
+            "stopOnEntry": false,
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "psec environments rename notanalias not_an_alias",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "args": [
+                "--debug",
+                "environments",
+                "rename",
+                "notanalias",
+                "not_an_alias"
+            ],
+            "stopOnEntry": true,
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "psec environments default --set",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "args": [
+                "--debug",
+                "environments",
+                "default",
+                "--set"
+            ],
+            "stopOnEntry": true,
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "psec -v environments path doesntexist --exists",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "args": [
+                "--debug",
+                "-v",
+                "environments",
+                "path",
+                "doesntexist",
+                "--exists"
+            ],
+            "stopOnEntry": true,
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "psec groups create --clone-from hypriot.yml",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "args": [
+                "--debug",
+                "-e",
+                "hypriot",
+                "groups",
+                "create",
+                "--clone-from",
+                "hypriot.yml"
+            ],
+            "stopOnEntry": true,
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "psec secrets get jenkins_admin_password",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "args": [
+                "--debug",
+                "secrets",
+                "get",
+                "jenkins_admin_password"
+            ],
+            "stopOnEntry": false,
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "psec secrets set jenkins_admin_password --from-environment do",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "args": [
+                "--debug",
+                "secrets",
+                "set",
+                "jenkins_admin_password",
+                "--from-environment",
+                "do"
+            ],
+            "stopOnEntry": false,
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "psec secrets show --no-redact jenkins_admin_password trident_db_password",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "args": [
+                "--debug",
+                "secrets",
+                "show",
+                "--no-redact",
+                "jenkins_admin_password",
+                "trident_db_password"
+            ],
+            "stopOnEntry": false,
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "psec secrets generate --max-acrostic-length 3",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "args": [
+                "--debug",
+                "secrets",
+                "generate",
+                "--max-acrostic-length",
+                "3"
+            ],
+            "stopOnEntry": false,
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "psec -E run printenv",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "args": [
+                "--debug",
+                "-E",
+                "run",
+                "printenv"
+            ],
+            "stopOnEntry": false,
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "psec ssh known-hosts add console-output.txt",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "args": [
+                "--debug",
+                "ssh",
+                "known-hosts",
+                "add",
+                "console-output.txt"
+            ],
+            "stopOnEntry": false,
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "psec -e trident_test ssh known-hosts add terraform.log",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "args": [
+                "--debug",
+                "-e",
+                "trident_test",
+                "ssh",
+                "known-hosts",
+                "add",
+                "--ask-become-pass",
+                "terraform.log"
+            ],
+            "stopOnEntry": false,
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "psec -e trident_test ssh known-hosts add --save-to-files terraform.log",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "args": [
+                "--debug",
+                "-e",
+                "trident_test",
+                "ssh",
+                "known-hosts",
+                "add",
+                "--save-to-files",
+                "--ask-become-pass",
+                "terraform.log"
+            ],
+            "stopOnEntry": false,
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "psec ssh known-hosts remove --ask-become-pass",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "args": [
+                "--debug",
+                "ssh",
+                "known-hosts",
+                "remove",
+                "--ask-become-pass"
+            ],
+            "stopOnEntry": false,
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "psec ssh known-hosts remove console-output.txt",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "args": [
+                "--debug",
+                "ssh",
+                "known-hosts",
+                "remove",
+                "--ask-become-pass",
+                "console-output.txt"
+            ],
+            "stopOnEntry": false,
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "psec ssh known-hosts remove --host-ip 52.34.168.102",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "args": [
+                "--debug",
+                "ssh",
+                "known-hosts",
+                "remove",
+                "--public-ip",
+                "52.34.168.102"
+            ],
+            "stopOnEntry": false,
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "psec ssh known-hosts add i-036b9d28241dacf68-console-output.txt",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "args": [
+                "--debug",
+                "ssh",
+                "known-hosts",
+                "add",
+                "--ask-become-pass",
+                "i-036b9d28241dacf68-console-output.txt",
+            ],
+            "stopOnEntry": false,
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "psec ssh known-hosts add --known-hosts-root /tmp/foo --ask-become-pass",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "args": [
+                "--debug",
+                "ssh",
+                "known-hosts",
+                "add",
+                "--known-hosts-root",
+                "/tmp/foo",
+                "--ask-become-pass"
+            ],
+            "stopOnEntry": false,
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "psec ssh known-hosts extract --known-hosts-root /tmp/foo terraform.log",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "args": [
+                "--debug",
+                "-e",
+                "trident_test",
+                "ssh",
+                "known-hosts",
+                "extract",
+                "--known-hosts-root",
+                "/tmp/foo",
+                "terraform.log"
+            ],
+            "stopOnEntry": false,
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "psec ssh known-hosts add --instance-id [LATEST]",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "args": [
+                "--debug",
+                "ssh",
+                "known-hosts",
+                "add",
+                "--ask-become-pass",
+                "--instance-id",
+                "$(pulumi -C ../ansible-dims-playbooks/deploy/pulumi-aws stack output instance_id)"
+            ],
+            "stopOnEntry": false,
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "psec ssh known-hosts remove --instance-id [LATEST]",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "args": [
+                "--debug",
+                "ssh",
+                "known-hosts",
+                "remove",
+                "--ask-become-pass",
+                "--instance-id",
+                "$(pulumi -C ../ansible-dims-playbooks/deploy/pulumi-aws stack output instance_id)"
+            ],
+            "stopOnEntry": false,
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "psec ssh config --clean",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "args": [
+                "--debug",
+                "-v",
+                "-e",
+                "trident_test",
+                "ssh",
+                "config",
+                "--clean"
+            ],
+            "stopOnEntry": false,
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "psec utils asciinema --rebase test.cast",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "args": [
+                "--debug",
+                "utils",
+                "asciinema",
+                "--rebase",
+                "test.cast"
+            ],
+            "stopOnEntry": false,
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "psec utils myip --cidr",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "args": [
+                "--debug",
+                "utils",
+                "myip",
+                "--cidr"
+            ],
+            "stopOnEntry": false,
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "psec utils myip --cidr --method random",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "args": [
+                "--debug",
+                "utils",
+                "myip",
+                "--cidr",
+                "--method",
+                "random"
+            ],
+            "stopOnEntry": false,
+            "console": "integratedTerminal"
+        }
+    ]
+}
