@@ -1,6 +1,10 @@
 CHANGES
 =======
 
+19.11.0
+-------
+
+* Bump version
 * Allow cloning group descriptions from environment
 * Add .vscode/launch.json
 * Remove incorrect requirements

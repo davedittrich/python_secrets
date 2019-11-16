@@ -539,17 +539,17 @@ To examine the secrets, use the ``secrets show`` command:
 .. code-block:: console
 
     $ psec secrets show
-    +------------------------+----------+-------------------+----------+
-    | Variable               | Type     | Export            | Value    |
-    +------------------------+----------+-------------------+----------+
-    | jenkins_admin_password | password | None              | REDACTED |
-    | myapp_app_password     | password | DEMO_app_password | REDACTED |
-    | myapp_client_psk       | string   | DEMO_client_ssid  | REDACTED |
-    | myapp_client_ssid      | string   | DEMO_client_ssid  | REDACTED |
-    | myapp_pi_password      | password | DEMO_pi_password  | REDACTED |
-    | trident_db_pass        | password | None              | REDACTED |
-    | trident_sysadmin_pass  | password | None              | REDACTED |
-    +------------------------+----------+-------------------+----------+
+    +------------------------+----------+----------+-------------------+
+    | Variable               | Type     | Value    | Export            |
+    +------------------------+----------+----------+-------------------+
+    | jenkins_admin_password | password | REDACTED | None              |
+    | myapp_app_password     | password | REDACTED | DEMO_app_password |
+    | myapp_client_psk       | string   | REDACTED | DEMO_client_ssid  |
+    | myapp_client_ssid      | string   | REDACTED | DEMO_client_ssid  |
+    | myapp_pi_password      | password | REDACTED | DEMO_pi_password  |
+    | trident_db_pass        | password | REDACTED | None              |
+    | trident_sysadmin_pass  | password | REDACTED | None              |
+    +------------------------+----------+----------+-------------------+
 
 ..
 
@@ -559,17 +559,17 @@ the values in clear text in the terminal output, add the ``--no-redact`` flag:
 .. code-block:: console
 
     $ psec secrets show --no-redact
-    +------------------------+----------+-------------------+------------------------------+
-    | Variable               | Type     | Export            | Value                        |
-    +------------------------+----------+-------------------+------------------------------+
-    | jenkins_admin_password | password | None              | fetch.outsider.awning.maroon |
-    | myapp_app_password     | password | DEMO_app_password | fetch.outsider.awning.maroon |
-    | myapp_client_psk       | string   | DEMO_client_ssid  | PSK                          |
-    | myapp_client_ssid      | string   | DEMO_client_ssid  | SSID                         |
-    | myapp_pi_password      | password | DEMO_pi_password  | fetch.outsider.awning.maroon |
-    | trident_db_pass        | password | None              | fetch.outsider.awning.maroon |
-    | trident_sysadmin_pass  | password | None              | fetch.outsider.awning.maroon |
-    +------------------------+----------+-------------------+------------------------------+
+    +------------------------+----------+------------------------------+-------------------+
+    | Variable               | Type     | Value                        | Export            |
+    +------------------------+----------+------------------------------+-------------------+
+    | jenkins_admin_password | password | fetch.outsider.awning.maroon | None              |
+    | myapp_app_password     | password | fetch.outsider.awning.maroon | DEMO_app_password |
+    | myapp_client_psk       | string   | PSK                          | DEMO_client_psk   |
+    | myapp_client_ssid      | string   | SSID                         | DEMO_client_ssid  |
+    | myapp_pi_password      | password | fetch.outsider.awning.maroon | DEMO_pi_password  |
+    | trident_db_pass        | password | fetch.outsider.awning.maroon | None              |
+    | trident_sysadmin_pass  | password | fetch.outsider.awning.maroon | None              |
+    +------------------------+----------+------------------------------+-------------------+
 
 ..
 

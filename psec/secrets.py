@@ -960,17 +960,17 @@ class SecretsShow(Lister):
             .. code-block:: console
 
                 $ psec secrets show
-                +------------------------+----------+-------------------+----------+
-                | Variable               | Type     | Export            | Value    |
-                +------------------------+----------+-------------------+----------+
-                | jenkins_admin_password | password | None              | REDACTED |
-                | myapp_app_password     | password | DEMO_app_password | REDACTED |
-                | myapp_client_psk       | string   | DEMO_client_ssid  | REDACTED |
-                | myapp_client_ssid      | string   | DEMO_client_ssid  | REDACTED |
-                | myapp_pi_password      | password | DEMO_pi_password  | REDACTED |
-                | trident_db_pass        | password | None              | REDACTED |
-                | trident_sysadmin_pass  | password | None              | REDACTED |
-                +------------------------+----------+-------------------+----------+
+                +------------------------+----------+----------+-------------------+
+                | Variable               | Type     | Value    | Export            |
+                +------------------------+----------+----------+-------------------+
+                | jenkins_admin_password | password | REDACTED | None              |
+                | myapp_app_password     | password | REDACTED | DEMO_app_password |
+                | myapp_client_psk       | string   | REDACTED | DEMO_client_ssid  |
+                | myapp_client_ssid      | string   | REDACTED | DEMO_client_ssid  |
+                | myapp_pi_password      | password | REDACTED | DEMO_pi_password  |
+                | trident_db_pass        | password | REDACTED | None              |
+                | trident_sysadmin_pass  | password | REDACTED | None              |
+                +------------------------+----------+----------+-------------------+
 
             Visually finding undefined variables in a very long list can be difficult.
             You can show just undefined variables with the ``--undefined`` option.
@@ -1006,11 +1006,11 @@ class SecretsShow(Lister):
             variables = parsed_args.arg \
                 if len(parsed_args.arg) > 0 \
                 else [k for k, v in self.app.secrets.items()]
-        columns = ('Variable', 'Type', 'Export', 'Value')
+        columns = ('Variable', 'Type', 'Value', 'Export')
         data = ([(k,
                   self.app.secrets.get_secret_type(k),
-                  self.app.secrets.get_secret_export(k),
-                  psec.utils.redact(v, parsed_args.redact))
+                  psec.utils.redact(v, parsed_args.redact),
+                  self.app.secrets.get_secret_export(k))
                 for k, v in self.app.secrets.items()
                 if (k in variables and
                     (not parsed_args.undefined or
