@@ -1,7 +1,12 @@
 CHANGES
 =======
 
+* Allow cloning group descriptions from environment
+* Add .vscode/launch.json
+* Remove incorrect requirements
+* Fix tty/no-tty 'environments delete'
 * Expose terraform command on -v
+* Validate variable exists in environment
 * Resolve pep8 findings
 * Improve  broken 'environments tree' code
 * Extend pep8 checks
