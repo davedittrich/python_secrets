@@ -40,7 +40,7 @@ no-diffs:
 
 #HELP release - package and upload a release to pypi
 .PHONY: release
-release: sdist bdist_egg bdist_wheel twine-check
+release: clean bdist_egg bdist_wheel twine-check
 	twine upload dist/* -r pypi
 
 #HELP release-test - upload to "testpypi"
