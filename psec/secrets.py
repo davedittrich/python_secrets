@@ -1517,8 +1517,7 @@ class SecretsPath(Command):
     LOG = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
-        default_environment = SecretsEnvironment().environment()
-
+        default_environment = self.app.environment
         parser = super(SecretsPath, self).get_parser(prog_name)
         parser.formatter_class = argparse.RawDescriptionHelpFormatter
         parser.add_argument('environment',
