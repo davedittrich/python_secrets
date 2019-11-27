@@ -1,5 +1,12 @@
 # -*- coding: utf-8 -*-
 
+"""
+Utility functions.
+
+Author: Dave Dittrich
+URL: https://python_secrets.readthedocs.org.
+"""
+
 import argparse
 import ipaddress
 import json

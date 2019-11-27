@@ -1,3 +1,12 @@
+# -*- coding: utf-8 -*-
+
+"""
+'secrets' subcommands and related classes.
+
+Author: Dave Dittrich
+URL: https://python_secrets.readthedocs.org.
+"""
+
 import argparse
 import base64
 import binascii
