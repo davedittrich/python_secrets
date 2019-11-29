@@ -15,6 +15,7 @@ pexpect
 pbr
 Pygments
 property_manager
+readline
 requests
 tox
 yamlreader
