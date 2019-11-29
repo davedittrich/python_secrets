@@ -61,7 +61,7 @@ def get_fs_type(mypath):
     """Return the file system type for mypath."""
     root_type = ''
     for part in psutil.disk_partitions():
-        if part.mountpoint == '/':
+        if part.mountpoint == os.path.sep:
             root_type = part.fstype
             continue
         if mypath.startswith(part.mountpoint):
