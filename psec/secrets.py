@@ -27,7 +27,6 @@ import yaml
 from cliff.command import Command
 from cliff.lister import Lister
 from numpy.random import bytes as np_random_bytes
-from psec.utils import remove_other_perms
 from psec.google_oauth2 import GoogleSMTP
 # >> Issue: [B404:blacklist] Consider possible security implications associated with run module.  # noqa
 #    Severity: Low   Confidence: High
@@ -99,7 +98,7 @@ def copyanything(src, dst):
         else:
             raise
     finally:
-        remove_other_perms(dst)
+        psec.utils.remove_other_perms(dst)
 
 
 def copydescriptions(src, dst):
@@ -125,7 +124,7 @@ def copydescriptions(src, dst):
         errors.extend(err.args[0])
     if errors:
         raise Error(errors)
-    remove_other_perms(dst)
+    psec.utils.remove_other_perms(dst)
 
 
 def _identify_environment(environment=None):
@@ -231,6 +230,16 @@ class SecretsEnvironment(object):
 
     @classmethod
     def permissions_check(cls, basedir='.', verbose_level=0):
+        # File permissions on Cygwin/Windows filesystems don't work the
+        # same way as Linux. Don't try to change them.
+        # TODO(dittrich): Is there a Better way to handle perms on Windows?
+        fs_type = psec.utils.get_fs_type(basedir)
+        if fs_type in ['NTFS', 'FAT', 'FAT32']:
+            msg = ('[-] {0} has file system type "{1}": '
+                   'skipping permissions check').format(
+                       basedir, fs_type)
+            cls.LOG.info(msg)
+            return False
         """Check for presense of perniscious overly-permissive permissions."""
         any_other_perms = stat.S_IROTH | stat.S_IWOTH | stat.S_IXOTH
         for root, dirs, files in os.walk(basedir, topdown=True):
@@ -582,7 +591,7 @@ class SecretsEnvironment(object):
                           default_flow_style=False
                           )
             self._changed = False
-            remove_other_perms(_fname)
+            psec.utils.remove_other_perms(_fname)
         else:
             self.LOG.debug('not writing secrets (unchanged)')
 
