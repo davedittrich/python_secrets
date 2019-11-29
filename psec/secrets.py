@@ -27,7 +27,6 @@ import yaml
 from cliff.command import Command
 from cliff.lister import Lister
 from numpy.random import bytes as np_random_bytes
-from psec.utils import remove_other_perms
 from psec.google_oauth2 import GoogleSMTP
 # >> Issue: [B404:blacklist] Consider possible security implications associated with run module.  # noqa
 #    Severity: Low   Confidence: High
@@ -99,7 +98,7 @@ def copyanything(src, dst):
         else:
             raise
     finally:
-        remove_other_perms(dst)
+        psec.utils.remove_other_perms(dst)
 
 
 def copydescriptions(src, dst):
@@ -125,7 +124,7 @@ def copydescriptions(src, dst):
         errors.extend(err.args[0])
     if errors:
         raise Error(errors)
-    remove_other_perms(dst)
+    psec.utils.remove_other_perms(dst)
 
 
 def _identify_environment(environment=None):
@@ -582,7 +581,7 @@ class SecretsEnvironment(object):
                           default_flow_style=False
                           )
             self._changed = False
-            remove_other_perms(_fname)
+            psec.utils.remove_other_perms(_fname)
         else:
             self.LOG.debug('not writing secrets (unchanged)')
 
