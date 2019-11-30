@@ -1,6 +1,18 @@
 CHANGES
 =======
 
+* Be less file system specific
+* File permissions work differently on Windows
+* Import everything (thought this was done already?)
+* Workaround for 'bullet' missing 'termios' on Win10
+* Add readline dependency
+* Add sphinx dependency to just docs environment
+* Add encoding lines to files
+* Add 'secrets path' debugging configurations
+* Don't create source package, but do clean up
+* Swap column order for better visual comprehension
+* Simplify release to avoid ChangeLog race condition
+
 19.11.0
 -------
 
