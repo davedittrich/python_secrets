@@ -375,6 +375,40 @@
             "console": "integratedTerminal"
         },
         {
+            "name": "psec secrets path",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "args": [
+                "--debug",
+                "secrets",
+                "path"
+            ],
+            "stopOnEntry": false,
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "psec -e other secrets path",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "args": [
+                "--debug",
+                "-e",
+                "other",
+                "secrets",
+                "path"
+            ],
+            "stopOnEntry": false,
+            "console": "integratedTerminal"
+        },
+        {
             "name": "psec -E run printenv",
             "type": "python",
             "request": "launch",

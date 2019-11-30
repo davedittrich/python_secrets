@@ -9,9 +9,15 @@ import shutil
 import sys
 import textwrap
 
-from bullet import Bullet
-from bullet import Input
-from bullet import colors
+# TODO(dittrich): https://github.com/Mckinsey666/bullet/issues/2
+# Workaround until bullet has Windows missing 'termios' fix.
+try:
+    from bullet import Bullet
+    from bullet import Input
+    from bullet import colors
+except ModuleNotFoundError:
+    pass
+
 from cliff.command import Command
 from cliff.lister import Lister
 from stat import S_IMODE
@@ -274,7 +280,7 @@ class EnvironmentsDelete(Command):
         choice = None
         if parsed_args.environment is not None:
             choice = parsed_args.environment
-        elif not stdin.isatty():
+        elif not (stdin.isatty() and 'Bullet' in dir()):
             # Can't involve user in getting a choice.
             raise RuntimeError('[-] no environment specified to delete')
         else:
@@ -480,7 +486,10 @@ class EnvironmentsDefault(Command):
             else:
                 self.LOG.info('default environment unset')
         elif parsed_args.set:
-            if parsed_args.environment is None and not stdin.isatty():
+            if (
+                parsed_args.environment is None and not
+                    (stdin.isatty() and 'Bullet' in dir())
+            ):
                 raise RuntimeError('[-] no environment specified')
             if parsed_args.environment is None:
                 environments = os.listdir(self.app.secrets.secrets_basedir())
@@ -514,7 +523,7 @@ class EnvironmentsDefault(Command):
             else:
                 if self.app_args.verbose_level > 1:
                     env_string = \
-                            psec.secrets.SecretsEnvironment().environment()
+                        psec.secrets.SecretsEnvironment().environment()
                     self.LOG.info('default environment is implicitly ' +
                                   '"{}"'.format(env_string))
                 else:
@@ -705,7 +714,7 @@ class EnvironmentsTree(Command):
     def take_action(self, parsed_args):
         self.LOG.debug('outputting environment tree')
         e = psec.secrets.SecretsEnvironment(
-                environment=parsed_args.environment)
+            environment=parsed_args.environment)
         e.requires_environment()
         print_files = bool(parsed_args.no_files is False)
         psec.utils.atree(e.environment_path(),

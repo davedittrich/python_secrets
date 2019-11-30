@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 Generic modular secrets configuration file management.
 

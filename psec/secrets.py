@@ -1,3 +1,12 @@
+# -*- coding: utf-8 -*-
+
+"""
+'secrets' subcommands and related classes.
+
+Author: Dave Dittrich
+URL: https://python_secrets.readthedocs.org.
+"""
+
 import argparse
 import base64
 import binascii
@@ -18,7 +27,6 @@ import yaml
 from cliff.command import Command
 from cliff.lister import Lister
 from numpy.random import bytes as np_random_bytes
-from psec.utils import remove_other_perms
 from psec.google_oauth2 import GoogleSMTP
 # >> Issue: [B404:blacklist] Consider possible security implications associated with run module.  # noqa
 #    Severity: Low   Confidence: High
@@ -90,7 +98,7 @@ def copyanything(src, dst):
         else:
             raise
     finally:
-        remove_other_perms(dst)
+        psec.utils.remove_other_perms(dst)
 
 
 def copydescriptions(src, dst):
@@ -116,7 +124,7 @@ def copydescriptions(src, dst):
         errors.extend(err.args[0])
     if errors:
         raise Error(errors)
-    remove_other_perms(dst)
+    psec.utils.remove_other_perms(dst)
 
 
 def _identify_environment(environment=None):
@@ -222,6 +230,16 @@ class SecretsEnvironment(object):
 
     @classmethod
     def permissions_check(cls, basedir='.', verbose_level=0):
+        # File permissions on Cygwin/Windows filesystems don't work the
+        # same way as Linux. Don't try to change them.
+        # TODO(dittrich): Is there a Better way to handle perms on Windows?
+        fs_type = psec.utils.get_fs_type(basedir)
+        if fs_type in ['NTFS', 'FAT', 'FAT32']:
+            msg = ('[-] {0} has file system type "{1}": '
+                   'skipping permissions check').format(
+                       basedir, fs_type)
+            cls.LOG.info(msg)
+            return False
         """Check for presense of perniscious overly-permissive permissions."""
         any_other_perms = stat.S_IROTH | stat.S_IWOTH | stat.S_IXOTH
         for root, dirs, files in os.walk(basedir, topdown=True):
@@ -573,7 +591,7 @@ class SecretsEnvironment(object):
                           default_flow_style=False
                           )
             self._changed = False
-            remove_other_perms(_fname)
+            psec.utils.remove_other_perms(_fname)
         else:
             self.LOG.debug('not writing secrets (unchanged)')
 
@@ -960,17 +978,17 @@ class SecretsShow(Lister):
             .. code-block:: console
 
                 $ psec secrets show
-                +------------------------+----------+-------------------+----------+
-                | Variable               | Type     | Export            | Value    |
-                +------------------------+----------+-------------------+----------+
-                | jenkins_admin_password | password | None              | REDACTED |
-                | myapp_app_password     | password | DEMO_app_password | REDACTED |
-                | myapp_client_psk       | string   | DEMO_client_ssid  | REDACTED |
-                | myapp_client_ssid      | string   | DEMO_client_ssid  | REDACTED |
-                | myapp_pi_password      | password | DEMO_pi_password  | REDACTED |
-                | trident_db_pass        | password | None              | REDACTED |
-                | trident_sysadmin_pass  | password | None              | REDACTED |
-                +------------------------+----------+-------------------+----------+
+                +------------------------+----------+----------+-------------------+
+                | Variable               | Type     | Value    | Export            |
+                +------------------------+----------+----------+-------------------+
+                | jenkins_admin_password | password | REDACTED | None              |
+                | myapp_app_password     | password | REDACTED | DEMO_app_password |
+                | myapp_client_psk       | string   | REDACTED | DEMO_client_ssid  |
+                | myapp_client_ssid      | string   | REDACTED | DEMO_client_ssid  |
+                | myapp_pi_password      | password | REDACTED | DEMO_pi_password  |
+                | trident_db_pass        | password | REDACTED | None              |
+                | trident_sysadmin_pass  | password | REDACTED | None              |
+                +------------------------+----------+----------+-------------------+
 
             Visually finding undefined variables in a very long list can be difficult.
             You can show just undefined variables with the ``--undefined`` option.
@@ -1006,11 +1024,11 @@ class SecretsShow(Lister):
             variables = parsed_args.arg \
                 if len(parsed_args.arg) > 0 \
                 else [k for k, v in self.app.secrets.items()]
-        columns = ('Variable', 'Type', 'Export', 'Value')
+        columns = ('Variable', 'Type', 'Value', 'Export')
         data = ([(k,
                   self.app.secrets.get_secret_type(k),
-                  self.app.secrets.get_secret_export(k),
-                  psec.utils.redact(v, parsed_args.redact))
+                  psec.utils.redact(v, parsed_args.redact),
+                  self.app.secrets.get_secret_export(k))
                 for k, v in self.app.secrets.items()
                 if (k in variables and
                     (not parsed_args.undefined or

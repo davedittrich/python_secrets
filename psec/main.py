@@ -1,9 +1,13 @@
-# Generic modular configuration file manager.
-#
-# Author: Dave Dittrich <dave.dittrich@gmail.com>
-# URL: https://pypi.python.org/pypi/python_secrets
+# -*- coding: utf-8 -*-
 
-"""Python secrets management app"""
+"""
+Python secrets management app
+
+Generic modular configuration file manager.
+
+Author: Dave Dittrich <dave.dittrich@gmail.com>
+URL: https://pypi.python.org/pypi/python_secrets
+"""
 
 from __future__ import print_function
 

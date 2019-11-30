@@ -1,5 +1,12 @@
 # -*- coding: utf-8 -*-
 
+"""
+Utility functions.
+
+Author: Dave Dittrich
+URL: https://python_secrets.readthedocs.org.
+"""
+
 import argparse
 import ipaddress
 import json
@@ -9,6 +16,7 @@ import random
 import requests
 import time
 import psec.secrets
+import psutil
 import subprocess  # nosec
 import sys
 import textwrap
@@ -32,10 +40,48 @@ AWS_CONFIG_FILE = os.path.join(os.path.expanduser('~'), '.aws', 'credentials')
 LOG = logging.getLogger(__name__)
 
 
+# https://stackoverflow.com/questions/7119630/in-python-how-can-i-get-the-file-system-of-a-given-file-path  # NOQA
+def getmount(mypath):
+    """Return the mount point for mypath."""
+    path_ = os.path.realpath(os.path.abspath(mypath))
+    while path_ != os.path.sep:
+        if os.path.ismount(path_):
+            return path_
+        path_ = os.path.abspath(os.path.join(path_, os.pardir))
+    return path_
+
+
+def getmount_fstype(mypath):
+    """Return the file system type for a specific mount path."""
+    mountpoint = getmount(mypath)
+    return get_fs_type(mountpoint)
+
+
+def get_fs_type(mypath):
+    """Return the file system type for mypath."""
+    root_type = ''
+    for part in psutil.disk_partitions():
+        if part.mountpoint == os.path.sep:
+            root_type = part.fstype
+            continue
+        if mypath.startswith(part.mountpoint):
+            return part.fstype
+    return root_type
+
+
 def remove_other_perms(dst):
     """Make all files in path ``dst`` have ``o-rwx`` permissions."""
-    # TODO(dittrich): Test on Windows. Should work on all Linux.
-    get_output(['chmod', '-R', 'o-rwx', dst])
+    # File permissions on Cygwin/Windows filesystems don't work the
+    # same way as Linux. Don't try to change them.
+    # TODO(dittrich): Is there a Better way to handle perms on Windows?
+    fs_type = get_fs_type(dst)
+    if fs_type in ['NTFS', 'FAT', 'FAT32']:
+        msg = ('[-] {0} has file system type "{1}": '
+               'skipping setting permissions').format(
+                   dst, fs_type)
+        LOG.info(msg)
+    else:
+        get_output(['chmod', '-R', 'o-rwx', dst])
 
 
 def get_output(cmd=['echo', 'NO COMMAND SPECIFIED'],

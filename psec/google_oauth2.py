@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 # Based on 'oauth2.py' example from Google.
 # Copyright 2012 Google Inc.
 #
