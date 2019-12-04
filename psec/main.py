@@ -173,7 +173,7 @@ class PythonSecretsApp(App):
                                'module, which requires Python 3.6 or higher')
 
     def prepare_to_run_command(self, cmd):
-        self.LOG.debug('prepare_to_run_command %s', cmd.__class__.__name__)
+        self.LOG.debug('prepare_to_run_command "{0}"'.format(cmd.cmd_name))
         self.timer.start()
         os.umask(self.options.umask)
         self.LOG.debug('using environment "{}"'.format(
@@ -181,7 +181,7 @@ class PythonSecretsApp(App):
         self.environment = self.options.environment
         self.secrets_basedir = self.options.secrets_basedir
         # Don't output error messages when "complete" command used
-        if cmd.__class__.__name__ != 'CompleteCommand':
+        if cmd.cmd_name == 'complete':
             SecretsEnvironment.permissions_check(
                 self.secrets_basedir,
                 verbose_level=self.options.verbose_level,
@@ -197,17 +197,17 @@ class PythonSecretsApp(App):
                 )
 
     def clean_up(self, cmd, result, err):
-        self.LOG.debug('clean_up %s', cmd.__class__.__name__)
+        self.LOG.debug('clean_up command "{0}"'.format(cmd.cmd_name))
         if err:
             self.LOG.debug('got an error: %s', err)
             if self.secrets.changed():
                 self.LOG.info('not writing secrets out due to error')
-        elif cmd.__class__.__name__ != 'CompleteCommand':
+        elif cmd.cmd_name != 'complete':
             if self.secrets.changed():
                 self.secrets.write_secrets()
             if (self.options.elapsed or
                     (self.options.verbose_level > 1
-                     and cmd.__class__.__name__ != "CompleteCommand")):
+                     and cmd.cmd_name != "complete")):
                 self.timer.stop()
                 elapsed = self.timer.elapsed()
                 self.stdout.write('[+] Elapsed time {}\n'.format(elapsed))
