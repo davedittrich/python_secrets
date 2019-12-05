@@ -64,7 +64,8 @@ SECRET_ATTRIBUTES = [
     'Variable',
     'Type',
     'Export',
-    'Prompt'
+    'Prompt',
+    'Options'
 ]
 DEFAULT_MODE = 0o710
 # XKCD password defaults
@@ -183,6 +184,7 @@ class SecretsEnvironment(object):
                  source=None,
                  verbose_level=1,
                  cwd=os.getcwd()):
+        self._changed = False
         self._cwd = cwd
         self._environment = _identify_environment(environment)
         self._secrets_file = secrets_file
@@ -221,7 +223,6 @@ class SecretsEnvironment(object):
             self.read_secrets_descriptions()
         self._secrets = dict()
         self._descriptions = dict()
-        self._changed = False
         self._groups = []
 
     def __str__(self):
@@ -625,7 +626,7 @@ class SecretsEnvironment(object):
             for k in d.keys():
                 if k not in SECRET_ATTRIBUTES:
                     raise RuntimeError('Invalid attribute ' +
-                                       '"{}"'.format(k) +
+                                       '"{}" '.format(k) +
                                        'in {}'.format(infile))
         return data
 
@@ -1315,9 +1316,15 @@ class SecretsSet(Command):
                 raise RuntimeError('variable "{}" '.format(k) +
                                    'has no description')
             if '=' not in arg and from_env is None:
-                v = psec.utils.prompt_string(
-                    prompt=self.app.secrets.get_prompt(k),
-                    default=v)
+                if k in self.app.secrets.Options:
+                    # Attempt to select from list of options.
+                    v = psec.utils.prompt_options(
+                        options=self.app.secrets.Options[k],
+                        prompt=self.app.secrets.get_prompt(k))
+                else:
+                    v = psec.utils.prompt_string(
+                        prompt=self.app.secrets.get_prompt(k),
+                        default=v)
                 if v is None:
                     self.LOG.info('no user input for "{}"'.format(k))
                     return None

@@ -24,6 +24,12 @@ import textwrap
 from anytree import Node
 from anytree import RenderTree
 from bs4 import BeautifulSoup
+# TODO(dittrich): https://github.com/Mckinsey666/bullet/issues/2
+# Workaround until bullet has Windows missing 'termios' fix.
+try:
+    from bullet import Bullet
+except ModuleNotFoundError:
+    pass
 from cliff.command import Command
 from cliff.lister import Lister
 from collections import OrderedDict
@@ -99,6 +105,8 @@ def get_output(cmd=['echo', 'NO COMMAND SPECIFIED'],
 
 
 def find(lst, key, value):
+    """Find a dictionary entry from a list of dicts where the
+    key identified by 'key' has the desired value 'value'."""
     for i, dic in enumerate(lst):
         if dic[key] == value:
             return i
@@ -114,6 +122,46 @@ def require_options(options, *args):
     if missing:
         raise RuntimeError('Missing options: %s' % ' '.join(missing))
     return True
+
+
+def prompt_options(options=[],
+                   by_descr=True,
+                   prompt="Select from the following options"):
+    """Prompt the user for a string using an options array."""
+    if 'Bullet' not in globals():
+        raise RuntimeError('[-] can\'t use Bullet on Windows')
+    try:
+        if type(options[0]) is not dict:
+            raise RuntimeError('options is not a list of dictionaries')
+    except Exception as exc:
+        print(str(exc))
+    choices = ['<CANCEL>'] + [
+                                opt['descr']
+                                if by_descr
+                                else opt['ident']
+                                for opt in options
+                             ]
+    cli = Bullet(prompt='\n{0}'.format(prompt),
+                 choices=choices,
+                 indent=0,
+                 align=2,
+                 margin=1,
+                 shift=0,
+                 bullet="→",
+                 pad_right=5)
+    choice = cli.launch()
+    if choice == "<CANCEL>":
+        LOG.info('cancelled selection of choice')
+        return None
+    selected = psec.utils.find(options,
+                               'descr' if by_descr else 'ident',
+                               choice)
+    # options[selected]
+    # {'descr': 'DigitalOcean', 'ident': 'digitalocean'}
+    try:
+        return options[selected]['ident']
+    except Exception as exc:  # NOQA
+        return None
 
 
 def prompt_string(prompt="Enter a value",
