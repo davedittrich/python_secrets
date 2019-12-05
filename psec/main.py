@@ -181,7 +181,7 @@ class PythonSecretsApp(App):
         self.environment = self.options.environment
         self.secrets_basedir = self.options.secrets_basedir
         # Don't output error messages when "complete" command used
-        if cmd.cmd_name == 'complete':
+        if cmd.cmd_name != 'complete':
             SecretsEnvironment.permissions_check(
                 self.secrets_basedir,
                 verbose_level=self.options.verbose_level,
