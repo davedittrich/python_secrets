@@ -87,9 +87,10 @@ class EnvironmentsList(Lister):
 
     def take_action(self, parsed_args):
         self.LOG.debug('listing environment(s)')
-        default_environment = psec.secrets.SecretsEnvironment().environment()
+        secrets_environment = psec.secrets.SecretsEnvironment()
+        default_environment = secrets_environment.environment()
         columns = (['Environment', 'Default'])
-        basedir = self.app.secrets.secrets_basedir()
+        basedir = secrets_environment.secrets_basedir()
         if parsed_args.aliasing:
             columns.append('AliasFor')
         data = list()
