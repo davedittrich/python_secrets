@@ -678,7 +678,7 @@ class PublicKeys(object):
 
 class SSHConfig(Command):
     """
-    Create SSH configuration snippets for use by ``update-dotdee``
+    Create SSH configuration snippets for use by ``update-dotdee``.
 
     Names of the snippets will start with ``psec_`` followed by the
     environment name and host name (separated by ``_``) in order
@@ -808,7 +808,7 @@ class SSHConfig(Command):
 
 class SSHKnownHostsAdd(Command):
     """
-    Add public SSH keys to known_hosts file(s)
+    Add public SSH keys to known_hosts file(s).
 
     This command will either extract SSH public host keys and fingerprints
     from a cloud service console output (either directly via an API or
@@ -941,7 +941,7 @@ class SSHKnownHostsAdd(Command):
 
 class SSHKnownHostsExtract(Command):
     """
-    Extract SSH keys from cloud provider console logs
+    Extract SSH keys from cloud provider console logs.
 
     Log output may come from stdout (as it does with Terraform), or
     it may need to be extracted (e.g., after Pulumi creates AWS
@@ -1052,7 +1052,7 @@ class SSHKnownHostsExtract(Command):
 
 class SSHKnownHostsRemove(Command):
     """
-    Remove SSH keys from known_hosts file(s)
+    Remove SSH keys from known_hosts file(s).
 
     This command indirectly manipulates the known hosts file
     using an embedded Ansible playbook.

@@ -13,7 +13,7 @@ from subprocess import call  # nosec
 
 
 class Run(Command):
-    """Run a command using exported secrets"""
+    """Run a command using exported secrets."""
 
     LOG = logging.getLogger(__name__)
 

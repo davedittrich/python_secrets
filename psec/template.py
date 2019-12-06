@@ -10,7 +10,7 @@ from jinja2 import (Environment, FileSystemLoader,
 
 
 class Template(Command):
-    """Template file(s)"""
+    """Template file(s)."""
 
     LOG = logging.getLogger(__name__)
 

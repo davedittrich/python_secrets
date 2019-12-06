@@ -33,7 +33,7 @@ def _is_default(a, b):
 
 
 class EnvironmentsList(Lister):
-    """List the current environments"""
+    """List the current environments."""
 
     LOG = logging.getLogger(__name__)
 
@@ -112,7 +112,7 @@ class EnvironmentsList(Lister):
 
 
 class EnvironmentsCreate(Command):
-    """Create environment(s)"""
+    """Create environment(s)."""
 
     LOG = logging.getLogger(__name__)
 
@@ -226,7 +226,7 @@ class EnvironmentsCreate(Command):
 
 
 class EnvironmentsDelete(Command):
-    """Delete environment"""
+    """Delete environment."""
 
     LOG = logging.getLogger(__name__)
 
@@ -329,7 +329,7 @@ class EnvironmentsDelete(Command):
 
 
 class EnvironmentsRename(Command):
-    """Rename environment"""
+    """Rename environment."""
 
     LOG = logging.getLogger(__name__)
 
@@ -398,7 +398,7 @@ class EnvironmentsRename(Command):
 
 
 class EnvironmentsDefault(Command):
-    """Manage default environment via file in cwd"""
+    """Manage default environment via file in cwd."""
 
     LOG = logging.getLogger(__name__)
 
@@ -531,7 +531,7 @@ class EnvironmentsDefault(Command):
 
 
 class EnvironmentsPath(Command):
-    """Return path to files and directories for environment"""
+    """Return path to files and directories for environment."""
 
     LOG = logging.getLogger(__name__)
 
@@ -627,7 +627,7 @@ class EnvironmentsPath(Command):
 
 
 class EnvironmentsTree(Command):
-    """Output tree listing of files/directories in environment"""
+    """Output tree listing of files/directories in environment."""
 
     LOG = logging.getLogger(__name__)
 

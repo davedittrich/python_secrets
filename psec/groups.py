@@ -13,7 +13,7 @@ from psec.utils import remove_other_perms
 
 
 class GroupsCreate(Command):
-    """Create a secrets descriptions group"""
+    """Create a secrets descriptions group."""
 
     LOG = logging.getLogger(__name__)
 
@@ -198,7 +198,7 @@ class GroupsShow(Lister):
 
 
 class GroupsPath(Command):
-    """Return path to secrets descriptions (groups) directory"""
+    """Return path to secrets descriptions (groups) directory."""
 
     LOG = logging.getLogger(__name__)
 

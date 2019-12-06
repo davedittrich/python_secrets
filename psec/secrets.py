@@ -173,7 +173,7 @@ def is_valid_environment(env_path, verbose_level=1):
 
 
 class SecretsEnvironment(object):
-    """Class for handling secrets environment metadata"""
+    """Class for handling secrets environment metadata."""
 
     LOG = logging.getLogger(__name__)
 
@@ -571,7 +571,7 @@ class SecretsEnvironment(object):
 
     def read_secrets(self, from_descriptions=False):
         """
-        Load the current secrets from .yml file
+        Load the current secrets from .yml file.
 
         If no secrets have been set yet and from_descriptions is True,
         return a dictionary comprised of the keys from the
@@ -941,7 +941,7 @@ def generate_random_base64(unique=False, size=DEFAULT_SIZE):
 
 
 class SecretsShow(Lister):
-    """List the contents of the secrets file or definitions"""
+    """List the contents of the secrets file or definitions."""
 
     LOG = logging.getLogger(__name__)
 
@@ -1057,7 +1057,7 @@ class SecretsShow(Lister):
 
 
 class SecretsDescribe(Lister):
-    """Describe supported secret types"""
+    """Describe supported secret types."""
 
     LOG = logging.getLogger(__name__)
 
@@ -1130,7 +1130,7 @@ class SecretsDescribe(Lister):
 
 
 class SecretsGenerate(Command):
-    """Generate values for secrets"""
+    """Generate values for secrets."""
 
     LOG = logging.getLogger(__name__)
 
@@ -1240,7 +1240,7 @@ class SecretsGenerate(Command):
 
 
 class SecretsSet(Command):
-    """Set values manually for secrets"""
+    """Set values manually for secrets."""
 
     LOG = logging.getLogger(__name__)
 
@@ -1371,7 +1371,7 @@ class SecretsSet(Command):
 
 
 class SecretsGet(Command):
-    """Get value associated with a secret"""
+    """Get value associated with a secret."""
 
     LOG = logging.getLogger(__name__)
 
@@ -1410,10 +1410,7 @@ class SecretsGet(Command):
 
 
 class SecretsSend(Command):
-    """
-    Send secrets using GPG encrypted email.
-
-    """
+    """Send secrets using GPG encrypted email."""
 
     LOG = logging.getLogger(__name__)
 

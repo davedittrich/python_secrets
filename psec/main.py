@@ -61,7 +61,7 @@ logger = logging.getLogger(__name__)
 
 
 class PythonSecretsApp(App):
-    """Python secrets application class"""
+    """Python secrets application class."""
 
     def __init__(self):
         super(PythonSecretsApp, self).__init__(
