@@ -110,6 +110,7 @@ setup(
             'environments rename = psec.environments:EnvironmentsRename',  # noqa
             'environments tree = psec.environments:EnvironmentsTree',
             'groups create = psec.groups:GroupsCreate',
+            'groups delete = psec.groups:GroupsDelete',
             'groups list = psec.groups:GroupsList',
             'groups path = psec.groups:GroupsPath',
             'groups show = psec.groups:GroupsShow',

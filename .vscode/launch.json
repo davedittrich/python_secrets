@@ -302,6 +302,23 @@
             "console": "integratedTerminal"
         },
         {
+            "name": "psec groups delete gosecure",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "args": [
+                "--debug",
+                "groups",
+                "delete",
+                "gosecure"
+            ],
+            "stopOnEntry": true,
+            "console": "integratedTerminal"
+        },
+        {
             "name": "psec secrets get jenkins_admin_password",
             "type": "python",
             "request": "launch",

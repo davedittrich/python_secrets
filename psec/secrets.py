@@ -537,6 +537,20 @@ class SecretsEnvironment(object):
         getattr(self, 'Variable', {secret: value})
         self._changed = True
 
+    def delete_secret(self, secret):
+        """Delete a secret and record change.
+
+        :param secret: :type: string
+        :param value: :type: string
+        :return:
+        """
+        try:
+            del(self.Variable[secret])
+        except KeyError:
+            pass
+        else:
+            self._changed = True
+
     def get_type(self, variable):
         """Return type for variable or None if no description"""
         return self.Type.get(variable, None)
