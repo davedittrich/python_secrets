@@ -180,6 +180,7 @@ class SecretsEnvironment(object):
                  create_root=True,
                  defer_loading=True,
                  export_env_vars=False,
+                 preserve_existing=False,
                  env_var_prefix=None,
                  source=None,
                  verbose_level=1,
@@ -202,6 +203,7 @@ class SecretsEnvironment(object):
         self._secrets_descriptions = "{}.d".format(
             os.path.splitext(self._secrets_file)[0])
         self.export_env_vars = export_env_vars
+        self.preserve_existing = preserve_existing
 
         # When exporting environment variables, include one that specifies the
         # environment from which these variables were derived. This also works
@@ -496,6 +498,11 @@ class SecretsEnvironment(object):
         self._secrets[secret] = value  # DEPRECATED
         getattr(self, 'Variable')[secret] = value
         if self.export_env_vars:
+            if self.preserve_existing and bool(os.getenv(secret)):
+                raise RuntimeError(
+                    'Refusing to overwrite environment variable "{0}"'.format(
+                        secret)
+                    )
             # Export with secrets name first.
             os.environ[secret] = str(value)
             # See if an alternate environment variable name is
@@ -507,6 +514,11 @@ class SecretsEnvironment(object):
                     _env_var = '{}{}'.format(self.env_var_prefix, secret)
                 else:
                     _env_var = secret
+            if self.preserve_existing and bool(os.getenv(_env_var)):
+                raise RuntimeError(
+                    'Refusing to overwrite environment variable "{0}"'.format(
+                        _env_var)
+                    )
             os.environ[_env_var] = str(value)
 
     def set_secret(self, secret, value):

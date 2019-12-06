@@ -136,6 +136,14 @@ class PythonSecretsApp(App):
                  "(default: False)"
         )
         parser.add_argument(
+            '--preserve-existing',
+            action='store_true',
+            dest='preserve_existing',
+            default=False,
+            help=("Don't allow over-writing existing environment variables "
+                  "(default: False)")
+        )
+        parser.add_argument(
             '--init',
             action='store_true',
             dest='init',
@@ -192,6 +200,7 @@ class PythonSecretsApp(App):
                 secrets_basedir=self.secrets_basedir,
                 secrets_file=self.secrets_file,
                 export_env_vars=self.options.export_env_vars,
+                preserve_existing=self.options.preserve_existing,
                 verbose_level=self.options.verbose_level,
                 env_var_prefix=self.options.env_var_prefix,
                 )
