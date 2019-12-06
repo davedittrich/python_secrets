@@ -46,10 +46,15 @@ from xkcdpass.xkcd_password import CASE_METHODS
 #
 # https://github.com/redacted/XKCD-password-generator
 
+BOOLEAN_OPTIONS = [
+    { 'descr': 'True', 'ident': 'true' },
+    { 'descr': 'False', 'ident': 'false' },
+]
 DEFAULT_SIZE = 18
 SECRET_TYPES = [
         {'Type': 'password', 'Description': 'Simple (xkcd) password string'},
         {'Type': 'string', 'Description': 'Simple string'},
+        {'Type': 'boolean', 'Description': 'Boolean'},
         {'Type': 'crypt_6', 'Description': 'crypt() SHA512 ("$6$")'},
         {'Type': 'token_hex', 'Description': 'Hexadecimal token'},
         {'Type': 'token_urlsafe', 'Description': 'URL-safe token'},
@@ -793,6 +798,8 @@ def generate_secret(secret_type=None, *arguments, **kwargs):
     # arguments. They are instead turned into positional arguments.
     if secret_type == "string":  # nosec
         return None
+    if secret_type == "boolean":  # nosec
+        return None
     if secret_type == 'password':  # nosec
         return generate_password(unique,
                                  acrostic,
@@ -1328,6 +1335,9 @@ class SecretsSet(Command):
                 raise RuntimeError('variable "{}" '.format(k) +
                                    'has no description')
             if '=' not in arg and from_env is None:
+                # Default options for boolean type
+                if k_type == 'boolean' and k not in self.app.secrets.Options:
+                    self.app.secrets.Options[k] = BOOLEAN_OPTIONS
                 if k in self.app.secrets.Options:
                     # Attempt to select from list of options.
                     v = psec.utils.prompt_options(
@@ -1336,9 +1346,9 @@ class SecretsSet(Command):
                 else:
                     v = psec.utils.prompt_string(
                         prompt=self.app.secrets.get_prompt(k),
-                        default=v)
+                        default=("" if v is None else v))
                 if v is None:
-                    self.LOG.info('no user input for "{}"'.format(k))
+                    self.LOG.info('could not obtain value for "{}"'.format(k))
                     return None
             if v is not None and v.startswith('@'):
                 if v[1] == '~':
