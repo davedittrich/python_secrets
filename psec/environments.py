@@ -491,7 +491,9 @@ class EnvironmentsDefault(Command):
                     (stdin.isatty() and 'Bullet' in dir())
             ):
                 raise RuntimeError('[-] no environment specified')
-            if parsed_args.environment is None:
+            if parsed_args.environment is not None:
+                choice = parsed_args.environment
+            else:
                 environments = os.listdir(self.app.secrets.secrets_basedir())
                 choices = ['<CANCEL>'] + sorted(environments)
                 cli = Bullet(prompt="\nChose a new default environment:",
@@ -505,11 +507,10 @@ class EnvironmentsDefault(Command):
                 choice = cli.launch()
                 if choice == "<CANCEL>":
                     self.LOG.info('cancelled setting default')
-                else:
-                    with open(env_file, 'w') as f:
-                        f.write(choice)
-                    self.LOG.info('default environment set explicitly to ' +
-                                  '"{}"'.format(choice))
+            with open(env_file, 'w') as f:
+                f.write(choice)
+            self.LOG.info(('default environment set explicitly to '
+                           '"{0}"').format(choice))
         elif parsed_args.environment is None:
             # No environment specified, show current setting
             if os.path.exists(env_file):
