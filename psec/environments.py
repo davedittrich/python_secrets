@@ -246,7 +246,9 @@ class EnvironmentsDelete(Command):
                             nargs='?',
                             default=None)
         parser.epilog = textwrap.dedent("""
-            Deleting an environment requires use of the ``--force`` flag.
+            Deleting an environment requires use of the ``--force`` flag. If
+            not specified, you will be prompted to confirm the environment
+            name before it is deleted.
 
             .. code-block:: console
 
