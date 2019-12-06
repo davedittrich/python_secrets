@@ -47,8 +47,8 @@ from xkcdpass.xkcd_password import CASE_METHODS
 # https://github.com/redacted/XKCD-password-generator
 
 BOOLEAN_OPTIONS = [
-    { 'descr': 'True', 'ident': 'true' },
-    { 'descr': 'False', 'ident': 'false' },
+    {'descr': 'True', 'ident': 'true'},
+    {'descr': 'False', 'ident': 'false'},
 ]
 DEFAULT_SIZE = 18
 SECRET_TYPES = [
