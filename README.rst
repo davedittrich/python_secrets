@@ -466,6 +466,11 @@ in this repository using ``cat secrets/secrets.d/myapp.yml``:
       Prompt: 'SSID for myapp client WiFi AP'
       Export: DEMO_client_ssid
 
+    - Variable: myapp_ondemand_wifi
+      Type: boolean
+      Prompt: '"Connect on demand" when connected to wifi'
+      Export: DEMO_ondemand_wifi
+
     # vim: ft=ansible :
 
 ..
@@ -501,10 +506,11 @@ the ``groups show`` command:
     +---------+-----------------------+
     | trident | trident_sysadmin_pass |
     | trident | trident_db_pass       |
-    | myapp   | myapp_pi_password     |
     | myapp   | myapp_app_password    |
     | myapp   | myapp_client_psk      |
     | myapp   | myapp_client_ssid     |
+    | myapp   | myapp_ondemand_wifi   |
+    | myapp   | myapp_pi_password     |
     +---------+-----------------------+
 
 ..
@@ -523,7 +529,7 @@ to manage its own values.
     | Group    | Items |
     +----------+-------+
     | jenkins  |     1 |
-    | myapp    |     4 |
+    | myapp    |     5 |
     | newgroup |    12 |
     | trident  |     2 |
     +----------+-------+
@@ -539,17 +545,18 @@ To examine the secrets, use the ``secrets show`` command:
 .. code-block:: console
 
     $ psec secrets show
-    +------------------------+----------+----------+-------------------+
-    | Variable               | Type     | Value    | Export            |
-    +------------------------+----------+----------+-------------------+
-    | jenkins_admin_password | password | REDACTED | None              |
-    | myapp_app_password     | password | REDACTED | DEMO_app_password |
-    | myapp_client_psk       | string   | REDACTED | DEMO_client_ssid  |
-    | myapp_client_ssid      | string   | REDACTED | DEMO_client_ssid  |
-    | myapp_pi_password      | password | REDACTED | DEMO_pi_password  |
-    | trident_db_pass        | password | REDACTED | None              |
-    | trident_sysadmin_pass  | password | REDACTED | None              |
-    +------------------------+----------+----------+-------------------+
+    +------------------------+----------+----------+--------------------+
+    | Variable               | Type     | Value    | Export             |
+    +------------------------+----------+----------+--------------------+
+    | jenkins_admin_password | password | REDACTED | None               |
+    | myapp_app_password     | password | REDACTED | DEMO_app_password  |
+    | myapp_client_psk       | string   | REDACTED | DEMO_client_ssid   |
+    | myapp_client_ssid      | string   | REDACTED | DEMO_client_ssid   |
+    | myapp_ondemand_wifi    | boolean  | REDACTED | DEMO_ondemand_wifi |
+    | myapp_pi_password      | password | REDACTED | DEMO_pi_password   |
+    | trident_db_pass        | password | REDACTED | None               |
+    | trident_sysadmin_pass  | password | REDACTED | None               |
+    +------------------------+----------+----------+--------------------+
 
 ..
 
@@ -559,17 +566,18 @@ the values in clear text in the terminal output, add the ``--no-redact`` flag:
 .. code-block:: console
 
     $ psec secrets show --no-redact
-    +------------------------+----------+------------------------------+-------------------+
-    | Variable               | Type     | Value                        | Export            |
-    +------------------------+----------+------------------------------+-------------------+
-    | jenkins_admin_password | password | fetch.outsider.awning.maroon | None              |
-    | myapp_app_password     | password | fetch.outsider.awning.maroon | DEMO_app_password |
-    | myapp_client_psk       | string   | PSK                          | DEMO_client_psk   |
-    | myapp_client_ssid      | string   | SSID                         | DEMO_client_ssid  |
-    | myapp_pi_password      | password | fetch.outsider.awning.maroon | DEMO_pi_password  |
-    | trident_db_pass        | password | fetch.outsider.awning.maroon | None              |
-    | trident_sysadmin_pass  | password | fetch.outsider.awning.maroon | None              |
-    +------------------------+----------+------------------------------+-------------------+
+    +------------------------+----------+------------------------------+--------------------+
+    | Variable               | Type     | Value                        | Export             |
+    +------------------------+----------+------------------------------+--------------------+
+    | jenkins_admin_password | password | fetch.outsider.awning.maroon | None               |
+    | myapp_app_password     | password | fetch.outsider.awning.maroon | DEMO_app_password  |
+    | myapp_client_psk       | string   | PSK                          | DEMO_client_psk    |
+    | myapp_client_ssid      | string   | SSID                         | DEMO_client_ssid   |
+    | myapp_ondemand_wifi    | boolean  | true                         | DEMO_ondemand_wifi |
+    | myapp_pi_password      | password | fetch.outsider.awning.maroon | DEMO_pi_password   |
+    | trident_db_pass        | password | fetch.outsider.awning.maroon | None               |
+    | trident_sysadmin_pass  | password | fetch.outsider.awning.maroon | None               |
+    +------------------------+----------+------------------------------+--------------------+
 
 ..
 
@@ -628,21 +636,22 @@ To describe the secrets in the select environment, use the
 .. code-block:: console
 
     $ psec secrets describe
-    +----------------------------+----------+-----------------------------------------+
-    | Variable                   | Type     | Prompt                                  |
-    +----------------------------+----------+-----------------------------------------+
-    | google_oauth_client_id     | string   | Google OAuth2 client id                 |
-    | google_oauth_client_secret | string   | Google OAuth2 client secret             |
-    | google_oauth_refresh_token | string   | Google OAuth2 refresh token             |
-    | google_oauth_username      | None     | google_oauth_username                   |
-    | jenkins_admin_password     | password | Password for Jenkins "admin" account    |
-    | myapp_app_password         | password | Password for myapp web app              |
-    | myapp_client_psk           | string   | Pre-shared key for myapp client WiFi AP |
-    | myapp_client_ssid          | string   | SSID for myapp client WiFi AP           |
-    | myapp_pi_password          | password | Password for myapp "pi" user account    |
-    | trident_db_pass            | password | Password for Trident postgres database  |
-    | trident_sysadmin_pass      | password | Password for Trident sysadmin account   |
-    +----------------------------+----------+-----------------------------------------+
+    +----------------------------+----------+--------------------------------------------+
+    | Variable                   | Type     | Prompt                                     |
+    +----------------------------+----------+--------------------------------------------+
+    | google_oauth_client_id     | string   | Google OAuth2 client id                    |
+    | google_oauth_client_secret | string   | Google OAuth2 client secret                |
+    | google_oauth_refresh_token | string   | Google OAuth2 refresh token                |
+    | google_oauth_username      | None     | google_oauth_username                      |
+    | jenkins_admin_password     | password | Password for Jenkins "admin" account       |
+    | myapp_app_password         | password | Password for myapp web app                 |
+    | myapp_client_psk           | string   | Pre-shared key for myapp client WiFi AP    |
+    | myapp_client_ssid          | string   | SSID for myapp client WiFi AP              |
+    | myapp_ondemand_wifi        | boolean  | "Connect on demand" when connected to wifi |
+    | myapp_pi_password          | password | Password for myapp "pi" user account       |
+    | trident_db_pass            | password | Password for Trident postgres database     |
+    | trident_sysadmin_pass      | password | Password for Trident sysadmin account      |
+    +----------------------------+----------+--------------------------------------------+
     $ psec secrets describe --group trident
     +-----------------------+----------+----------------------------------------+
     | Variable              | Type     | Prompt                                 |
@@ -663,6 +672,7 @@ To get a description of the available secret types, add the ``--types`` flag.
     +------------------+----------------------------------+
     | password         | Simple (xkcd) password string    |
     | string           | Simple string                    |
+    | boolean          | Boolean ("true"/"false")         |
     | crypt_6          | crypt() SHA512 ("$6$")           |
     | token_hex        | Hexadecimal token                |
     | token_urlsafe    | URL-safe token                   |

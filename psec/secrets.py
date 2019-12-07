@@ -54,7 +54,7 @@ DEFAULT_SIZE = 18
 SECRET_TYPES = [
         {'Type': 'password', 'Description': 'Simple (xkcd) password string'},
         {'Type': 'string', 'Description': 'Simple string'},
-        {'Type': 'boolean', 'Description': 'Boolean'},
+        {'Type': 'boolean', 'Description': 'Boolean ("true"/"false")'},
         {'Type': 'crypt_6', 'Description': 'crypt() SHA512 ("$6$")'},
         {'Type': 'token_hex', 'Description': 'Hexadecimal token'},
         {'Type': 'token_urlsafe', 'Description': 'URL-safe token'},
