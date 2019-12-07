@@ -74,10 +74,12 @@ SECRET_ATTRIBUTES = [
 ]
 DEFAULT_MODE = 0o710
 # XKCD password defaults
+# See: https://www.unix-ninja.com/p/your_xkcd_passwords_are_pwned
+WORDS = 6
 MIN_WORDS_LENGTH = 4
 MAX_WORDS_LENGTH = 8
-MIN_ACROSTIC_LENGTH = 4
-MAX_ACROSTIC_LENGTH = 4
+MIN_ACROSTIC_LENGTH = 6
+MAX_ACROSTIC_LENGTH = 6
 DELIMITER = '.'
 
 
@@ -795,7 +797,7 @@ def generate_secret(secret_type=None, *arguments, **kwargs):
     unique = kwargs.get('unique', False)
     case = kwargs.get('case', 'lower')
     acrostic = kwargs.get('acrostic', None)
-    numwords = kwargs.get('numwords', 5)
+    numwords = kwargs.get('numwords', WORDS)
     delimiter = kwargs.get('delimiter', DELIMITER)
     min_words_length = kwargs.get('min_words_length', MIN_WORDS_LENGTH)
     max_words_length = kwargs.get('max_words_length', MAX_WORDS_LENGTH)
@@ -865,14 +867,16 @@ def generate_password(unique,
         min_length=min_words_length,
         max_length=max_words_length)
     if acrostic is None:
-        # Chose a random word for acrostic
+        # Chose a random word for acrostic with length
+        # equal to desired number of words.
         acrostic = random.choice(  # nosec
             xp.generate_wordlist(
                 wordfile=wordfile,
-                min_length=min_acrostic_length,
-                max_length=max_acrostic_length)
+                min_length=numwords,
+                max_length=numwords)
         )
     # Create a password with acrostic word
+    # See: https://www.unix-ninja.com/p/your_xkcd_passwords_are_pwned
     password = xp.generate_xkcdpassword(mywords,
                                         numwords=numwords,
                                         acrostic=acrostic,
