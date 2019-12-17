@@ -400,7 +400,7 @@ of the secrets file to something else.
 .. code-block:: console
 
     $ env | grep ^D2_
-    D2_SECRETS_DIR=/Users/dittrich/.secrets
+    D2_SECRETS_BASEDIR=/Users/dittrich/.secrets
     D2_ENVIRONMENT=do
 
 ..
