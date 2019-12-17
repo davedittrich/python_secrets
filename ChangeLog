@@ -1,6 +1,28 @@
 CHANGES
 =======
 
+* Improve default environment handling
+* Add deps to bats tox test environment
+* Fix typo in variable name
+* Add runtime test for initialization
+* Add initial documentation for 'boolean' type
+* See comment re: "Your xkcd passwords are pwned"
+* Expand help text
+* Add 'groups delete' subcommand
+* Resolve pep8 findings
+* Clean up code logic
+* Fix regression bug with defaulting environment
+* Fix comments per pep8
+* Add 'boolean' type w/implied Options
+* Add protection from over-writing existing env vars
+* Add attribute "Options"
+* Fix typo that introduced bug
+* Use public variables for direct command name
+
+19.11.1
+-------
+
+* Bump version
 * Be less file system specific
 * File permissions work differently on Windows
 * Import everything (thought this was done already?)
