@@ -20,6 +20,7 @@ import textwrap
 
 from psec import __version__
 from psec import __release__
+from psec.environments import default_environment
 from psec.secrets import SecretsEnvironment
 from psec.utils import Timer
 
@@ -102,14 +103,16 @@ class PythonSecretsApp(App):
                  "(Env: D2_SECRETS_BASEDIR; default: {})".format(
                      _env.secrets_basedir())
         )
+        default_env = default_environment()
         parser.add_argument(
             '-e', '--environment',
             metavar='<environment>',
             dest='environment',
-            default=_env.environment(),
+            default=default_env,
             help="Deployment environment selector " +
                  "(Env: D2_ENVIRONMENT; default: {})".format(
-                     _env.environment())
+                    default_env
+                    )
         )
         parser.add_argument(
             '-s', '--secrets-file',
@@ -170,6 +173,12 @@ class PythonSecretsApp(App):
             directory, this reduces the chance that secrets created during execution
             will end up with overly broad permissions.  If you need to relax these
             permissions, use the ``--umask`` option to apply the desired mask.
+
+            Environment Variables:
+              D2_ENVIRONMENT      Defaults the environment identifier.
+              D2_SECRETS_BASEDIR  Defaults the base directory for storing secrets.
+              D2_SECRETS_BASENAME Defaults the base name for secrets storage files.
+              D2_NO_REDACT        Defaults redaction setting for ``secrets show`` command.
             """.format(DEFAULT_UMASK))  # noqa
 
         return parser

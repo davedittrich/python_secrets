@@ -151,7 +151,8 @@ class Test_SecretsEnvironment_with_env_vars(unittest.TestCase):
             self.keys_dir = keys_dir(secrets_dir=self.secrets_dir)
             self.keys_with_host_dir = keys_with_host_dir(keys_dir=self.keys_dir,
                                                          host=self.host)
-            self.secrets_env = psec.secrets.SecretsEnvironment()
+            self.secrets_env = psec.secrets.SecretsEnvironment(
+                environment=self.envname)
 
     def tearDown(self):
         pass

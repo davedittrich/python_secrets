@@ -24,12 +24,79 @@ from stat import S_IMODE
 from sys import stdin
 
 
+# TODO(dittrich): Improve this?
 def _is_default(a, b):
     """
     Return "Yes" or "No" depending on whether e is the default
     environment or not.
     """
     return "Yes" if a == b else "No"
+
+
+def get_local_default_file():
+    """Returns the path to the local identifier file."""
+    # TODO(dittrich): May need to do this differently to support
+    # Windows file systems.
+    return os.path.join(os.getcwd(), '.python_secrets_environment')
+
+
+def save_default_environment(environment=None):
+    """Save environment identifier to local file for defaulting."""
+    env_file = get_local_default_file()
+    with open(env_file, 'w') as f_out:
+        f_out.write('{0}\n'.format(str(environment)))
+    return True
+
+
+def clear_saved_default_environment():
+    """Remove saved default environment file."""
+    env_file = os.path.join(
+        os.getcwd(),
+        '.python_secrets_environment')
+    if os.path.exists(env_file):
+        os.remove(env_file)
+        return True
+    else:
+        return False
+
+
+def get_saved_default_environment():
+    """Return environment ID value saved in local file or None."""
+    env_file = get_local_default_file()
+    saved_default = None
+    if os.path.exists(env_file):
+        with open(env_file, 'r') as f:
+            saved_default = f.read().replace('\n', '')
+    return saved_default
+
+
+def default_environment():
+    """
+    Return the default environment identifier.
+
+    There are multiple ways for a user to specify the environment
+    to use for python_secrets commands. Some of these involve
+    explicit settings (e.g., via command line option, a
+    saved value in the current working directory, or an
+    environment variable) or implicitly from the name of the
+    current working directory.
+    """
+
+    #  NOTE(dittrich): I know this code has multiple return points
+    #  but it is simpler and easier to understand this way.
+    #
+    # Highest priority is inhereted environment variable.
+    environment = os.getenv('D2_ENVIRONMENT', None)
+    if environment is not None:
+        return environment
+    #
+    # Next is saved file in current working directory.
+    local_default = get_saved_default_environment()
+    if local_default not in ['', None]:
+        return local_default
+    #
+    # Lowest priority is the directory path basename.
+    return os.path.basename(os.getcwd())
 
 
 class EnvironmentsList(Lister):
@@ -88,7 +155,7 @@ class EnvironmentsList(Lister):
     def take_action(self, parsed_args):
         self.LOG.debug('listing environment(s)')
         secrets_environment = psec.secrets.SecretsEnvironment()
-        default_environment = secrets_environment.environment()
+        default_env = default_environment()
         columns = (['Environment', 'Default'])
         basedir = secrets_environment.secrets_basedir()
         if parsed_args.aliasing:
@@ -99,7 +166,7 @@ class EnvironmentsList(Lister):
             env_path = os.path.join(basedir, e)
             if psec.secrets.is_valid_environment(env_path,
                                                  self.app_args.verbose_level):
-                default = _is_default(e, default_environment)
+                default = _is_default(e, default_env)
                 if not parsed_args.aliasing:
                     item = (e, default)
                 else:
@@ -479,21 +546,22 @@ class EnvironmentsDefault(Command):
 
     def take_action(self, parsed_args):
         self.LOG.debug('managing localized environment default')
-        cwd = os.getcwd()
-        env_file = os.path.join(cwd, '.python_secrets_environment')
         if parsed_args.unset:
-            try:
-                os.remove(env_file)
-            except Exception as e:  # noqa
-                self.LOG.info('no default environment was set')
+            if parsed_args.environment is not None:
+                raise RuntimeError('--unset does not take an argument')
+            if clear_saved_default_environment():
+                self.LOG.info('explicit default environment unset')
             else:
-                self.LOG.info('default environment unset')
+                self.LOG.info('no default environment was set')
         elif parsed_args.set:
+            # If it is not possible to interactively ask for environment,
+            # just raise an exception.
             if (
                 parsed_args.environment is None and not
                     (stdin.isatty() and 'Bullet' in dir())
             ):
                 raise RuntimeError('[-] no environment specified')
+            # Otherwise, let's prompt for an environment for better UX!
             if parsed_args.environment is not None:
                 choice = parsed_args.environment
             else:
@@ -508,30 +576,27 @@ class EnvironmentsDefault(Command):
                              bullet="→",
                              pad_right=5)
                 choice = cli.launch()
+                # Having second thoughts, eh?
                 if choice == "<CANCEL>":
                     self.LOG.info('cancelled setting default')
-            with open(env_file, 'w') as f:
-                f.write(choice)
-            self.LOG.info(('default environment set explicitly to '
-                           '"{0}"').format(choice))
+            if save_default_environment(choice):
+                self.LOG.info(('default environment set explicitly to '
+                               '"{0}"').format(choice))
         elif parsed_args.environment is None:
-            # No environment specified, show current setting
-            if os.path.exists(env_file):
-                with open(env_file, 'r') as f:
-                    env_string = f.read().replace('\n', '')
+            # No environment specified; show current setting.
+            env_string = get_saved_default_environment()
+            if env_string is not None:
                 if self.app_args.verbose_level > 1:
                     self.LOG.info('default environment set explicitly to ' +
                                   '"{}"'.format(env_string))
-                else:
-                    print(env_string)
             else:
+                # No explicit saved default.
+                env_string = default_environment()
                 if self.app_args.verbose_level > 1:
-                    env_string = \
-                        psec.secrets.SecretsEnvironment().environment()
                     self.LOG.info('default environment is implicitly ' +
                                   '"{}"'.format(env_string))
                 else:
-                    print(psec.secrets.SecretsEnvironment().environment())
+                    print(env_string)
 
 
 class EnvironmentsPath(Command):

@@ -15,6 +15,7 @@ import json
 import logging
 import os
 import psec.utils
+import psec.environments
 import random
 import re
 import secrets
@@ -135,31 +136,6 @@ def copydescriptions(src, dst):
     psec.utils.remove_other_perms(dst)
 
 
-def _identify_environment(environment=None):
-    """
-    Returns the environment identifier.
-
-    There are multiple ways to define the default environment (in order
-    of priority):
-
-    1. The --environment command line option;
-    2. The content of the file .python_secrets_environment in the current
-       working directory;
-    3. The value specified by environment variable D2_ENVIRONMENT; or
-    4. The basename of the current working directory.
-    """
-    cwd = os.getcwd()
-    if environment is None:
-        env_file = os.path.join(cwd, '.python_secrets_environment')
-        if os.path.exists(env_file):
-            with open(env_file, 'r') as f:
-                environment = f.read().replace('\n', '')
-        else:
-            environment = os.getenv('D2_ENVIRONMENT',
-                                    os.path.basename(cwd))
-    return environment
-
-
 def is_valid_environment(env_path, verbose_level=1):
     """Check to see if this looks like a valid environment
     directory based on contents."""
@@ -194,7 +170,10 @@ class SecretsEnvironment(object):
                  cwd=os.getcwd()):
         self._changed = False
         self._cwd = cwd
-        self._environment = _identify_environment(environment)
+        if environment is not None:
+            self._environment = environment
+        else:
+            self._environment = psec.environments.default_environment()
         self._secrets_file = secrets_file
         self._secrets_basedir = secrets_basedir
         self.verbose_level = verbose_level
@@ -211,6 +190,7 @@ class SecretsEnvironment(object):
             os.path.splitext(self._secrets_file)[0])
         self.export_env_vars = export_env_vars
         self.preserve_existing = preserve_existing
+        self.saved_default = None
 
         # When exporting environment variables, include one that specifies the
         # environment from which these variables were derived. This also works
@@ -509,7 +489,7 @@ class SecretsEnvironment(object):
                 raise RuntimeError(
                     'Refusing to overwrite environment variable "{0}"'.format(
                         secret)
-                    )
+                )
             # Export with secrets name first.
             os.environ[secret] = str(value)
             # See if an alternate environment variable name is
@@ -525,7 +505,7 @@ class SecretsEnvironment(object):
                 raise RuntimeError(
                     'Refusing to overwrite environment variable "{0}"'.format(
                         _env_var)
-                    )
+                )
             os.environ[_env_var] = str(value)
 
     def set_secret(self, secret, value):
@@ -642,7 +622,8 @@ class SecretsEnvironment(object):
                 copyanything(source, dest)
             else:
                 raise RuntimeError(
-                    'Could not clone from "{}"'.format(source))
+                    'Could not clone from "{}"'.format(source)
+                )
         self.read_secrets_descriptions()
         self.find_new_secrets()
 
@@ -729,7 +710,8 @@ class SecretsEnvironment(object):
             i = psec.utils.find(
                 self._descriptions[g],
                 'Variable',
-                variable)
+                variable
+            )
             if i is not None:
                 try:
                     return self._descriptions[g][i]['Type']
@@ -748,7 +730,8 @@ class SecretsEnvironment(object):
             i = psec.utils.find(
                 self._descriptions[g],
                 'Variable',
-                variable)
+                variable
+            )
             if i is not None:
                 try:
                     return self._descriptions[g][i]['Arguments']
@@ -763,9 +746,9 @@ class SecretsEnvironment(object):
     def is_item_in_group(self, item, group):
         """Return true or false based on item being in group"""
         return psec.utils.find(
-                self._descriptions[group],
-                'Variable',
-                item) is not None
+            self._descriptions[group],
+            'Variable',
+            item) is not None
 
     def get_groups(self):
         """Get the secrets description groups"""
@@ -779,6 +762,7 @@ class Memoize:
        that argument to function is whether to cache or not, allowing all
        secrets of a given type to be set to the same value.
     """
+
     def __init__(self, fn):
         self.fn = fn
         self.memo = {}
