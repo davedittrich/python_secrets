@@ -1345,6 +1345,9 @@ class SecretsSet(Command):
                     # Also getting value from a different variable
                     k, _k = arg.split('=')
                     v = from_env.get_secret(_k, allow_none=True)
+                    self.LOG.info(
+                        (f'setting "{k}" from "{_k}" in '
+                         f'environment "{str(from_env)}"'))
             else:
                 if '=' in arg:
                     # Getting value from command line assignment
