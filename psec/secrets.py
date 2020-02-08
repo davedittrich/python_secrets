@@ -1303,6 +1303,19 @@ class SecretsSet(Command):
                 $ psec secrets set --undefined --from-environment goSecure
 
             ..
+
+            To facilitate setting variables from another environment where the
+            variable names may differ, use the assignment style syntax for
+            arguments along with the ``--from-environment`` option, like this:
+
+            .. code-block:: console
+
+                $ psec secrets set hypriot_client_psk=gosecure_client_psk \
+                $ hypriot_client_ssid=gosecure_client_ssid \
+                > --from-environment goSecure
+
+            ..
+
             """)  # noqa
         return parser
 
@@ -1324,13 +1337,20 @@ class SecretsSet(Command):
         for arg in args:
             v = None
             if from_env is not None:
-                # Get value from a different environment
-                k = arg
-                v = from_env.get_secret(k, allow_none=True)
-            elif '=' in arg:
-                k, v = arg.split('=')
+                # Getting value from a different environment
+                if '=' not in arg:
+                    k = arg
+                    v = from_env.secrets.get_secret(k, allow_none=True)
+                else:
+                    # Also getting value from a different variable
+                    k, _k = arg.split('=')
+                    v = from_env.get_secret(_k, allow_none=True)
             else:
-                k, v = arg, self.app.secrets.get_secret(arg, allow_none=True)
+                if '=' in arg:
+                    # Getting value from command line assignment
+                    k, v = arg.split('=')
+                else:
+                    k, v = arg, self.app.secrets.get_secret(arg, allow_none=True)
             k_type = self.app.secrets.get_type(k)
             if k_type is None:
                 self.LOG.info('no description for {}'.format(k))

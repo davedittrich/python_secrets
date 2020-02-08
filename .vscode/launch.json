@@ -355,6 +355,25 @@
             "console": "integratedTerminal"
         },
         {
+            "name": "psec secrets set jenkins_admin_password=trident_sysadmin_pass --from-environment do",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "args": [
+                "--debug",
+                "secrets",
+                "set",
+                "jenkins_admin_password=trident_sysadmin_pass",
+                "--from-environment",
+                "do"
+            ],
+            "stopOnEntry": false,
+            "console": "integratedTerminal"
+        },
+        {
             "name": "psec secrets show --no-redact jenkins_admin_password trident_db_password",
             "type": "python",
             "request": "launch",
