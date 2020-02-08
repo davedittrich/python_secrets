@@ -1310,8 +1310,8 @@ class SecretsSet(Command):
 
             .. code-block:: console
 
-                $ psec secrets set hypriot_client_psk=gosecure_client_psk \
-                $ hypriot_client_ssid=gosecure_client_ssid \
+                $ psec secrets set hypriot_client_psk=gosecure_client_psk \\
+                $ hypriot_client_ssid=gosecure_client_ssid \\
                 > --from-environment goSecure
 
             ..
