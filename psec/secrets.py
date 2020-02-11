@@ -473,7 +473,7 @@ class SecretsEnvironment(object):
         :param secret: :type: string
         :return: environment variable for exporting secret
         """
-        return self.Export.get(secret, None)
+        return self.Export.get(secret, secret)
 
     def _set_secret(self, secret, value):
         """Set secret to value and export environment variable
@@ -1000,17 +1000,17 @@ class SecretsShow(Lister):
             .. code-block:: console
 
                 $ psec secrets show
-                +------------------------+----------+----------+-------------------+
-                | Variable               | Type     | Value    | Export            |
-                +------------------------+----------+----------+-------------------+
-                | jenkins_admin_password | password | REDACTED | None              |
-                | myapp_app_password     | password | REDACTED | DEMO_app_password |
-                | myapp_client_psk       | string   | REDACTED | DEMO_client_ssid  |
-                | myapp_client_ssid      | string   | REDACTED | DEMO_client_ssid  |
-                | myapp_pi_password      | password | REDACTED | DEMO_pi_password  |
-                | trident_db_pass        | password | REDACTED | None              |
-                | trident_sysadmin_pass  | password | REDACTED | None              |
-                +------------------------+----------+----------+-------------------+
+                +------------------------+----------+----------+------------------------+
+                | Variable               | Type     | Value    | Export                 |
+                +------------------------+----------+----------+------------------------+
+                | jenkins_admin_password | password | REDACTED | jenkins_admin_password |
+                | myapp_app_password     | password | REDACTED | DEMO_app_password      |
+                | myapp_client_psk       | string   | REDACTED | DEMO_client_ssid       |
+                | myapp_client_ssid      | string   | REDACTED | DEMO_client_ssid       |
+                | myapp_pi_password      | password | REDACTED | DEMO_pi_password       |
+                | trident_db_pass        | password | REDACTED | trident_db_pass        |
+                | trident_sysadmin_pass  | password | REDACTED | trident_sysadmin_pass  |
+                +------------------------+----------+----------+------------------------+
 
             Visually finding undefined variables in a very long list can be difficult.
             You can show just undefined variables with the ``--undefined`` option.
