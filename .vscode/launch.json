@@ -336,6 +336,25 @@
             "console": "integratedTerminal"
         },
         {
+            "name": "psec -e vpn secrets set algo_store_pki",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "args": [
+                "--debug",
+                "-e",
+                "vpn",
+                "secrets",
+                "set",
+                "algo_store_pki"
+            ],
+            "stopOnEntry": false,
+            "console": "integratedTerminal"
+        },
+        {
             "name": "psec secrets set jenkins_admin_password --from-environment do",
             "type": "python",
             "request": "launch",
