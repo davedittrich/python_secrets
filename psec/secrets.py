@@ -1335,63 +1335,75 @@ class SecretsSet(Command):
         else:
             args = parsed_args.arg
         for arg in args:
-            v = None
-            if from_env is not None:
-                # Getting value from a different environment
-                if '=' not in arg:
-                    k = arg
-                    v = from_env.secrets.get_secret(k, allow_none=True)
+            k, v, k_type = None, None, None
+            if '=' not in arg:
+                # No value was specified with the argument
+                k = arg
+                k_type = self.app.secrets.get_type(k)
+                if k_type is None:
+                    self.LOG.info(f'no description for "{k}"')
+                    raise RuntimeError(f'variable "{k}" has no description')
+                if from_env is not None:
+                    # Getting value from same var, different environment
+                    v = from_env.get_secret(k, allow_none=True)
                 else:
-                    # Also getting value from a different variable
-                    k, _k = arg.split('=')
-                    v = from_env.get_secret(_k, allow_none=True)
+                    # Try to prompt user for value
+                    if (k_type == 'boolean' and
+                            k not in self.app.secrets.Options):
+                        # Default options for boolean type
+                        self.app.secrets.Options[k] = BOOLEAN_OPTIONS
+                    if k in self.app.secrets.Options:
+                        # Attempt to select from list of options
+                        v = psec.utils.prompt_options(
+                            options=self.app.secrets.Options[k],
+                            prompt=self.app.secrets.get_prompt(k)
+                            )
+                    else:
+                        # Just ask user for value
+                        v = psec.utils.prompt_string(
+                            prompt=self.app.secrets.get_prompt(k),
+                            default=("" if v is None else v)
+                            )
+            else:  # ('=' in arg)
+                # Assignment syntax found (a=b)
+                lhs, rhs = arg.split('=')
+                k_type = self.app.secrets.get_type(lhs)
+                if k_type is None:
+                    self.LOG.info(f'no description for "{lhs}"')
+                    raise RuntimeError(f'variable "{lhs}" has no description')
+                k = lhs
+                if from_env is not None:
+                    # Get value from different var in different environment
+                    v = from_env.get_secret(rhs, allow_none=True)
                     self.LOG.info(
-                        (f'setting "{k}" from "{_k}" in '
+                        (f'getting value from "{rhs}" in '
                          f'environment "{str(from_env)}"'))
-            else:
-                if '=' in arg:
-                    # Getting value from command line assignment
-                    k, v = arg.split('=')
                 else:
-                    k, v = arg, self.app.secrets.get_secret(arg, allow_none=True)
-            k_type = self.app.secrets.get_type(k)
-            if k_type is None:
-                self.LOG.info('no description for {}'.format(k))
-                raise RuntimeError('variable "{}" '.format(k) +
-                                   'has no description')
-            if '=' not in arg and from_env is None:
-                # Default options for boolean type
-                if k_type == 'boolean' and k not in self.app.secrets.Options:
-                    self.app.secrets.Options[k] = BOOLEAN_OPTIONS
-                if k in self.app.secrets.Options:
-                    # Attempt to select from list of options.
-                    v = psec.utils.prompt_options(
-                        options=self.app.secrets.Options[k],
-                        prompt=self.app.secrets.get_prompt(k))
-                else:
-                    v = psec.utils.prompt_string(
-                        prompt=self.app.secrets.get_prompt(k),
-                        default=("" if v is None else v))
-                if v is None:
-                    self.LOG.info('could not obtain value for "{}"'.format(k))
-                    return None
-            if v is not None and v.startswith('@'):
-                if v[1] == '~':
-                    _path = os.path.expanduser(v[1:])
-                else:
-                    _path = v[1:]
-                with open(_path, 'r') as f:
-                    v = f.read().strip()
-            elif v is not None and v.startswith('!'):
-                # >> Issue: [B603:subprocess_without_shell_equals_true] subprocess call - check for execution of untrusted input.  # noqa
-                #    Severity: Low   Confidence: High
-                #    Location: psec/secrets.py:641
-                p = run(v[1:].split(),
-                        stdout=PIPE,
-                        stderr=PIPE,
-                        shell=False)
-                v = p.stdout.decode('UTF-8').strip()
-            self.LOG.debug('setting {}'.format(k))
+                    # Value was specified in arg
+                    v = rhs
+                if v is not None:
+                    # Is the value indirectly referenced?
+                    if v.startswith('@'):
+                        if v[1] == '~':
+                            _path = os.path.expanduser(v[1:])
+                        else:
+                            _path = v[1:]
+                        with open(_path, 'r') as f:
+                            v = f.read().strip()
+                    elif v.startswith('!'):
+                        # >> Issue: [B603:subprocess_without_shell_equals_true] subprocess call - check for execution of untrusted input.  # noqa
+                        #    Severity: Low   Confidence: High
+                        #    Location: psec/secrets.py:641
+                        p = run(v[1:].split(),
+                                stdout=PIPE,
+                                stderr=PIPE,
+                                shell=False)
+                        v = p.stdout.decode('UTF-8').strip()
+            # After all that, did we get a value?
+            if v is None:
+                self.LOG.info(f'could not obtain value for "{k}"')
+                return None
+            self.LOG.debug(f'setting variable "{k}"')
             self.app.secrets.set_secret(k, v)
 
 
