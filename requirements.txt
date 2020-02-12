@@ -16,6 +16,7 @@ pbr
 Pygments
 property_manager
 requests
+sphinx
 tox
 yamlreader
 xkcdpass
