@@ -228,10 +228,10 @@ class PythonSecretsApp(App):
                      and cmd.cmd_name != "complete")):
                 self.timer.stop()
                 elapsed = self.timer.elapsed()
-                self.stdout.write('[+] Elapsed time {}\n'.format(elapsed))
-                if sys.stdout.isatty():
-                    sys.stdout.write('\a')
-                    sys.stdout.flush()
+                self.stderr.write('[+] Elapsed time {}\n'.format(elapsed))
+                if sys.stderr.isatty():
+                    sys.stderr.write('\a')
+                    sys.stderr.flush()
 
 
 def main(argv=sys.argv[1:]):
