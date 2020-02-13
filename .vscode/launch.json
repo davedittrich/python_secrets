@@ -265,6 +265,22 @@
             "console": "integratedTerminal"
         },
         {
+            "name": "psec environments tree",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "args": [
+                "--debug",
+                "environments",
+                "tree"
+            ],
+            "stopOnEntry": true,
+            "console": "integratedTerminal"
+        },
+        {
             "name": "psec groups create --clone-from /tmp/gosecure.yml",
             "type": "python",
             "request": "launch",
