@@ -703,7 +703,6 @@ class EnvironmentsTree(Command):
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
         parser.formatter_class = argparse.RawDescriptionHelpFormatter
-        default_environment = psec.secrets.SecretsEnvironment().environment()
         parser.add_argument(
             '--no-files',
             action='store_true',
@@ -714,7 +713,7 @@ class EnvironmentsTree(Command):
         )
         parser.add_argument('environment',
                             nargs='?',
-                            default=default_environment)
+                            default=None)
         parser.epilog = textwrap.dedent("""
             The ``environments tree`` command produces output similar
             to the Unix ``tree`` command:
@@ -782,8 +781,11 @@ class EnvironmentsTree(Command):
 
     def take_action(self, parsed_args):
         self.LOG.debug('outputting environment tree')
+        environment = parsed_args.environment
+        if environment is None:
+            environment = self.app.options.environment
         e = psec.secrets.SecretsEnvironment(
-            environment=parsed_args.environment)
+            environment=environment)
         e.requires_environment()
         print_files = bool(parsed_args.no_files is False)
         psec.utils.atree(e.environment_path(),
