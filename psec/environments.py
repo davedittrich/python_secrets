@@ -581,22 +581,23 @@ class EnvironmentsDefault(Command):
                     self.LOG.info('cancelled setting default')
             if save_default_environment(choice):
                 self.LOG.info(('default environment set explicitly to '
-                               '"{0}"').format(choice))
-        elif parsed_args.environment is None:
+                               f'"{choice}"'))
+        elif parsed_args.environment is not None:
+            print(parsed_args.environment)
+        else:
             # No environment specified; show current setting.
             env_string = get_saved_default_environment()
             if env_string is not None:
                 if self.app_args.verbose_level > 1:
-                    self.LOG.info('default environment set explicitly to ' +
-                                  '"{}"'.format(env_string))
+                    self.LOG.info(('default environment set explicitly to '
+                                   f'"{env_string}"'))
             else:
                 # No explicit saved default.
                 env_string = default_environment()
                 if self.app_args.verbose_level > 1:
-                    self.LOG.info('default environment is implicitly ' +
-                                  '"{}"'.format(env_string))
-                else:
-                    print(env_string)
+                    self.LOG.info(('default environment is implicitly '
+                                   f'"{env_string}"'))
+            print(env_string)
 
 
 class EnvironmentsPath(Command):
