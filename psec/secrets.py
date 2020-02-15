@@ -1563,7 +1563,6 @@ class SecretsPath(Command):
     def take_action(self, parsed_args):
         self.LOG.debug('returning secrets path')
         e = SecretsEnvironment(environment=parsed_args.environment)
-        e.requires_environment()
         print(e.secrets_file_path())
 
 
