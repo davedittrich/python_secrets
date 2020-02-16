@@ -1,6 +1,40 @@
 CHANGES
 =======
 
+* Simplify date version logic for 'git hf release'
+* Revert "Add date based version support to Makefile"
+* Add test support for Python 3.8 and fix bug
+* Add date based version support to Makefile
+* Add another launch rule
+* Fix bug in 'environments default'
+* Put elapsed time (and BELL) on stdout
+* Put sphinx back for autoprogram to work properly
+* Add another debug configuration
+* Refactor SecretsSet logic for clarity
+* Add some verbosity
+* Fix line end characters
+* Allow setting vars using diff names+environment
+* Don't require an environment for paths
+* Fix bug in "environments tree" command
+* Fix bug in "environments tree" command
+* Add another launch rule
+* Fix bug in 'environments default'
+* Put elapsed time (and BELL) on stdout
+* Put sphinx back for autoprogram to work properly
+* Add another debug configuration
+* Refactor SecretsSet logic for clarity
+* Add some verbosity
+* Fix line end characters
+* Allow setting vars using diff names+environment
+* Clarify documentation about exported variables
+* Add some verbosity
+* Fix line end characters
+* Allow setting vars using diff names+environment
+
+19.12.0
+-------
+
+* Bump version
 * Improve default environment handling
 * Add deps to bats tox test environment
 * Fix typo in variable name
