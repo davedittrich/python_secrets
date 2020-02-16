@@ -5,6 +5,12 @@ REQUIRED_VENV:=python_secrets
 VENV_DIR=$(HOME)/.virtualenvs/$(REQUIRED_VENV)
 PROJECT:=$(shell basename `pwd`)
 
+# Implement a date-based version numbering scheme.
+SHORT_YEAR=$(shell date +%y)
+MONTH=$(shell date +%m | sed 's/^0//')
+MINS_PAST_MIDNIGHT=$(shell expr `date +%H` \* 60 + `date +%M`)
+NEW_DATE_VERSION=$(SHORT_YEAR).$(MONTH).$(MINS_PAST_MIDNIGHT)
+
 #HELP test - run 'tox' for testing
 .PHONY: test
 test: test-tox
@@ -32,6 +38,10 @@ test-bats-runtime: bats-libraries
 	@echo "[+] Running bats runtime tests:"
 	@cd tests && ls -1 runtime_[0-9][0-9]*.bats
 	bats --tap tests/runtime_*.bats || true
+
+.PHONY: bump
+bump:
+	bumpversion --no-tag patch --new-version $(NEW_DATE_VERSION)
 
 .PHONY: no-diffs
 no-diffs:
