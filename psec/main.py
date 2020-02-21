@@ -17,6 +17,7 @@ import logging
 import os
 import sys
 import textwrap
+import webbrowser
 
 from psec import __version__
 from psec import __release__
@@ -162,6 +163,13 @@ class PythonSecretsApp(App):
             help="Mask to apply during app execution " +
                  "(default: {:#05o})".format(DEFAULT_UMASK)
         )
+        parser.add_argument(
+            '--rtd',
+            action='store_true',
+            dest='rtd',
+            default=False,
+            help='Open ReadTheDocs documentation on "help" command (default: False)'
+        )
         parser.epilog = textwrap.dedent("""\
             For programs that inherit values through environment variables, you can
             export secrets using the ``-E`` option to the ``run`` subcommand, e.g.
@@ -191,6 +199,11 @@ class PythonSecretsApp(App):
 
     def prepare_to_run_command(self, cmd):
         self.LOG.debug('prepare_to_run_command "{0}"'.format(cmd.cmd_name))
+        if cmd.cmd_name == 'help' and self.options.rtd:
+            # TODO(dittrich): Add more specificity
+            page = 'https://python-secrets.readthedocs.io/en/latest/'
+            webbrowser.open_new_tab(page)
+            sys.exit(0)
         self.timer.start()
         os.umask(self.options.umask)
         self.LOG.debug('using environment "{}"'.format(
