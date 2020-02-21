@@ -17,12 +17,14 @@ import logging
 import os
 import sys
 import textwrap
+import time
 import webbrowser
 
 from psec import __version__
 from psec import __release__
 from psec.environments import default_environment
 from psec.secrets import SecretsEnvironment
+from psec.utils import bell
 from psec.utils import Timer
 
 # External dependencies.
@@ -168,7 +170,8 @@ class PythonSecretsApp(App):
             action='store_true',
             dest='rtd',
             default=False,
-            help='Open ReadTheDocs documentation on "help" command (default: False)'
+            help=('Open ReadTheDocs documentation on '
+                  '"help" command (default: False)')
         )
         parser.epilog = textwrap.dedent("""\
             For programs that inherit values through environment variables, you can
@@ -182,7 +185,12 @@ class PythonSecretsApp(App):
             will end up with overly broad permissions.  If you need to relax these
             permissions, use the ``--umask`` option to apply the desired mask.
 
+            To control the browser that is used with the ``help --rtd`` command,
+            set the BROWSER environment variable (e.g., ``BROWSER=lynx``).
+            See: https://github.com/python/cpython/blob/3.8/Lib/webbrowser.py
+
             Environment Variables:
+              BROWSER             Default browser for use by webbrowser.open()
               D2_ENVIRONMENT      Defaults the environment identifier.
               D2_SECRETS_BASEDIR  Defaults the base directory for storing secrets.
               D2_SECRETS_BASENAME Defaults the base name for secrets storage files.
@@ -199,11 +207,30 @@ class PythonSecretsApp(App):
 
     def prepare_to_run_command(self, cmd):
         self.LOG.debug('prepare_to_run_command "{0}"'.format(cmd.cmd_name))
+        #
+        # Process ReadTheDocs web browser request here and then
+        # fall through, which also produces help output on the
+        # command line. The webbrowser module doesn't seem to work
+        # consistently on Ubuntu Linux, so this helps a little
+        # though may be confusing when you don't get a browser opening
+        # up like you expect.
+        rtd_url = 'https://python-secrets.readthedocs.io/en/latest/usage.html'
         if cmd.cmd_name == 'help' and self.options.rtd:
+            for line in [
+                '[+] Opening online documentation for python_secrets on ReadTheDocs.',   # noqa
+                '[+] If a browser does not open, make sure that you are online and/or',  # noqa
+                '[+] enter the following URL in your chosen browser:',
+                rtd_url,
+            ]:
+                self.LOG.info(line)
+            print('\n\n')
+            bell()
+            time.sleep(3)
             # TODO(dittrich): Add more specificity
-            page = 'https://python-secrets.readthedocs.io/en/latest/'
-            webbrowser.open_new_tab(page)
-            sys.exit(0)
+            # FYI, new= is ignored on Windows per:
+            # https://stackoverflow.com/questions/1997327/python-webbrowser-open-setting-new-0-to-open-in-the-same-browser-window-does  # noqa
+
+            webbrowser.open(rtd_url, new=0, autoraise=True)
         self.timer.start()
         os.umask(self.options.umask)
         self.LOG.debug('using environment "{}"'.format(
@@ -231,9 +258,9 @@ class PythonSecretsApp(App):
         self.LOG.debug('clean_up command "{0}"'.format(cmd.cmd_name))
         if err:
             self.LOG.debug('got an error: %s', err)
-            if self.secrets.changed():
+            if self.secrets is not None and self.secrets.changed():
                 self.LOG.info('not writing secrets out due to error')
-        elif cmd.cmd_name != 'complete':
+        elif cmd.cmd_name not in ['help', 'complete']:
             if self.secrets.changed():
                 self.secrets.write_secrets()
             if (self.options.elapsed or
@@ -242,9 +269,7 @@ class PythonSecretsApp(App):
                 self.timer.stop()
                 elapsed = self.timer.elapsed()
                 self.stderr.write('[+] Elapsed time {}\n'.format(elapsed))
-                if sys.stderr.isatty():
-                    sys.stderr.write('\a')
-                    sys.stderr.flush()
+                bell()
 
 
 def main(argv=sys.argv[1:]):

@@ -46,6 +46,12 @@ AWS_CONFIG_FILE = os.path.join(os.path.expanduser('~'), '.aws', 'credentials')
 LOG = logging.getLogger(__name__)
 
 
+def bell():
+    if sys.stderr.isatty():
+        sys.stderr.write('\a')
+        sys.stderr.flush()
+
+
 # https://stackoverflow.com/questions/7119630/in-python-how-can-i-get-the-file-system-of-a-given-file-path  # NOQA
 def getmount(mypath):
     """Return the mount point for mypath."""
