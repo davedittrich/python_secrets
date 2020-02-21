@@ -3,6 +3,7 @@
 import argparse
 import logging
 import textwrap
+import shlex
 
 from cliff.command import Command
 from subprocess import call  # nosec
@@ -41,12 +42,15 @@ class Run(Command):
 
     def take_action(self, parsed_args):
         self.LOG.debug('running command')
-        self.app.secrets.requires_environment()
-        self.app.secrets.read_secrets_and_descriptions()
-
         cmd = " ".join(
-            [a for a in parsed_args.arg]
-        ).encode('unicode-escape').decode()
+            [
+                shlex.quote(a.encode('unicode-escape').decode())
+                for a in parsed_args.arg
+            ]
+        )
+        if "help" not in cmd:
+            self.app.secrets.requires_environment()
+            self.app.secrets.read_secrets_and_descriptions()
         return call(cmd, shell=True)  # nosec
 
 
