@@ -220,9 +220,10 @@ class PythonSecretsApp(App):
                 '[+] Opening online documentation for python_secrets on ReadTheDocs.',   # noqa
                 '[+] If a browser does not open, make sure that you are online and/or',  # noqa
                 '[+] enter the following URL in your chosen browser:',
-                rtd_url
+                rtd_url,
             ]:
                 self.LOG.info(line)
+            print('\n\n')
             bell()
             time.sleep(3)
             # TODO(dittrich): Add more specificity
