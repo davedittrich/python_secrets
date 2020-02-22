@@ -170,7 +170,8 @@ class PythonSecretsApp(App):
             action='store_true',
             dest='rtd',
             default=False,
-            help='Open ReadTheDocs documentation on "help" command (default: False)'
+            help=('Open ReadTheDocs documentation on '
+                  '"help" command (default: False)')
         )
         parser.epilog = textwrap.dedent("""\
             For programs that inherit values through environment variables, you can
@@ -216,8 +217,8 @@ class PythonSecretsApp(App):
         rtd_url = 'https://python-secrets.readthedocs.io/en/latest/usage.html'
         if cmd.cmd_name == 'help' and self.options.rtd:
             for line in [
-                '[+] Opening online documentation for python_secrets on ReadTheDocs.',
-                '[+] If a browser does not open, make sure that you are online and/or',
+                '[+] Opening online documentation for python_secrets on ReadTheDocs.',   # noqa
+                '[+] If a browser does not open, make sure that you are online and/or',  # noqa
                 '[+] enter the following URL in your chosen browser:',
                 rtd_url
             ]:
