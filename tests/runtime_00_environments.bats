@@ -14,6 +14,23 @@ teardown() {
     [ -d $D2_SECRETS_BASEDIR/$D2_ENVIRONMENT/secrets.d ]
 }
 
+@test "'psec environments path' works properly" {
+    run $PSEC environments path configs exists
+    assert_output "$D2_SECRETS_BASEDIR/$D2_ENVIRONMENT/configs/exists"
+}
+
+@test "'psec environments path --exists ...' works properly" {
+    run $PSEC -vvv environments create --clone-from secrets 1>&2
+    run $PSEC environments path configs exists --exists
+    assert_failure
+    mkdir -p $D2_SECRETS_BASEDIR/$D2_ENVIRONMENT/configs/exists
+    run $PSEC environments path configs exists --exists
+    assert_success
+    rmdir $D2_SECRETS_BASEDIR/$D2_ENVIRONMENT/configs/exists
+    run $PSEC environments path configs exists --exists
+    assert_failure
+}
+
 # TODO(dittrich): Disabling as the new Bullet feature doesn't time out. :(
 # @test "'psec environments delete testenv' produces error message" {
 #     run $PSEC -vvv environments create testenv --clone-from secrets 1>&2

@@ -632,12 +632,12 @@ class EnvironmentsPath(Command):
             help='Create and/or return tmpdir for this environment ' +
                  '(default: False)'
         )
-        parser.add_argument('environment',
-                            nargs='?',
+        parser.add_argument('subdirs',
+                            nargs='*',
                             default=None)
         parser.epilog = textwrap.dedent("""
             Provides the full absolute path to the environment directory
-            for the environment.
+            for the environment and any specified subdirectories.
 
             .. code-block:: console
 
@@ -648,9 +648,21 @@ class EnvironmentsPath(Command):
 
             ..
 
+            Using the ``--exists`` option will just return ``0`` if the path
+            exists, or ``1`` if it does not. No path is printed on stdout.
+
             Using the ``--tmpdir`` option will return the path to the
             temporary directory for the environment. If it does not already
             exist, it will be created so it is ready for use.
+
+            To append subdirectory components, provide them as arguments and
+            they will be concatenated with the appropriate OS path separator.
+
+                $ psec environments path -e goSecure configs
+                /Users/dittrich/.secrets/goSecure/configs
+
+            .. code-block:: console
+            ..
             """)
         return parser
 
@@ -665,18 +677,8 @@ class EnvironmentsPath(Command):
 
     def take_action(self, parsed_args):
         self.LOG.debug('returning environment path')
-        environment = parsed_args.environment
-        if environment is None:
-            environment = self.app.options.environment
+        environment = self.app.options.environment
         e = psec.secrets.SecretsEnvironment(environment)
-        exists = e.environment_exists()
-        if parsed_args.exists:
-            if self.app_args.verbose_level > 1:
-                status = "exists" if exists else "does not exist"
-                self.LOG.info('environment ' +
-                              '"{}" '.format(environment) +
-                              '{}'.format(status))
-            return 0 if exists else 1
         if parsed_args.tmpdir:
             tmpdir = e.tmpdir_path()
             tmpdir_mode = 0o700
@@ -693,7 +695,22 @@ class EnvironmentsPath(Command):
             finally:
                 self._print(tmpdir, parsed_args.json)
         else:
-            self._print(e.environment_path(), parsed_args.json)
+            base_path = e.environment_path()
+            subdirs = parsed_args.subdirs
+            full_path = base_path if subdirs is None \
+                else os.path.join(base_path, *subdirs)
+            if parsed_args.exists:
+                # Just check existance and return result
+                exists = os.path.exists(full_path)
+                if self.app_args.verbose_level > 1:
+                    status = "exists" if exists else "does not exist"
+                    self.LOG.info('environment path' +
+                                  '"{}" '.format(full_path) +
+                                  '{}'.format(status)
+                                  )
+                return 0 if exists else 1
+            else:
+                self._print(full_path, parsed_args.json)
 
 
 class EnvironmentsTree(Command):
