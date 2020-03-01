@@ -212,7 +212,6 @@ class SecretsEnvironment(object):
             self.read_secrets_descriptions()
         self._secrets = dict()
         self._descriptions = dict()
-        self._groups = []
 
     def __str__(self):
         """Produce string representation of environment identifier"""
@@ -668,7 +667,6 @@ class SecretsEnvironment(object):
             extensions = ['yml', 'yaml']
             file_names = [fn for fn in os.listdir(groups_dir)
                           if any(fn.endswith(ext) for ext in extensions)]
-            self._groups = [os.path.splitext(fn)[0] for fn in file_names]
             self.LOG.debug(f"reading secrets descriptions from {groups_dir}")
             # Iterate over files in directory, loading them into
             # dictionaries as dictionary keyed on group name.
