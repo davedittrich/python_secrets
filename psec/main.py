@@ -226,12 +226,11 @@ class PythonSecretsApp(App):
             print('\n\n')
             bell()
             time.sleep(3)
-
             # TODO(dittrich): Add more specificity
             # FYI, new= is ignored on Windows per:
             # https://stackoverflow.com/questions/1997327/python-webbrowser-open-setting-new-0-to-open-in-the-same-browser-window-does  # noqa
-            webbrowser.open(rtd_url, new=0, autoraise=True)
 
+            webbrowser.open(rtd_url, new=0, autoraise=True)
         self.timer.start()
         os.umask(self.options.umask)
         self.LOG.debug('using environment "{}"'.format(
