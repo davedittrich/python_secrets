@@ -668,9 +668,8 @@ class SecretsEnvironment(object):
             extensions = ['yml', 'yaml']
             file_names = [fn for fn in os.listdir(groups_dir)
                           if any(fn.endswith(ext) for ext in extensions)]
-            self._groups = [os.path.splitext(fn) for fn in file_names]
-            self.LOG.debug('reading secrets descriptions from {}'.format(
-                groups_dir))
+            self._groups = [os.path.splitext(fn)[0] for fn in file_names]
+            self.LOG.debug(f"reading secrets descriptions from {groups_dir}")
             # Iterate over files in directory, loading them into
             # dictionaries as dictionary keyed on group name.
             if len(file_names) == 0:
@@ -678,28 +677,26 @@ class SecretsEnvironment(object):
             for fname in file_names:
                 group = os.path.splitext(fname)[0]
                 if os.path.splitext(group)[1] != "":
-                    raise RuntimeError('Group name cannot include ".": ' +
-                                       '{}'.format(group))
-                data = self.get_descriptions(
+                    raise RuntimeError(
+                        f"Group name cannot include '.': {group}")
+                descriptions = self.get_descriptions(
                     os.path.join(groups_dir, fname))
-                if data is not None:
-                    self._descriptions[group] = data
+                if descriptions is not None:
+                    self._descriptions[group] = descriptions
                     # Dynamically create maps keyed on variable name
                     # for simpler lookups. (See the get_prompt() method
                     # for an example.)
-                    for d in data:
+                    for d in descriptions:
                         for k, v in d.items():
                             try:
                                 # Add to existing map
-                                v = v if v != d['Variable'] else None
                                 getattr(self, k)[d['Variable']] = v
                             except AttributeError:
                                 raise RuntimeError(
-                                    '"{}" is not '.format(k) +
-                                    'a valid attribute')
+                                    f"'{k}' is not a valid attribute")
                 else:
-                    raise RuntimeError('descriptions for group ' +
-                                       '"{}" is empty'.format(group))
+                    raise RuntimeError(
+                        f"descriptions for group '{group}' is empty")
 
     def descriptions(self):
         return self._descriptions
@@ -1402,7 +1399,6 @@ class SecretsSet(Command):
             # After all that, did we get a value?
             if v is None:
                 self.LOG.info(f'could not obtain value for "{k}"')
-                return None
             self.LOG.debug(f'setting variable "{k}"')
             self.app.secrets.set_secret(k, v)
 
