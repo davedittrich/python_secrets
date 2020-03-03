@@ -9,6 +9,17 @@ teardown() {
     [ -d $D2_SECRETS_BASEDIR/$D2_ENVIRONMENT/tmp ]
 }
 
+@test "'psec environments path configs sub --create' creates $D2_SECRETS_BASEDIR/$D2_ENVIRONMENT/configs/sub" {
+    run $PSEC environments path configs sub --create 1>&2
+    [ -d $D2_SECRETS_BASEDIR/$D2_ENVIRONMENT/configs/sub ]
+}
+
+@test "'psec environments path configs sub --exists' does not create $D2_SECRETS_BASEDIR/$D2_ENVIRONMENT/configs/sub" {
+    run $PSEC environments path configs sub --exists 1>&2
+    assert_failure
+    [ ! -d $D2_SECRETS_BASEDIR/$D2_ENVIRONMENT/configs/sub ]
+}
+
 @test "'psec environments create --clone-from secrets' creates $D2_SECRETS_BASEDIR/$D2_ENVIRONMENT/secrets.d" {
     run $PSEC -vvv environments create --clone-from secrets 1>&2
     [ -d $D2_SECRETS_BASEDIR/$D2_ENVIRONMENT/secrets.d ]

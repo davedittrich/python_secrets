@@ -609,6 +609,14 @@ class EnvironmentsPath(Command):
         parser = super().get_parser(prog_name)
         parser.formatter_class = argparse.RawDescriptionHelpFormatter
         parser.add_argument(
+            '--create',
+            action='store_true',
+            dest='create',
+            default=False,
+            help=("Create the directory path if it does not yet exist "
+                  "(default: False)")
+        )
+        parser.add_argument(
             '--exists',
             action='store_true',
             dest='exists',
@@ -632,7 +640,7 @@ class EnvironmentsPath(Command):
             help='Create and/or return tmpdir for this environment ' +
                  '(default: False)'
         )
-        parser.add_argument('subdirs',
+        parser.add_argument('subdir',
                             nargs='*',
                             default=None)
         parser.epilog = textwrap.dedent("""
@@ -658,11 +666,16 @@ class EnvironmentsPath(Command):
             To append subdirectory components, provide them as arguments and
             they will be concatenated with the appropriate OS path separator.
 
+            .. code-block:: console
+
                 $ psec environments path -e goSecure configs
                 /Users/dittrich/.secrets/goSecure/configs
 
-            .. code-block:: console
             ..
+
+            To ensure the directory path specified by command line arguments
+            is present, use the ``--create`` option.
+
             """)
         return parser
 
@@ -696,9 +709,14 @@ class EnvironmentsPath(Command):
                 self._print(tmpdir, parsed_args.json)
         else:
             base_path = e.environment_path()
-            subdirs = parsed_args.subdirs
-            full_path = base_path if subdirs is None \
-                else os.path.join(base_path, *subdirs)
+            subdir = parsed_args.subdir
+            full_path = base_path if subdir is None \
+                else os.path.join(base_path, *subdir)
+            if not os.path.exists(full_path) and parsed_args.create:
+                mode = 0o700
+                os.makedirs(full_path, mode)
+                if self.app_args.verbose_level > 1:
+                    self.LOG.info(f"created {full_path}")
             if parsed_args.exists:
                 # Just check existance and return result
                 exists = os.path.exists(full_path)
