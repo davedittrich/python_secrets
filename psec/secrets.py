@@ -1640,11 +1640,15 @@ class SecretsPath(Command):
     LOG = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
+        try:
+            default = self.app_args.environment
+        except AttributeError:
+            default = None
         parser = super(SecretsPath, self).get_parser(prog_name)
         parser.formatter_class = argparse.RawDescriptionHelpFormatter
         parser.add_argument('environment',
                             nargs='?',
-                            default=self.app_args.environment)
+                            default=default)
         parser.epilog = textwrap.dedent("""
             If no arguments are present, the path to the secrets for
             the default environment is returned. If you want to get the
