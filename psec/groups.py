@@ -156,7 +156,7 @@ class GroupsDelete(Command):
 
         if parsed_args.group is not None:
             choice = parsed_args.group
-        elif not (stdin.isatty() and 'Bullet' in dir()):
+        elif not (stdin.isatty() and 'Bullet' in globals()):
             # Can't involve user in getting a choice.
             raise RuntimeError('[-] no group specified to delete')
         else:

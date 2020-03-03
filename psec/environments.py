@@ -350,7 +350,7 @@ class EnvironmentsDelete(Command):
         choice = None
         if parsed_args.environment is not None:
             choice = parsed_args.environment
-        elif not (stdin.isatty() and 'Bullet' in dir()):
+        elif not (stdin.isatty() and 'Bullet' in globals()):
             # Can't involve user in getting a choice.
             raise RuntimeError('[-] no environment specified to delete')
         else:
@@ -558,7 +558,7 @@ class EnvironmentsDefault(Command):
             # just raise an exception.
             if (
                 parsed_args.environment is None and not
-                    (stdin.isatty() and 'Bullet' in dir())
+                    (stdin.isatty() and 'Bullet' in globals())
             ):
                 raise RuntimeError('[-] no environment specified')
             # Otherwise, let's prompt for an environment for better UX!
