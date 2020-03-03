@@ -497,6 +497,23 @@
             "console": "integratedTerminal"
         },
         {
+            "name": "psec secrets restore",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "args": [
+                "--debug",
+                "-vvv",
+                "secrets",
+                "restore"
+            ],
+            "stopOnEntry": false,
+            "console": "integratedTerminal"
+        },
+        {
             "name": "psec -E run printenv",
             "type": "python",
             "request": "launch",
