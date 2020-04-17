@@ -617,6 +617,11 @@ class SecretsEnvironment(object):
             _fname = self.secrets_file_path()
             self.LOG.debug('writing secrets to {}'.format(_fname))
             with open(_fname, 'w') as f:
+                # Write out a header line so ytt thinks this is a data
+                # file. I know, I know; it's a hack. There doesn't seem
+                # to be a more direct and explicit way to get ytt to
+                # recognize it as data via command options.
+                f.write("#@data/values\n")
                 yaml.dump(self._secrets,
                           f,
                           encoding=('utf-8'),
