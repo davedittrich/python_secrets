@@ -1,5 +1,4 @@
 anytree
-boto3
 beautifulsoup4
 bullet
 cliff

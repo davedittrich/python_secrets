@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import argparse
-import boto3
 import glob
 import json
 import logging
@@ -473,6 +472,14 @@ class PublicKeys(object):
         # TODO(dittrich): Make this capable of handling multi-instance stacks
         # Return a list or dictionary of multiple public_ip/public_dns sets.
         if self.client is None:
+            try:
+                # Lazy import boto3, because this:
+                # botocore X.X.X has requirement docutils<Y.Y,>=Z.ZZ,
+                # but you'll have docutils N.N which is incompatible.
+                import boto3
+            except ModuleNotFoundError:
+                raise RuntimeError("Ensure the boto3 "
+                                   "package is installed properly")
             self.client = boto3.client('ec2')
         stack_list = self.client.describe_instances().get('Reservations')
         if len(stack_list) == 0:
@@ -505,6 +512,14 @@ class PublicKeys(object):
 
     def retrieve_aws_console_output(self, instance_id=None):
         if self.client is None:
+            try:
+                # Lazy import boto3, because this:
+                # botocore X.X.X has requirement docutils<Y.Y,>=Z.ZZ,
+                # but you'll have docutils N.N which is incompatible.
+                import boto3
+            except ModuleNotFoundError:
+                raise RuntimeError("Ensure the boto3 "
+                                   "package is installed properly")
             self.client = boto3.client('ec2')
         _ = self.update_instance_description(instance_id=instance_id)
         tries_left = _TRIES
