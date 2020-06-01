@@ -55,8 +55,8 @@ def umask(value):
     ivalue = int(value, base=8)
     if ivalue < 0 or ivalue > MAX_UMASK:
         raise argparse.ArgumentTypeError(
-                "value ({}) must be between 0 and " +
-                "0o777".format(value))
+            f"value ({ value }) must be between 0 and 0o777"
+        )
     return ivalue
 
 
