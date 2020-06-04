@@ -530,7 +530,7 @@ def atree(dir,
 
     output = []
     for pre, fill, node in RenderTree(root_node):
-        output.append(('{}{}'.format(pre, node.name, file=outfile)))
+        output.append((f'{ pre }{ node.name }'))
     if outfile is not None:
         for line in output:
             print(line, file=outfile)
