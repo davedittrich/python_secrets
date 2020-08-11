@@ -22,6 +22,7 @@ test: test-tox
 .PHONY: test-tox
 test-tox:
 	@if [ -f .python_secrets_environment ]; then (echo '[!] Remove .python_secrets_environment prior to testing'; exit 1); fi
+	touch docs/psec_help.txt
 	tox
 
 .PHONY: test-bats
