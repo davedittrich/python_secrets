@@ -15,12 +15,12 @@ from setuptools import find_packages, setup
 
 PROJECT = 'python_secrets'
 
+long_description = ''
 try:
     with open('README.rst') as readme_file:
         long_description = readme_file.read()
-    long_description_content_type = 'text/x-rst'
 except IOError:
-    long_description = ''
+    pass
 
 try:
     with open('HISTORY.rst') as history_file:
@@ -54,7 +54,8 @@ setup(
     setup_requires=['pbr>=1.9', 'setuptools>=17.1'],
 
     description="Python CLI for managing secrets (passwords, API keys, etc)",
-    long_description=long_description + "\n\n" + history,
+    long_description="\n".join([long_description, "", history]),
+    long_description_content_type='text/x-rst',
 
     author="Dave Dittrich",
     author_email='dave.dittrich@gmail.com',
