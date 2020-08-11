@@ -1,18 +1,10 @@
 # Makefile for python_secrets
 
 SHELL=bash
+VERSION=$(shell cat VERSION)
 REQUIRED_VENV:=python_secrets
 VENV_DIR=$(HOME)/.virtualenvs/$(REQUIRED_VENV)
 PROJECT:=$(shell basename `pwd`)
-
-# Implement a date-based version numbering scheme.
-SHORT_YEAR=$(shell date +%y)
-MONTH=$(shell date +%m | sed 's/^0//')
-DAY=$(shell date +%d)
-NEW_DATE_VERSION=$(SHORT_YEAR).$(MONTH).$(DAY)
-
-date:
-	echo $(NEW_DATE_VERSION)
 
 #HELP test - run 'tox' for testing
 .PHONY: test
@@ -42,13 +34,6 @@ test-bats-runtime: bats-libraries
 	@echo "[+] Running bats runtime tests:"
 	@cd tests && ls -1 runtime_[0-9][0-9]*.bats
 	bats --tap tests/runtime_*.bats || true
-
-.PHONY: start-release
-start-release:
-	git hf release start "$(NEW_DATE_VERSION)"
-
-bump:
-	bumpversion --no-tag patch --new-version $(NEW_DATE_VERSION)
 
 .PHONY: no-diffs
 no-diffs:
