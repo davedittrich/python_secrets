@@ -83,6 +83,7 @@ twine-check: sdist bdist_egg bdist_wheel
 #HELP clean - remove build artifacts
 .PHONY: clean
 clean:
+	python setup.py clean
 	rm -rf dist build *.egg-info
 	find . -name '*.pyc' -delete
 	(cd docs && make clean && rm -f psec_help.txt)

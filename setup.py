@@ -64,10 +64,10 @@ setup(
     download_url='https://github.com/davedittrich/python_secrets/tarball/master',  # noqa
 
     namespace_packages=[],
-    packages=find_packages(),
-    package_dir={'psec':
-                 'psec'},
+    packages=find_packages(exclude=['libs*']),
+    package_dir={'psec': 'psec'},
     include_package_data=True,
+    # exclude_package_data={'psec': ['libs']},
 
     python_requires='>=3.6',
     install_requires=get_contents('requirements.txt'),

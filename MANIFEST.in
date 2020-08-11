@@ -5,7 +5,8 @@ include LICENSE-2.0.txt
 include README.rst
 include requirements.txt
 
-recursive-include tests *
+prune tests/libs
+
 recursive-exclude * __pycache__
 recursive-exclude * *.py[co]
 
