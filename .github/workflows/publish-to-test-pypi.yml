@@ -1,0 +1,22 @@
+name: Publish develop branch 📦 to TestPyPI
+on: push
+jobs:
+  build-n-publish:
+    name: Build and publish develop branch 📦 to TestPyPI
+    runs-on: ubuntu-18.04
+    steps:
+    - uses: actions/checkout@develop
+    - name: Set up Python 3.7
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.7
+    - name: Build a binary wheel and a source tarball
+      run: >-
+        make 
+        sdist
+        bdist-wheel
+    - name: Publish distribution 📦 to Test PyPI
+      uses: pypa/gh-action-pypi-publish@master
+      with:
+        password: ${{ secrets.test_pypi_password }}
+        repository_url: https://test.pypi.org/legacy/
