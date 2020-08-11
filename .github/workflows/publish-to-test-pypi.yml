@@ -12,9 +12,10 @@ jobs:
         python-version: 3.8
     - name: Install dependencies
       run: |
-        sudo apt-get -y install make
+        sudo apt-get -y install make bats
         python -m pip install --upgrade pip
         [ -f requirements.txt ] && pip install -r requirements.txt
+        make bats-libraries
     - name: Run tests
       run: make test
     - name: Build a binary wheel and a source tarball
