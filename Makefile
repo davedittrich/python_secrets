@@ -57,21 +57,21 @@ no-diffs:
 
 #HELP release - package and upload a release to pypi
 .PHONY: release
-release: clean bdist_egg bdist_wheel twine-check
-	twine upload dist/* -r pypi
+release: clean twine-check
+	twine upload $(shell cat dist/.LATEST_*) -r pypi
 
 #HELP release-test - upload to "testpypi"
 .PHONY: release-test
-release-test: clean test docs-tests docs sdist twine-check
+release-test: clean test docs-tests docs twine-check
 	$(MAKE) no-diffs
-	twine upload dist/* -r testpypi
+	twine upload $(shell cat dist/.LATEST_*) -r testpypi
 
 #HELP bdist_egg - build an egg package
 .PHONY: bdist_egg
 bdist_egg:
 	rm -f dist/.LATEST_EGG
 	python setup.py bdist_egg
-	(cd dist && ls -t *.egg 2>/dev/null | head -n 1) > dist/.LATEST_EGG
+	ls -t dist/*.egg 2>/dev/null | head -n 1 > dist/.LATEST_EGG
 	ls -lt dist/*.egg
 
 #HELP bdist_wheel - build a wheel package
@@ -79,19 +79,21 @@ bdist_egg:
 bdist_wheel:
 	rm -f dist/.LATEST_WHEEL
 	python setup.py bdist_wheel
-	(cd dist && ls -t *.whl 2>/dev/null | head -n 1) > dist/.LATEST_WHEEL
+	ls -t dist/*.whl 2>/dev/null | head -n 1 > dist/.LATEST_WHEEL
 	ls -lt dist/*.whl
 
 #HELP sdist - build a source package
 .PHONY: sdist
 sdist: docs
+	rm -f dist/.LATEST_SDIST
 	python setup.py sdist
+	ls -t dist/*.tar.gz 2>/dev/null | head -n 1 > dist/.LATEST_SDIST
 	ls -l dist/*.tar.gz
 
 #HELP twine-check
 .PHONY: twine-check
-twine-check: bdist_egg
-	twine check $(shell ls dist/*.egg | head -n 1)
+twine-check: sdist bdist_egg bdist_wheel
+	twine check $(shell cat dist/.LATEST_*)
 
 #HELP clean - remove build artifacts
 .PHONY: clean
