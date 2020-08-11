@@ -1,22 +1,24 @@
 name: Publish develop branch 📦 to TestPyPI
-on: push
+on: [push]
 jobs:
   build-n-publish:
     name: Build and publish develop branch 📦 to TestPyPI
     runs-on: ubuntu-18.04
     steps:
-    - uses: actions/checkout@develop
-    - name: Set up Python 3.7
-      uses: actions/setup-python@v1
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v2
       with:
-        python-version: 3.7
-    - name: Install make
-      run: sudo apt-get install make
+        python-version: 3.8
+    - name: Install dependencies
+      run: |
+        sudo apt-get -y install make
+        pythyon -m pip install --upgrade pip
+        [ -f requirements.txt ] && pip install -r requirements.txt
+    - name: Run tests
+      run: make test
     - name: Build a binary wheel and a source tarball
-      run: >-
-        make 
-        sdist
-        bdist-wheel
+      run: make sdist bdist_egg bdist_wheel
     - name: Publish distribution 📦 to Test PyPI
       uses: pypa/gh-action-pypi-publish@master
       with:
