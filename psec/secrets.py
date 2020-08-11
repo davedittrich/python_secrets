@@ -338,9 +338,9 @@ class SecretsEnvironment(object):
         _path = os.path.join(self.secrets_basedir(), env)
 
         if not (subdir is None and host is None):
-            valid_subdir = 'a-zA-Z0-9_/'
+            valid_subdir = r'a-zA-Z0-9_/'
             invalid_subdir = re.compile('[^{}]'.format(valid_subdir))
-            valid_host = 'a-zA-Z0-9_\./'  # noqa
+            valid_host = r'a-zA-Z0-9_\./'  # noqa
             invalid_host = re.compile('[^{}]'.format(valid_host))
 
             if subdir is None and host is not None:
