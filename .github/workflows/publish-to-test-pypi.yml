@@ -1,9 +1,12 @@
 name: Publish develop branch 📦 to TestPyPI
-on: [push]
+on: [ push, pull_request ]
 jobs:
-  build-n-publish:
-    name: Build and publish develop branch 📦 to TestPyPI
+  build-test:
+    name: Build and test 📦
     runs-on: ubuntu-18.04
+    env:
+      PY_COLORS: 1
+      TOX_PARALLEL_NO_SPINNER: 1
     steps:
     - name: Check out src from GitHub
       uses: actions/checkout@v2
@@ -22,16 +25,54 @@ jobs:
         [ -f requirements.txt ] && pip install -Ur requirements.txt
         [ -f test-requirements.txt ] && pip install -Ur test-requirements.txt
         make bats-libraries
+    - name: Pre-populate tox env
+      run: python -m tox -p auto --parallel-live -vvvv --notest
     - name: Extract version
       run: python setup.py --version
       env:
         SETUPTOOLS_SCM_DEBUG: 1
     - name: Run tests
-      run: make test
+      run: python -m tox -p auto --parallel-live -vvvv
     - name: Build a binary wheel and a source tarball
-      run: make sdist bdist_egg bdist_wheel
-    - name: Publish distribution 📦 to Test PyPI
+      run: make twine-check
+  deploy:
+    name: Publish 🐍📦
+    needs:
+      - build-test
+    runs-on: ubuntu-18.04
+    env:
+      PY_COLORS: 1
+      TOX_PARALLEL_NO_SPINNER: 1
+    steps:
+    - name: Switch to using Python 3.8 by default
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+    - name: Check out src from Git
+      uses: actions/checkout@v2
+    - name: Pre-populate tox env
+      run: python -m tox -p auto --parallel-live -vvvv --notest
+    - name: Download all the dists
+      uses: actions/download-artifact@v2
+      with:
+        name: all-the-dists
+        path: dist/
+    - name: Verify metadata
+      run: python -m tox -p auto --parallel-live -vvvv
+    - name: Publish 🐍📦 to TestPyPI
+      if: >-
+        github.event_name == 'push' &&
+        github.ref == 'refs/heads/devel'
       uses: pypa/gh-action-pypi-publish@master
       with:
-        password: ${{ secrets.test_pypi_password }}
+        password: ${{ secrets.testpypi_password }}
         repository_url: https://test.pypi.org/legacy/
+    - name: Publish 🐍📦 to PyPI
+      if: >-
+        1 != 1 &&
+        github.event_name == 'push' &&
+        startsWith(github.ref, 'refs/tags')
+      uses: pypa/gh-action-pypi-publish@master
+      with:
+        password: ${{ secrets.pypi_password }}
+
