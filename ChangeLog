@@ -1,6 +1,69 @@
 CHANGES
 =======
 
+* Fix variable name
+* Correct branch name to match hubflow style
+* Echo branch name
+* Fix missing twine
+* Go back to simple tests
+* Add requirements
+* Fix archive directory names
+* Fix metadata validation
+* Restructure and extend workflow
+* Fix typo
+* Fix task order
+* Ensure metadata for SCM versioning is present
+* Fixing version number extraction
+* Debugging version bug with GitHub actions
+* Refine workflow
+* Ensure bats libs aren't packaged
+* Update default python in tox.ini
+* Fix section heading
+* Fix typo
+* Update per python-app.yml template
+* Add make
+* Add GitHub workflow to publish to test.pypi.org
+* Go back to simpler date versioning
+* Fix regex error message
+* Fix long description in setup.py
+* Fix twine checks
+* Fix sphinx warning about missing file
+* Fix syntax error
+* Fixed tox (setup.py -> pytest upgrade)
+* Resolve pep8 finding
+* Update travis-ci config
+* Resolve tox config and pep8 issues
+* Take control of readthedocs build for cliff sake
+
+20.4.2106
+---------
+
+* Bump version
+* Store secrets in a ytt compatible format
+* Try to get around boto3 dependency conflict
+* Create path if necessary in 'environments path'
+* Handle autoprogram-cliff use case
+* Fix bug in 'secrets path' with added tests
+* Finish initial basic restore logic
+* Fix check for Bullet availability
+* Remove colons from file name
+* Partially working 'secrets backup' (and 'restore')
+* Remove unused attribute
+* Add webbrowser loading of ReadTheDocs page
+* Fix value copying bugs in 'secrets' command
+* Enhance 'environemnts path --exists' command
+* Squashed commit of the following:
+* Add some whitespace
+* Resolve pep8 findings
+* Add webbrowser loading of ReadTheDocs page
+* Open browser on "help --rtd"
+* Fix bug in 'run' with no args
+
+20.2.15
+-------
+
+* Bump version
+* Bump version
 * Simplify date version logic for 'git hf release'
 * Revert "Add date based version support to Makefile"
 * Add test support for Python 3.8 and fix bug
