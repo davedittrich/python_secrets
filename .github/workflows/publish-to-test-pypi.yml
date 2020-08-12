@@ -5,6 +5,12 @@ jobs:
     name: Build and publish develop branch 📦 to TestPyPI
     runs-on: ubuntu-18.04
     steps:
+    - name: Check out src from GitHub
+      uses: actions/checkout@v2
+    - name: Get history and tags for SCM versioning to work
+      run: |
+        git fetch --prune --unshallow
+        git get --depth=1 origin +refs/tags/*:refs/tags/*
     - name: Set up Python 3.8
       uses: actions/setup-python@v2
       with:
@@ -16,12 +22,6 @@ jobs:
         [ -f requirements.txt ] && pip install -Ur requirements.txt
         [ -f test-requirements.txt ] && pip install -Ur test-requirements.txt
         make bats-libraries
-    - name: Check out src from GitHub
-      uses: actions/checkout@v2
-    - name: Get history and tags for SCM versioning to work
-      run: |
-        git fetch --prune --unshallow
-        git get --depth=1 origin +refs/tags/*:refs/tags/*
     - name: Extract version
       run: python setup.py --version
       env:
