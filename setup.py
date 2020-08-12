@@ -38,7 +38,7 @@ def get_contents(*args):
 def get_version(*args):
     """Extract the version number from a Python module."""
     contents = get_contents(*args)
-    metadata = dict(re.findall('__([a-z]+)__ = [\'"]([^\'"]+)', contents))
+    metadata = dict(re.findall(r'__([a-z]+)__ = [\'"]([^\'"]+)', contents))
     return metadata['version']
 
 
@@ -51,7 +51,7 @@ setup(
     name='psec',
     pbr=True,
 
-    setup_requires=['pbr>=1.9', 'setuptools>=17.1'],
+    setup_requires=['pbr>=5.4.5', 'setuptools>=17.1'],
 
     description="Python CLI for managing secrets (passwords, API keys, etc)",
     long_description="\n".join([long_description, "", history]),
@@ -88,6 +88,7 @@ setup(
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
         'Topic :: Security',
         'Topic :: Software Development',
         'Topic :: Software Development :: Build Tools',
