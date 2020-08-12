@@ -11,7 +11,7 @@ jobs:
     - name: Check out src from GitHub
       uses: actions/checkout@v2
     - name: Expose branch name
-      run: echo Running on branch "${GITHUB_REF##*/}"
+      run: echo Running on branch \"${GITHUB_REF##*/}\"
     - name: Get history and tags for SCM versioning to work
       run: |
         git fetch --prune --unshallow
@@ -71,7 +71,7 @@ jobs:
         github.ref == 'refs/heads/develop'
       uses: pypa/gh-action-pypi-publish@master
       with:
-        password: ${{ secrets.testpypi_password }}
+        password: ${{ secrets.test_pypi_password }}
         repository_url: https://test.pypi.org/legacy/
     - name: Publish 🐍📦 to PyPI
       if: >-
