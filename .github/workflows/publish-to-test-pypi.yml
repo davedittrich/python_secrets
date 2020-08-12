@@ -13,8 +13,9 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get -y install make bats
-        python -m pip install --upgrade pip
-        [ -f requirements.txt ] && pip install -r requirements.txt
+        python -m pip install --upgrade pip setuptools
+        [ -f requirements.txt ] && pip install -Ur requirements.txt
+        [ -f test-requirements.txt ] && pip install -Ur test-requirements.txt
         make bats-libraries
     - name: Run tests
       run: make test
