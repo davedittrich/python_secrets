@@ -25,14 +25,12 @@ jobs:
         [ -f requirements.txt ] && pip install -Ur requirements.txt
         [ -f test-requirements.txt ] && pip install -Ur test-requirements.txt
         make bats-libraries
-    - name: Pre-populate tox env
-      run: python -m tox -p auto --parallel-live -vvvv --notest
     - name: Extract version
       run: python setup.py --version
       env:
         SETUPTOOLS_SCM_DEBUG: 1
     - name: Run tests
-      run: python -m tox -p auto --parallel-live -vvvv
+      run: make test
     - name: Build a binary wheel and a source tarball
       run: make twine-check
     - name: Store the source distribution
