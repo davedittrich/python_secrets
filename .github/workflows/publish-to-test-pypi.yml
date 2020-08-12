@@ -10,8 +10,8 @@ jobs:
     steps:
     - name: Check out src from GitHub
       uses: actions/checkout@v2
-    - name: Branch name
-      run: echo Running on branch ${GITHUB_REF##*/}
+    - name: Expose branch name
+      run: echo Running on branch "${GITHUB_REF##*/}"
     - name: Get history and tags for SCM versioning to work
       run: |
         git fetch --prune --unshallow
@@ -68,7 +68,7 @@ jobs:
     - name: Publish 🐍📦 to TestPyPI
       if: >-
         github.event_name == 'push' &&
-        github.ref == 'refs/heads/devel'
+        github.ref == 'refs/heads/develop'
       uses: pypa/gh-action-pypi-publish@master
       with:
         password: ${{ secrets.testpypi_password }}
