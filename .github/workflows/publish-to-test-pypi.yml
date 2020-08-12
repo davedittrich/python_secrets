@@ -44,21 +44,22 @@ jobs:
       PY_COLORS: 1
       TOX_PARALLEL_NO_SPINNER: 1
     steps:
+    - name: Check out src from Git
+      uses: actions/checkout@v2
     - name: Switch to using Python 3.8 by default
       uses: actions/setup-python@v2
       with:
         python-version: 3.8
-    - name: Check out src from Git
-      uses: actions/checkout@v2
-    - name: Pre-populate tox env
-      run: python -m tox -p auto --parallel-live -vvvv --notest
+    - name: Install dependencies
+      run: |
+        python -m pip install --user twine
     - name: Download all the dists
       uses: actions/download-artifact@v2
       with:
         name: all-the-dists
         path: dist/
     - name: Verify metadata
-      run: python -m tox -p auto --parallel-live -vvvv
+      run: twine check dist/*
     - name: Publish 🐍📦 to TestPyPI
       if: >-
         github.event_name == 'push' &&
