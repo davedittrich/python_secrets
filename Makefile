@@ -1,18 +1,10 @@
 # Makefile for python_secrets
 
 SHELL=bash
+VERSION=$(shell cat VERSION)
 REQUIRED_VENV:=python_secrets
 VENV_DIR=$(HOME)/.virtualenvs/$(REQUIRED_VENV)
 PROJECT:=$(shell basename `pwd`)
-
-# Implement a date-based version numbering scheme.
-SHORT_YEAR=$(shell date +%y)
-MONTH=$(shell date +%m | sed 's/^0//')
-DAY=$(shell date +%d)
-NEW_DATE_VERSION=$(SHORT_YEAR).$(MONTH).$(DAY)
-
-date:
-	echo $(NEW_DATE_VERSION)
 
 #HELP test - run 'tox' for testing
 .PHONY: test
@@ -22,6 +14,7 @@ test: test-tox
 .PHONY: test-tox
 test-tox:
 	@if [ -f .python_secrets_environment ]; then (echo '[!] Remove .python_secrets_environment prior to testing'; exit 1); fi
+	touch docs/psec_help.txt
 	tox
 
 .PHONY: test-bats
@@ -42,13 +35,6 @@ test-bats-runtime: bats-libraries
 	@cd tests && ls -1 runtime_[0-9][0-9]*.bats
 	bats --tap tests/runtime_*.bats || true
 
-.PHONY: start-release
-start-release:
-	git hf release start "$(NEW_DATE_VERSION)"
-
-bump:
-	bumpversion --no-tag patch --new-version $(NEW_DATE_VERSION)
-
 .PHONY: no-diffs
 no-diffs:
 	@echo 'Checking Git for uncommitted changes'
@@ -56,21 +42,21 @@ no-diffs:
 
 #HELP release - package and upload a release to pypi
 .PHONY: release
-release: clean bdist_egg bdist_wheel twine-check
-	twine upload dist/* -r pypi
+release: clean twine-check
+	twine upload $(shell cat dist/.LATEST_*) -r pypi
 
 #HELP release-test - upload to "testpypi"
 .PHONY: release-test
-release-test: clean test docs-tests docs sdist twine-check
+release-test: clean test docs-tests docs twine-check
 	$(MAKE) no-diffs
-	twine upload dist/* -r testpypi
+	twine upload $(shell cat dist/.LATEST_*) -r testpypi
 
 #HELP bdist_egg - build an egg package
 .PHONY: bdist_egg
 bdist_egg:
 	rm -f dist/.LATEST_EGG
 	python setup.py bdist_egg
-	(cd dist && ls -t *.egg 2>/dev/null | head -n 1) > dist/.LATEST_EGG
+	ls -t dist/*.egg 2>/dev/null | head -n 1 > dist/.LATEST_EGG
 	ls -lt dist/*.egg
 
 #HELP bdist_wheel - build a wheel package
@@ -78,23 +64,26 @@ bdist_egg:
 bdist_wheel:
 	rm -f dist/.LATEST_WHEEL
 	python setup.py bdist_wheel
-	(cd dist && ls -t *.whl 2>/dev/null | head -n 1) > dist/.LATEST_WHEEL
+	ls -t dist/*.whl 2>/dev/null | head -n 1 > dist/.LATEST_WHEEL
 	ls -lt dist/*.whl
 
 #HELP sdist - build a source package
 .PHONY: sdist
 sdist: docs
+	rm -f dist/.LATEST_SDIST
 	python setup.py sdist
+	ls -t dist/*.tar.gz 2>/dev/null | head -n 1 > dist/.LATEST_SDIST
 	ls -l dist/*.tar.gz
 
 #HELP twine-check
 .PHONY: twine-check
-twine-check: bdist_egg
-	twine check $(shell ls dist/*.egg | head -n 1)
+twine-check: sdist bdist_egg bdist_wheel
+	twine check $(shell cat dist/.LATEST_*)
 
 #HELP clean - remove build artifacts
 .PHONY: clean
 clean:
+	python setup.py clean
 	rm -rf dist build *.egg-info
 	find . -name '*.pyc' -delete
 	(cd docs && make clean && rm -f psec_help.txt)

@@ -15,12 +15,12 @@ from setuptools import find_packages, setup
 
 PROJECT = 'python_secrets'
 
+long_description = ''
 try:
     with open('README.rst') as readme_file:
         long_description = readme_file.read()
-    long_description_content_type = 'text/x-rst'
 except IOError:
-    long_description = ''
+    pass
 
 try:
     with open('HISTORY.rst') as history_file:
@@ -38,7 +38,7 @@ def get_contents(*args):
 def get_version(*args):
     """Extract the version number from a Python module."""
     contents = get_contents(*args)
-    metadata = dict(re.findall('__([a-z]+)__ = [\'"]([^\'"]+)', contents))
+    metadata = dict(re.findall(r'__([a-z]+)__ = [\'"]([^\'"]+)', contents))
     return metadata['version']
 
 
@@ -51,10 +51,11 @@ setup(
     name='psec',
     pbr=True,
 
-    setup_requires=['pbr>=1.9', 'setuptools>=17.1'],
+    setup_requires=['pbr>=5.4.5', 'setuptools>=17.1'],
 
     description="Python CLI for managing secrets (passwords, API keys, etc)",
-    long_description=long_description + "\n\n" + history,
+    long_description="\n".join([long_description, "", history]),
+    long_description_content_type='text/x-rst',
 
     author="Dave Dittrich",
     author_email='dave.dittrich@gmail.com',
@@ -63,10 +64,10 @@ setup(
     download_url='https://github.com/davedittrich/python_secrets/tarball/master',  # noqa
 
     namespace_packages=[],
-    packages=find_packages(),
-    package_dir={'psec':
-                 'psec'},
+    packages=find_packages(exclude=['libs*']),
+    package_dir={'psec': 'psec'},
     include_package_data=True,
+    # exclude_package_data={'psec': ['libs']},
 
     python_requires='>=3.6',
     install_requires=get_contents('requirements.txt'),
@@ -87,6 +88,7 @@ setup(
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
         'Topic :: Security',
         'Topic :: Software Development',
         'Topic :: Software Development :: Build Tools',
