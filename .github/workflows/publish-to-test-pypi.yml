@@ -35,6 +35,11 @@ jobs:
       run: python -m tox -p auto --parallel-live -vvvv
     - name: Build a binary wheel and a source tarball
       run: make twine-check
+    - name: Store the source distribution
+      uses: actions/upload-artifact@v2
+      with:
+        name: dist-src
+        path: dist
   deploy:
     name: Publish 🐍📦
     needs:
@@ -56,7 +61,7 @@ jobs:
     - name: Download all the dists
       uses: actions/download-artifact@v2
       with:
-        name: all-the-dists
+        name: dist-src
         path: dist/
     - name: Verify metadata
       run: twine check dist/*
