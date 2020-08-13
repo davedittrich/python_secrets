@@ -42,8 +42,6 @@ jobs:
         path: dist
   deploy:
     name: Publish
-    on:
-      branches: [ master, develop ]
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
     needs:
       - build-test
