@@ -804,6 +804,25 @@
             "console": "integratedTerminal"
         },
         {
+            "name": "psec utils myip --cidr --method amazon_http",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "args": [
+                "--debug",
+                "utils",
+                "myip",
+                "--cidr",
+                "--method",
+                "amazon_http"
+            ],
+            "stopOnEntry": false,
+            "console": "integratedTerminal"
+        },
+        {
             "name": "psec utils myip --cidr --method random",
             "type": "python",
             "request": "launch",
@@ -818,6 +837,39 @@
                 "--cidr",
                 "--method",
                 "random"
+            ],
+            "stopOnEntry": false,
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "psec utils netblock",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "args": [
+                "--debug",
+                "utils",
+                "netblock"
+            ],
+            "stopOnEntry": false,
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "psec utils netblock 8.8.8.8",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "args": [
+                "--debug",
+                "utils",
+                "netblock",
+                "8.8.8.8"
             ],
             "stopOnEntry": false,
             "console": "integratedTerminal"
