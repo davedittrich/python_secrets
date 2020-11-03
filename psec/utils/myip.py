@@ -194,7 +194,7 @@ class MyIP(Command):
         if parsed_args.cidr:
             print(str(interface.with_prefixlen))
         elif parsed_args.netblock:
-            print(get_netblock())
+            print(get_netblock(ip=interface.ip))
         else:
             print(str(interface.ip))
 
