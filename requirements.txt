@@ -17,5 +17,6 @@ Pygments
 property_manager
 psutil
 requests
+tox
 yamlreader
 xkcdpass
