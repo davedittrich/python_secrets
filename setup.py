@@ -131,10 +131,12 @@ setup(
             'ssh known-hosts extract = psec.ssh:SSHKnownHostsExtract',
             'ssh known-hosts remove = psec.ssh:SSHKnownHostsRemove',
             'template = psec.template:Template',
-            'utils myip = psec.utils:MyIP',
-            'utils set-aws-credentials = psec.utils:SetAWSCredentials',  # noqa
-            'utils tfstate backend = psec.utils:TfBackend',
-            'utils tfstate output = psec.utils:TfOutput',
+            'utils myip = psec.utils.myip:MyIP',
+            'utils myip methods = psec.utils.myip:MyIPMethods',
+            'utils netblock = psec.utils.netblock:Netblock',
+            'utils set-aws-credentials = psec.utils.set_aws_credentials:SetAWSCredentials',  # noqa
+            'utils tfstate backend = psec.utils.tfbackend:TfBackend',
+            'utils tfstate output = psec.utils.tfoutput:TfOutput',
         ],
     },
     zip_safe=False,
