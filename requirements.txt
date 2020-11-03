@@ -4,6 +4,7 @@ bullet
 cliff
 configobj
 configparser
+ipwhois
 jinja2
 lxml
 gnupg
@@ -14,8 +15,7 @@ pexpect
 pbr
 Pygments
 property_manager
+psutil
 requests
-sphinx
-tox
 yamlreader
 xkcdpass
