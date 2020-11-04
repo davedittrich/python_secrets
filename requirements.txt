@@ -19,5 +19,6 @@ psutil
 requests
 sphinx
 tox
+twine
 yamlreader
 xkcdpass
