@@ -842,6 +842,23 @@
             "console": "integratedTerminal"
         },
         {
+            "name": "psec utils myip --netblock",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "env": {
+                "PYTHONPATH": "${workspaceFolder}"
+            },
+            "args": [
+                "--debug",
+                "utils",
+                "myip",
+                "--netblock"
+            ],
+            "stopOnEntry": false,
+            "console": "integratedTerminal"
+        },
+        {
             "name": "psec utils myip methods",
             "type": "python",
             "request": "launch",
