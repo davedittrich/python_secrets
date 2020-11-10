@@ -9,9 +9,6 @@
             "type": "python",
             "request": "launch",
             "module": "psec.main",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
             "args": [
                 "--debug",
                 "help"
@@ -24,9 +21,6 @@
             "type": "python",
             "request": "launch",
             "module": "psec.main",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
             "args": [
                 "--debug",
                 "-q",
@@ -40,9 +34,6 @@
             "type": "python",
             "request": "launch",
             "module": "psec.main",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
             "args": [
                 "--debug",
                 "environments",
@@ -57,9 +48,6 @@
             "type": "python",
             "request": "launch",
             "module": "psec.main",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
             "args": [
                 "--debug",
                 "environments",
@@ -73,9 +61,6 @@
             "type": "python",
             "request": "launch",
             "module": "psec.main",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
             "args": [
                 "--debug",
                 "environments",
@@ -90,9 +75,6 @@
             "type": "python",
             "request": "launch",
             "module": "psec.main",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
             "args": [
                 "--debug",
                 "environments",
@@ -107,9 +89,6 @@
             "type": "python",
             "request": "launch",
             "module": "psec.main",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
             "args": [
                 "--debug",
                 "environments",
@@ -126,9 +105,6 @@
             "type": "python",
             "request": "launch",
             "module": "psec.main",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
             "args": [
                 "--debug",
                 "environments",
@@ -144,9 +120,6 @@
             "type": "python",
             "request": "launch",
             "module": "psec.main",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
             "args": [
                 "--debug",
                 "environments",
@@ -163,9 +136,6 @@
             "type": "python",
             "request": "launch",
             "module": "psec.main",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
             "args": [
                 "--debug",
                 "environments",
@@ -179,9 +149,6 @@
             "type": "python",
             "request": "launch",
             "module": "psec.main",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
             "args": [
                 "--debug",
                 "environments",
@@ -196,9 +163,6 @@
             "type": "python",
             "request": "launch",
             "module": "psec.main",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
             "args": [
                 "--debug",
                 "environments",
@@ -215,9 +179,6 @@
             "type": "python",
             "request": "launch",
             "module": "psec.main",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
             "args": [
                 "--debug",
                 "environments",
@@ -233,9 +194,6 @@
             "type": "python",
             "request": "launch",
             "module": "psec.main",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
             "args": [
                 "--debug",
                 "environments",
@@ -250,9 +208,6 @@
             "type": "python",
             "request": "launch",
             "module": "psec.main",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
             "args": [
                 "--debug",
                 "-v",
@@ -269,9 +224,6 @@
             "type": "python",
             "request": "launch",
             "module": "psec.main",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
             "args": [
                 "--debug",
                 "environments",
@@ -285,9 +237,6 @@
             "type": "python",
             "request": "launch",
             "module": "psec.main",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
             "args": [
                 "--debug",
                 "groups",
@@ -303,9 +252,6 @@
             "type": "python",
             "request": "launch",
             "module": "psec.main",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
             "args": [
                 "--debug",
                 "groups",
@@ -322,9 +268,6 @@
             "type": "python",
             "request": "launch",
             "module": "psec.main",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
             "args": [
                 "--debug",
                 "groups",
@@ -339,9 +282,6 @@
             "type": "python",
             "request": "launch",
             "module": "psec.main",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
             "args": [
                 "--debug",
                 "secrets",
@@ -356,9 +296,6 @@
             "type": "python",
             "request": "launch",
             "module": "psec.main",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
             "args": [
                 "--debug",
                 "-e",
@@ -375,9 +312,6 @@
             "type": "python",
             "request": "launch",
             "module": "psec.main",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
             "args": [
                 "--debug",
                 "secrets",
@@ -394,9 +328,6 @@
             "type": "python",
             "request": "launch",
             "module": "psec.main",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
             "args": [
                 "--debug",
                 "secrets",
@@ -413,9 +344,6 @@
             "type": "python",
             "request": "launch",
             "module": "psec.main",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
             "args": [
                 "--debug",
                 "secrets",
@@ -432,9 +360,6 @@
             "type": "python",
             "request": "launch",
             "module": "psec.main",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
             "args": [
                 "--debug",
                 "secrets",
@@ -450,9 +375,6 @@
             "type": "python",
             "request": "launch",
             "module": "psec.main",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
             "args": [
                 "--debug",
                 "secrets",
@@ -466,9 +388,6 @@
             "type": "python",
             "request": "launch",
             "module": "psec.main",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
             "args": [
                 "--debug",
                 "-e",
@@ -484,9 +403,6 @@
             "type": "python",
             "request": "launch",
             "module": "psec.main",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
             "args": [
                 "--debug",
                 "-vvv",
@@ -501,9 +417,6 @@
             "type": "python",
             "request": "launch",
             "module": "psec.main",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
             "args": [
                 "--debug",
                 "-vvv",
@@ -518,9 +431,6 @@
             "type": "python",
             "request": "launch",
             "module": "psec.main",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
             "args": [
                 "--debug",
                 "-E",
@@ -535,9 +445,6 @@
             "type": "python",
             "request": "launch",
             "module": "psec.main",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
             "args": [
                 "--debug",
                 "ssh",
@@ -553,9 +460,6 @@
             "type": "python",
             "request": "launch",
             "module": "psec.main",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
             "args": [
                 "--debug",
                 "-e",
@@ -574,9 +478,6 @@
             "type": "python",
             "request": "launch",
             "module": "psec.main",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
             "args": [
                 "--debug",
                 "-e",
@@ -596,9 +497,6 @@
             "type": "python",
             "request": "launch",
             "module": "psec.main",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
             "args": [
                 "--debug",
                 "ssh",
@@ -614,9 +512,6 @@
             "type": "python",
             "request": "launch",
             "module": "psec.main",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
             "args": [
                 "--debug",
                 "ssh",
@@ -633,9 +528,6 @@
             "type": "python",
             "request": "launch",
             "module": "psec.main",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
             "args": [
                 "--debug",
                 "ssh",
@@ -652,16 +544,13 @@
             "type": "python",
             "request": "launch",
             "module": "psec.main",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
             "args": [
                 "--debug",
                 "ssh",
                 "known-hosts",
                 "add",
                 "--ask-become-pass",
-                "i-036b9d28241dacf68-console-output.txt",
+                "i-036b9d28241dacf68-console-output.txt"
             ],
             "stopOnEntry": false,
             "console": "integratedTerminal"
@@ -671,9 +560,6 @@
             "type": "python",
             "request": "launch",
             "module": "psec.main",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
             "args": [
                 "--debug",
                 "ssh",
@@ -691,9 +577,6 @@
             "type": "python",
             "request": "launch",
             "module": "psec.main",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
             "args": [
                 "--debug",
                 "-e",
@@ -713,9 +596,6 @@
             "type": "python",
             "request": "launch",
             "module": "psec.main",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
             "args": [
                 "--debug",
                 "ssh",
@@ -733,9 +613,6 @@
             "type": "python",
             "request": "launch",
             "module": "psec.main",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
             "args": [
                 "--debug",
                 "ssh",
@@ -753,9 +630,6 @@
             "type": "python",
             "request": "launch",
             "module": "psec.main",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
             "args": [
                 "--debug",
                 "-v",
@@ -773,9 +647,6 @@
             "type": "python",
             "request": "launch",
             "module": "psec.main",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
             "args": [
                 "--debug",
                 "utils",
@@ -791,9 +662,6 @@
             "type": "python",
             "request": "launch",
             "module": "psec.main",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
             "args": [
                 "--debug",
                 "utils",
@@ -808,9 +676,6 @@
             "type": "python",
             "request": "launch",
             "module": "psec.main",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
             "args": [
                 "--debug",
                 "utils",
@@ -827,9 +692,6 @@
             "type": "python",
             "request": "launch",
             "module": "psec.main",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
             "args": [
                 "--debug",
                 "utils",
@@ -846,9 +708,6 @@
             "type": "python",
             "request": "launch",
             "module": "psec.main",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
             "args": [
                 "--debug",
                 "utils",
@@ -863,9 +722,6 @@
             "type": "python",
             "request": "launch",
             "module": "psec.main",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
             "args": [
                 "--debug",
                 "utils",
@@ -880,9 +736,6 @@
             "type": "python",
             "request": "launch",
             "module": "psec.main",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
             "args": [
                 "--debug",
                 "utils",
@@ -896,9 +749,6 @@
             "type": "python",
             "request": "launch",
             "module": "psec.main",
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            },
             "args": [
                 "--debug",
                 "utils",
