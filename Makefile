@@ -61,7 +61,7 @@ release-test: clean test docs-tests docs twine-check
 .PHONY: bdist_egg
 bdist_egg:
 	rm -f dist/.LATEST_EGG
-	python3 setup.py bdist_egg
+	python setup.py bdist_egg
 	ls -t dist/*.egg 2>/dev/null | head -n 1 > dist/.LATEST_EGG
 	ls -lt dist/*.egg
 
@@ -69,7 +69,7 @@ bdist_egg:
 .PHONY: bdist_wheel
 bdist_wheel:
 	rm -f dist/.LATEST_WHEEL
-	python3 setup.py bdist_wheel
+	python setup.py bdist_wheel
 	ls -t dist/*.whl 2>/dev/null | head -n 1 > dist/.LATEST_WHEEL
 	ls -lt dist/*.whl
 
@@ -77,7 +77,7 @@ bdist_wheel:
 .PHONY: sdist
 sdist: docs
 	rm -f dist/.LATEST_SDIST
-	python3 setup.py sdist
+	python setup.py sdist
 	ls -t dist/*.tar.gz 2>/dev/null | head -n 1 > dist/.LATEST_SDIST
 	ls -l dist/*.tar.gz
 
@@ -89,7 +89,7 @@ twine-check: sdist bdist_egg bdist_wheel
 #HELP clean - remove build artifacts
 .PHONY: clean
 clean:
-	python3 setup.py clean
+	python setup.py clean
 	rm -rf dist build *.egg-info
 	find . -name '*.pyc' -delete
 	(cd docs && make clean && rm -f psec_help.txt)
@@ -101,19 +101,19 @@ install:
 		echo "Required virtual environment '$(REQUIRED_VENV)' not found."; \
 		exit 1; \
 	fi
-	@if [ ! -e "$(VENV_DIR)/bin/python3" ]; then \
-		echo "Cannot find $(VENV_DIR)/bin/python3"; \
+	@if [ ! -e "$(VENV_DIR)/bin/python" ]; then \
+		echo "Cannot find $(VENV_DIR)/bin/python"; \
 		exit 1; \
 	else \
 		echo "Installing into $(REQUIRED_VENV) virtual environment"; \
-		$(VENV_DIR)/bin/python3 -m pip uninstall -y $(PROJECT); \
-		$(VENV_DIR)/bin/python3 setup.py install; \
+		$(VENV_DIR)/bin/python -m pip uninstall -y $(PROJECT); \
+		$(VENV_DIR)/bin/python setup.py install; \
 	fi
 
 #HELP install-active - install in the active Python virtual environment
 .PHONY: install-active
 install-active:
-	python3 -m pip install -U .
+	python -m pip install -U .
 	psec help | tee docs/psec_help.txt
 
 #HELP docs-tests - generate bats test output for documentation
