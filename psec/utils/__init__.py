@@ -9,6 +9,7 @@ URL: https://python_secrets.readthedocs.org.
 
 import logging
 import os
+import tempfile
 import time
 import psec.secrets
 import psutil
@@ -33,7 +34,7 @@ from six.moves import input
 # account.
 
 
-LOG = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def bell():
@@ -89,7 +90,7 @@ def remove_other_perms(dst):
         msg = ('[-] {0} has file system type "{1}": '
                'skipping setting permissions').format(
                    dst, fs_type)
-        LOG.info(msg)
+        logger.info(msg)
     else:
         get_output(['chmod', '-R', 'o-rwx', dst])
 
@@ -155,7 +156,7 @@ def prompt_options(options=[],
                  pad_right=5)
     choice = cli.launch()
     if choice == "<CANCEL>":
-        LOG.info('cancelled selection of choice')
+        logger.info('cancelled selection of choice')
         return None
     selected = psec.utils.find(options,
                                'descr' if by_descr else 'ident',
@@ -192,9 +193,9 @@ def default_environment(parsed_args=None):
         try:
             os.remove(env_file)
         except Exception as e:  # noqa
-            LOG.info('no default environment was set')
+            logger.info('no default environment was set')
         else:
-            LOG.info('default environment unset')
+            logger.info('default environment unset')
     elif parsed_args.set:
         # Set default to specified environment
         default_env = parsed_args.environment
@@ -202,8 +203,34 @@ def default_environment(parsed_args=None):
             default_env = psec.secrets.SecretsEnvironment().environment()
         with open(env_file, 'w') as f:
             f.write(default_env)
-        LOG.info('default environment set to "{}"'.format(
+        logger.info('default environment set to "{}"'.format(
             default_env))
+
+
+def safe_delete_file(
+    file_name=None,
+    passes=3,
+    verbose=False
+):
+    if int(passes) < 1:
+        passes = 1
+    if file_name in ["", None]:
+        raise RuntimeError('[-] file_name not specified')
+    if not os.path.isfile(file_name):
+        raise RuntimeError(f"[-] '{file_name}' is not a file")
+    if verbose:
+        logger.info(f"[+] Removing '{file_name}'")
+    with open(file_name, 'ba+', buffering=0) as fp:
+        length = fp.tell()
+    for i in range(passes):
+        with open(file_name, 'br+', buffering=0) as fp:
+            fp.seek(0)
+            fp.write(os.urandom(length))
+            fp.flush()
+    mask_name = os.path.join(os.path.dirname(file_name),
+                             os.path.basename(tempfile.mkstemp('')[1]))
+    os.rename(file_name, mask_name)
+    os.unlink(mask_name)
 
 
 def atree(dir,

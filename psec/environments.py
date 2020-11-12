@@ -324,14 +324,14 @@ class EnvironmentsDelete(Command):
                 [-] the following will be deleted:
                 /Users/dittrich/.secrets/testenv
                 ├── secrets.d
-                │   ├── ansible.yml
-                │   ├── ca.yml
-                │   ├── consul.yml
-                │   ├── do.yml
-                │   ├── jenkins.yml
-                │   ├── opendkim.yml
-                │   ├── rabbitmq.yml
-                │   └── trident.yml
+                │   ├── ansible.json
+                │   ├── ca.json
+                │   ├── consul.json
+                │   ├── do.json
+                │   ├── jenkins.json
+                │   ├── opendkim.json
+                │   ├── rabbitmq.json
+                │   └── trident.json
                 └── token.json
 
             ..
@@ -781,14 +781,14 @@ class EnvironmentsTree(Command):
                 │           ├── 201802.private
                 │           └── 201802.txt
                 ├── secrets.d
-                │   ├── ca.yml
-                │   ├── consul.yml
-                │   ├── jenkins.yml
-                │   ├── rabbitmq.yml
-                │   ├── trident.yml
-                │   ├── vncserver.yml
-                │   └── zookeper.yml
-                ├── secrets.yml
+                │   ├── ca.json
+                │   ├── consul.json
+                │   ├── jenkins.json
+                │   ├── rabbitmq.json
+                │   ├── trident.json
+                │   ├── vncserver.json
+                │   └── zookeper.json
+                ├── secrets.json
                 └── vault_password.txt
 
             ..

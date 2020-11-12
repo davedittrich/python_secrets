@@ -26,7 +26,6 @@ import sys
 import tarfile
 import textwrap
 import uuid
-import yaml
 
 # TODO(dittrich): https://github.com/Mckinsey666/bullet/issues/2
 # Workaround until bullet has Windows missing 'termios' fix.
@@ -151,7 +150,7 @@ def is_valid_environment(env_path, verbose_level=1):
     directory based on contents."""
     contains_expected = False
     for root, directories, filenames in os.walk(env_path):
-        if 'secrets.yml' in filenames or 'secrets.d' in directories:
+        if 'secrets.json' in filenames or 'secrets.d' in directories:
             contains_expected = True
     is_valid = os.path.exists(env_path) and contains_expected
     if not is_valid and verbose_level > 1:
@@ -179,7 +178,7 @@ class SecretsEnvironment(object):
                  environment=None,
                  secrets_basedir=None,
                  secrets_file=os.getenv('D2_SECRETS_BASENAME',
-                                        'secrets.yml'),
+                                        'secrets.json'),
                  create_root=True,
                  defer_loading=True,
                  export_env_vars=False,
@@ -289,7 +288,7 @@ class SecretsEnvironment(object):
             return self.secrets_basedir()
         else:
             return os.path.join(self.secrets_basedir(),
-                                self.secrets_basename().replace('.yml', '.d'))
+                                self.secrets_basename().replace('.json', '.d'))
 
     def secrets_basename(self):
         """Return the basename of the current secrets file"""
@@ -586,7 +585,7 @@ class SecretsEnvironment(object):
 
     def read_secrets(self, from_descriptions=False):
         """
-        Load the current secrets from .yml file.
+        Load the current secrets file.
 
         If no secrets have been set yet and from_descriptions is True,
         return a dictionary comprised of the keys from the
@@ -597,7 +596,7 @@ class SecretsEnvironment(object):
         self.LOG.debug('reading secrets from {}'.format(_fname))
         try:
             with open(_fname, 'r') as f:
-                _secrets = yaml.safe_load(f)
+                _secrets = json.load(f)
             for k, v in _secrets.items():
                 self._set_secret(k, v)
         except FileNotFoundError as err:
@@ -617,16 +616,9 @@ class SecretsEnvironment(object):
             _fname = self.secrets_file_path()
             self.LOG.debug('writing secrets to {}'.format(_fname))
             with open(_fname, 'w') as f:
-                # Write out a header line so ytt thinks this is a data
-                # file. I know, I know; it's a hack. There doesn't seem
-                # to be a more direct and explicit way to get ytt to
-                # recognize it as data via command options.
-                f.write("#@data/values\n")
-                yaml.dump(self._secrets,
+                json.dump(self._secrets,
                           f,
-                          encoding=('utf-8'),
-                          explicit_start=True,
-                          default_flow_style=False
+                          indent=2,
                           )
             self._changed = False
             psec.utils.remove_other_perms(_fname)
@@ -659,7 +651,7 @@ class SecretsEnvironment(object):
         :return: dictionary of descriptions
         """
         with open(infile, 'r') as f:
-            data = yaml.safe_load(f)
+            data = json.load(f)
         for d in data:
             for k in d.keys():
                 if k not in SECRET_ATTRIBUTES:
@@ -688,8 +680,8 @@ class SecretsEnvironment(object):
         if not os.path.exists(groups_dir):
             self.LOG.info('secrets descriptions directory not found')
         else:
-            # Ignore .order file and any other non-YAML file extensions
-            extensions = ['yml', 'yaml']
+            # Ignore .order file and any other file extensions
+            extensions = ['json']
             file_names = [fn for fn in os.listdir(groups_dir)
                           if any(fn.endswith(ext) for ext in extensions)]
             self.LOG.debug(f"reading secrets descriptions from {groups_dir}")
@@ -971,7 +963,7 @@ class SecretsBackup(Command):
         parser = super().get_parser(prog_name)
         parser.formatter_class = argparse.RawDescriptionHelpFormatter
         parser.epilog = textwrap.dedent("""
-            Creates a backup (``tar`` format) of the secrets.yml file
+            Creates a backup (``tar`` format) of the secrets.json file
             and all description files.
             """)
         return parser
@@ -1716,7 +1708,7 @@ class SecretsRestore(Command):
         with tarfile.open(backup_path, "r:gz") as tf:
             # Only select intended files. See warning re: Tarfile.extractall()
             # in https://docs.python.org/3/library/tarfile.html
-            allowed_prefixes = ['secrets.yml', 'secrets.d/']
+            allowed_prefixes = ['secrets.json', 'secrets.d/']
             names = [fn for fn in tf.getnames()
                      if any(fn.startswith(prefix)
                             for prefix in allowed_prefixes

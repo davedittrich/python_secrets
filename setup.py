@@ -137,6 +137,7 @@ setup(
             'utils set-aws-credentials = psec.utils.set_aws_credentials:SetAWSCredentials',  # noqa
             'utils tfstate backend = psec.utils.tfbackend:TfBackend',
             'utils tfstate output = psec.utils.tfoutput:TfOutput',
+            'utils yaml-to-json = psec.utils.yaml_to_json:YAMLToJSON',
         ],
     },
     zip_safe=False,

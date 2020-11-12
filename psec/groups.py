@@ -47,7 +47,7 @@ class GroupsCreate(Command):
 
             .. code-block:: console
 
-                $ psec groups create newgroup --clone-from ~/git/goSecure/secrets/secrets.d/gosecure.yml
+                $ psec groups create newgroup --clone-from ~/git/goSecure/secrets/secrets.d/gosecure.json
                 created new group "newgroup"
                 $ psec groups list
                 +----------+-------+
@@ -84,7 +84,7 @@ class GroupsCreate(Command):
             if parsed_args.group in clonefrom_environment.get_groups():
                 group_source = os.path.join(
                     clonefrom_environment.descriptions_path(),
-                    '{0}.yml'.format(parsed_args.group)
+                    '{0}.json'.format(parsed_args.group)
                 )
                 descriptions = clonefrom_environment.get_descriptions(
                     group_source)
@@ -98,8 +98,8 @@ class GroupsCreate(Command):
                                    '"{}" '.format(group_source) +
                                    'does not exist')
         elif parsed_args.group is not None:
-            if not parsed_args.group.endswith('.yml'):
-                dest_file = parsed_args.group + '.yml'
+            if not parsed_args.group.endswith('.json'):
+                dest_file = parsed_args.group + '.json'
             else:
                 dest_file = parsed_args.group
         else:
@@ -191,7 +191,7 @@ class GroupsDelete(Command):
                     return
 
         descriptions_path = self.app.secrets.descriptions_path()
-        group_file = os.path.join(descriptions_path, '{0}.yml'.format(choice))
+        group_file = os.path.join(descriptions_path, '{0}.json'.format(choice))
         if not os.path.exists(group_file):
             raise RuntimeError(('Group file "{}" does not '
                                 'exist').format(group_file))

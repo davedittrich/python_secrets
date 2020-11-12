@@ -757,6 +757,20 @@
             ],
             "stopOnEntry": false,
             "console": "integratedTerminal"
+        },
+        {
+            "name": "psec utils yaml-to-json /tmp/bats1",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "args": [
+                "--debug",
+                "utils",
+                "yaml-to-json",
+                "/tmp/bats1"
+            ],
+            "stopOnEntry": false,
+            "console": "integratedTerminal"
         }
     ]
 }

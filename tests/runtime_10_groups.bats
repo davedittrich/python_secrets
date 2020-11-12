@@ -1,6 +1,6 @@
 load test_helper
 
-export COUNT=$(grep Variable secrets/secrets.d/oauth.yml | wc -l)
+export COUNT=$(grep Variable secrets/secrets.d/oauth.json | wc -l)
 
 setup() {
     run $PSEC environments create --clone-from secrets 1>&2
