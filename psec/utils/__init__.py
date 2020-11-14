@@ -168,13 +168,21 @@ def prompt_options(options=[],
         return None
 
 
+# >> Issue: [B322:blacklist] The input method in Python 2 will read from
+# standard input, evaluate and run the resulting string as python source code.
+# This is similar, though in many ways worse, then using eval. On Python 2, use
+# raw_input instead, input is safe in Python 3.
+#    Severity: High   Confidence: High Location: psec/utils/__init__.py:200
+#    More Info:
+#    https://bandit.readthedocs.io/en/latest/blacklists/blacklist_calls.html#b322-input  # noqa
+
 def prompt_string(prompt="Enter a value",
                   default=None):
     """Prompt the user for a string and return it"""
     _new = None
     while True:
         try:
-            _new = str(input("{}? [{}]: ".format(prompt, str(default))))
+            _new = str(input(f"{prompt}? [{str(default)}]: "))  # nosec
             break
         except ValueError:
             print("Sorry, I didn't understand that.")

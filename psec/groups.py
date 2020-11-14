@@ -181,7 +181,7 @@ class GroupsDelete(Command):
                 raise RuntimeError(
                     '[-] must use "--force" flag to delete a group.')
             else:
-                prompt = 'Type the name "{}" to confirm: '.format(choice)
+                prompt = f"Type the name '{choice}' to confirm: "
                 cli = Input(prompt,
                             default="",
                             word_color=colors.foreground["yellow"])
