@@ -444,10 +444,6 @@ class SecretsEnvironment(object):
         """Return the items from the secrets dictionary."""
         return self._secrets.items()
 
-    def to_json(self):
-        """Return the items as JSON string."""
-        return json.dumps(self._secrets)
-
     def get_secret(self, secret, allow_none=False):
         """Get the value of secret
 
@@ -517,7 +513,6 @@ class SecretsEnvironment(object):
         """Delete a secret and record change.
 
         :param secret: :type: string
-        :param value: :type: string
         :return:
         """
         try:
