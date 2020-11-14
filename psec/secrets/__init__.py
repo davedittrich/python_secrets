@@ -591,10 +591,12 @@ class SecretsEnvironment(object):
             _fname = self.secrets_file_path()
             self.LOG.debug('writing secrets to {}'.format(_fname))
             with open(_fname, 'w') as f:
-                json.dump(self._secrets,
+                json.dump(self.Variable,
                           f,
+                          sort_keys=True,
                           indent=2,
                           )
+                f.write('\n')
             self._changed = False
             psec.utils.remove_other_perms(_fname)
         else:
@@ -638,7 +640,8 @@ class SecretsEnvironment(object):
     def write_descriptions(self, data=None, outfile=None):
         """Write out the secrets descriptions to a file."""
         with open(outfile, 'w') as f:
-            f.write(json.dumps(data, indent=2))
+            f.write(json.dumps(data, sort_keys=True, indent=2))
+            f.write('\n')
 
     def check_duplicates(self, data=list()):
         """
