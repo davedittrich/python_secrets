@@ -619,7 +619,7 @@ class SecretsEnvironment(object):
         self.read_secrets_descriptions()
         self.find_new_secrets()
 
-    def get_descriptions(self, infile=None):
+    def read_descriptions(self, infile=None):
         """
         Read a secrets description file and return a dictionary if valid.
 
@@ -635,6 +635,11 @@ class SecretsEnvironment(object):
                                        '"{}" '.format(k) +
                                        'in {}'.format(infile))
         return data
+
+    def write_descriptions(self, data=None, outfile=None):
+        """Write out the secrets descriptions to a file."""
+        with open(outfile, 'w') as f:
+            f.write(json.dumps(data, indent=2))
 
     def check_duplicates(self, data=list()):
         """
@@ -670,7 +675,7 @@ class SecretsEnvironment(object):
                 if os.path.splitext(group)[1] != "":
                     raise RuntimeError(
                         f"Group name cannot include '.': {group}")
-                descriptions = self.get_descriptions(
+                descriptions = self.read_descriptions(
                     os.path.join(groups_dir, fname))
                 if descriptions is not None:
                     self._descriptions[group] = descriptions

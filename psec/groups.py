@@ -86,11 +86,11 @@ class GroupsCreate(Command):
                     clonefrom_environment.descriptions_path(),
                     '{0}.json'.format(parsed_args.group)
                 )
-                descriptions = clonefrom_environment.get_descriptions(
+                descriptions = clonefrom_environment.read_descriptions(
                     group_source)
             else:
                 group_source = parsed_args.clone_from
-                descriptions = self.app.secrets.get_descriptions(group_source)
+                descriptions = self.app.secrets.read_descriptions(group_source)
             self.app.secrets.check_duplicates(descriptions)
             dest_file = os.path.basename(group_source)
             if not os.path.exists(group_source):
