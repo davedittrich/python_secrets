@@ -215,6 +215,7 @@ class SecretsEnvironment(object):
 
     @classmethod
     def permissions_check(cls, basedir='.', verbose_level=0):
+        """Check for presense of perniscious overly-permissive permissions."""
         # File permissions on Cygwin/Windows filesystems don't work the
         # same way as Linux. Don't try to change them.
         # TODO(dittrich): Is there a Better way to handle perms on Windows?
@@ -225,7 +226,6 @@ class SecretsEnvironment(object):
                        basedir, fs_type)
             cls.LOG.info(msg)
             return False
-        """Check for presense of perniscious overly-permissive permissions."""
         any_other_perms = stat.S_IROTH | stat.S_IWOTH | stat.S_IXOTH
         for root, dirs, files in os.walk(basedir, topdown=True):
             for name in files:
