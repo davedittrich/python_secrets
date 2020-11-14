@@ -47,6 +47,12 @@ DEFAULT_UMASK = 0o077
 MAX_UMASK = 0o777
 
 
+def show_current_value(variable=None):
+    """Pretty-print environment variable (if set)."""
+    value = os.getenv(variable, None)
+    return f" ('{value}')" if value is not None else ''
+
+
 def umask(value):
     if value.lower().find("o") < 0:
         raise argparse.ArgumentTypeError(
@@ -87,6 +93,10 @@ class PythonSecretsApp(App):
             description,
             version
         )
+        # OCD hack: Make ``help`` output report main program name,
+        # even if run as ``python -m psec.main`` or such.
+        if parser.prog.endswith('.py'):
+            parser.prog = self.command_manager.namespace
         parser.formatter_class = argparse.RawDescriptionHelpFormatter
         # Global options
         parser.add_argument(
@@ -173,13 +183,15 @@ class PythonSecretsApp(App):
             help=('Open ReadTheDocs documentation on '
                   '"help" command (default: False)')
         )
-        parser.epilog = textwrap.dedent("""\
+        parser.epilog = textwrap.dedent(f"""\
             For programs that inherit values through environment variables, you can
             export secrets using the ``-E`` option to the ``run`` subcommand, e.g.
             ``psec -E run -- terraform plan -out=$(psec environments path --tmpdir)/tfplan``
+            The environment variable ``PYTHON_SECRETS_ENVIRONMENT`` will also be exported
+            with the identifier of the associated source environment.
 
             To improve overall security when doing this, a default process umask of
-            {:#05o} is set when the app initializes. When running programs like the
+            {DEFAULT_UMASK:#05o} is set when the app initializes. When running programs like the
             example above where they create sensitive files in the environment
             directory, this reduces the chance that secrets created during execution
             will end up with overly broad permissions.  If you need to relax these
@@ -189,13 +201,15 @@ class PythonSecretsApp(App):
             set the BROWSER environment variable (e.g., ``BROWSER=lynx``).
             See: https://github.com/python/cpython/blob/3.8/Lib/webbrowser.py
 
-            Environment Variables:
-              BROWSER             Default browser for use by webbrowser.open()
-              D2_ENVIRONMENT      Defaults the environment identifier.
-              D2_SECRETS_BASEDIR  Defaults the base directory for storing secrets.
-              D2_SECRETS_BASENAME Defaults the base name for secrets storage files.
-              D2_NO_REDACT        Defaults redaction setting for ``secrets show`` command.
-            """.format(DEFAULT_UMASK))  # noqa
+            Current working dir: {os.getcwd()}
+            Python interpreter:  {sys.executable} (v{sys.version.split()[0]})
+            Environment variables consumed:
+              BROWSER             Default browser for use by webbrowser.open().{show_current_value('BROWSER')}
+              D2_ENVIRONMENT      Default environment identifier.{show_current_value('D2_ENVIRONMENT')}
+              D2_SECRETS_BASEDIR  Default base directory for storing secrets.{show_current_value('D2_SECRETS_BASEDIR')}
+              D2_SECRETS_BASENAME Default base name for secrets storage files.{show_current_value('D2_SECRETS_BASENAME')}
+              D2_NO_REDACT        Default redaction setting for ``secrets show`` command.{show_current_value('D2_NO_REDACT')}
+            """)  # noqa
 
         return parser
 
