@@ -1,39 +1,29 @@
 load test_helper
 
-# Use: files_count /path/to/dir "*.type"
-files_count() {
-    find $1 -depth 1 -type f -name "${2:-*}" 2>/dev/null | wc -l
-}
-
 export TEST_PASSWORD="mummy_unbaked_tabby_thespian"
 
-trap "rm -rf ${TEST_DIR}_{keep,donotkeep}" EXIT INT TERM QUIT
-
-setup_file() {
-    export TEST_FILES_COUNT=$(files_count tests/secrets/secrets.d "*.yml")
-    export TEST_DIR=$(mktemp bats_XXXXXXXX)
-    for TEST in keep donotkeep; do
-        mkdir -p ${TEST_DIR}_${TEST}
-        cp tests/secrets/secrets.d/*.yml ${TEST_DIR}_${TEST}/
-    done
-}
-
 setup() {
-    run $PSEC environments create --clone-from secrets 1>&2
+    run $PSEC environments create $D2_ENVIRONMENT --clone-from secrets 1>&2
 }
 
 teardown() {
-    rm -rf /tmp/.secrets/bats
-}
-
-teardown_file() {
-    rm -rf ${TEST_DIR}_{keep,donotkeep}
+    run $PSEC environments delete $D2_ENVIRONMENT --force 1>&2
 }
 
 @test "'psec secrets set jenkins_admin_password=$TEST_PASSWORD' sets variable properly" {
     run $PSEC secrets set jenkins_admin_password=$TEST_PASSWORD
     run $PSEC secrets show jenkins_admin_password --no-redact -f csv
     assert_output --partial "$TEST_PASSWORD"
+}
+
+@test "'psec secrets show' table header is correct" {
+    run bash -c "$PSEC secrets show -f csv | head -n 1"
+    assert_output '"Variable","Value","Export"'
+}
+
+@test "'psec secrets describe' table header is correct" {
+    run bash -c "$PSEC secrets describe -f csv | head -n 1"
+    assert_output '"Variable","Group","Type","Prompt","Options"'
 }
 
 @test "'psec secrets path' from env var works properly" {
@@ -57,18 +47,50 @@ teardown_file() {
     assert_output --partial "/bats/secrets.json"
 }
 
-@test "'psec utils yaml-to-json --keep-original' works" {
-    run $PSEC utils yaml-to-json --keep-original ${TEST_DIR}_keep
-    tree ${TEST_DIR}_keep >&2
-    assert_equal $(files_count ${TEST_DIR}_keep "*.json") ${TEST_FILES_COUNT}
-    assert_equal $(files_count ${TEST_DIR}_keep "*.yml") ${TEST_FILES_COUNT}
+@test "'psec secrets describe --group jenkins' works properly" {
+    run $PSEC secrets describe --group jenkins
+    assert_output "+------------------------+---------+----------+--------------------------------------+---------+
+| Variable               | Group   | Type     | Prompt                               | Options |
++------------------------+---------+----------+--------------------------------------+---------+
+| jenkins_admin_password | jenkins | password | Password for Jenkins 'admin' account | *       |
++------------------------+---------+----------+--------------------------------------+---------+"
 }
 
-@test "'psec utils yaml-to-json' works" {
-    run $PSEC utils yaml-to-json ${TEST_DIR}_donotkeep
-    tree ${TEST_DIR}_donotkeep >&2
-    assert_equal $(files_count ${TEST_DIR}_donotkeep "*.json") ${TEST_FILES_COUNT}
-    assert_equal $(files_count ${TEST_DIR}_donotkeep "*.yml") 0
+# TODO(dittrich): This should really fail with $? != 0 if no group.
+@test "'psec secrets describe --group nosuchgroup' fails" {
+    run $PSEC secrets describe --group nosuchgroup
+    assert_output ""
+}
+
+@test "'psec secrets create' works" {
+    skip "Non-interactive 'create' not implemented yet"
+}
+
+@test "'psec secrets delete --group oauth google_oauth_refresh_token' shrinks file" {
+    run grep -q google_oauth_refresh_token $D2_SECRETS_BASEDIR/$D2_ENVIRONMENT/secrets.json
+    assert_success
+    run $PSEC secrets show google_oauth_refresh_token -f value
+    assert_success
+    run bash -c "$PSEC -q groups show oauth -f csv | grep -c oauth"
+    assert_output "4"
+    run $PSEC secrets delete --group oauth google_oauth_refresh_token --force
+    [ -f $D2_SECRETS_BASEDIR/$D2_ENVIRONMENT/secrets.d/oauth.json ]
+    run bash -c "$PSEC -q groups show oauth -f csv | grep -c oauth"
+    assert_output "3"
+    run grep -q google_oauth_refresh_token $D2_SECRETS_BASEDIR/$D2_ENVIRONMENT/secrets.json
+    assert_failure
+    run $PSEC secrets show google_oauth_refresh_token -f value
+    assert_failure
+}
+
+@test "'psec secrets delete --group jenkins jenkins_admin_password' removes group" {
+    run $PSEC secrets show jenkins_admin_password -f value
+    assert_success
+    run $PSEC secrets delete --force --group jenkins jenkins_admin_password 1>&2
+    assert_output "deleting empty group 'jenkins'"
+    run $PSEC secrets show jenkins_admin_password -f value
+    assert_failure
+    [ ! -f $D2_SECRETS_BASEDIR/$D2_ENVIRONMENT/secrets.d/jenkins.json ]
 }
 
 # vim: set ts=4 sw=4 tw=0 et :

@@ -712,6 +712,10 @@ class SecretsEnvironment(object):
                     return None
         return None
 
+    def get_options(self, secret):
+        """Get the options for setting the secret"""
+        return self.Options.get(secret, '*')
+
     def get_prompt(self, secret):
         """Get the prompt for the secret"""
         return self.Prompt.get(secret, secret)
@@ -742,6 +746,13 @@ class SecretsEnvironment(object):
             self._descriptions[group],
             'Variable',
             item) is not None
+
+    def get_group(self, item):
+        """Return the group to which an item belongs."""
+        try:
+            return self.Group[item]
+        except (KeyError, AttributeError):
+            return None
 
     def get_groups(self):
         """Get the secrets description groups"""

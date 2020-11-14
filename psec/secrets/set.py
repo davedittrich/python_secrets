@@ -124,8 +124,8 @@ class SecretsSet(Command):
                         # Default options for boolean type
                         self.app.secrets.Options[k] = BOOLEAN_OPTIONS
                     if k in self.app.secrets.Options:
-                        # Attempt to select from list of options
-                        v = psec.utils.prompt_options(
+                        # Attempt to select from list of option dictionaries
+                        v = psec.utils.prompt_options_dict(
                             options=self.app.secrets.Options[k],
                             prompt=self.app.secrets.get_prompt(k)
                             )

@@ -128,10 +128,33 @@ def require_options(options, *args):
     return True
 
 
-def prompt_options(options=[],
-                   by_descr=True,
-                   prompt="Select from the following options"):
-    """Prompt the user for a string using an options array."""
+def prompt_options_list(options=[],
+                        prompt="Select from the following options"):
+    """Prompt the user for a string using a list of options."""
+    if 'Bullet' not in globals():
+        raise RuntimeError('[-] can\'t use Bullet on Windows')
+    if not len(options) or type(options[0]) is not str:
+        raise RuntimeError('a list of options is required')
+    choices = ['<CANCEL>'] + options
+    cli = Bullet(prompt='\n{0}'.format(prompt),
+                 choices=choices,
+                 indent=0,
+                 align=2,
+                 margin=1,
+                 shift=0,
+                 bullet="→",
+                 pad_right=5)
+    choice = cli.launch()
+    if choice == "<CANCEL>":
+        logger.info('cancelled selection of choice')
+        return None
+    return choice
+
+
+def prompt_options_dict(options=[],
+                        by_descr=True,
+                        prompt="Select from the following options"):
+    """Prompt the user for a string using option dictionaries."""
     if 'Bullet' not in globals():
         raise RuntimeError('[-] can\'t use Bullet on Windows')
     try:
