@@ -278,6 +278,56 @@
             "console": "integratedTerminal"
         },
         {
+            "name": "psec secrets create --group myapp ...",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "args": [
+                "--debug",
+                "-e",
+                "notanalias",
+                "secrets",
+                "create",
+                "--group",
+                "myapp",
+                "test_admin_password",
+                "test_url",
+                "test_binary"
+            ],
+            "stopOnEntry": false,
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "psec secrets delete --group myapp test_url",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "args": [
+                "--debug",
+                "secrets",
+                "delete",
+                "--group",
+                "myapp",
+                "test_url"
+            ],
+            "stopOnEntry": false,
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "psec secrets describe jenkins_admin_password",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "args": [
+                "--debug",
+                "secrets",
+                "describe",
+                "jenkins_admin_password"
+            ],
+            "stopOnEntry": false,
+            "console": "integratedTerminal"
+        },
+        {
             "name": "psec secrets get jenkins_admin_password",
             "type": "python",
             "request": "launch",
@@ -324,6 +374,20 @@
             "console": "integratedTerminal"
         },
         {
+            "name": "psec secrets set test_url",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "args": [
+                "--debug",
+                "secrets",
+                "set",
+                "test_url"
+            ],
+            "stopOnEntry": false,
+            "console": "integratedTerminal"
+        },
+        {
             "name": "psec secrets set jenkins_admin_password=trident_sysadmin_pass --from-environment do",
             "type": "python",
             "request": "launch",
@@ -340,7 +404,7 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "psec secrets show --no-redact jenkins_admin_password trident_db_password",
+            "name": "psec secrets show --no-redact",
             "type": "python",
             "request": "launch",
             "module": "psec.main",
@@ -348,9 +412,7 @@
                 "--debug",
                 "secrets",
                 "show",
-                "--no-redact",
-                "jenkins_admin_password",
-                "trident_db_password"
+                "--no-redact"
             ],
             "stopOnEntry": false,
             "console": "integratedTerminal"
