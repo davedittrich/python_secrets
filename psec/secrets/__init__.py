@@ -499,7 +499,7 @@ class SecretsEnvironment(object):
                 )
             os.environ[_env_var] = str(value)
 
-    def set_secret(self, secret, value):
+    def set_secret(self, secret, value=None):
         """Set secret to value and record change
 
         :param secret: :type: string
