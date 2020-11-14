@@ -55,25 +55,21 @@ def yaml_to_json(
     yaml_file=None,
     json_file=None
 ):
-    """Convert a YAML file (or stdin) to a JSON file (or stdout)."""
-    if json_file in ['-', None]:
-        json_file = sys.stdout
+    """Translate a YAML file (or stdin) to a JSON file (or stdout)."""
     if yaml_file in ['-', None]:
-        yaml_file = sys.stdin
-        # TODO(dittrich): Delete after testing
-        # yml = yaml.safe_load(sys.stdinr)
-        # json.dump(yml, json_file, indent=2)
-    with open(yaml_file, 'r') as yf:
-        yml = yaml.safe_load(yf)
-    with open(json_file, 'w') as jf:
-        json.dump(yml, jf, indent=2)
-
-    # TODO(dittrich): Delete after testing
-    # else:
-    #     with open(yaml_file, 'r') as yf:
-    #         yml = yaml.load(yf, Loader=c_safe_loader)
-    #         with open(json_file, 'w') as jf:
-    #             json.dump(yml, jf, indent=2)
+        yml = yaml.safe_load(sys.stdin.read())
+    else:
+        with open(yaml_file, 'r') as yf:
+            yml = yaml.safe_load(yf)
+    if json_file in ['-', None]:
+        json.dump(yml, sys.stdout, sort_keys=True, indent=2)
+        sys.stdout.write('\n')
+        sys.stdout.flush()
+    else:
+        with open(json_file, 'w') as jf:
+            json.dump(yml, jf, sort_keys=True, indent=2)
+            jf.write('\n')
+            jf.flush()
 
 
 class YAMLToJSON(Command):
@@ -102,49 +98,53 @@ class YAMLToJSON(Command):
             help="Keep original YAML file after conversion (default: False)"
         )
         parser.add_argument(
-            'path',
+            'arg',
             nargs='*',
             default=['-'],
-            help=("Path to files and/or directories convert "
+            help=("Files and/or directories convert "
                   "(default: standard input)")
         )
         parser.epilog = textwrap.dedent("""
             Utility to convert YAML format secrets and/or descriptions file(s)
-            to JSON format. You can specify one or more files or directories
-            to convert. If you specify a directory path, *all* files ending
-            in ``.yml`` in the directory will be processed.
+            to JSON format.
 
-            The default when converting a file with the ``--convert`` option
-            is to delete the YAML file after conversion. To keep the original,
-            use the ``--keep-original`` option.
+            You can specify one or more files or directories to convert
+            (including '-' for standard input). By default the JSON format
+            data will be written to standard output.  This is useful for
+            one-off conversion of YAML content to see the resulting JSON, or
+            to produce a file with a different name by redirecting into a
+            new file.
+
+            The ``--convert`` option writes the JSON to a file with the same
+            base name, but with the ``.json`` extension, then deletes the
+            original YAML file. If you need to keep the original YAML file,
+            add the ``--keep-original`` option.  If a directory is passed as
+            an argument with the ``--convert`` option, *all* files ending in
+            ``.yml`` in the directory will be processed.
+
         """)
         return parser
 
     def take_action(self, parsed_args):
         self.log.debug('converting from YAML to JSON file format')
-        if '-' in parsed_args.path:
-            if len(parsed_args.path) > 1:
-                raise RuntimeError('[-] stdin must be the only argument')
-            yaml_to_json(yaml_file='-')
-            sys.exit(0)
-        for path in parsed_args.path:
-            update_from_yaml(path=os.path.abspath(path),
-                             keep_original=parsed_args.keep_original,
-                             verbose=(self.app_args.verbose_level >= 1))
-        # yaml_files = []
-        # for path in parsed_args.path:
-        #     yaml_files.extend([
-        #         fn for fn in get_files_from_path(path)
-        #         if fn.endswith('yml')
-        #     ])
-        # for yaml_file in yaml_files:
-        #     json_file = f"{os.path.splitext(yaml_file)[0]}.json"
-        #     if parsed_args.convert and self.app_args.verbose_level >= 1:
-        #         logger.info(f"[+] Converting '{yaml_file}' to '{json_file}'")
-        #     yaml_to_json(yaml_file=yaml_file,
-        #                  json_file=json_file,
-        #                  keep_original=parsed_args.keep_original
-        #                  )
+        if '-' in parsed_args.arg and parsed_args.convert:
+            raise RuntimeError('[-] stdin cannot be used with ``--convert``')
+        for arg in parsed_args.arg:
+            path = os.path.abspath(arg) if arg != '-' else arg
+            if parsed_args.convert:
+                update_from_yaml(path=path,
+                                 keep_original=parsed_args.keep_original,
+                                 verbose=(self.app_args.verbose_level >= 1))
+            elif path == '-':
+                yaml_to_json(yaml_file=path)
+            else:
+                yaml_files = [
+                    fn for fn in get_files_from_path(path)
+                    if fn.endswith('.yml')
+                ]
+                for yaml_file in yaml_files:
+                    self.log.info(f"[+] Converting '{yaml_file}")
+                    yaml_to_json(yaml_file=yaml_file)
 
 
 # vim: set fileencoding=utf-8 ts=4 sw=4 tw=0 et :
