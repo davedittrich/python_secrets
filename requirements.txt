@@ -9,7 +9,6 @@ jinja2
 lxml
 gnupg
 numpy
-six
 pyflakes
 pexpect
 pbr

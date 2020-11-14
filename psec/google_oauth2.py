@@ -63,7 +63,6 @@ import urllib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from psec import __version__
-from six.moves import input
 
 """
 https://github.com/google/gmail-oauth2-tools/wiki/OAuth2DotPyRunThrough
@@ -255,7 +254,15 @@ class GoogleSMTP(object):
         scope = "https://mail.google.com/"
         print('[+] Navigate to the following URL to authenticate:',
               self.generate_permission_url(scope))
-        authorization_code = input('[+] Enter verification code: ')
+        # >> Issue: [B322:blacklist] The input method in Python 2 will read
+        # from standard input, evaluate and run the resulting string as
+        # python source code. This is similar, though in many ways worse,
+        # then using eval. On Python 2, use raw_input instead, input is
+        # safe in Python 3.
+        #    Severity: High   Confidence: High
+        #    Location: psec/google_oauth2.py:257
+        #    More Info: https://bandit.readthedocs.io/en/latest/blacklists/blacklist_calls.html#b322-input  # noqa
+        authorization_code = input('[+] Enter verification code: ')  # nosec
         response = self.authorize_tokens(authorization_code)
         self.refresh_token = response['refresh_token']
         self.access_token = response['access_token']

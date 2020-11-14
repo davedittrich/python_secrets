@@ -26,7 +26,6 @@ except ModuleNotFoundError:
     pass
 from collections import OrderedDict
 from ipwhois import IPWhois
-from six.moves import input
 
 
 # NOTE: While calling subprocess.call() with shell=True can have security
