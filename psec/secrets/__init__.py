@@ -63,6 +63,7 @@ SECRET_TYPES = [
         ]
 SECRET_ATTRIBUTES = [
     'Variable',
+    'Group',
     'Type',
     'Export',
     'Prompt',
@@ -545,6 +546,9 @@ class SecretsEnvironment(object):
         # TODO(dittrich): Replace this with simpler use of attribute maps
         for group in self._descriptions.keys():
             for i in self._descriptions[group]:
+                if not len(i):
+                    raise RuntimeError(
+                        f"[-] found empty dictionary item in group '{group}'")
                 s = i['Variable']
                 t = i['Type']
                 if self.get_secret(s, allow_none=True) is None:
@@ -677,7 +681,9 @@ class SecretsEnvironment(object):
                     # Dynamically create maps keyed on variable name
                     # for simpler lookups. (See the get_prompt() method
                     # for an example.)
+                    # {'Prompt': 'Google OAuth2 username', 'Type': 'string', 'Variable': 'google_oauth_username'}  # noqa
                     for d in descriptions:
+                        self.Group[d['Variable']] = group
                         for k, v in d.items():
                             try:
                                 # Add to existing map
@@ -733,7 +739,10 @@ class SecretsEnvironment(object):
 
     def get_items_from_group(self, group):
         """Get the variables in a secrets description group"""
-        return [i['Variable'] for i in self._descriptions[group]]
+        try:
+            return [i['Variable'] for i in self._descriptions[group]]
+        except KeyError:
+            return []
 
     def is_item_in_group(self, item, group):
         """Return true or false based on item being in group"""
