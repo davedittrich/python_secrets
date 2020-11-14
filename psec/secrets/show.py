@@ -56,27 +56,30 @@ class SecretsShow(Lister):
         )
         parser.add_argument('arg', nargs='*', default=None)
         parser.epilog = textwrap.dedent("""\
-            To get show a subset of secrets, specify their names as
-            the arguments.
+            The ``secrets show`` command is used to see variables, their
+            values, and exported environment variables to help in using them
+            in your code, shell scripts, etc. To see more metadata-ish information,
+            such as their group, type, etc., use the ``secrets describe``
+            command instead.
 
-            If you instead want to show all secrets in one or more
-            groups, use the ``--group`` option and specify the group
-            names as the arguments.
+            To get show a subset of secrets, specify their names as arguments.
+            If you instead want to show all secrets in one or more groups,
+            use the ``--group`` option and specify the group names as arguments.
 
             .. code-block:: console
 
                 $ psec secrets show
-                +------------------------+----------+----------+------------------------+
-                | Variable               | Type     | Value    | Export                 |
-                +------------------------+----------+----------+------------------------+
-                | jenkins_admin_password | password | REDACTED | jenkins_admin_password |
-                | myapp_app_password     | password | REDACTED | DEMO_app_password      |
-                | myapp_client_psk       | string   | REDACTED | DEMO_client_ssid       |
-                | myapp_client_ssid      | string   | REDACTED | DEMO_client_ssid       |
-                | myapp_pi_password      | password | REDACTED | DEMO_pi_password       |
-                | trident_db_pass        | password | REDACTED | trident_db_pass        |
-                | trident_sysadmin_pass  | password | REDACTED | trident_sysadmin_pass  |
-                +------------------------+----------+----------+------------------------+
+                +------------------------+----------+------------------------+
+                | Variable               | Value    | Export                 |
+                +------------------------+----------+------------------------+
+                | jenkins_admin_password | REDACTED | jenkins_admin_password |
+                | myapp_app_password     | REDACTED | DEMO_app_password      |
+                | myapp_client_psk       | REDACTED | DEMO_client_ssid       |
+                | myapp_client_ssid      | REDACTED | DEMO_client_ssid       |
+                | myapp_pi_password      | REDACTED | DEMO_pi_password       |
+                | trident_db_pass        | REDACTED | trident_db_pass        |
+                | trident_sysadmin_pass  | REDACTED | trident_sysadmin_pass  |
+                +------------------------+----------+------------------------+
 
             Visually finding undefined variables in a very long list can be difficult.
             You can show just undefined variables with the ``--undefined`` option.
@@ -112,9 +115,8 @@ class SecretsShow(Lister):
             variables = parsed_args.arg \
                 if len(parsed_args.arg) > 0 \
                 else [k for k, v in self.app.secrets.items()]
-        columns = ('Variable', 'Type', 'Value', 'Export')
+        columns = ('Variable', 'Value', 'Export')
         data = ([(k,
-                  self.app.secrets.get_secret_type(k),
                   psec.utils.redact(v, parsed_args.redact),
                   self.app.secrets.get_secret_export(k))
                 for k, v in self.app.secrets.items()

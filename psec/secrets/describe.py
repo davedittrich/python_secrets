@@ -22,10 +22,24 @@ class SecretsDescribe(Lister):
             To get descriptions for a subset of secrets, specify their
             names as the arguments.
 
+            .. code-block:: console
+
+                $ psec secrets describe jenkins_admin_password
+                +------------------------+---------+----------+--------------------------------------+---------+
+                | Variable               | Group   | Type     | Prompt                               | Options |
+                +------------------------+---------+----------+--------------------------------------+---------+
+                | jenkins_admin_password | jenkins | password | Password for Jenkins 'admin' account | *       |
+                +------------------------+---------+----------+--------------------------------------+---------+
+
+            ..
+
             If you instead want to get descriptions of all secrets in
             one or more groups, use the ``--group`` option and specify
             the group names as the arguments.
-            """)
+
+            To instead see the values and exported environment variables
+            associated with secrets, use the ``secrets show`` command instead.
+            """)  # noqa
 
         what = parser.add_mutually_exclusive_group(required=False)
         what.add_argument(
@@ -59,24 +73,31 @@ class SecretsDescribe(Lister):
                     raise RuntimeError('No group specified')
                 for g in parsed_args.arg:
                     try:
-                        variables.extend(
-                            [v for v
-                                in self.app.secrets.get_items_from_group(g)]
-                        )
+                        variables.extend([
+                            v for v
+                            in self.app.secrets.get_items_from_group(g)
+                        ])
                     except KeyError as e:
-                        raise RuntimeError('Group {} '.format(str(e)) +
-                                           'does not exist')
+                        raise RuntimeError(
+                            f"Group {str(e)} does not exist"
+                        )
             else:
                 variables = parsed_args.arg \
                     if len(parsed_args.arg) > 0 \
                     else [k for k, v in self.app.secrets.items()]
-            columns = ('Variable', 'Type', 'Prompt')
+            columns = ('Variable', 'Group', 'Type', 'Prompt', 'Options')
             data = (
-                    [(k,
-                      self.app.secrets.get_secret_type(k),
-                      self.app.secrets.get_prompt(k))
-                        for k, v in self.app.secrets.items()
-                        if k in variables]
+                [
+                    (
+                        k,
+                        self.app.secrets.get_group(k),
+                        self.app.secrets.get_secret_type(k),
+                        self.app.secrets.get_prompt(k),
+                        self.app.secrets.get_options(k)
+                    )
+                    for k, v in self.app.secrets.items()
+                    if k in variables
+                ]
             )
         return columns, data
 
