@@ -291,6 +291,9 @@ class EnvironmentsCreate(Command):
                     'environment "{}" '.format(e) +
                     '({}) created'.format(se.environment_path())
                 )
+                if parsed_args.clone_from:
+                    se.read_secrets(from_descriptions=True)
+                    se.write_secrets()
 
 
 class EnvironmentsDelete(Command):
