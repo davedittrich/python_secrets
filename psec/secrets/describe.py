@@ -16,7 +16,7 @@ class SecretsDescribe(Lister):
     # Note: Not totally DRY. Replicates some logic from SecretsShow()
 
     def get_parser(self, prog_name):
-        parser = super(SecretsDescribe, self).get_parser(prog_name)
+        parser = super().get_parser(prog_name)
         parser.formatter_class = argparse.RawDescriptionHelpFormatter
         parser.epilog = textwrap.dedent("""
             To get descriptions for a subset of secrets, specify their

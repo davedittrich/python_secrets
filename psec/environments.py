@@ -105,7 +105,7 @@ class EnvironmentsList(Lister):
     LOG = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
-        parser = super(EnvironmentsList, self).get_parser(prog_name)
+        parser = super().get_parser(prog_name)
         parser.formatter_class = argparse.RawDescriptionHelpFormatter
         parser.add_argument(
             '--aliasing',
@@ -185,7 +185,7 @@ class EnvironmentsCreate(Command):
     LOG = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
-        parser = super(EnvironmentsCreate, self).get_parser(prog_name)
+        parser = super().get_parser(prog_name)
         parser.formatter_class = argparse.RawDescriptionHelpFormatter
         how = parser.add_mutually_exclusive_group(required=False)
         how.add_argument(
@@ -299,7 +299,7 @@ class EnvironmentsDelete(Command):
     LOG = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
-        parser = super(EnvironmentsDelete, self).get_parser(prog_name)
+        parser = super().get_parser(prog_name)
         parser.formatter_class = argparse.RawDescriptionHelpFormatter
         parser.add_argument(
             '--force',
@@ -404,7 +404,7 @@ class EnvironmentsRename(Command):
     LOG = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
-        parser = super(EnvironmentsRename, self).get_parser(prog_name)
+        parser = super().get_parser(prog_name)
         parser.formatter_class = argparse.RawDescriptionHelpFormatter
         parser.add_argument('source',
                             nargs=1,

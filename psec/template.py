@@ -15,7 +15,7 @@ class Template(Command):
     LOG = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
-        parser = super(Template, self).get_parser(prog_name)
+        parser = super().get_parser(prog_name)
         parser.add_argument('--check-defined',
                             action='store_true',
                             dest='check_defined',

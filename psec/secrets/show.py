@@ -23,8 +23,7 @@ class SecretsShow(Lister):
         redact = not (os.getenv('D2_NO_REDACT', "FALSE").upper()
                       in ["true".upper(), "1", "yes".upper()])
 
-        parser = super(SecretsShow, self).get_parser(prog_name)
-        # TODO(dittrich): This is closer to working properly. Extend when able.
+        parser = super().get_parser(prog_name)
         parser.formatter_class = argparse.RawDescriptionHelpFormatter
         parser.add_argument(
             '-C', '--no-redact',

@@ -18,7 +18,7 @@ class SecretsSend(Command):
         self.refresh_token = None
 
     def get_parser(self, prog_name):
-        parser = super(SecretsSend, self).get_parser(prog_name)
+        parser = super().get_parser(prog_name)
         parser.formatter_class = argparse.RawDescriptionHelpFormatter
         parser.add_argument(
             '-T', '--refresh-token',

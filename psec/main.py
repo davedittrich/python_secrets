@@ -74,7 +74,7 @@ class PythonSecretsApp(App):
     """Python secrets application class."""
 
     def __init__(self):
-        super(PythonSecretsApp, self).__init__(
+        super().__init__(
             description=__doc__.strip(),
             version=__release__ if __release__ != __version__ else __version__,
             command_manager=CommandManager(

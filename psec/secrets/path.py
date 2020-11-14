@@ -18,7 +18,7 @@ class SecretsPath(Command):
             default = self.app_args.environment
         except AttributeError:
             default = None
-        parser = super(SecretsPath, self).get_parser(prog_name)
+        parser = super().get_parser(prog_name)
         parser.formatter_class = argparse.RawDescriptionHelpFormatter
         parser.add_argument('environment',
                             nargs='?',

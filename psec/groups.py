@@ -27,7 +27,7 @@ class GroupsCreate(Command):
     LOG = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
-        parser = super(GroupsCreate, self).get_parser(prog_name)
+        parser = super().get_parser(prog_name)
         parser.formatter_class = argparse.RawDescriptionHelpFormatter
         parser.add_argument(
             '-C', '--clone-from',
@@ -213,7 +213,7 @@ class GroupsList(Lister):
     LOG = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
-        parser = super(GroupsList, self).get_parser(prog_name)
+        parser = super().get_parser(prog_name)
         parser.formatter_class = argparse.RawDescriptionHelpFormatter
         parser.epilog = textwrap.dedent("""
             .. code-block:: console
@@ -252,7 +252,7 @@ class GroupsShow(Lister):
     LOG = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
-        parser = super(GroupsShow, self).get_parser(prog_name)
+        parser = super().get_parser(prog_name)
         parser.formatter_class = argparse.RawDescriptionHelpFormatter
         parser.add_argument('group', nargs='*', default=None)
         parser.epilog = textwrap.dedent("""
@@ -295,7 +295,7 @@ class GroupsPath(Command):
     LOG = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
-        parser = super(GroupsPath, self).get_parser(prog_name)
+        parser = super().get_parser(prog_name)
         parser.formatter_class = argparse.RawDescriptionHelpFormatter
         default_environment = psec.secrets.SecretsEnvironment().environment()
         parser.add_argument('environment',
