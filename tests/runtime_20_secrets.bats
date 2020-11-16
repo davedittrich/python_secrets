@@ -62,8 +62,10 @@ teardown() {
     assert_output ""
 }
 
-@test "'psec secrets create' works" {
-    skip "Non-interactive 'create' not implemented yet"
+@test "'psec secrets create' fails without a TTY" {
+    run $PSEC secrets create --group nosuchgroup somevariable 2>&1
+    assert_failure
+    assert_output --partial "TTY"
 }
 
 @test "'psec secrets delete --group oauth google_oauth_refresh_token' shrinks file" {
@@ -87,7 +89,7 @@ teardown() {
     run $PSEC secrets show jenkins_admin_password -f value
     assert_success
     run $PSEC secrets delete --force --group jenkins jenkins_admin_password 1>&2
-    assert_output "deleting empty group 'jenkins'"
+    assert_output --partial "deleted empty group"
     run $PSEC secrets show jenkins_admin_password -f value
     assert_failure
     [ ! -f $D2_SECRETS_BASEDIR/$D2_ENVIRONMENT/secrets.d/jenkins.json ]
