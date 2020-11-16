@@ -10,6 +10,12 @@ teardown() {
     run $PSEC environments delete $D2_ENVIRONMENT --force 1>&2
 }
 
+@test "'psec secrets set' fails" {
+    run $PSEC secrets set 2>&1
+    assert_failure
+    assert_output --partial "no secrets specified"
+}
+
 @test "'psec secrets set jenkins_admin_password=$TEST_PASSWORD' sets variable properly" {
     run $PSEC secrets set jenkins_admin_password=$TEST_PASSWORD
     run $PSEC secrets show jenkins_admin_password --no-redact -f csv
@@ -63,7 +69,7 @@ teardown() {
 }
 
 @test "'psec secrets create' fails without a TTY" {
-    run $PSEC secrets create --group nosuchgroup somevariable 2>&1
+    run $PSEC secrets create --group nosuchgroup somevariable </dev/null 2>&1
     assert_failure
     assert_output --partial "TTY"
 }
