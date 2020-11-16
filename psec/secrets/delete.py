@@ -40,6 +40,13 @@ class SecretsDelete(Command):
             default=False,
             help="Mandatory confirmation (default: False)"
         )
+        parser.add_argument(
+            '--mirror-locally',
+            action='store_true',
+            dest='mirror_locally',
+            default=False,
+            help="Mirror definitions locally (default: False)"
+        )
         parser.add_argument('arg', nargs='*', default=None)
         parser.epilog = textwrap.dedent("""
             Deletes one or more secrets and their definitions from an
@@ -55,6 +62,14 @@ class SecretsDelete(Command):
 
             ..
 
+            If you delete all of the variable descriptions remaining in a group,
+            the group file will be deleted.
+
+            The ``--mirror-locally`` option will manage a local copy of the
+            descriptions file. Use this if you are eliminating a variable
+            from a project while editing files in the root of the source
+            repository.
+
             KNOWN LIMITATION: You must specify the group with the ``--group``
             option currently and are restricted to deleting variables from
             one group at a time.
@@ -64,10 +79,11 @@ class SecretsDelete(Command):
 
     def take_action(self, parsed_args):
         self.LOG.debug('deleting secrets')
-        self.app.secrets.requires_environment()
-        self.app.secrets.read_secrets_and_descriptions()
+        se = self.app.secrets
+        se.requires_environment()
+        se.read_secrets_and_descriptions()
         group = parsed_args.group
-        groups = self.app.secrets.get_groups()
+        groups = se.get_groups()
         # Default to using a group with the same name as the environment,
         # for projects that require a group of "global" variables.
         if group is None:
@@ -75,28 +91,23 @@ class SecretsDelete(Command):
         if group not in groups:
             raise RuntimeError(
                 (
-                    f"group '{group}' does not exist in "
-                    f"environment '{str(self.app.secrets)}'"
+                    f"[!] group '{group}' does not exist in "
+                    f"environment '{str(se.environment)}'"
                 )
                 if parsed_args.group is not None else
-                "please specify a group with ``--group``"
+                "[!] please specify a group with '--group'"
             )
-        group_source = os.path.join(
-            self.app.secrets.descriptions_path(),
-            f'{group}.json'
-        )
-        descriptions = self.app.secrets.read_descriptions(
-            infile=group_source)
+        descriptions = se.read_descriptions(group=group)
         variables = [item['Variable'] for item in descriptions]
         args = parsed_args.arg
         for arg in args:
             if arg not in variables:
                 raise RuntimeError(
-                    f"variable '{arg}' does not exist in group '{group}'")
+                    f"[!] variable '{arg}' does not exist in group '{group}'")
             if not parsed_args.force:
                 if not stdin.isatty():
                     raise RuntimeError(
-                        '[-] must use "--force" flag to delete a secret.')
+                        "[-] must use '--force' flag to delete a secret")
                 else:
                     prompt = f"Type the name '{arg}' to confirm: "
                     cli = Input(prompt,
@@ -104,20 +115,26 @@ class SecretsDelete(Command):
                                 word_color=colors.foreground["yellow"])
                     confirm = cli.launch()
                     if confirm != arg:
-                        self.LOG.info('cancelled deleting secret')
+                        self.LOG.info('[-] cancelled deleting secret')
                         return
             descriptions = [
                 item for item in descriptions
                 if item['Variable'] != arg
             ]
-            self.app.secrets.delete_secret(arg)
+            se.delete_secret(arg)
         if not len(descriptions):
-            self.LOG.info(f"deleting empty group '{group}'")
-            psec.utils.safe_delete_file(group_source)
+            paths = [se.descriptions_path(group=group)]
+            if parsed_args.mirror_locally:
+                paths.append(se.descriptions_path(root=os.getcwd(),
+                                                  group=group))
+            for path in paths:
+                psec.utils.safe_delete_file(path)
+                self.LOG.info(f"[+] deleted empty group '{group}' ({path})")
         else:
-            self.app.secrets.write_descriptions(
+            se.write_descriptions(
                 data=descriptions,
-                outfile=group_source)
+                group=group,
+                mirror_to=os.getcwd() if parsed_args.mirror_locally else None)
             self.app.secrets.write_secrets()
 
 

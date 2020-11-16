@@ -6,8 +6,61 @@ import os
 import psec.utils
 import textwrap
 
+# TODO(dittrich): https://github.com/Mckinsey666/bullet/issues/2
+# Workaround until bullet has Windows missing 'termios' fix.
+try:
+    from bullet import colors
+    from bullet import Input
+    from bullet import YesNo
+except ModuleNotFoundError:
+    pass
+
 from cliff.command import Command
+from prettytable import PrettyTable
 from psec.secrets import SECRET_TYPES
+from psec.utils import find
+from sys import stdin
+
+
+def get_description(name=None, defaults=None):
+    """Prompt user for description fields and return results."""
+    new_description = dict()
+    # Variable name is required (obviously)
+    new_description['Variable'] = defaults['Variable']
+    # Variable type is required (obviously)
+    original_type = defaults.get('Type', None)
+    type_hint = "" if original_type is None else f" [was '{original_type}']"
+    new_description['Type'] = psec.utils.prompt_options_list(
+        prompt=f"Variable type{type_hint}: ",
+        default=original_type,
+        options=[item['Type'] for item in SECRET_TYPES]
+    )
+    # Prompt (also serves as description) is required
+    prompt = ("Descriptive string to prompt user when "
+              "setting value: ")
+    cli = Input(prompt,
+                default=defaults.get('Prompt'),
+                word_color=colors.foreground["yellow"])
+    result = cli.launch()
+    new_description['Prompt'] = result
+    # Alternative option set is (no pun intended) optional
+    if new_description['Type'] in ['string']:
+        prompt = "Acceptable options from which to chose: "
+        cli = Input(prompt,
+                    default=defaults.get('Options'),
+                    word_color=colors.foreground["yellow"])
+        result = cli.launch()
+        new_description['Options'] = result
+    # Environment variable export alternative optional
+    prompt = "Environment variable to export: "
+    cli = Input(prompt,
+                default=defaults.get('Export', ' '),
+                word_color=colors.foreground["yellow"])
+    result = cli.launch()
+    if result not in [' ', '', None]:
+        new_description['Export'] = result
+    print('')
+    return new_description
 
 
 class SecretsCreate(Command):
@@ -25,15 +78,58 @@ class SecretsCreate(Command):
             default=None,
             help="Group in which to define the secret(s) (default: None)"
         )
+        parser.add_argument(
+            '--force',
+            action='store_true',
+            dest='force',
+            default=False,
+            help="Create missing environment and/or group (default: False)"
+        )
+        parser.add_argument(
+            '--update',
+            action='store_true',
+            dest='update',
+            default=False,
+            help=("Update the fields in an existing description "
+                  "(default: False)")
+        )
+        parser.add_argument(
+            '--mirror-locally',
+            action='store_true',
+            dest='mirror_locally',
+            default=False,
+            help="Mirror definitions locally (default: False)"
+        )
         parser.add_argument('arg', nargs='*', default=None)
         parser.epilog = textwrap.dedent("""
             Defines one or more secrets in a specified group based on
-            input from the user. This command is used to populate a
-            template to be used when initially setting up a new project.
+            input from the user. Secret definitions are created in the
+            user's environments storage directory and a new variable with
+            no value is created there, too.
+
+            If the environment and/or the group does not exist, you will be
+            prompted to create them. Use the ``--force`` option to create them
+            without asking.
+
+            To maintain a copy of the secrets descriptions in the source
+            repository so they can be used to quickly configure a new
+            deployment after cloning, use the ``--mirror-locally`` option when
+            creating secrets from the root of the repository directory. A
+            copy of each modified group description file will be mirrored
+            into a subdirectory tree in the current working directory where
+            you can commit it to the repository.
+
+            If no group is specified with the ``--group`` option, the
+            environment identifier will be used as a default. This simplifies
+            things for small projects that don't need the drop-in style group
+            partitioning that is more appropriate for multi-tool open source
+            system integration where a single monolithic configuration file
+            becomes unwieldy and inflexible. This feature can also be used
+            for "global" variables that could apply across sub-components.
 
             .. code-block:: console
 
-                $ psec secrets create [TODO(dittrich): finish...]
+                $ psec secrets create newsecret --force
 
             ..
 
@@ -43,80 +139,106 @@ class SecretsCreate(Command):
             the ``secrets set`` command works.
 
             """)  # noqa
+        # TODO(dittrich): address the known limitation
         return parser
 
     def take_action(self, parsed_args):
         self.LOG.debug('creating secrets')
-        self.app.secrets.requires_environment()
-        self.app.secrets.read_secrets_and_descriptions()
-        group = parsed_args.group
-        groups = self.app.secrets.get_groups()
-        # Default to using a group with the same name as the environment,
-        # for projects that require a group of "global" variables.
-        if group is None:
-            group = str(self.app.secrets)
-        if group not in groups:
+        # Does an environment already exist?
+        if not stdin.isatty():
             raise RuntimeError(
-                (
-                    f"group '{group}' does not exist in "
-                    f"environment '{str(self.app.secrets)}'"
-                )
-                if parsed_args.group is not None else
-                "please specify a group with ``--group``"
-            )
-        group_source = os.path.join(
-            self.app.secrets.descriptions_path(),
-            f'{group}.json'
-        )
-        descriptions = self.app.secrets.read_descriptions(
-            infile=group_source)
-        starting_length = len(descriptions)
-        variables = [item['Variable'] for item in descriptions]
+                '[-] this command only works when a TTY is available')
+        se = self.app.secrets
+        env = se.environment()
+        if not se.environment_exists():
+            if parsed_args.update:
+                raise RuntimeError(
+                    f"[!] environment '{env}' does not exist'")
+            client = YesNo(f"create environment '{env}'? ",
+                           default='n')
+            res = client.launch()
+            if not res:
+                self.LOG.info('[!] cancelled creating environment')
+                return 1
+            se.environment_create()
+            self.LOG.info(
+                f"[+] environment '{env}' "
+                f"({se.environment_path()}) created")
+        # Does the group exist?
+        se.read_secrets_and_descriptions()
+        group = parsed_args.group
+        if group is None:
+            # Default group to same name as environment identifier
+            group = env
+        groups = se.get_groups()
+        if group not in groups:
+            if parsed_args.update:
+                raise RuntimeError(
+                    f"[!] group '{group}' does not exist'")
+            client = YesNo(f"create new group '{group}'? ",
+                           default='n')
+            res = client.launch()
+            if not res:
+                self.LOG.info('[!] cancelled creating group')
+                return 1
+            descriptions = list()
+            variables = list()
+        else:
+            descriptions = se.read_descriptions(group=group)
+            variables = [item['Variable'] for item in descriptions]
         args = parsed_args.arg
+        changed = False
         for arg in args:
-            new_description = dict()
-            if arg in variables:
-                self.LOG.info(f"[-] variable '{arg}' already exists")
-            else:
+            arg_row = find(descriptions, 'Variable', arg)
+            if parsed_args.update:
+                if arg not in variables:
+                    self.LOG.info(
+                        f"[-] can't update nonexistent variable '{arg}'")
+                    continue
                 self.LOG.info(
-                    f"[+] creating variable '{arg}' in group '{group}'"
-                    )
-                # Variable name is required (obviously)
-                new_description['Variable'] = arg
-                # Variable type is required (obviously)
-                new_description['Type'] = psec.utils.prompt_options_list(
-                    prompt="Variable type",
-                    options=[item['Type'] for item in SECRET_TYPES]
+                    f"[+] updating variable '{arg}' in group '{group}'")
+                new_description = get_description(
+                    name=arg,
+                    defaults=descriptions[arg_row]
                 )
-                # Prompt (also serves as description) is required
-                new_description['Prompt'] = psec.utils.prompt_string(
-                    prompt=("Descriptive string to prompt user "
-                            "when setting value"),
-                    default=f"Value for '{arg}'"
+            else:
+                if arg in variables:
+                    self.LOG.info(f"[-] variable '{arg}' already exists")
+                    continue
+                self.LOG.info(
+                    f"[+] creating variable '{arg}' in group '{group}'")
+                new_description = get_description(
+                    name=arg,
+                    defaults={
+                        'Variable': arg,
+                        'Prompt': f"Value for '{arg}'",
+                        'Options': "*",
+                        'Export': " ",
+                    }
                 )
-                # Alternative option set is (no pun intended) optional
-                options = psec.utils.prompt_string(
-                    prompt=("Acceptable options from which to chose "
-                            "(RETURN for none)"),
-                    default=None
-                )
-                if options is not None:
-                    new_description['Options'] = options
-                # Environment variable export alternative optional
-                export = psec.utils.prompt_string(
-                    prompt="Environment variable to export (RETURN for none)",
-                    default=None
-                )
-                if export is not None:
-                    new_description['Export'] = export
-                print("")
-                if len(new_description):
+            if len(new_description):
+                table = PrettyTable()
+                table.field_names = ('Key', 'Value')
+                table.align = 'l'
+                for k, v in new_description.items():
+                    table.add_row((k, v))
+                print(table)
+                client = YesNo("commit this description? ",
+                               default='n')
+                res = client.launch()
+                if not res:
+                    continue
+                if arg_row is not None:
+                    descriptions[arg_row] = new_description
+                else:
                     descriptions.append(new_description)
-                    self.app.secrets.set_secret(arg)
-        if len(descriptions) > starting_length:
-            self.app.secrets.write_descriptions(
+                    se.set_secret(arg)
+                changed = True
+        if changed:
+            se.write_descriptions(
                 data=descriptions,
-                outfile=group_source)
+                group=group,
+                mirror_to=os.getcwd() if parsed_args.mirror_locally else None)
 
 
 # vim: set fileencoding=utf-8 ts=4 sw=4 tw=0 et :
