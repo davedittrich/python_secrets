@@ -104,13 +104,13 @@ setup(
             'psec = psec.main:main',
         ],
         'psec': [
-            'environments create = psec.environments:EnvironmentsCreate',  # noqa
-            'environments default = psec.environments:EnvironmentsDefault',  # noqa
-            'environments delete = psec.environments:EnvironmentsDelete',
-            'environments list = psec.environments:EnvironmentsList',
-            'environments path = psec.environments:EnvironmentsPath',
-            'environments rename = psec.environments:EnvironmentsRename',  # noqa
-            'environments tree = psec.environments:EnvironmentsTree',
+            'environments create = psec.environments.create:EnvironmentsCreate',  # noqa
+            'environments default = psec.environments.default:EnvironmentsDefault',  # noqa
+            'environments delete = psec.environments.delete:EnvironmentsDelete',  # noqa
+            'environments list = psec.environments.list:EnvironmentsList',
+            'environments path = psec.environments.path:EnvironmentsPath',
+            'environments rename = psec.environments.rename:EnvironmentsRename',  # noqa
+            'environments tree = psec.environments.tree:EnvironmentsTree',
             'groups create = psec.groups.create:GroupsCreate',
             'groups delete = psec.groups.delete:GroupsDelete',
             'groups list = psec.groups.list:GroupsList',
