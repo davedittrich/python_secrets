@@ -278,7 +278,7 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "psec secrets create --group myapp ...",
+            "name": "psec -e notanalias secrets create newsecret",
             "type": "python",
             "request": "launch",
             "module": "psec.main",
@@ -288,27 +288,45 @@
                 "notanalias",
                 "secrets",
                 "create",
-                "--group",
-                "myapp",
-                "test_admin_password",
-                "test_url",
-                "test_binary"
+                "newsecret",
+                "--mirror-locally"
             ],
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
         {
-            "name": "psec secrets delete --group myapp test_url",
+            "name": "psec -e notanalias secrets create --update newsecret",
             "type": "python",
             "request": "launch",
             "module": "psec.main",
             "args": [
                 "--debug",
+                "-e",
+                "notanalias",
+                "secrets",
+                "create",
+                "--update",
+                "newsecret",
+                "--mirror-locally"
+            ],
+            "stopOnEntry": false,
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "psec -e notanalias secrets delete --group notanalias newsecret",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "args": [
+                "--debug",
+                "-e",
+                "notanalias",
                 "secrets",
                 "delete",
                 "--group",
-                "myapp",
-                "test_url"
+                "notanalias",
+                "newsecret",
+                "--mirror-locally"
             ],
             "stopOnEntry": false,
             "console": "integratedTerminal"
@@ -404,6 +422,23 @@
             "console": "integratedTerminal"
         },
         {
+            "name": "psec secrets set --from-options",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "env": {
+                "D2_ENVIRONMENT": "attack_range_local_test",
+            },
+            "args": [
+                "--debug",
+                "secrets",
+                "set",
+                "--from-options"
+            ],
+            "stopOnEntry": false,
+            "console": "integratedTerminal"
+        },
+        {
             "name": "psec secrets show --no-redact",
             "type": "python",
             "request": "launch",
@@ -414,6 +449,25 @@
                 "show",
                 "--no-redact"
             ],
+            "stopOnEntry": false,
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "psec secrets show --type password --no-redact",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "args": [
+                "--debug",
+                "secrets",
+                "show",
+                "--type",
+                "password",
+                "--no-redact"
+            ],
+            "env": {
+                "D2_ENVIRONMENT": "attack_range_local"
+            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
