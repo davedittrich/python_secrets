@@ -33,13 +33,6 @@ class SecretsShow(Lister):
             help="Do not redact values in output (default: {})".format(redact)
         )
         parser.add_argument(
-            '-g', '--group',
-            dest='args_group',
-            action="store_true",
-            default=False,
-            help="Arguments are groups to list (default: False)"
-        )
-        parser.add_argument(
             '-p', '--prompts',
             dest='args_prompts',
             action="store_true",
@@ -54,6 +47,21 @@ class SecretsShow(Lister):
             help="Only show variables that are not yet " +
                  "defined (default: False)"
         )
+        what = parser.add_mutually_exclusive_group(required=False)
+        what.add_argument(
+            '-g', '--group',
+            dest='args_group',
+            action="store_true",
+            default=False,
+            help="Arguments are groups to show (default: False)"
+        )
+        what.add_argument(
+            '-t', '--type',
+            dest='args_type',
+            action="store_true",
+            default=False,
+            help="Arguments are types to show (default: False)"
+        )
         parser.add_argument('arg', nargs='*', default=None)
         parser.epilog = textwrap.dedent("""\
             The ``secrets show`` command is used to see variables, their
@@ -64,7 +72,8 @@ class SecretsShow(Lister):
 
             To get show a subset of secrets, specify their names as arguments.
             If you instead want to show all secrets in one or more groups,
-            use the ``--group`` option and specify the group names as arguments.
+            use the ``--group`` option and specify the group names as arguments,
+            or to show all secrets of one or more types, use the ``--type`` option.
 
             .. code-block:: console
 
@@ -96,7 +105,7 @@ class SecretsShow(Lister):
         all_items = [k for k, v in self.app.secrets.items()]
         if parsed_args.args_group:
             if not len(parsed_args.arg):
-                raise RuntimeError('No group specified')
+                raise RuntimeError('[!] no group(s) specified')
             for g in parsed_args.arg:
                 try:
                     variables.extend(
@@ -104,14 +113,22 @@ class SecretsShow(Lister):
                          in self.app.secrets.get_items_from_group(g)]
                     )
                 except KeyError as e:
-                    raise RuntimeError('Group {} '.format(str(e)) +
+                    raise RuntimeError('[!] group {} '.format(str(e)) +
                                        'does not exist')
+        elif parsed_args.args_type:
+            if not len(parsed_args.arg):
+                raise RuntimeError('[-] no type(s) specified')
+            variables = [
+                k for k, v
+                in self.app.secrets.Type.items()
+                if v in parsed_args.arg
+            ]
         else:
             for v in parsed_args.arg:
                 if v not in all_items:
                     # Validate requested variables exist.
-                    raise RuntimeError('"{}" '.format(v) +
-                                       'is not defined in this environment')
+                    raise RuntimeError(
+                        f"[!] '{v}' is not defined in this environment")
             variables = parsed_args.arg \
                 if len(parsed_args.arg) > 0 \
                 else [k for k, v in self.app.secrets.items()]
