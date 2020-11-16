@@ -72,9 +72,9 @@ SECRET_ATTRIBUTES = [
 DEFAULT_MODE = 0o710
 # XKCD password defaults
 # See: https://www.unix-ninja.com/p/your_xkcd_passwords_are_pwned
-WORDS = 6
-MIN_WORDS_LENGTH = 4
-MAX_WORDS_LENGTH = 8
+WORDS = 4
+MIN_WORDS_LENGTH = 3
+MAX_WORDS_LENGTH = 6
 MIN_ACROSTIC_LENGTH = 6
 MAX_ACROSTIC_LENGTH = 6
 DELIMITER = '.'
