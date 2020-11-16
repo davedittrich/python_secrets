@@ -18,6 +18,30 @@ class SecretsDescribe(Lister):
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
         parser.formatter_class = argparse.RawDescriptionHelpFormatter
+        parser.add_argument(
+            '--undefined',
+            action='store_true',
+            dest='undefined',
+            default=False,
+            help="Only show variables that are not yet " +
+                 "defined (default: False)"
+        )
+        what = parser.add_mutually_exclusive_group(required=False)
+        what.add_argument(
+            '-g', '--group',
+            dest='args_group',
+            action="store_true",
+            default=False,
+            help="Arguments are groups to list (default: False)"
+        )
+        what.add_argument(
+            '-t', '--types',
+            dest='types',
+            action="store_true",
+            default=False,
+            help="Describe types (default: False)"
+        )
+        parser.add_argument('arg', nargs='*', default=None)
         parser.epilog = textwrap.dedent("""
             To get descriptions for a subset of secrets, specify their
             names as the arguments.
@@ -40,23 +64,6 @@ class SecretsDescribe(Lister):
             To instead see the values and exported environment variables
             associated with secrets, use the ``secrets show`` command instead.
             """)  # noqa
-
-        what = parser.add_mutually_exclusive_group(required=False)
-        what.add_argument(
-            '-g', '--group',
-            dest='args_group',
-            action="store_true",
-            default=False,
-            help="Arguments are groups to list (default: False)"
-        )
-        what.add_argument(
-            '-t', '--types',
-            dest='types',
-            action="store_true",
-            default=False,
-            help="Describe types (default: False)"
-        )
-        parser.add_argument('arg', nargs='*', default=None)
         return parser
 
     def take_action(self, parsed_args):
@@ -96,7 +103,9 @@ class SecretsDescribe(Lister):
                         self.app.secrets.get_options(k)
                     )
                     for k, v in self.app.secrets.items()
-                    if k in variables
+                    if (k in variables and
+                        (not parsed_args.undefined or
+                         (parsed_args.undefined and v in [None, ''])))
                 ]
             )
         return columns, data
