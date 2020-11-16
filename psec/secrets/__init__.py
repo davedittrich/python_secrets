@@ -48,18 +48,18 @@ BOOLEAN_OPTIONS = [
 ]
 DEFAULT_SIZE = 18
 SECRET_TYPES = [
-        {'Type': 'password', 'Description': 'Simple (xkcd) password string'},
-        {'Type': 'string', 'Description': 'Simple string'},
-        {'Type': 'boolean', 'Description': 'Boolean (\'true\'/\'false\')'},
-        {'Type': 'crypt_6', 'Description': 'crypt() SHA512 (\'$6$\')'},
-        {'Type': 'token_hex', 'Description': 'Hexadecimal token'},
-        {'Type': 'token_urlsafe', 'Description': 'URL-safe token'},
-        {'Type': 'consul_key', 'Description': '16-byte BASE64 token'},
-        {'Type': 'sha1_digest', 'Description': 'DIGEST-SHA1 (user:pass) digest'},  # noqa
-        {'Type': 'sha256_digest', 'Description': 'DIGEST-SHA256 (user:pass) digest'},  # noqa
-        {'Type': 'zookeeper_digest', 'Description': 'DIGEST-SHA1 (user:pass) digest'},  # noqa
-        {'Type': 'uuid4', 'Description': 'UUID4 token'},
-        {'Type': 'random_base64', 'Description': 'Random BASE64 token'}
+        {'Type': 'password', 'Description': 'Simple (xkcd) password string', 'Generable': True},  # noqa
+        {'Type': 'string', 'Description': 'Simple string', 'Generable': False},  # noqa
+        {'Type': 'boolean', 'Description': 'Boolean (\'true\'/\'false\')', 'Generable': False},  # noqa
+        {'Type': 'crypt_6', 'Description': 'crypt() SHA512 (\'$6$\')', 'Generable': True},  # noqa
+        {'Type': 'token_hex', 'Description': 'Hexadecimal token', 'Generable': True},  # noqa
+        {'Type': 'token_urlsafe', 'Description': 'URL-safe token', 'Generable': True},  # noqa
+        {'Type': 'consul_key', 'Description': '16-byte BASE64 token', 'Generable': True},  # noqa
+        {'Type': 'sha1_digest', 'Description': 'DIGEST-SHA1 (user:pass) digest', 'Generable': True},  # noqa
+        {'Type': 'sha256_digest', 'Description': 'DIGEST-SHA256 (user:pass) digest', 'Generable': True},  # noqa
+        {'Type': 'zookeeper_digest', 'Description': 'DIGEST-SHA1 (user:pass) digest', 'Generable': True},  # noqa
+        {'Type': 'uuid4', 'Description': 'UUID4 token', 'Generable': True},  # noqa
+        {'Type': 'random_base64', 'Description': 'Random BASE64 token', 'Generable': True}  # noqa
         ]
 SECRET_ATTRIBUTES = [
     'Variable',
@@ -784,6 +784,12 @@ class Memoize:
         if args not in self.memo:
             self.memo[args] = self.fn(*args)
         return self.memo[args]
+
+
+def is_generable(secret_type=None):
+    """Return boolean for generability of this secret type."""
+    generability = {i['Type']: i['Generable'] for i in SECRET_TYPES}
+    return generability.get(secret_type, False)
 
 
 def generate_secret(secret_type=None, *arguments, **kwargs):
