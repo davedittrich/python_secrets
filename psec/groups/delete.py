@@ -14,6 +14,7 @@ try:
 except ModuleNotFoundError:
     pass
 from cliff.command import Command
+from psec.utils import safe_delete_file
 from sys import stdin
 
 
@@ -36,10 +37,11 @@ class GroupsDelete(Command):
                             nargs='?',
                             default=None)
         parser.epilog = textwrap.dedent("""
-            Deletes a group of variables by removing them from the secrets
-            environment and deleting their descriptions.  If the ``--force``
-            option is not specified, you will be prompted to confirm the
-            group name before it is deleted.
+            Deletes a group of secrets and variables by removing them from
+            the secrets environment and deleting their descriptions file.
+
+            If the ``--force`` ption is not specified, you will be prompted
+            to confirm the group name before it is deleted.
             """)  # noqa
         return parser
 
@@ -47,6 +49,7 @@ class GroupsDelete(Command):
         self.LOG.debug('deleting group')
         self.app.secrets.requires_environment()
         self.app.secrets.read_secrets_descriptions()
+        group = parsed_args.group
         groups = self.app.secrets.get_groups()
         choice = None
 
@@ -68,7 +71,7 @@ class GroupsDelete(Command):
                          pad_right=5)
             choice = cli.launch()
             if choice == "<CANCEL>":
-                self.LOG.info('cancelled deleting group')
+                self.LOG.info('[-] cancelled deleting group')
                 return
 
         # Group chosen. Now do we need to confirm?
@@ -83,21 +86,21 @@ class GroupsDelete(Command):
                             word_color=colors.foreground["yellow"])
                 confirm = cli.launch()
                 if confirm != choice:
-                    self.LOG.info('cancelled deleting group')
+                    self.LOG.info('[-] cancelled deleting group')
                     return
 
-        descriptions_path = self.app.secrets.descriptions_path()
-        group_file = os.path.join(descriptions_path, '{0}.json'.format(choice))
+        group_file = self.app.secrets.descriptions_path(group=group)
         if not os.path.exists(group_file):
-            raise RuntimeError(('Group file "{}" does not '
-                                'exist').format(group_file))
+            raise RuntimeError(
+                f"[-] group file '{group_file}' does not exist")
         # Delete secrets from group.
         secrets = self.app.secrets.get_items_from_group(choice)
         for secret in secrets:
             self.app.secrets.delete_secret(secret)
         # Delete group descriptions.
-        os.unlink(group_file)
-        self.LOG.info('[+] deleted secrets group "{0}"'.format(choice))
+        safe_delete_file(group_file)
+        self.LOG.info(
+            f"[+] deleted secrets group '{choice}' ({group_file})")
 
 
 # vim: set fileencoding=utf-8 ts=4 sw=4 tw=0 et :

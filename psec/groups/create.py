@@ -4,11 +4,9 @@ import argparse
 import logging
 import os
 import psec.secrets
-import shutil
 import textwrap
 
 from cliff.command import Command
-from psec.utils import remove_other_perms
 
 
 class GroupsCreate(Command):
@@ -26,18 +24,26 @@ class GroupsCreate(Command):
             default=None,
             help="Group descriptions file to clone from (default: None)"
         )
-        parser.add_argument('group',
+        parser.add_argument('arg',
                             nargs='?',
                             default=None)
         parser.epilog = textwrap.dedent("""
-            When integrating a new open source tool or project, you can
-            create a new group and clone its secrets descriptions. This
-            does not copy any values, just the descriptions, allowing
-            the current environment to manage its own values.
+            Secrets and variables are described in files in a drop-in
+            style directory ending in ``.d``. This forms 'groups' that
+            organize secrets and variables by purpose, by open source
+            tool, etc. This command creates a new group descriptions
+            file in the selected environment.
+
+            When integrating a new open source tool or project with an
+            existing tool or project, you can create a new group in the
+            current environment and clone its secrets descriptions from
+            pre-existing definitions. This does not copy any values, just
+            the descriptions, allowing you to manage the values independently
+            of other projects using a different environment.
 
             .. code-block:: console
 
-                $ psec groups create newgroup --clone-from ~/git/goSecure/secrets/secrets.d/gosecure.json
+                $ psec groups create newgroup --clone-from ~/git/goSecure/secrets.d/gosecure.json
                 created new group "newgroup"
                 $ psec groups list
                 +----------+-------+
@@ -59,56 +65,50 @@ class GroupsCreate(Command):
 
     def take_action(self, parsed_args):
         self.LOG.debug('creating group')
-        # An empty environment that exists is OK for this.
-        self.app.secrets.requires_environment(path_only=True)
-        self.app.secrets.read_secrets_descriptions()
-        # Cloning inherits name from file, otherwise name required.
-        # Source group file may be determined from environment.
-        group_source = None
-        if parsed_args.clone_from is not None:
-            # Cloning a group from an existing environment?
-            clonefrom_environment = psec.secrets.SecretsEnvironment(
-                environment=parsed_args.clone_from
-            )
-            clonefrom_environment.read_secrets_descriptions()
-            if parsed_args.group in clonefrom_environment.get_groups():
-                group_source = os.path.join(
-                    clonefrom_environment.descriptions_path(),
-                    '{0}.json'.format(parsed_args.group)
+        se = self.app.secrets
+        # Creating a new group in an empty environment that exists is OK.
+        se.requires_environment(path_only=True)
+        se.read_secrets_descriptions()
+        # A cloned group can inherit its name from file, otherwise a
+        # name is required.
+        if parsed_args.arg is None and parsed_args.clone_from is None:
+            raise RuntimeError(
+                '[-] no group name or group description source specified')
+        group = parsed_args.arg
+        clone_from = parsed_args.clone_from
+        # Default is to create a new empty group
+        descriptions = dict()
+        if clone_from is not None:
+            # Are we cloning from a file?
+            if clone_from.endswith('.json'):
+                if not os.path.isfile(clone_from):
+                    raise RuntimeError(
+                        "[-] group description file "
+                        f"'{clone_from}' does not exist")
+                if group is None:
+                    group = os.path.splitext(
+                        os.path.basename(clone_from))[0]
+                descriptions = se.read_descriptions(infile=clone_from)
+            else:
+                # Must be cloning from an environment, but which group?
+                if group is None:
+                    raise RuntimeError(
+                        "[-] please specify which group from environment "
+                        f"'{parsed_args.clone_from}' you want to clone")
+                clonefrom_se = psec.secrets.SecretsEnvironment(
+                    environment=clone_from
                 )
-                descriptions = clonefrom_environment.read_descriptions(
-                    group_source)
-            else:
-                group_source = parsed_args.clone_from
-                descriptions = self.app.secrets.read_descriptions(group_source)
-            self.app.secrets.check_duplicates(descriptions)
-            dest_file = os.path.basename(group_source)
-            if not os.path.exists(group_source):
-                raise RuntimeError('Group description file ' +
-                                   '"{}" '.format(group_source) +
-                                   'does not exist')
-        elif parsed_args.group is not None:
-            if not parsed_args.group.endswith('.json'):
-                dest_file = parsed_args.group + '.json'
-            else:
-                dest_file = parsed_args.group
-        else:
-            raise RuntimeError('No group name or file specified')
-
-        dest_dir = self.app.secrets.descriptions_path()
-        new_file = os.path.join(dest_dir, dest_file)
-        if os.path.exists(new_file):
-            raise RuntimeError('Group file "{}" '.format(new_file) +
-                               'already exists')
-        if parsed_args.clone_from is not None:
-            shutil.copy2(group_source, new_file)
-            remove_other_perms(new_file)
-        else:
-            with open(new_file, 'w') as f:
-                f.writelines(['---\n', '\n', '\n'])
-            remove_other_perms(new_file)
-        self.LOG.info('created new group "{}"'.format(
-            os.path.splitext(os.path.basename(new_file))[0]))
+                if group not in clonefrom_se.get_groups():
+                    raise RuntimeError(
+                        f"[-] group '{group}' does not exist in "
+                        f"environment '{clone_from}'")
+                descriptions = clonefrom_se.read_descriptions(group=group)
+        if len(descriptions):
+            se.check_duplicates(descriptions)
+        se.write_descriptions(
+            data=descriptions,
+            group=group)
+        self.LOG.info(f"[+] created new group '{group}'")
 
 
 # vim: set fileencoding=utf-8 ts=4 sw=4 tw=0 et :
