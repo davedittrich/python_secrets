@@ -48,7 +48,7 @@ class EnvironmentsDelete(Command):
             .. code-block:: console
 
                 $ psec environments delete testenv
-                [-] must use "--force" flag to delete an environment.
+                [-] must use '--force' flag to delete an environment.
                 [-] the following will be deleted:
                 /Users/dittrich/.secrets/testenv
                 ├── secrets.d
@@ -103,13 +103,14 @@ class EnvironmentsDelete(Command):
         env_path = e.environment_path()
         if not parsed_args.force:
             if not stdin.isatty():
-                output = psec.utils.tree(env_path,
-                                         outfile=None,
-                                         print_files=True)
+                output = psec.utils.atree(env_path,
+                                          outfile=None,
+                                          print_files=True)
                 raise RuntimeError(
-                    '[-] must use "--force" flag to delete an environment.\n' +
-                    '[-] the following will be deleted: \n' +
-                    ''.join([line for line in output]))
+                    "[-] must use '--force' flag to delete an environment.\n"
+                    "[-] the following will be deleted: \n"
+                    f"{''.join([line for line in output])}"
+                )
             else:
                 prompt = f"Type the name '{choice}' to confirm: "
                 cli = Input(prompt,
@@ -121,9 +122,9 @@ class EnvironmentsDelete(Command):
                     return
 
         # We have confirmation or --force. Now safe to delete.
+        # TODO(dittrich): Use safe_delete_file over file list
         shutil.rmtree(env_path)
-        self.LOG.info('[+] deleted directory path ' +
-                      '{}'.format(env_path))
+        self.LOG.info(f"[+] deleted directory path '{env_path}")
 
 
 # vim: set fileencoding=utf-8 ts=4 sw=4 tw=0 et :

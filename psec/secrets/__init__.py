@@ -385,7 +385,7 @@ class SecretsEnvironment(object):
         """Return whether secrets environment directory exists
         and contains files"""
         _ep = self.environment_path(env=env)
-        result = self.descriptions_path_exists()
+        result = os.path.isdir(self.descriptions_path())
         if not result and os.path.exists(_ep):
             if path_only:
                 result = True
@@ -410,12 +410,12 @@ class SecretsEnvironment(object):
                 raise RuntimeError(
                     'Environment "{}" '.format(self.environment()) +
                     'already exists')
+            if source is not None:
+                self.clone_from(source)
             else:
-                if source is not None:
-                    self.clone_from(source)
-                else:
-                    os.mkdir(env_path, mode=mode)
-                    self.descriptions_path_create()
+                os.makedirs(env_path,
+                            exist_ok=True,
+                            mode=mode)
         else:
             # Just create an alias (symbolic link) to
             # an existing environment
@@ -442,25 +442,27 @@ class SecretsEnvironment(object):
         """Return whether secrets file exists"""
         return os.path.exists(self.secrets_file_path())
 
-    def descriptions_path(self, env=None):
-        """Return the absolute path to secrets descriptions directory"""
-        if env is None:
-            env = self.environment()
-        return os.path.join(self.environment_path(),
-                            self._secrets_descriptions)
-
-    def descriptions_path_exists(self, env=None):
-        """Return whether secrets descriptions directory exists"""
-        if env is None:
-            env = self.environment()
-        return os.path.exists(self.descriptions_path(env=env))
-
-    def descriptions_path_create(self, mode=DEFAULT_MODE):
-        """Create secrets descriptions directory"""
-        if not self.environment_exists(path_only=True):
-            self.environment_create(mode=mode)
-        if not self.descriptions_path_exists():
-            os.mkdir(self.descriptions_path(), mode=mode)
+    def descriptions_path(
+        self,
+        root=None,
+        group=None,
+        create=False,
+        mode=DEFAULT_MODE
+    ):
+        """Return path to secrets descriptions directory or file."""
+        if root is not None:
+            path = os.path.join(os.path.abspath(root),
+                                self._secrets_descriptions)
+        else:
+            path = os.path.join(self.environment_path(),
+                                self._secrets_descriptions)
+        if create:
+            os.makedirs(path,
+                        exist_ok=True,
+                        mode=mode)
+        if group is not None:
+            path = os.path.join(path, f"{group}.json")
+        return path
 
     def tmpdir_path(self):
         """Return the absolute path to secrets descriptions tmp directory"""
@@ -622,6 +624,7 @@ class SecretsEnvironment(object):
                 self._changed = True
             else:
                 raise err
+        return self
 
     def write_secrets(self):
         """Write out the current secrets if any changes were made"""
@@ -637,45 +640,77 @@ class SecretsEnvironment(object):
             self.LOG.debug('not writing secrets (unchanged)')
 
     def clone_from(self, source=None):
-        """Clone an existing environment directory (or facsimile there of)"""
-        dest = self.environment_path()
-        if source is not None:
+        """Clone from existing definition file(s)"""
+        dest = self.descriptions_path(create=True)
+        if source in ['', None]:
+            raise RuntimeError('[-] no source provided')
+        if os.path.isdir(source):
+            if not source.endswith('.d'):
+                raise RuntimeError(
+                    "[-] refusing to process a directory without "
+                    f"a '.d' extension ('{source}')")
+            # Copy anything when cloning from directory.
+            src_files = get_files_from_path(source)
+            for src in src_files:
+                copy(src, dest)
+                psec.utils.remove_other_perms(dest)
+        else:
             if self.environment_exists(env=source):
                 # Only copy descriptions when cloning from environment.
-                copydescriptions(os.path.join(self.secrets_basedir(), source),
-                                 dest)
-            elif os.path.exists(source):
-                # Copy anything when cloning from directory.
-                copyanything(source, dest)
+                copydescriptions(
+                    os.path.join(self.secrets_basedir(), source),
+                    dest
+                )
             else:
                 raise RuntimeError(
-                    'Could not clone from "{}"'.format(source)
-                )
+                    f"[-] could not clone from '{source}'")
         self.read_secrets_descriptions()
         self.find_new_secrets()
 
-    def read_descriptions(self, infile=None):
+    def read_descriptions(self, infile=None, group=None):
         """
-        Read a secrets description file and return a dictionary if valid.
+        Read a secrets group description file and return a dictionary if valid.
 
         :param infile:
+        :param group:
         :return: dictionary of descriptions
         """
+        if group is not None:
+            # raise RuntimeError('[!] no group specified')
+            infile = self.descriptions_path(group=group)
+        if infile is None:
+            raise RuntimeError(
+                '[!] must specify an existing group or file to read')
         with open(infile, 'r') as f:
             data = json.load(f, object_pairs_hook=OrderedDict)
         for d in data:
             for k in d.keys():
                 if k not in SECRET_ATTRIBUTES:
-                    raise RuntimeError('Invalid attribute ' +
-                                       '"{}" '.format(k) +
-                                       'in {}'.format(infile))
+                    raise RuntimeError(
+                        f"Invalid attribute '{k}' in '{infile}'")
         return data
 
-    def write_descriptions(self, data=None, outfile=None):
+    def write_descriptions(
+        self,
+        data={},
+        group=None,
+        mode=DEFAULT_MODE,
+        mirror_to=None
+    ):
         """Write out the secrets descriptions to a file."""
-        with open(outfile, 'w') as f:
-            f.write(json.dumps(data, sort_keys=True, indent=2))
-            f.write('\n')
+        if group is None:
+            raise RuntimeError('[!] no group specified')
+        outfiles = [self.descriptions_path(group=group)]
+        if mirror_to is not None:
+            outfiles.append(self.descriptions_path(root=mirror_to,
+                                                   group=group))
+        for outfile in outfiles:
+            os.makedirs(os.path.dirname(outfile),
+                        exist_ok=True,
+                        mode=mode)
+            with open(outfile, 'w') as f:
+                f.write(json.dumps(data, indent=2))
+                f.write('\n')
 
     def check_duplicates(self, data=list()):
         """
@@ -711,8 +746,7 @@ class SecretsEnvironment(object):
                 if os.path.splitext(group)[1] != "":
                     raise RuntimeError(
                         f"Group name cannot include '.': {group}")
-                descriptions = self.read_descriptions(
-                    os.path.join(groups_dir, fname))
+                descriptions = self.read_descriptions(group=group)
                 if descriptions is not None:
                     self._descriptions[group] = descriptions
                     # Dynamically create maps keyed on variable name
@@ -720,6 +754,7 @@ class SecretsEnvironment(object):
                     # for an example.)
                     # {'Prompt': 'Google OAuth2 username', 'Type': 'string', 'Variable': 'google_oauth_username'}  # noqa
                     for d in descriptions:
+                        # TODO(dittrich): https://github.com/davedittrich/python_secrets/projects/1#card-49358317  # noqa
                         self.Group[d['Variable']] = group
                         for k, v in d.items():
                             try:
