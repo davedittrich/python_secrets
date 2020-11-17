@@ -1,0 +1,7 @@
+[
+  {
+    "Prompt": "Password for Jenkins 'admin' account",
+    "Type": "password",
+    "Variable": "jenkins_admin_password"
+  }
+]

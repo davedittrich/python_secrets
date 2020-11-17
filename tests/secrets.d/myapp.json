@@ -1,0 +1,32 @@
+[
+  {
+    "Export": "DEMO_pi_password",
+    "Prompt": "Password for myapp 'pi' user account",
+    "Type": "password",
+    "Variable": "myapp_pi_password"
+  },
+  {
+    "Export": "DEMO_app_password",
+    "Prompt": "Password for myapp web app",
+    "Type": "password",
+    "Variable": "myapp_app_password"
+  },
+  {
+    "Export": "DEMO_client_ssid",
+    "Prompt": "Pre-shared key for myapp client WiFi AP",
+    "Type": "string",
+    "Variable": "myapp_client_psk"
+  },
+  {
+    "Export": "DEMO_client_ssid",
+    "Prompt": "SSID for myapp client WiFi AP",
+    "Type": "string",
+    "Variable": "myapp_client_ssid"
+  },
+  {
+    "Export": "DEMO_ondemand_wifi",
+    "Prompt": "'Connect on demand' when connected to wifi",
+    "Type": "boolean",
+    "Variable": "myapp_ondemand_wifi"
+  }
+]
