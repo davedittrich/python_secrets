@@ -35,6 +35,8 @@ from shutil import Error
 
 from xkcdpass import xkcd_password as xp
 
+from psec.utils import get_files_from_path
+
 # This module relies in part on features from the xkcdpass module.
 #
 # Copyright (c) 2011 - 2019, Steven Tobin and Contributors.

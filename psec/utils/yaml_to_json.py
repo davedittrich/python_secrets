@@ -10,23 +10,9 @@ import yaml
 
 from cliff.command import Command
 from psec.utils import safe_delete_file
+from psec.utils import get_files_from_path
 
 logger = logging.getLogger(__name__)
-
-
-def get_files_from_path(path=None):
-    """Return a list of files associated with a path."""
-    abspath = os.path.abspath(path)
-    if os.path.isfile(abspath):
-        files = [abspath]
-    elif os.path.isdir(abspath):
-        files = [
-            os.path.join(abspath, fname)
-            for fname in os.listdir(abspath)
-        ]
-    else:
-        raise RuntimeError(f"[-] '{path}' must be a file or directory")
-    return files
 
 
 def update_from_yaml(

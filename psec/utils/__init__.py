@@ -71,6 +71,21 @@ def get_fs_type(mypath):
     return root_type
 
 
+def get_files_from_path(path=None):
+    """Return a list of files associated with a path."""
+    abspath = os.path.abspath(path)
+    if os.path.isfile(abspath):
+        files = [abspath]
+    elif os.path.isdir(abspath):
+        files = [
+            os.path.join(abspath, fname)
+            for fname in os.listdir(abspath)
+        ]
+    else:
+        raise RuntimeError(f"[-] '{path}' must be a file or directory")
+    return files
+
+
 def get_netblock(ip=None):
     """Get the CIDR netblocks for an IP via WHOIS lookup."""
     ip = str(ip).split('/')[0] if '/' in str(ip) else ip
