@@ -24,6 +24,7 @@ import sys
 
 import uuid
 
+from collections import OrderedDict
 from numpy.random import bytes as np_random_bytes
 # >> Issue: [B404:blacklist] Consider possible security implications associated with run module.  # noqa
 #    Severity: Low   Confidence: High
@@ -50,18 +51,54 @@ BOOLEAN_OPTIONS = [
 ]
 DEFAULT_SIZE = 18
 SECRET_TYPES = [
-        {'Type': 'password', 'Description': 'Simple (xkcd) password string', 'Generable': True},  # noqa
-        {'Type': 'string', 'Description': 'Simple string', 'Generable': False},  # noqa
-        {'Type': 'boolean', 'Description': 'Boolean (\'true\'/\'false\')', 'Generable': False},  # noqa
-        {'Type': 'crypt_6', 'Description': 'crypt() SHA512 (\'$6$\')', 'Generable': True},  # noqa
-        {'Type': 'token_hex', 'Description': 'Hexadecimal token', 'Generable': True},  # noqa
-        {'Type': 'token_urlsafe', 'Description': 'URL-safe token', 'Generable': True},  # noqa
-        {'Type': 'consul_key', 'Description': '16-byte BASE64 token', 'Generable': True},  # noqa
-        {'Type': 'sha1_digest', 'Description': 'DIGEST-SHA1 (user:pass) digest', 'Generable': True},  # noqa
-        {'Type': 'sha256_digest', 'Description': 'DIGEST-SHA256 (user:pass) digest', 'Generable': True},  # noqa
-        {'Type': 'zookeeper_digest', 'Description': 'DIGEST-SHA1 (user:pass) digest', 'Generable': True},  # noqa
-        {'Type': 'uuid4', 'Description': 'UUID4 token', 'Generable': True},  # noqa
-        {'Type': 'random_base64', 'Description': 'Random BASE64 token', 'Generable': True}  # noqa
+        OrderedDict({
+            'Type': 'password',
+            'Description': 'Simple (xkcd) password string',
+            'Generable': True}),
+        OrderedDict({
+            'Type': 'string',
+            'Description': 'Simple string',
+            'Generable': False}),
+        OrderedDict({
+            'Type': 'boolean',
+            'Description': 'Boolean (\'true\'/\'false\')',
+            'Generable': False}),
+        OrderedDict({
+            'Type': 'crypt_6',
+            'Description': 'crypt() SHA512 (\'$6$\')',
+            'Generable': True}),
+        OrderedDict({
+            'Type': 'token_hex',
+            'Description': 'Hexadecimal token',
+            'Generable': True}),
+        OrderedDict({
+            'Type': 'token_urlsafe',
+            'Description': 'URL-safe token',
+            'Generable': True}),
+        OrderedDict({
+            'Type': 'consul_key',
+            'Description': '16-byte BASE64 token',
+            'Generable': True}),
+        OrderedDict({
+            'Type': 'sha1_digest',
+            'Description': 'DIGEST-SHA1 (user:pass) digest',
+            'Generable': True}),
+        OrderedDict({
+            'Type': 'sha256_digest',
+            'Description': 'DIGEST-SHA256 (user:pass) digest',
+            'Generable': True}),
+        OrderedDict({
+            'Type': 'zookeeper_digest',
+            'Description': 'DIGEST-SHA1 (user:pass) digest',
+            'Generable': True}),
+        OrderedDict({
+            'Type': 'uuid4',
+            'Description': 'UUID4 token',
+            'Generable': True}),
+        OrderedDict({
+            'Type': 'random_base64',
+            'Description': 'Random BASE64 token',
+            'Generable': True})
         ]
 SECRET_ATTRIBUTES = [
     'Variable',
@@ -204,12 +241,12 @@ class SecretsEnvironment(object):
         self.env_var_prefix = env_var_prefix
         # Secrets attribute maps; anything else throws exception
         for a in SECRET_ATTRIBUTES:
-            setattr(self, a, dict())
+            setattr(self, a, OrderedDict())
         if source is not None:
             self.clone_from(source)
             self.read_secrets_descriptions()
-        self._secrets = dict()
-        self._descriptions = dict()
+        self._secrets = OrderedDict()
+        self._descriptions = OrderedDict()
 
     def __str__(self):
         """Produce string representation of environment identifier"""
@@ -573,7 +610,7 @@ class SecretsEnvironment(object):
         self.LOG.debug('reading secrets from {}'.format(_fname))
         try:
             with open(_fname, 'r') as f:
-                _secrets = json.load(f)
+                _secrets = json.load(f, object_pairs_hook=OrderedDict)
             for k, v in _secrets.items():
                 self._set_secret(k, v)
         except FileNotFoundError as err:
@@ -587,17 +624,12 @@ class SecretsEnvironment(object):
                 raise err
 
     def write_secrets(self):
-        """Write out the current secrets for use by Ansible,
-        only if any changes were made"""
+        """Write out the current secrets if any changes were made"""
         if self._changed:
             _fname = self.secrets_file_path()
             self.LOG.debug('writing secrets to {}'.format(_fname))
             with open(_fname, 'w') as f:
-                json.dump(self.Variable,
-                          f,
-                          sort_keys=True,
-                          indent=2,
-                          )
+                json.dump(self.Variable, f, indent=2)
                 f.write('\n')
             self._changed = False
             psec.utils.remove_other_perms(_fname)
@@ -630,7 +662,7 @@ class SecretsEnvironment(object):
         :return: dictionary of descriptions
         """
         with open(infile, 'r') as f:
-            data = json.load(f)
+            data = json.load(f, object_pairs_hook=OrderedDict)
         for d in data:
             for k in d.keys():
                 if k not in SECRET_ATTRIBUTES:

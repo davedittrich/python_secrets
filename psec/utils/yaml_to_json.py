@@ -48,12 +48,12 @@ def yaml_to_json(
         with open(yaml_file, 'r') as yf:
             yml = yaml.safe_load(yf)
     if json_file in ['-', None]:
-        json.dump(yml, sys.stdout, sort_keys=True, indent=2)
+        json.dump(yml, sys.stdout, indent=2)
         sys.stdout.write('\n')
         sys.stdout.flush()
     else:
         with open(json_file, 'w') as jf:
-            json.dump(yml, jf, sort_keys=True, indent=2)
+            json.dump(yml, jf, indent=2)
             jf.write('\n')
             jf.flush()
 
