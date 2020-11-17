@@ -3,7 +3,7 @@ load test_helper
 export TEST_PASSWORD="mummy_unbaked_tabby_thespian"
 
 setup() {
-    run $PSEC environments create $D2_ENVIRONMENT --clone-from secrets 1>&2
+    run $PSEC environments create $D2_ENVIRONMENT --clone-from tests/secrets.d 1>&2
 }
 
 teardown() {
@@ -50,7 +50,7 @@ teardown() {
 @test "'psec secrets path' from directory works properly" {
     [ ! -f .python_secrets_environment ]
     run $PSEC secrets path
-    assert_output --partial "/bats/secrets.json"
+    assert_output "${D2_SECRETS_BASEDIR}/${D2_ENVIRONMENT}/secrets.json"
 }
 
 @test "'psec secrets describe --group jenkins' works properly" {

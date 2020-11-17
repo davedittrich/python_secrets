@@ -1,0 +1,67 @@
+[
+  {
+    "Variable": "gosecure_pi_password",
+    "Type": "password",
+    "Prompt": "Password for 'pi' user account"
+  },
+  {
+    "Variable": "gosecure_app_password",
+    "Type": "password",
+    "Prompt": "Password for goSecure web app admin account"
+  },
+  {
+    "Variable": "gosecure_client_psk",
+    "Type": "string",
+    "Prompt": "Pre-shared key for goSecure client WiFi AP"
+  },
+  {
+    "Variable": "gosecure_client_ssid",
+    "Type": "string",
+    "Prompt": "SSID for goSecure client WiFi AP"
+  },
+  {
+    "Variable": "gosecure_vpn_client_id",
+    "Type": "string",
+    "Prompt": "Default VPN client ID"
+  },
+  {
+    "Variable": "gosecure_vpn_client_psk",
+    "Type": "token_hex",
+    "Prompt": "Default VPN client pre-shared key"
+  },
+  {
+    "Variable": "gosecure_pi_pubkey",
+    "Type": "string",
+    "Prompt": "SSH public key for accessing 'pi' account"
+  },
+  {
+    "Variable": "gosecure_pi_locale",
+    "Type": "string",
+    "Prompt": "Locale",
+    "Options": "en_US.UTF-8,*"
+  },
+  {
+    "Variable": "gosecure_pi_timezone",
+    "Type": "string",
+    "Prompt": "Timezone",
+    "Options": "America/Los_Angeles,*"
+  },
+  {
+    "Variable": "gosecure_pi_wifi_country",
+    "Type": "string",
+    "Prompt": "WiFi country code",
+    "Options": "US,*"
+  },
+  {
+    "Variable": "gosecure_pi_keyboard_model",
+    "Type": "string",
+    "Prompt": "Keyboard model",
+    "Options": "pc105,*"
+  },
+  {
+    "Variable": "gosecure_pi_keyboard_layout",
+    "Type": "string",
+    "Prompt": "Keyboard layout",
+    "Options": "us,*"
+  }
+]

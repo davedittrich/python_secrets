@@ -1,22 +1,22 @@
 [
   {
-    "Prompt": "Google OAuth2 username",
+    "Variable": "google_oauth_username",
     "Type": "string",
-    "Variable": "google_oauth_username"
+    "Prompt": "Google OAuth2 username"
   },
   {
-    "Prompt": "Google OAuth2 client id",
+    "Variable": "google_oauth_client_id",
     "Type": "string",
-    "Variable": "google_oauth_client_id"
+    "Prompt": "Google OAuth2 client id"
   },
   {
-    "Prompt": "Google OAuth2 client secret",
+    "Variable": "google_oauth_client_secret",
     "Type": "string",
-    "Variable": "google_oauth_client_secret"
+    "Prompt": "Google OAuth2 client secret"
   },
   {
-    "Prompt": "Google OAuth2 refresh token",
+    "Variable": "google_oauth_refresh_token",
     "Type": "string",
-    "Variable": "google_oauth_refresh_token"
+    "Prompt": "Google OAuth2 refresh token"
   }
 ]

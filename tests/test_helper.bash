@@ -1,7 +1,6 @@
 export OS=$(uname -s)
+source test-environment.bash
 export PYTHONPATH=$(pwd)
-export D2_ENVIRONMENT="bats"
-export D2_SECRETS_BASEDIR="/tmp/.secrets"
 export PSEC="python -m psec.main --debug"
 
 load 'libs/bats-support/load'

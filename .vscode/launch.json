@@ -13,6 +13,10 @@
                 "--debug",
                 "help"
             ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
             "stopOnEntry": true,
             "console": "integratedTerminal"
         },
@@ -26,6 +30,10 @@
                 "-q",
                 "complete"
             ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
             "stopOnEntry": true,
             "console": "integratedTerminal"
         },
@@ -40,6 +48,10 @@
                 "list",
                 "--aliasing"
             ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
             "stopOnEntry": true,
             "console": "integratedTerminal"
         },
@@ -53,6 +65,10 @@
                 "environments",
                 "default"
             ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
             "stopOnEntry": true,
             "console": "integratedTerminal"
         },
@@ -67,11 +83,15 @@
                 "default",
                 "--set"
             ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
             "stopOnEntry": true,
             "console": "integratedTerminal"
         },
         {
-            "name": "psec environments create notanalias",
+            "name": "psec environments create --clone-from secrets.d",
             "type": "python",
             "request": "launch",
             "module": "psec.main",
@@ -79,8 +99,13 @@
                 "--debug",
                 "environments",
                 "create",
-                "notanalias"
+                "--clone-from",
+                "secrets.d"
             ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -97,6 +122,10 @@
                 "alias",
                 "notanalias"
             ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -112,6 +141,10 @@
                 "alias",
                 "renamed_alias"
             ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -128,6 +161,10 @@
                 "--clone-from",
                 "do"
             ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -141,6 +178,10 @@
                 "environments",
                 "delete"
             ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -155,6 +196,10 @@
                 "delete",
                 "aclone"
             ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -171,6 +216,10 @@
                 "--clone-from",
                 "secrets"
             ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -186,6 +235,10 @@
                 "notanalias",
                 "not_an_alias"
             ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
             "stopOnEntry": true,
             "console": "integratedTerminal"
         },
@@ -200,11 +253,33 @@
                 "default",
                 "--set"
             ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
             "stopOnEntry": true,
             "console": "integratedTerminal"
         },
         {
-            "name": "psec -v environments path doesntexist --exists",
+            "name": "psec environments path --tmpdir",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "args": [
+                "--debug",
+                "environments",
+                "path",
+                "--tmpdir"
+            ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
+            "stopOnEntry": true,
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "psec environments path doesntexist --exists",
             "type": "python",
             "request": "launch",
             "module": "psec.main",
@@ -216,6 +291,10 @@
                 "doesntexist",
                 "--exists"
             ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
             "stopOnEntry": true,
             "console": "integratedTerminal"
         },
@@ -229,11 +308,15 @@
                 "environments",
                 "tree"
             ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
             "stopOnEntry": true,
             "console": "integratedTerminal"
         },
         {
-            "name": "psec groups create --clone-from /tmp/gosecure.yml",
+            "name": "psec groups create emptygroup",
             "type": "python",
             "request": "launch",
             "module": "psec.main",
@@ -241,14 +324,17 @@
                 "--debug",
                 "groups",
                 "create",
-                "--clone-from",
-                "/tmp/gosecure.yml"
+                "emptygroup"
             ],
-            "stopOnEntry": true,
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
+            "stopOnEntry": false,
             "console": "integratedTerminal"
         },
         {
-            "name": "psec groups create gosecure --clone-from do",
+            "name": "psec groups create newgroup --clone-from tests/gosecure.json",
             "type": "python",
             "request": "launch",
             "module": "psec.main",
@@ -256,10 +342,34 @@
                 "--debug",
                 "groups",
                 "create",
-                "gosecure",
+                "newgroup",
                 "--clone-from",
-                "do"
+                "tests/gosecure.json"
             ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
+            "stopOnEntry": false,
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "psec groups create newgroup --clone-from tests/gosecure.json",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "args": [
+                "--debug",
+                "groups",
+                "create",
+                "newgroup",
+                "--clone-from",
+                "tests/gosecure.json"
+            ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
             "stopOnEntry": true,
             "console": "integratedTerminal"
         },
@@ -274,53 +384,59 @@
                 "delete",
                 "gosecure"
             ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
             "stopOnEntry": true,
             "console": "integratedTerminal"
         },
         {
-            "name": "psec -e notanalias secrets create newsecret",
+            "name": "psec secrets create newsecret",
             "type": "python",
             "request": "launch",
             "module": "psec.main",
             "args": [
                 "--debug",
-                "-e",
-                "notanalias",
                 "secrets",
                 "create",
                 "newsecret",
                 "--mirror-locally"
             ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
         {
-            "name": "psec -e notanalias secrets create --update newsecret",
+            "name": "psec secrets create --update newsecret",
             "type": "python",
             "request": "launch",
             "module": "psec.main",
             "args": [
                 "--debug",
-                "-e",
-                "notanalias",
                 "secrets",
                 "create",
                 "--update",
                 "newsecret",
                 "--mirror-locally"
             ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
         {
-            "name": "psec -e notanalias secrets delete --group notanalias newsecret",
+            "name": "psec secrets delete --group notanalias newsecret",
             "type": "python",
             "request": "launch",
             "module": "psec.main",
             "args": [
                 "--debug",
-                "-e",
-                "notanalias",
                 "secrets",
                 "delete",
                 "--group",
@@ -328,6 +444,10 @@
                 "newsecret",
                 "--mirror-locally"
             ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -342,6 +462,10 @@
                 "describe",
                 "jenkins_admin_password"
             ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -356,27 +480,33 @@
                 "get",
                 "jenkins_admin_password"
             ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
         {
-            "name": "psec -e vpn secrets set algo_store_pki",
+            "name": "psec secrets set algo_store_pki",
             "type": "python",
             "request": "launch",
             "module": "psec.main",
             "args": [
                 "--debug",
-                "-e",
-                "vpn",
                 "secrets",
                 "set",
                 "algo_store_pki"
             ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
         {
-            "name": "psec secrets set jenkins_admin_password --from-environment do",
+            "name": "psec secrets set jenkins_admin_password --from-environment python_secrets",
             "type": "python",
             "request": "launch",
             "module": "psec.main",
@@ -386,8 +516,12 @@
                 "set",
                 "jenkins_admin_password",
                 "--from-environment",
-                "do"
+                "python_secrets"
             ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -402,11 +536,15 @@
                 "set",
                 "test_url"
             ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
         {
-            "name": "psec secrets set jenkins_admin_password=trident_sysadmin_pass --from-environment do",
+            "name": "psec secrets set jenkins_admin_password=trident_sysadmin_pass --from-environment python_secrets",
             "type": "python",
             "request": "launch",
             "module": "psec.main",
@@ -416,8 +554,12 @@
                 "set",
                 "jenkins_admin_password=trident_sysadmin_pass",
                 "--from-environment",
-                "do"
+                "python_secrets"
             ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -426,15 +568,16 @@
             "type": "python",
             "request": "launch",
             "module": "psec.main",
-            "env": {
-                "D2_ENVIRONMENT": "attack_range_local_test",
-            },
             "args": [
                 "--debug",
                 "secrets",
                 "set",
                 "--from-options"
             ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -449,6 +592,10 @@
                 "show",
                 "--no-redact"
             ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -466,7 +613,8 @@
                 "--no-redact"
             ],
             "env": {
-                "D2_ENVIRONMENT": "attack_range_local"
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
             },
             "stopOnEntry": false,
             "console": "integratedTerminal"
@@ -483,6 +631,10 @@
                 "--max-acrostic-length",
                 "3"
             ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -496,21 +648,27 @@
                 "secrets",
                 "path"
             ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
         {
-            "name": "psec -e other secrets path",
+            "name": "psec secrets path",
             "type": "python",
             "request": "launch",
             "module": "psec.main",
             "args": [
                 "--debug",
-                "-e",
-                "other",
                 "secrets",
                 "path"
             ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -525,6 +683,10 @@
                 "secrets",
                 "backup"
             ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -539,6 +701,10 @@
                 "secrets",
                 "restore"
             ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -553,6 +719,10 @@
                 "run",
                 "printenv"
             ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -568,36 +738,40 @@
                 "add",
                 "console-output.txt"
             ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
         {
-            "name": "psec -e trident_test ssh known-hosts add terraform.log",
+            "name": "psec ssh known-hosts add terraform.log",
             "type": "python",
             "request": "launch",
             "module": "psec.main",
             "args": [
                 "--debug",
-                "-e",
-                "trident_test",
                 "ssh",
                 "known-hosts",
                 "add",
                 "--ask-become-pass",
                 "terraform.log"
             ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
         {
-            "name": "psec -e trident_test ssh known-hosts add --save-to-files terraform.log",
+            "name": "psec ssh known-hosts add --save-to-files terraform.log",
             "type": "python",
             "request": "launch",
             "module": "psec.main",
             "args": [
                 "--debug",
-                "-e",
-                "trident_test",
                 "ssh",
                 "known-hosts",
                 "add",
@@ -605,6 +779,10 @@
                 "--ask-become-pass",
                 "terraform.log"
             ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -620,6 +798,10 @@
                 "remove",
                 "--ask-become-pass"
             ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -636,6 +818,10 @@
                 "--ask-become-pass",
                 "console-output.txt"
             ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -652,6 +838,10 @@
                 "--public-ip",
                 "52.34.168.102"
             ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -668,6 +858,10 @@
                 "--ask-become-pass",
                 "i-036b9d28241dacf68-console-output.txt"
             ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -685,6 +879,10 @@
                 "/tmp/foo",
                 "--ask-become-pass"
             ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -695,8 +893,6 @@
             "module": "psec.main",
             "args": [
                 "--debug",
-                "-e",
-                "trident_test",
                 "ssh",
                 "known-hosts",
                 "extract",
@@ -704,6 +900,10 @@
                 "/tmp/foo",
                 "terraform.log"
             ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -721,6 +921,10 @@
                 "--instance-id",
                 "$(pulumi -C ../ansible-dims-playbooks/deploy/pulumi-aws stack output instance_id)"
             ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -738,6 +942,10 @@
                 "--instance-id",
                 "$(pulumi -C ../ansible-dims-playbooks/deploy/pulumi-aws stack output instance_id)"
             ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -749,12 +957,14 @@
             "args": [
                 "--debug",
                 "-v",
-                "-e",
-                "trident_test",
                 "ssh",
                 "config",
                 "--clean"
             ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -770,6 +980,10 @@
                 "--rebase",
                 "test.cast"
             ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -784,6 +998,10 @@
                 "myip",
                 "--cidr"
             ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -800,6 +1018,10 @@
                 "--method",
                 "amazon_http"
             ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -816,6 +1038,10 @@
                 "--method",
                 "random"
             ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -830,6 +1056,10 @@
                 "myip",
                 "--netblock"
             ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -844,6 +1074,10 @@
                 "myip",
                 "methods"
             ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -857,6 +1091,10 @@
                 "utils",
                 "netblock"
             ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -871,11 +1109,15 @@
                 "netblock",
                 "8.8.8.8"
             ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
         {
-            "name": "psec utils yaml-to-json /tmp/bats1",
+            "name": "psec utils yaml-to-json --convert tests/secrets.d",
             "type": "python",
             "request": "launch",
             "module": "psec.main",
@@ -883,8 +1125,13 @@
                 "--debug",
                 "utils",
                 "yaml-to-json",
-                "/tmp/bats1"
+                "--convert",
+                "tests/secrets.d"
             ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         }

@@ -21,14 +21,14 @@ teardown() {
 
 @test "'psec --umask 0o007 succeeds'" {
     # Needs an environment to work properly.
-    run $PSEC -vvv environments create testenv --clone-from secrets 1>&2
+    run $PSEC -vvv environments create testenv --clone-from tests/secrets.d 1>&2
     run $PSEC -e testenv --umask 0o007 run umask 1>&2
     assert_output "0007"
 }
 
 @test "'psec --umask 0o777 succeeds'" {
     # Needs an environment to work properly.
-    run $PSEC -vvv environments create testenv --clone-from secrets 1>&2
+    run $PSEC -vvv environments create testenv --clone-from tests/secrets.d 1>&2
     run $PSEC -e testenv --umask 0o777 run umask 1>&2
     assert_output "0777"
 }
