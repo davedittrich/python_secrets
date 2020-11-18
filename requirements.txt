@@ -16,6 +16,7 @@ Pygments
 property_manager
 psutil
 requests
+setuptools
 sphinx
 tox
 twine

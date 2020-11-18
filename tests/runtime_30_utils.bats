@@ -1,5 +1,8 @@
 load test_helper
 
+export TEST_FILES_COUNT=$(files_count tests/secrets/secrets.d "*.yml")
+export TEST_DIR=/tmp/$(mktemp bats_XXXXXXXX)
+
 # Ensure cleanup on interrupt
 trap "rm -rf ${TEST_DIR}_{keep,donotkeep}" EXIT INT TERM QUIT
 
@@ -9,8 +12,6 @@ files_count() {
 }
 
 setup_file() {
-    export TEST_FILES_COUNT=$(files_count tests/secrets/secrets.d "*.yml")
-    export TEST_DIR=$(mktemp bats_XXXXXXXX)
     for TEST in keep donotkeep; do
         mkdir -p ${TEST_DIR}_${TEST}
         cp tests/secrets/secrets.d/*.yml ${TEST_DIR}_${TEST}/
@@ -20,6 +21,7 @@ setup_file() {
 teardown_file() {
     rm -rf ${TEST_DIR}_{keep,donotkeep}
 }
+
 
 @test "'psec utils yaml-to-json' from stdin works" {
     run $PSEC utils yaml-to-json < $(echo ${TEST_DIR}_keep/*.yml | cut -d' ' -f1)

@@ -1,6 +1,76 @@
 CHANGES
 =======
 
+* Fix temp directory handling
+* Fix GitHub Actions workflow for proper versioning
+* Fix f-string
+* Fix bug in test
+* Normalize all logger and exception output text
+* Fix bugs and features needed for new commands
+* Ensure JSON fields stay ordered for clarity
+* Refactor utility script up to utils module
+* Finish normalizing group 'create' and 'delete'
+* Revise, extend, and normalize testing with VSCode
+* Move test secrets files down into tests/secrets.d
+* Refactor 'environments' subc's into discrete files
+* Refactor 'groups' subcommands into discrete files
+* Fix secrets tests
+* Allow 'secrets set' to set by default from Options
+* Adjust debug launch configurations
+* Finish 'secrets create'/'delete' w/update, mirror
+* Show by type as well as group
+* Filter on undefined to be like 'secrets show'
+* Fix tests
+* Allow default handling as well as cancel
+* Add is\_generable() function
+* Lower default xkcd password complexity settings
+* Docstring in wrong place
+* Add vscode launch configs for testing new code
+* Ensure JSON files have line end on last line
+* Default secret value to None
+* Fix bugs related to group metadata in environment
+* Remove unecessary code lines
+* Add 'secrets create' and 'secrets delete' commands
+* Normalize quoting and f-string use
+* Debug 'utils yaml-to-json'
+* Normalize 'secrets show' and 'secrets describe'
+* Fix bug that left variables missing after cloning
+* Drop six (we're python3 only)
+* Update docs to reference pipx
+* Normalize and simplify super() calls
+* Rename method in preparation for create/delete
+* Improve help output to help debug module loading
+* Fix JSON files
+* Refactor 'secrets' subcommands
+* Address setup.py deprecation of 'check' option
+* Add python3.9 testing support
+* Switch from .yml to .json format for secrets
+* Use 'python' instead of 'python3'
+* Be more DRY
+* Add debug launch setting
+* ...and "wheel"
+* Also put twine back for build testing
+* Put sphinx back in for building docs
+* Fix missing kwarg
+* Correct removal of "tox" from requirements.txt
+* Expand IP address support in "utils" subcommand
+* Clean up build/test
+* Add new launch rules
+* Remove invalid line
+* Rename workflow file
+* Refine workflow steps
+
+20.8.1
+------
+
+* Bump version
+* Forgot to remove kill switch
+
+20.8.0
+------
+
+* Bump version
+* Commit ChangeLog for upcoming release
 * Fix variable name
 * Correct branch name to match hubflow style
 * Echo branch name
