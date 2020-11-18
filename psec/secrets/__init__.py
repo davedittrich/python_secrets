@@ -222,7 +222,7 @@ class SecretsEnvironment(object):
                 raise RuntimeError(
                     f"[-] directory '{self.secrets_basedir()}' "
                     "does not exist and create_root=False")
-        self._secrets_descriptions = "{os.path.splitext(self._secrets_file)[0]}.d"  # noqa
+        self._secrets_descriptions = f"{os.path.splitext(self._secrets_file)[0]}.d"  # noqa
         self.export_env_vars = export_env_vars
         self.preserve_existing = preserve_existing
         self.saved_default = None
