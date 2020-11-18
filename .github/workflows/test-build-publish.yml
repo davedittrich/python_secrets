@@ -10,12 +10,10 @@ jobs:
     steps:
     - name: Check out src from GitHub
       uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
     - name: Expose branch name
       run: echo Running on branch \"${GITHUB_REF##*/}\"
-    - name: Get history and tags for SCM versioning to work
-      run: |
-        git fetch --prune --unshallow
-        git fetch --depth=1 origin +refs/tags/*:refs/tags/*
     - name: Set up Python 3.8
       uses: actions/setup-python@v2
       with:
