@@ -29,8 +29,7 @@ teardown_file() {
 }
 
 @test "'psec utils yaml-to-json' converts all YAML files in directory" {
-    run bash -c "$PSEC utils yaml-to-json ${TEST_DIR}_keep 2>&1 | grep -c Converting"
-    tree ${TEST_DIR}_keep >&2
+    run bash -c "$PSEC utils yaml-to-json ${TEST_DIR}_keep 2>&1 | grep -c converting"
     assert_output "${TEST_FILES_COUNT}"
 }
 
