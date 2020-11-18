@@ -6,9 +6,9 @@ Install ``psec`` using the ``pip`` module of Python 3.6 (or greater):
 
 .. code-block:: console
 
-   $ python3 -V
-   $ Python 3.6.6
-   $ python3 -m pip install python_secrets
+   $ python -V
+   $ Python 3.9.0
+   $ python -m pip install python_secrets
 
 ..
 

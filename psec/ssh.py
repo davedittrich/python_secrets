@@ -157,7 +157,7 @@ def _write_fingerprints_pubkeys_to_files(hostdict=None,
     """
 
     if hostdict is None:
-        raise RuntimeError('hostdict not specified')
+        raise RuntimeError('[-] hostdict not specified')
     if known_hosts_root is None:
         known_hosts_root = os.getcwd()
     for subdir in ['known_hosts', 'fingerprints']:
@@ -168,8 +168,7 @@ def _write_fingerprints_pubkeys_to_files(hostdict=None,
         else:
             if not os.path.isdir(dir):
                 raise RuntimeError(
-                    '"{}" exists '.format(dir) +
-                    'and is not a directory')
+                    f"[-] '{dir}' exists and is not a directory")
     for host, v in hostdict.items():
         for fingerprint in v['fingerprint']:
             dir = os.path.join(known_hosts_root, 'fingerprints', host)
@@ -224,7 +223,7 @@ def _ansible_set_hostkeys(hostkeys,  # nosec
             " ".join([arg for arg in cmd]))
         ansible.interact()
         if ansible.isalive():
-            raise RuntimeError('Ansible did not exit gracefully.')
+            raise RuntimeError('[-] Ansible did not exit gracefully.')
 
 
 def _ansible_remove_hostkeys(hostkeys,  # nosec
@@ -256,7 +255,7 @@ def _ansible_remove_hostkeys(hostkeys,  # nosec
         # to be thrown. (Am I doing something wrong?)
         time.sleep(3)
         if ansible.isalive():
-            raise RuntimeError('Ansible did not exit gracefully.')
+            raise RuntimeError('[-] Ansible did not exit gracefully.')
 
 
 def _ansible_debug(hostkeys):
@@ -272,7 +271,7 @@ def _ansible_debug(hostkeys):
         withexitstatus=1)
     print(output, file=sys.stdout, flush=True)
     if exitstatus != 0:
-        raise RuntimeError('Ansible error ' +
+        raise RuntimeError('[-] Ansible error ' +
                            '(see stdout and stderr above)')
 
 
@@ -350,7 +349,7 @@ def _write_ssh_configd(ssh_config=None,
     if shortname is None:
         shortname = name
     if name is None:
-        raise RuntimeError('Must specify "name" for file name')
+        raise RuntimeError("[-] must specify 'name' for file name")
     template_vars = dict()
     template_vars['identity_file'] = identity_file
     template_vars['port'] = 22
@@ -360,11 +359,12 @@ def _write_ssh_configd(ssh_config=None,
     template_vars['public_dns'] = public_dns
     for k, v in template_vars.items():
         if v is None or v == '':
-            raise RuntimeError('Variable "{}" must be defined'.format(k))
+            raise RuntimeError(f"[-] variable '{k}' must be defined")
     config_dir_path = ssh_config + '.d'
     if not os.path.exists(config_dir_path):
-        raise RuntimeError('Directory {}'.format(config_dir_path) +
-                           'for update-dotdee does not exist')
+        raise RuntimeError(
+            f"[-] directory '{config_dir_path}' "
+            "for update-dotdee does not exist")
     config_file_path = os.path.join(config_dir_path, name)
     with open(config_file_path, 'w') as f:
         template = Template(SSH_CONFIG_TEMPLATE)
@@ -478,12 +478,12 @@ class PublicKeys(object):
                 # but you'll have docutils N.N which is incompatible.
                 import boto3
             except ModuleNotFoundError:
-                raise RuntimeError("Ensure the boto3 "
+                raise RuntimeError("[-] ensure the 'boto3' "
                                    "package is installed properly")
             self.client = boto3.client('ec2')
         stack_list = self.client.describe_instances().get('Reservations')
         if len(stack_list) == 0:
-            raise RuntimeError("No running instances found")
+            raise RuntimeError("[-] no running instances found")
         if instance_id is None:
             for stack in stack_list:
                 for instance in stack['Instances']:
@@ -518,7 +518,7 @@ class PublicKeys(object):
                 # but you'll have docutils N.N which is incompatible.
                 import boto3
             except ModuleNotFoundError:
-                raise RuntimeError("Ensure the boto3 "
+                raise RuntimeError("[-] ensure the 'boto3' "
                                    "package is installed properly")
             self.client = boto3.client('ec2')
         _ = self.update_instance_description(instance_id=instance_id)
@@ -536,16 +536,17 @@ class PublicKeys(object):
                 self.log.debug('get-console-output: ' +
                                'attempt {} failed'.format(_TRIES - tries_left))
         if tries_left == 0 or response is None:
-            raise RuntimeError('Could not get-console-output ' +
-                               'in {} seconds'.format(_TRIES * _DELAY) +
-                               '\nCheck instance-id or try again.')
+            raise RuntimeError(
+                "[-] could not get-console-output in "
+                f"{_TRIES * _DELAY} seconds: "
+                "check instance-id or try again.")
         self.console_output = response['Output'].splitlines()
         return self.console_output
 
     def process_saved_console_output(self, source=None):
         """Get console output from stdin or file"""
         if source is None:
-            raise RuntimeError('No console-output was found')
+            raise RuntimeError('[-] no console-output was found')
         # Sort out just the console output for instances to
         # then process individually to extract SSH key information.
 
@@ -585,7 +586,7 @@ class PublicKeys(object):
         # TODO(dittrich): Simplify logic here.
 
         if console_output is None:
-            raise RuntimeError('No console output to process')
+            raise RuntimeError('[-] no console output to process')
         in_fingerprints = False
         in_pubkeys = False
         fields = list()
@@ -678,7 +679,7 @@ class PublicKeys(object):
                 keylist.extend(v['hostkey'])
         else:
             if self.public_ip is None or self.public_dns is None:
-                raise RuntimeError('No host IP or name found or specified')
+                raise RuntimeError('[-] no host IP or name found or specified')
             for key in self.hostkey:
                 if self.public_ip is not None:
                     keylist.append("{} {}".format(self.public_ip, key))
@@ -765,11 +766,12 @@ class SSHConfig(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.log.debug('creating SSH configuration snippet(s)')
+        self.log.debug('[*] creating SSH configuration snippet(s)')
         self.app.secrets.requires_environment()
         self.app.secrets.read_secrets_and_descriptions()
         # if parsed_args.public_ip is None or parsed_args.public_dns is None:
-        #     raise RuntimeError('Must specify --public-ip and --public-dns')
+        #     raise RuntimeError(
+        #         '[-] must specify --public-ip and --public-dns')
         # TODO(dittrich): Need to pass key name explicitly...
         # _aws_privatekey_path = \
         #     self.app.secrets.get_secret('aws_privatekey_path')
@@ -786,7 +788,7 @@ class SSHConfig(Command):
         host_info = _parse_known_hosts(root=parsed_args.known_hosts_root)
         private_key_file = self._get_private_key_file()
         if private_key_file is None:
-            raise RuntimeError('No SSH private key specified')
+            raise RuntimeError('[-] no SSH private key specified')
         for host, info in host_info.items():
             snippet = 'psec.{}.{}'.format(self.app.secrets._environment, host)
             if parsed_args.show_config:
@@ -808,8 +810,8 @@ class SSHConfig(Command):
                 print(output, file=sys.stdout, flush=True)
         else:
             print(output, file=sys.stdout, flush=True)
-            raise RuntimeError('update-dotdee error ' +
-                               '(see stdout and stderr above)')
+            raise RuntimeError(
+                '[-] update-dotdee error (see stdout and stderr above)')
 
     def _get_private_key_file(self):
         """HACK to get private key."""
@@ -934,9 +936,9 @@ class SSHKnownHostsAdd(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.log.debug('adding SSH known host keys')
+        self.log.debug('[*] adding SSH known host keys')
         if parsed_args.show_playbook:
-            print('[+] Playbook for managing SSH known_hosts files')
+            print('[+] playbook for managing SSH known_hosts files')
             print(REKEY_PLAYBOOK.decode('utf-8'))
             return True
         self.app.secrets.requires_environment()
@@ -989,7 +991,7 @@ class SSHKnownHostsExtract(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.log.debug('extracting SSH known host keys')
+        self.log.debug('[-] extracting SSH known host keys')
         self.app.secrets.requires_environment()
         self.app.secrets.read_secrets_and_descriptions()
 
@@ -1008,8 +1010,8 @@ class SSHKnownHostsExtract(Command):
             self._extract_keys_pulumi_aws_style(parsed_args)
         else:
             raise RuntimeError(
-                "don't know how to process " +
-                "'{}'".format(parsed_args.source))
+                "[-] don't know how to process " +
+                f"'{parsed_args.source}'")
 
     def _extract_keys_terraform_digitalocean_style(self, parsed_args):
         # TODO(dittrich): The domain is assumed to be defined by do_domain
@@ -1029,15 +1031,17 @@ class SSHKnownHostsExtract(Command):
         # from console output file name. Avoid a conflict.
         if (parsed_args.instance_id is not None and
            not (parsed_args.public_ip is None or parsed_args.public_dns is None)):  # noqa
-            raise RuntimeError('--instance-id cannot be used with ' +
-                               'either --public-ip or --public-dns')
+            raise RuntimeError(
+                "[-] --instance-id cannot be used with "
+                "either --public-ip or --public-dns")
         if parsed_args.source is not None:
             instance_id = get_instance_id_from_source(
                 source=parsed_args.source)
             if parsed_args.instance_id is not None:
                 if parsed_args.instance_id != instance_id:
-                    raise RuntimeError('--instance-id given does not match '
-                                       'name of source console log')
+                    raise RuntimeError(
+                        "[-] --instance-id given does not match "
+                        "name of source console log")
         else:
             instance_id = parsed_args.instance_id
 
@@ -1162,9 +1166,9 @@ class SSHKnownHostsRemove(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.log.debug('removing SSH known host keys')
+        self.log.debug('[*] removing SSH known host keys')
         if parsed_args.show_playbook:
-            print('[+] Playbook for managing SSH known_hosts files')
+            print('[+] playbook for managing SSH known_hosts files')
             print(REKEY_PLAYBOOK.decode('utf-8'))
             return True
         self.app.secrets.requires_environment()
@@ -1184,7 +1188,8 @@ class SSHKnownHostsRemove(Command):
                     ask_become_pass=parsed_args.ask_become_pass,
                     verbose_level=self.app_args.verbose_level)
         else:
-            raise RuntimeError('TODO(dittrich): NOT YET IMPLEMENTED')
+            raise RuntimeError(
+                '[!] TODO(dittrich): NOT YET IMPLEMENTED')
         #
         # TODO(dittrich): Commenting this out until there is time to complete
         #

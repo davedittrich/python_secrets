@@ -46,7 +46,7 @@ class GroupsDelete(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.LOG.debug('deleting group')
+        self.LOG.debug('[*] deleting group')
         self.app.secrets.requires_environment()
         self.app.secrets.read_secrets_descriptions()
         group = parsed_args.group

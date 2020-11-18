@@ -46,7 +46,7 @@ class Template(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.LOG.debug('templating file(s)')
+        self.LOG.debug('[*] templating file(s)')
         if parsed_args.no_env:
             template_vars = dict()
         else:

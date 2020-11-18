@@ -74,7 +74,7 @@ class EnvironmentsDelete(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.LOG.debug('deleting environment')
+        self.LOG.debug('[*] deleting environment')
         choice = None
         if parsed_args.environment is not None:
             choice = parsed_args.environment
@@ -95,7 +95,7 @@ class EnvironmentsDelete(Command):
                          pad_right=5)
             choice = cli.launch()
             if choice == "<CANCEL>":
-                self.LOG.info('cancelled deleting environment')
+                self.LOG.info('[-] cancelled deleting environment')
                 return
 
         # Environment chosen. Now do we need to confirm?
@@ -118,7 +118,7 @@ class EnvironmentsDelete(Command):
                             word_color=colors.foreground["yellow"])
                 confirm = cli.launch()
                 if confirm != choice:
-                    self.LOG.info('cancelled deleting environment')
+                    self.LOG.info('[-] cancelled deleting environment')
                     return
 
         # We have confirmation or --force. Now safe to delete.

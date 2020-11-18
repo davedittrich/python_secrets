@@ -31,7 +31,7 @@ class GroupsPath(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.LOG.debug('returning groups path')
+        self.LOG.debug('[*] returning groups path')
         e = psec.secrets.SecretsEnvironment(
                 environment=parsed_args.environment)
         print(e.descriptions_path())

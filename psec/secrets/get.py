@@ -32,7 +32,7 @@ class SecretsGet(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.LOG.debug('get secret')
+        self.LOG.debug('[*] get secret')
         self.app.secrets.requires_environment()
         self.app.secrets.read_secrets_and_descriptions()
         if parsed_args.secret is not None:

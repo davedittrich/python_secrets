@@ -56,14 +56,14 @@ class TfBackend(Command):
             """.format(tfstate_file=tfstate_file))
 
         if parsed_args.path:
-            self.log.debug('showing terraform state file path')
+            self.log.debug('[+] showing terraform state file path')
             print(tfstate_file)
         else:
-            self.log.debug('setting up terraform backend')
+            self.log.debug('[+] setting up terraform backend')
             if os.path.exists(backend_file):
-                LOG.debug('updating {}'.format(backend_file))
+                LOG.debug(f"[+] updating '{backend_file}'")
             else:
-                LOG.debug('creating {}'.format(backend_file))
+                LOG.debug(f"[+] creating '{backend_file}")
             with open(backend_file, 'w') as f:
                 f.write(backend_text)
 

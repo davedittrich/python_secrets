@@ -39,7 +39,7 @@ class GroupsShow(Lister):
         return parser
 
     def take_action(self, parsed_args):
-        self.LOG.debug('showing secrets in group')
+        self.LOG.debug('[*] showing secrets in group')
         self.app.secrets.requires_environment()
         self.app.secrets.read_secrets_descriptions()
         columns = ('Group', 'Variable')

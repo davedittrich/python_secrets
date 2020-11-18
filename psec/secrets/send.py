@@ -73,7 +73,7 @@ class SecretsSend(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.LOG.debug('send secret(s)')
+        self.LOG.debug('[*] send secret(s)')
         self.app.secrets.requires_environment()
         self.app.secrets.read_secrets_and_descriptions()
         # Attempt to get refresh token first
@@ -83,9 +83,9 @@ class SecretsSend(Command):
                                         allow_none=True)
         if parsed_args.refresh_token:
             orig_refresh_token = self.refresh_token
-            self.LOG.debug('refreshing Google Oauth2 token')
+            self.LOG.debug('[+] refreshing Google Oauth2 token')
         else:
-            self.LOG.debug('sending secrets')
+            self.LOG.debug('[+] sending secrets')
         if parsed_args.smtp_username is not None:
             username = parsed_args.smtp_username
         else:
@@ -133,7 +133,7 @@ class SecretsSend(Command):
                                  recipient,
                                  parsed_args.smtp_subject,
                                  message)
-            self.LOG.info('sent encrypted secrets to {} '.format(recipient))
+            self.LOG.info(f"[+] sent encrypted secrets to {recipient}")
 
 
 # vim: set fileencoding=utf-8 ts=4 sw=4 tw=0 et :

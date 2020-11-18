@@ -107,7 +107,7 @@ def get_myip(method='random'):
         method = random.choice(methods)  # nosec
     elif method not in methods:
         raise RuntimeError(
-            f"Method '{method}' for obtaining IP address is "
+            f"[-] method '{method}' for obtaining IP address is "
             "not implemented")
     func = myip_methods[method].get('func')
     logger.debug(f"[+] determining IP address using '{method}'")
@@ -115,7 +115,7 @@ def get_myip(method='random'):
     ip = str(func(arg=arg))
     if not len(ip) or ip is None:
         raise RuntimeError(
-            f'[-] method {method} failed to get an IP address')
+            f"[-] method '{method}' failed to get an IP address")
     return ip
 
 
@@ -188,7 +188,7 @@ class MyIP(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.log.debug('getting source IP address')
+        self.log.debug('[*] getting source IP address')
         interface = ipaddress.ip_interface(
             get_myip(method=parsed_args.method))
         if parsed_args.cidr:
@@ -256,7 +256,7 @@ class MyIPMethods(Lister):
         return parser
 
     def take_action(self, parsed_args):
-        self.LOG.debug('listing IP address discovery methods')
+        self.LOG.debug('[*] listing IP address discovery methods')
         columns = ('Method', 'Type', 'Source')
         data = []
         methods = (parsed_args.method

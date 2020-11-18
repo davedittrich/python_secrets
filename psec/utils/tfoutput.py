@@ -102,7 +102,7 @@ class TfOutput(Lister):
         return parser
 
     def take_action(self, parsed_args):
-        self.log.debug('getting terraform output')
+        self.log.debug('[*] getting terraform output')
         columns = ('Variable', 'Value')
         data = list()
         tfstate = parsed_args.tfstate
@@ -112,11 +112,9 @@ class TfOutput(Lister):
             if not os.path.exists(tfstate):
                 tfstate = os.path.join(os.getcwd(), base)
             if not os.path.exists(tfstate):
-                raise RuntimeError('No terraform state file specified')
+                raise RuntimeError('[-] no terraform state file specified')
         if not os.path.exists(tfstate):
-            raise RuntimeError('File does not exist: "{}"'.format(
-                tfstate)
-            )
+            raise RuntimeError(f"[-] file does not exist: '{tfstate}'")
         if self.app_args.verbose_level > 1:
             # NOTE(dittrich): Not DRY, but spend time fixing later.
             self.log.info(' '.join(['terraform',

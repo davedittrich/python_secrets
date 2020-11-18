@@ -139,7 +139,8 @@ def redact(string, redact=False):
 def require_options(options, *args):
     missing = [arg for arg in args if getattr(options, arg) is None]
     if missing:
-        raise RuntimeError('Missing options: %s' % ' '.join(missing))
+        raise RuntimeError(
+            f"[-] missing options: {' '.join(missing)}")
     return True
 
 
@@ -149,9 +150,9 @@ def prompt_options_list(options=[],
     """Prompt the user for a string using a list of options."""
     cancel = '<CANCEL>'
     if 'Bullet' not in globals():
-        raise RuntimeError('[-] can\'t use Bullet on Windows')
+        raise RuntimeError("[-] can't use Bullet on Windows")
     if not len(options) or type(options[0]) is not str:
-        raise RuntimeError('a list of options is required')
+        raise RuntimeError('[-] a list of options is required')
     if default is None:
         default = cancel
     else:
@@ -169,7 +170,7 @@ def prompt_options_list(options=[],
                  pad_right=5)
     choice = cli.launch()
     if default == cancel and choice == cancel:
-        logger.info('cancelled selection of choice')
+        logger.info('[-] cancelled selection of choice')
         return None
     return choice
 
@@ -182,7 +183,7 @@ def prompt_options_dict(options=[],
         raise RuntimeError("[-] can't use Bullet on Windows")
     try:
         if type(options[0]) is not dict:
-            raise RuntimeError('options is not a list of dictionaries')
+            raise RuntimeError('[-] options is not a list of dictionaries')
     except Exception as exc:
         print(str(exc))
     choices = ['<CANCEL>'] + [
@@ -201,7 +202,7 @@ def prompt_options_dict(options=[],
                  pad_right=5)
     choice = cli.launch()
     if choice == "<CANCEL>":
-        logger.info('cancelled selection of choice')
+        logger.info('[-] cancelled selection of choice')
         return None
     selected = psec.utils.find(options,
                                'descr' if by_descr else 'ident',
@@ -246,9 +247,9 @@ def default_environment(parsed_args=None):
         try:
             os.remove(env_file)
         except Exception as e:  # noqa
-            logger.info('no default environment was set')
+            logger.info('[-] no default environment was set')
         else:
-            logger.info('default environment unset')
+            logger.info('[-] default environment unset')
     elif parsed_args.set:
         # Set default to specified environment
         default_env = parsed_args.environment
@@ -256,8 +257,7 @@ def default_environment(parsed_args=None):
             default_env = psec.secrets.SecretsEnvironment().environment()
         with open(env_file, 'w') as f:
             f.write(default_env)
-        logger.info('default environment set to "{}"'.format(
-            default_env))
+        logger.info(f"[+] default environment set to '{default_env}'")
 
 
 def safe_delete_file(
@@ -272,7 +272,7 @@ def safe_delete_file(
     if not os.path.isfile(file_name):
         raise RuntimeError(f"[-] '{file_name}' is not a file")
     if verbose:
-        logger.info(f"[+] Removing '{file_name}'")
+        logger.info(f"[+] removing '{file_name}'")
     with open(file_name, 'ba+', buffering=0) as fp:
         length = fp.tell()
     for i in range(passes):

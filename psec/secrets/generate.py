@@ -104,7 +104,7 @@ class SecretsGenerate(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.LOG.debug('generating secrets')
+        self.LOG.debug('[*] generating secrets')
         self.app.secrets.read_secrets_and_descriptions()
         # If no secrets specified, default to all secrets
         to_change = parsed_args.arg \
@@ -113,15 +113,16 @@ class SecretsGenerate(Command):
         for secret in to_change:
             secret_type = self.app.secrets.get_secret_type(secret)
             if secret_type is None:
-                raise TypeError('Secret "{}" '.format(secret) +
-                                'has no type definition')
+                raise TypeError(
+                    f"[-] secret '{secret}' "
+                    "has no type definition")
             arguments = self.app.secrets.get_secret_arguments(secret)
             value = generate_secret(secret_type=secret_type,
                                     *arguments,
                                     **dict(parsed_args._get_kwargs()))
             if value is not None:
-                self.LOG.debug("generated {} for {}".format(secret_type,
-                                                            secret))
+                self.LOG.debug(
+                    f"[+] generated {secret_type} for {secret}")
                 self.app.secrets.set_secret(secret, value)
 
 

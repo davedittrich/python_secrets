@@ -100,7 +100,7 @@ class EnvironmentsPath(Command):
             print(item)
 
     def take_action(self, parsed_args):
-        self.LOG.debug('returning environment path')
+        self.LOG.debug('[*] returning environment path')
         environment = self.app.options.environment
         e = psec.secrets.SecretsEnvironment(environment)
         if parsed_args.tmpdir:
@@ -108,14 +108,15 @@ class EnvironmentsPath(Command):
             tmpdir_mode = 0o700
             try:
                 os.makedirs(tmpdir, tmpdir_mode)
-                self.LOG.info('created tmpdir {}'.format(tmpdir))
+                self.LOG.info(f"[+] created tmpdir {tmpdir}")
             except FileExistsError:
                 mode = os.stat(tmpdir).st_mode
                 current_mode = S_IMODE(mode)
                 if current_mode != tmpdir_mode:
                     os.chmod(tmpdir, tmpdir_mode)
-                    self.LOG.info('changed mode on {} from {} to {}'.format(
-                        tmpdir, oct(current_mode), oct(tmpdir_mode)))
+                    self.LOG.info(
+                        f"[+] changed mode on {tmpdir} "
+                        f"from {oct(current_mode)} to {oct(tmpdir_mode)}")
             finally:
                 self._print(tmpdir, parsed_args.json)
         else:
@@ -127,16 +128,14 @@ class EnvironmentsPath(Command):
                 mode = 0o700
                 os.makedirs(full_path, mode)
                 if self.app_args.verbose_level > 1:
-                    self.LOG.info(f"created {full_path}")
+                    self.LOG.info(f"[+] created {full_path}")
             if parsed_args.exists:
                 # Just check existance and return result
                 exists = os.path.exists(full_path)
                 if self.app_args.verbose_level > 1:
                     status = "exists" if exists else "does not exist"
-                    self.LOG.info('environment path' +
-                                  '"{}" '.format(full_path) +
-                                  '{}'.format(status)
-                                  )
+                    self.LOG.info(
+                        f"[+] environment path '{full_path}' {status}")
                 return 0 if exists else 1
             else:
                 self._print(full_path, parsed_args.json)

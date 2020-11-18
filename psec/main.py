@@ -33,9 +33,10 @@ from cliff.app import App
 from cliff.commandmanager import CommandManager
 
 if sys.version_info < (3, 6, 0):
-    print("The {} program ".format(os.path.basename(sys.argv[0])) +
-          "prequires Python 3.6.0 or newer\n" +
-          "Found Python {}".format(sys.version), file=sys.stderr)
+    print((f"[-] The {os.path.basename(sys.argv[0])} "
+           "prequires Python 3.6.0 or newer\n"
+           f"[-] Found Python {sys.version}"),
+          file=sys.stderr)
     sys.exit(1)
 
 
@@ -214,13 +215,13 @@ class PythonSecretsApp(App):
         return parser
 
     def initialize_app(self, argv):
-        self.LOG.debug('initialize_app')
+        self.LOG.debug('[*] initialize_app')
         if sys.version_info <= (3, 6):
             raise RuntimeError('This program uses the Python "secrets" ' +
                                'module, which requires Python 3.6 or higher')
 
     def prepare_to_run_command(self, cmd):
-        self.LOG.debug('prepare_to_run_command "{0}"'.format(cmd.cmd_name))
+        self.LOG.debug(f"[*] prepare_to_run_command() '{cmd.cmd_name}'")
         #
         # Process ReadTheDocs web browser request here and then
         # fall through, which also produces help output on the
@@ -247,8 +248,7 @@ class PythonSecretsApp(App):
             webbrowser.open(rtd_url, new=0, autoraise=True)
         self.timer.start()
         os.umask(self.options.umask)
-        self.LOG.debug('using environment "{}"'.format(
-            self.options.environment))
+        self.LOG.debug(f"[+] using environment '{self.options.environment}'")
         self.environment = self.options.environment
         self.secrets_basedir = self.options.secrets_basedir
         # Don't output error messages when "complete" command used
@@ -269,11 +269,11 @@ class PythonSecretsApp(App):
                 )
 
     def clean_up(self, cmd, result, err):
-        self.LOG.debug('clean_up command "{0}"'.format(cmd.cmd_name))
+        self.LOG.debug(f"[-] clean_up command '{cmd.cmd_name}'")
         if err:
-            self.LOG.debug('got an error: %s', err)
+            self.LOG.debug(f"[-] got an error: {str(err)}")
             if self.secrets is not None and self.secrets.changed():
-                self.LOG.info('not writing secrets out due to error')
+                self.LOG.info('[-] not writing secrets out due to error')
         elif cmd.cmd_name not in ['help', 'complete']:
             if self.secrets.changed():
                 self.secrets.write_secrets()
@@ -282,7 +282,7 @@ class PythonSecretsApp(App):
                      and cmd.cmd_name != "complete")):
                 self.timer.stop()
                 elapsed = self.timer.elapsed()
-                self.stderr.write('[+] Elapsed time {}\n'.format(elapsed))
+                self.stderr.write('[+] elapsed time {}\n'.format(elapsed))
                 bell()
 
 

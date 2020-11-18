@@ -126,7 +126,7 @@ def natural_number(value):
     ivalue = int(value)
     if ivalue <= 0:
         raise argparse.ArgumentTypeError(
-            "{} is not a positive integer".format(value))
+            f"[-] '{value}' is not a positive integer")
     return ivalue
 
 
@@ -159,7 +159,7 @@ def copydescriptions(src, dst):
         if os.path.isdir(srcname):
             copytree(srcname, dstname)
         else:
-            raise RuntimeError('"{}" is not a directory'.format(srcname))
+            raise RuntimeError(f"[-] '{srcname}' is not a directory")
     except OSError as err:
         errors.append((srcname, dstname, str(err)))
     # catch the Error from the recursive copytree so that we can
@@ -180,8 +180,9 @@ def is_valid_environment(env_path, verbose_level=1):
             contains_expected = True
     is_valid = os.path.exists(env_path) and contains_expected
     if not is_valid and verbose_level > 1:
-        logger.warning('[!] environment directory {} '.format(env_path) +
-                       'exists but is empty')
+        logger.warning(
+            f"[!] environment directory '{env_path}' exists"
+            "but is empty")
     return is_valid
 
 
@@ -219,10 +220,9 @@ class SecretsEnvironment(object):
                 self.secrets_basedir_create()
             else:
                 raise RuntimeError(
-                    'Directory {} '.format(self.secrets_basedir()) +
-                    'does not exist and create_root=False')
-        self._secrets_descriptions = "{}.d".format(
-            os.path.splitext(self._secrets_file)[0])
+                    f"[-] directory '{self.secrets_basedir()}' "
+                    "does not exist and create_root=False")
+        self._secrets_descriptions = "{os.path.splitext(self._secrets_file)[0]}.d"  # noqa
         self.export_env_vars = export_env_vars
         self.preserve_existing = preserve_existing
         self.saved_default = None
@@ -260,9 +260,8 @@ class SecretsEnvironment(object):
         # TODO(dittrich): Is there a Better way to handle perms on Windows?
         fs_type = psec.utils.get_fs_type(basedir)
         if fs_type in ['NTFS', 'FAT', 'FAT32']:
-            msg = ('[-] {0} has file system type "{1}": '
-                   'skipping permissions check').format(
-                       basedir, fs_type)
+            msg = (f"[-] {basedir} has file system type '{fs_type}': "
+                   "skipping permissions check")
             cls.LOG.info(msg)
             return False
         any_other_perms = stat.S_IROTH | stat.S_IWOTH | stat.S_IXOTH
@@ -274,8 +273,7 @@ class SecretsEnvironment(object):
                     perms = st.st_mode & 0o777
                     open_perms = (perms & any_other_perms) != 0
                     if (open_perms and verbose_level >= 1):
-                        print('[!] file {} '.format(path) +
-                              'is mode {}'.format(oct(perms)),
+                        print(f"[!] file '{path}' is mode {oct(perms)}",
                               file=sys.stderr)
                 except OSError:
                     pass
@@ -286,8 +284,10 @@ class SecretsEnvironment(object):
                         perms = st.st_mode & 0o777
                         open_perms = (perms & any_other_perms) != 0
                         if (open_perms and verbose_level >= 1):
-                            print('[!] directory {} '.format(path) +
-                                  'is mode {}'.format(oct(perms)),
+                            print((
+                                    f"[!] directory '{path}' is mode "
+                                    f"{oct(perms)}"
+                                  ),
                                   file=sys.stderr)
                     except OSError:
                         pass
@@ -359,25 +359,27 @@ class SecretsEnvironment(object):
             invalid_host = re.compile('[^{}]'.format(valid_host))
 
             if subdir is None and host is not None:
-                raise RuntimeError('Must specify subdir when specifying host')
+                raise RuntimeError(
+                    '[-] Must specify subdir when specifying host')
 
             if subdir is not None:
                 if subdir.startswith('/'):
-                    raise RuntimeError('subdir may not start with "/"')
+                    raise RuntimeError('[-] subdir may not start with "/"')
                 elif subdir.endswith('/'):
-                    raise RuntimeError('subdir may not end with "/"')
+                    raise RuntimeError('[-] subdir may not end with "/"')
                 if not bool(invalid_subdir.search(subdir)):
                     _path = os.path.join(_path, subdir)
                 else:
-                    raise RuntimeError('Invalid character in subdir: ' +
-                                       'must be in [{}]'.format(valid_subdir))
+                    raise RuntimeError("[-] invalid character in subdir: "
+                                       f"must be in [{valid_subdir}]")
 
             if host is not None:
                 if not bool(invalid_host.search(host)):
                     _path = os.path.join(_path, host)
                 else:
-                    raise RuntimeError('Invalid character in host: ' +
-                                       'must be in [{}]'.format(valid_host))
+                    raise RuntimeError(
+                        "[-] invalid character in host: "
+                        f"must be in [{valid_host}]")
 
         return _path
 
@@ -408,8 +410,8 @@ class SecretsEnvironment(object):
             # existing environment)
             if self.environment_exists():
                 raise RuntimeError(
-                    'Environment "{}" '.format(self.environment()) +
-                    'already exists')
+                    f"[-] environment '{self.environment()}' "
+                    "already exists")
             if source is not None:
                 self.clone_from(source)
             else:
@@ -421,8 +423,8 @@ class SecretsEnvironment(object):
             # an existing environment
             if self.environment_exists():
                 raise RuntimeError(
-                    'Environment "{}" already exists'.format(
-                        self.environment()))
+                    f"[-] environment '{self.environment()}' "
+                    "already exists")
             source_env = SecretsEnvironment(environment=source)
             # Create a symlink with a relative path
             os.symlink(source_env.environment(), env_path)
@@ -475,8 +477,8 @@ class SecretsEnvironment(object):
         """
         if not self.environment_exists(path_only=path_only):
             raise RuntimeError(
-                'environment "{}" '.format(self.environment()) +
-                'does not exist or is empty')
+                f"[-] environment '{self.environment()}' "
+                "does not exist or is empty")
 
     def keys(self):
         """Return the keys to the secrets dictionary"""
@@ -493,10 +495,10 @@ class SecretsEnvironment(object):
         :return: value of secret
         """
         if secret is None:
-            raise RuntimeError('Must specify secret to get')
+            raise RuntimeError('[-] must specify secret to get')
         v = self._secrets.get(secret, None)
         if v is None and not allow_none:
-            raise RuntimeError('{} is not defined'.format(secret))
+            raise RuntimeError(f"[-] '{secret}' is not defined")
         return v
 
     def get_secret_export(self, secret):
@@ -519,9 +521,8 @@ class SecretsEnvironment(object):
         if self.export_env_vars:
             if self.preserve_existing and bool(os.getenv(secret)):
                 raise RuntimeError(
-                    'Refusing to overwrite environment variable "{0}"'.format(
-                        secret)
-                )
+                    "[-] refusing to overwrite environment "
+                    f"variable '{secret}'")
             # Export with secrets name first.
             os.environ[secret] = str(value)
             # See if an alternate environment variable name is
@@ -535,9 +536,8 @@ class SecretsEnvironment(object):
                     _env_var = secret
             if self.preserve_existing and bool(os.getenv(_env_var)):
                 raise RuntimeError(
-                    'Refusing to overwrite environment variable "{0}"'.format(
-                        _env_var)
-                )
+                    "[-] refusing to overwrite environment "
+                    f"variable '{_env_var}'")
             os.environ[_env_var] = str(value)
 
     def set_secret(self, secret, value=None):
@@ -594,9 +594,9 @@ class SecretsEnvironment(object):
                 t = i['Type']
                 if self.get_secret(s, allow_none=True) is None:
                     if self.verbose_level > 1:
-                        self.LOG.warning('new {} '.format(t) +
-                                         'variable "{}" '.format(s) +
-                                         'is not defined')
+                        self.LOG.warning(
+                            f"[!] new {t} variable '{s}' "
+                            "is not defined")
                     self._set_secret(s, None)
 
     def read_secrets(self, from_descriptions=False):
@@ -609,7 +609,7 @@ class SecretsEnvironment(object):
         to ensure these are written out.
         """
         _fname = self.secrets_file_path()
-        self.LOG.debug('reading secrets from {}'.format(_fname))
+        self.LOG.debug(f"[+] reading secrets from '{_fname}'")
         try:
             with open(_fname, 'r') as f:
                 _secrets = json.load(f, object_pairs_hook=OrderedDict)
@@ -630,14 +630,14 @@ class SecretsEnvironment(object):
         """Write out the current secrets if any changes were made"""
         if self._changed:
             _fname = self.secrets_file_path()
-            self.LOG.debug('writing secrets to {}'.format(_fname))
+            self.LOG.debug(f"[+] writing secrets to '{_fname}'")
             with open(_fname, 'w') as f:
                 json.dump(self.Variable, f, indent=2)
                 f.write('\n')
             self._changed = False
             psec.utils.remove_other_perms(_fname)
         else:
-            self.LOG.debug('not writing secrets (unchanged)')
+            self.LOG.debug('[-] not writing secrets (unchanged)')
 
     def clone_from(self, source=None):
         """Clone from existing definition file(s)"""
@@ -687,7 +687,7 @@ class SecretsEnvironment(object):
             for k in d.keys():
                 if k not in SECRET_ATTRIBUTES:
                     raise RuntimeError(
-                        f"Invalid attribute '{k}' in '{infile}'")
+                        f"[-] invalid attribute '{k}' in '{infile}'")
         return data
 
     def write_descriptions(
@@ -723,29 +723,30 @@ class SecretsEnvironment(object):
         for d in data:
             v = d.get('Variable')
             if v in self._secrets:
-                raise RuntimeError('Variable "{}" '.format(v) +
-                                   'duplicates an existing variable')
+                raise RuntimeError(
+                    f"[-] variable '{v}' duplicates an existing variable")
 
     def read_secrets_descriptions(self):
         """Load the descriptions of groups of secrets from a .d directory"""
         groups_dir = self.descriptions_path()
         if not os.path.exists(groups_dir):
-            self.LOG.info('secrets descriptions directory not found')
+            self.LOG.info('[-] secrets descriptions directory not found')
         else:
             # Ignore .order file and any other file extensions
             extensions = ['json']
             file_names = [fn for fn in os.listdir(groups_dir)
                           if any(fn.endswith(ext) for ext in extensions)]
-            self.LOG.debug(f"reading secrets descriptions from {groups_dir}")
+            self.LOG.debug(
+                f"[+] reading secrets descriptions from '{groups_dir}'")
             # Iterate over files in directory, loading them into
             # dictionaries as dictionary keyed on group name.
             if len(file_names) == 0:
-                self.LOG.info('no secrets descriptions files found')
+                self.LOG.info('[-] no secrets descriptions files found')
             for fname in file_names:
                 group = os.path.splitext(fname)[0]
                 if os.path.splitext(group)[1] != "":
                     raise RuntimeError(
-                        f"Group name cannot include '.': {group}")
+                        f"[-] group name cannot include '.': '{group}'")
                 descriptions = self.read_descriptions(group=group)
                 if descriptions is not None:
                     self._descriptions[group] = descriptions
@@ -762,10 +763,10 @@ class SecretsEnvironment(object):
                                 getattr(self, k)[d['Variable']] = v
                             except AttributeError:
                                 raise RuntimeError(
-                                    f"'{k}' is not a valid attribute")
+                                    f"[-] '{k}' is not a valid attribute")
                 else:
                     raise RuntimeError(
-                        f"descriptions for group '{group}' is empty")
+                        f"[-] descriptions for group '{group}' is empty")
 
     def descriptions(self):
         return self._descriptions
@@ -878,8 +879,8 @@ def generate_secret(secret_type=None, *arguments, **kwargs):
     wordfile = kwargs.get('wordfile', None)
 
     if secret_type not in _secret_types:
-        raise TypeError("Secret type " +
-                        "'{}' is not supported".format(secret_type))
+        raise TypeError(
+            f"[-] secret type '{secret_type}' is not supported")
     # The generation functions are memoized, so they can't take keyword
     # arguments. They are instead turned into positional arguments.
     if secret_type == "string":  # nosec

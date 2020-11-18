@@ -32,7 +32,7 @@ class SecretsPath(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.LOG.debug('returning secrets path')
+        self.LOG.debug('[*] returning secrets path')
         e = SecretsEnvironment(environment=parsed_args.environment)
         print(e.secrets_file_path())
 

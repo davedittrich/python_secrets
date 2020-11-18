@@ -44,7 +44,7 @@ class GroupsCreate(Command):
             .. code-block:: console
 
                 $ psec groups create newgroup --clone-from ~/git/goSecure/secrets.d/gosecure.json
-                created new group "newgroup"
+                [+] created new group 'newgroup'
                 $ psec groups list
                 +----------+-------+
                 | Group    | Items |
@@ -64,7 +64,7 @@ class GroupsCreate(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.LOG.debug('creating group')
+        self.LOG.debug('[*] creating group')
         se = self.app.secrets
         # Creating a new group in an empty environment that exists is OK.
         se.requires_environment(path_only=True)

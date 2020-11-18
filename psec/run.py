@@ -41,7 +41,7 @@ class Run(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.LOG.debug('running command')
+        self.LOG.debug('[*] running command')
         cmd = " ".join(
             [
                 shlex.quote(a.encode('unicode-escape').decode())

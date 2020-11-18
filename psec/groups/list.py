@@ -33,7 +33,7 @@ class GroupsList(Lister):
         return parser
 
     def take_action(self, parsed_args):
-        self.LOG.debug('listing secret groups')
+        self.LOG.debug('[*] listing secret groups')
         self.app.secrets.requires_environment()
         self.app.secrets.read_secrets_descriptions()
         items = {}

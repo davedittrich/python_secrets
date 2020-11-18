@@ -44,9 +44,9 @@ class EnvironmentsCreate(Command):
             .. code-block:: console
 
                 $ psec environments create development testing production
-                environment directory /Users/dittrich/.secrets/development created
-                environment directory /Users/dittrich/.secrets/testing created
-                environment directory /Users/dittrich/.secrets/production created
+                [+] environment directory /Users/dittrich/.secrets/development created
+                [+] environment directory /Users/dittrich/.secrets/testing created
+                [+] environment directory /Users/dittrich/.secrets/production created
 
             ..
 
@@ -78,13 +78,13 @@ class EnvironmentsCreate(Command):
                .. code-block:: console
 
                    $ psec environments create test --clone-from ~/git/goSecure/secrets
-                   new password variable "gosecure_app_password" is not defined
-                   new string variable "gosecure_client_ssid" is not defined
-                   new string variable "gosecure_client_ssid" is not defined
-                   new string variable "gosecure_client_psk" is not defined
-                   new password variable "gosecure_pi_password" is not defined
-                   new string variable "gosecure_pi_pubkey" is not defined
-                   environment directory /Users/dittrich/.secrets/test created
+                   [+] new password variable "gosecure_app_password" is not defined
+                   [+] new string variable "gosecure_client_ssid" is not defined
+                   [+] new string variable "gosecure_client_ssid" is not defined
+                   [+] new string variable "gosecure_client_psk" is not defined
+                   [+] new password variable "gosecure_pi_password" is not defined
+                   [+] new string variable "gosecure_pi_pubkey" is not defined
+                   [+] environment directory /Users/dittrich/.secrets/test created
 
                ..
 
@@ -97,20 +97,20 @@ class EnvironmentsCreate(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.LOG.debug('creating environment(s)')
+        self.LOG.debug('[*] creating environment(s)')
         if parsed_args.alias is not None:
             if len(parsed_args.env) != 1:
-                raise RuntimeError('--alias requires one source environment')
+                raise RuntimeError(
+                    '[-] --alias requires one source environment')
             se = psec.secrets.SecretsEnvironment(environment=parsed_args.alias)
             se.environment_create(source=parsed_args.env[0],
                                   alias=True)
             if se.environment_exists():
                 self.LOG.info(
-                    'environment "{}" '.format(parsed_args.alias) +
-                    'aliased to {}'.format(parsed_args.env[0])
-                )
+                    f"[+] environment '{parsed_args.alias}' aliased "
+                    f"to '{parsed_args.env[0]}'")
             else:
-                raise RuntimeError('Failed')
+                raise RuntimeError('[-] creating environment failed')
         else:
             # Default to app environment identifier
             if len(parsed_args.env) == 0:
@@ -119,9 +119,7 @@ class EnvironmentsCreate(Command):
                 se = psec.secrets.SecretsEnvironment(environment=e)
                 se.environment_create(source=parsed_args.clone_from)
                 self.LOG.info(
-                    'environment "{}" '.format(e) +
-                    '({}) created'.format(se.environment_path())
-                )
+                    f"[+] environment '{e}' ({se.environment_path()}) created")
                 if parsed_args.clone_from:
                     se.read_secrets(from_descriptions=True)
                     se.write_secrets()

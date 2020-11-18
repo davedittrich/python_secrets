@@ -91,7 +91,7 @@ class SecretsSet(Command):
             .. code-block:: console
 
                 $ psec secrets set hypriot_client_psk=gosecure_client_psk \\
-                $ hypriot_client_ssid=gosecure_client_ssid \\
+                > hypriot_client_ssid=gosecure_client_ssid \\
                 > --from-environment goSecure
 
             ..
@@ -100,13 +100,13 @@ class SecretsSet(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.LOG.debug('setting secrets')
+        self.LOG.debug('[*] setting secrets')
         if (
             len(parsed_args.arg) == 0
             and not parsed_args.undefined
             and not parsed_args.from_options
         ):
-            raise RuntimeError('no secrets specified to be set')
+            raise RuntimeError('[-] no secrets specified to be set')
         se = self.app.secrets
         se.read_secrets_and_descriptions()
         options = dict(se.Options)
@@ -148,8 +148,9 @@ class SecretsSet(Command):
                 k = arg
                 k_type = self.app.secrets.get_type(k)
                 if k_type is None:
-                    self.LOG.info(f'no description for "{k}"')
-                    raise RuntimeError(f'variable "{k}" has no description')
+                    self.LOG.info(f"[-] no description for '{k}'")
+                    raise RuntimeError(
+                        f"[-] variable '{k}' has no description")
                 if from_env is not None:
                     # Getting value from same var, different environment
                     v = from_env.get_secret(k, allow_none=True)
@@ -176,15 +177,16 @@ class SecretsSet(Command):
                 lhs, rhs = arg.split('=')
                 k_type = self.app.secrets.get_type(lhs)
                 if k_type is None:
-                    self.LOG.info(f'no description for "{lhs}"')
-                    raise RuntimeError(f'variable "{lhs}" has no description')
+                    self.LOG.info(f"[-] no description for '{lhs}'")
+                    raise RuntimeError(
+                        f"[-] variable '{lhs}' has no description")
                 k = lhs
                 if from_env is not None:
                     # Get value from different var in different environment
                     v = from_env.get_secret(rhs, allow_none=True)
                     self.LOG.info(
-                        (f'getting value from "{rhs}" in '
-                         f'environment "{str(from_env)}"'))
+                        f"[+] getting value from '{rhs}' in "
+                        f"environment '{str(from_env)}'")
                 else:
                     # Value was specified in arg
                     v = rhs
@@ -208,9 +210,9 @@ class SecretsSet(Command):
                         v = p.stdout.decode('UTF-8').strip()
             # After all that, did we get a value?
             if v is None:
-                self.LOG.info(f'[-] could not obtain value for "{k}"')
+                self.LOG.info(f"[-] could not obtain value for '{k}'")
             else:
-                self.LOG.debug(f'[+] setting variable "{k}"')
+                self.LOG.debug(f"[+] setting variable '{k}'")
                 self.app.secrets.set_secret(k, v)
 
 

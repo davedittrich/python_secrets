@@ -31,7 +31,7 @@ class SecretsRestore(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.LOG.debug('restore secrets')
+        self.LOG.debug('[*] restore secrets')
         secrets = self.app.secrets
         secrets.requires_environment()
         backups_dir = os.path.join(
@@ -73,7 +73,7 @@ class SecretsRestore(Command):
             env_path = secrets.environment_path()
             for name in names:
                 tf.extract(name, path=env_path)
-        self.LOG.info(f'restored backup {backup_path} to {env_path}')
+        self.LOG.info(f'[+] restored backup {backup_path} to {env_path}')
 
 
 # vim: set fileencoding=utf-8 ts=4 sw=4 tw=0 et :

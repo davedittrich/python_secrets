@@ -67,7 +67,7 @@ class EnvironmentsList(Lister):
         return parser
 
     def take_action(self, parsed_args):
-        self.LOG.debug('listing environment(s)')
+        self.LOG.debug('[*] listing environment(s)')
         secrets_environment = psec.secrets.SecretsEnvironment()
         default_env = default_environment()
         columns = (['Environment', 'Default'])

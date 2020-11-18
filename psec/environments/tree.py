@@ -95,7 +95,7 @@ class EnvironmentsTree(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.LOG.debug('outputting environment tree')
+        self.LOG.debug('[*] outputting environment tree')
         environment = parsed_args.environment
         if environment is None:
             environment = self.app.options.environment

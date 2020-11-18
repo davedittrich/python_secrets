@@ -161,9 +161,15 @@ class GoogleSMTP(object):
         params['grant_type'] = 'authorization_code'
         request_url = self.command_to_url('o/oauth2/token')
         # bandit security check for Issue: [B310:blacklist]
+        # More Info: https://bandit.readthedocs.io/en/latest/blacklists/blacklist_calls.html#b310-urllib-urlopen  # noqa
         if not request_url.startswith('https:'):
-            raise RuntimeError('request_url does not start with "https:" - {}'.format(request_url))  # noqa
-        response = urllib.request.urlopen(request_url, urllib.parse.urlencode(params).encode('UTF-8')).read().decode('UTF-8')  # noqa  # nosec
+            raise RuntimeError(
+                "[-] request_url does not start "
+                f"with 'https:' - {request_url}")
+        response = urllib.request.urlopen(  # nosec
+            request_url,
+            urllib.parse.urlencode(params).encode('UTF-8')
+        ).read().decode('UTF-8')
         return json.loads(response)
 
     def generate_refresh_token(self):
@@ -190,9 +196,15 @@ class GoogleSMTP(object):
         params['grant_type'] = 'refresh_token'
         request_url = self.command_to_url('o/oauth2/token')
         # bandit security check for Issue: [B310:blacklist]
+        # More Info: https://bandit.readthedocs.io/en/latest/blacklists/blacklist_calls.html#b310-urllib-urlopen  # noqa
         if not request_url.startswith('https:'):
-            raise RuntimeError('request_url does not start with "https:" - {}'.format(request_url))  # noqa
-        response = urllib.request.urlopen(request_url, urllib.parse.urlencode(params).encode('UTF-8')).read().decode('UTF-8')  # noqa # nosec
+            raise RuntimeError(
+                "[-] request_url does not start "
+                f"with 'https:' - {request_url}")
+        response = urllib.request.urlopen(  # nosec
+            request_url,
+            urllib.parse.urlencode(params).encode('UTF-8')
+        ).read().decode('UTF-8')
         return json.loads(response)
 
     def generate_oauth2_string(self, base64_encode=False):
@@ -287,12 +299,11 @@ class GoogleSMTP(object):
         # Encrypt message to recipient
         keyid = self.find_keyid(toaddr)
         if not keyid:
-            raise RuntimeError('No GPG key found for {}'.format(toaddr))
+            raise RuntimeError(f"[-] no GPG key found for {toaddr}")
         encrypted_data = self.gpg.encrypt(message, keyid)
         if not encrypted_data.ok:
-            raise RuntimeError('GPG encryption failed: {}'.format(
-                encrypted_data.stderr
-            ))
+            raise RuntimeError(
+                f"[-] GPG encryption failed: {encrypted_data.stderr}")
         encrypted_body = str(encrypted_data)
 
         msg = MIMEMultipart('related')

@@ -36,7 +36,7 @@ class SecretsBackup(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.LOG.debug('backup secrets')
+        self.LOG.debug('[*] backup secrets')
         secrets = self.app.secrets
         secrets.requires_environment()
         backups_dir = os.path.join(
@@ -45,7 +45,7 @@ class SecretsBackup(Command):
         if not os.path.exists(backups_dir):
             os.mkdir(backups_dir, mode=0o700)
         elif not os.path.isdir(backups_dir):
-            raise RuntimeError(f"{backups_dir} is not a directory")
+            raise RuntimeError(f"[-] {backups_dir} is not a directory")
 
         # '2020-03-01T06:11:16.572992+00:00'
         iso8601_string = datetime.datetime.utcnow().replace(
@@ -64,7 +64,7 @@ class SecretsBackup(Command):
                 tf.add(
                     secrets.descriptions_path().replace(env_path, "", 1))
 
-        self.LOG.info(f'created backup {backup_path}')
+        self.LOG.info(f"[+] created backup '{backup_path}'")
 
 
 # vim: set fileencoding=utf-8 ts=4 sw=4 tw=0 et :

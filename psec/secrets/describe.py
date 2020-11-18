@@ -67,7 +67,7 @@ class SecretsDescribe(Lister):
         return parser
 
     def take_action(self, parsed_args):
-        self.LOG.debug('describing secrets')
+        self.LOG.debug('[*] describing secrets')
         if parsed_args.types:
             columns = [k.title() for k in SECRET_TYPES[0].keys()]
             data = [[v for k, v in i.items()] for i in SECRET_TYPES]
@@ -77,7 +77,7 @@ class SecretsDescribe(Lister):
             variables = []
             if parsed_args.args_group:
                 if not len(parsed_args.arg):
-                    raise RuntimeError('No group specified')
+                    raise RuntimeError('[-] no group specified')
                 for g in parsed_args.arg:
                     try:
                         variables.extend([
@@ -86,7 +86,7 @@ class SecretsDescribe(Lister):
                         ])
                     except KeyError as e:
                         raise RuntimeError(
-                            f"Group {str(e)} does not exist"
+                            f"[-] group {str(e)} does not exist"
                         )
             else:
                 variables = parsed_args.arg \

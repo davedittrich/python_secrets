@@ -98,14 +98,14 @@ class SecretsShow(Lister):
         return parser
 
     def take_action(self, parsed_args):
-        self.LOG.debug('showing secrets')
+        self.LOG.debug('[*] showing secrets')
         self.app.secrets.requires_environment()
         self.app.secrets.read_secrets_and_descriptions()
         variables = []
         all_items = [k for k, v in self.app.secrets.items()]
         if parsed_args.args_group:
             if not len(parsed_args.arg):
-                raise RuntimeError('[!] no group(s) specified')
+                raise RuntimeError('[-] no group(s) specified')
             for g in parsed_args.arg:
                 try:
                     variables.extend(
@@ -113,8 +113,8 @@ class SecretsShow(Lister):
                          in self.app.secrets.get_items_from_group(g)]
                     )
                 except KeyError as e:
-                    raise RuntimeError('[!] group {} '.format(str(e)) +
-                                       'does not exist')
+                    raise RuntimeError(
+                        f"[-] group '{str(e)}' does not exist")
         elif parsed_args.args_type:
             if not len(parsed_args.arg):
                 raise RuntimeError('[-] no type(s) specified')
@@ -128,7 +128,7 @@ class SecretsShow(Lister):
                 if v not in all_items:
                     # Validate requested variables exist.
                     raise RuntimeError(
-                        f"[!] '{v}' is not defined in this environment")
+                        f"[-] '{v}' is not defined in this environment")
             variables = parsed_args.arg \
                 if len(parsed_args.arg) > 0 \
                 else [k for k, v in self.app.secrets.items()]
