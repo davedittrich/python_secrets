@@ -175,13 +175,20 @@ class SecretsCreate(Command):
             self.LOG.info(
                 f"[+] environment '{env}' "
                 f"({se.environment_path()}) created")
-        # Does the group exist?
+        if parsed_args.update and len(parsed_args.arg) > 1:
+            # TODO(dittrich): Refactor to loop over parsed_arg.arg
+            # from here (not farther down).
+            raise RuntimeError(
+                "[!] only one variable can be updated at a time")
         se.read_secrets_and_descriptions()
+        groups = se.get_groups()
         group = parsed_args.group
         if group is None:
-            # Default group to same name as environment identifier
-            group = env
-        groups = se.get_groups()
+            if not parsed_args.update:
+                # Default group to same name as environment identifier
+                group = env
+            else:
+                group = se.get_group(parsed_args.arg[0])
         if group not in groups:
             if parsed_args.update:
                 raise RuntimeError(
