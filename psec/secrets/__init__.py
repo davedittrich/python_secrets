@@ -343,7 +343,9 @@ class SecretsEnvironment(object):
 
     def secrets_basedir_create(self, mode=DEFAULT_MODE):
         """Create secrets root directory"""
-        os.mkdir(self.secrets_basedir(), mode=mode)
+        os.makedirs(self.secrets_basedir(),
+                    exist_ok=True,
+                    mode=mode)
 
     def environment_path(self, env=None, subdir=None, host=None):
         """Returns the absolute path to secrets environment directory
