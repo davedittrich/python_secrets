@@ -50,6 +50,17 @@ def get_description(name=None, defaults=None):
                     default=defaults.get('Options'),
                     word_color=colors.foreground["yellow"])
         result = cli.launch()
+        # TODO(dittrich): BUG or ISSUE in waiting.
+        # Items in an Options list can't end in '.*' without
+        # causing confusion with ',*' wildcard feature.
+        # Maybe switch to using '|' for alternaives instead?
+        if '.*' in result:
+            if result == '.*':
+                msg = "[-] '.*' is not valid: did you mean '*'?"
+            else:
+                msg = ("[-] options list items can't have '.*' "
+                       "wildcards: did you mean to end with ',*'?")
+            raise RuntimeError(msg)
         new_description['Options'] = result
     # Environment variable export alternative optional
     prompt = "Environment variable to export: "
