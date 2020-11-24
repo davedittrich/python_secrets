@@ -151,17 +151,22 @@ def copydescriptions(src, dst):
     directory from src to dst.
     """
 
-    srcname = os.path.join(src, 'secrets.d')
-    dstname = os.path.join(dst, 'secrets.d')
-    os.makedirs(dst)
+    if not dst.endswith('.d'):
+        raise RuntimeError(
+            f"[-] destination '{dst}' is not a descriptions "
+            "('.d') directory")
+    # Ensure destination directory exists.
+    os.makedirs(dst, exist_ok=True)
     errors = []
     try:
-        if os.path.isdir(srcname):
-            copytree(srcname, dstname)
+        if src.endswith('.d') and os.path.isdir(src):
+            copytree(src, dst)
         else:
-            raise RuntimeError(f"[-] '{srcname}' is not a directory")
+            raise RuntimeError(
+                f"[-] source '{src}' is not a descriptions "
+                "('.d') directory")
     except OSError as err:
-        errors.append((srcname, dstname, str(err)))
+        errors.append((src, dst, str(err)))
     # catch the Error from the recursive copytree so that we can
     # continue with other files
     except Error as err:
@@ -414,12 +419,11 @@ class SecretsEnvironment(object):
                 raise RuntimeError(
                     f"[-] environment '{self.environment()}' "
                     "already exists")
+            os.makedirs(env_path,
+                        exist_ok=True,
+                        mode=mode)
             if source is not None:
                 self.clone_from(source)
-            else:
-                os.makedirs(env_path,
-                            exist_ok=True,
-                            mode=mode)
         else:
             # Just create an alias (symbolic link) to
             # an existing environment
@@ -641,31 +645,45 @@ class SecretsEnvironment(object):
         else:
             self.LOG.debug('[-] not writing secrets (unchanged)')
 
-    def clone_from(self, source=None):
-        """Clone from existing definition file(s)"""
-        dest = self.descriptions_path(create=True)
-        if source in ['', None]:
+    def clone_from(self, src=None):
+        """
+        Clone from existing definition file(s)
+
+        The source can be (a) a directory full of one or more
+        group descriptions, (b) a single group descriptions file,
+        or (c) an existing environment's descriptions file(s).
+        """
+        if src in ['', None]:
             raise RuntimeError('[-] no source provided')
-        if os.path.isdir(source):
-            if not source.endswith('.d'):
+        if os.path.isdir(src):
+            if not src.endswith('.d'):
                 raise RuntimeError(
                     "[-] refusing to process a directory without "
-                    f"a '.d' extension ('{source}')")
+                    f"a '.d' extension ('{src}')")
+        elif os.path.isfile(src) and not src.endswith('.json'):
+            raise RuntimeError(
+                "[-] refusing to process a file without "
+                f"a '.json' extension ('{src}')")
+        if not (os.path.exists(src) or self.environment_exists(env=src)):
+            raise RuntimeError(
+                f"[-] '{src}' does not exist")
+        dest = self.descriptions_path(create=True)
+        if src.endswith('.d'):
             # Copy anything when cloning from directory.
-            src_files = get_files_from_path(source)
-            for src in src_files:
-                copy(src, dest)
-                psec.utils.remove_other_perms(dest)
+            src_files = get_files_from_path(src)
+            for src_file in src_files:
+                copy(src_file, dest)
+        elif src.endswith('.json'):
+            # Copy just the one file when cloning from a file.
+            copy(src, dest)
         else:
-            if self.environment_exists(env=source):
-                # Only copy descriptions when cloning from environment.
-                copydescriptions(
-                    os.path.join(self.secrets_basedir(), source),
-                    dest
-                )
-            else:
-                raise RuntimeError(
-                    f"[-] could not clone from '{source}'")
+            # Only copy descriptions when cloning from environment.
+            src_env = SecretsEnvironment(environment=src)
+            copydescriptions(
+                src_env.descriptions_path(),
+                dest
+            )
+        psec.utils.remove_other_perms(dest)
         self.read_secrets_descriptions()
         self.find_new_secrets()
 

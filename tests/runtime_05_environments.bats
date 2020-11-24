@@ -22,15 +22,51 @@ teardown() {
     [ -d $D2_SECRETS_BASEDIR/$D2_ENVIRONMENT/configs/sub ]
 }
 
-@test "'psec environments create --clone-from tests' fails" {
-    run $PSEC -vvv environments create --clone-from tests 1>&2
+@test "'psec environments create --clone-from tests/secrets.d' works" {
+    run $PSEC -vvv environments create --clone-from tests/secrets.d 1>&2
+    [ -d $D2_SECRETS_BASEDIR/$D2_ENVIRONMENT/secrets.d ]
+    [ $(ls $D2_SECRETS_BASEDIR/$D2_ENVIRONMENT/secrets.d | wc -l) -gt 1 ]
+    [ $(ls $(psec groups path) | wc -l) -gt 1 ]
+}
+
+@test "'psec environments create --clone-from tests/secrets.d/jenkins.json' works" {
+    run $PSEC -vvv environments create --clone-from tests/secrets.d/jenkins.json 1>&2
+    [ -d $D2_SECRETS_BASEDIR/$D2_ENVIRONMENT/secrets.d ]
+    [ $(ls $D2_SECRETS_BASEDIR/$D2_ENVIRONMENT/secrets.d | wc -l) -eq 1 ]
+}
+
+@test "'psec environments create --clone-from /tmp' fails" {
+    run $PSEC -vvv environments create --clone-from /tmp 1>&2
     assert_failure
     assert_output --partial "refusing to process"
 }
 
-@test "'psec environments create --clone-from tests/secrets.d' creates $D2_SECRETS_BASEDIR/$D2_ENVIRONMENT/secrets.d" {
-    run $PSEC -vvv environments create --clone-from tests/secrets.d 1>&2
-    [ -d $D2_SECRETS_BASEDIR/$D2_ENVIRONMENT/secrets.d ]
+@test "'psec environments create --clone-from nosuchenvironment' fails" {
+    run $PSEC -vvv environments create --clone-from nosuchenvironment 1>&2
+    assert_failure
+    assert_output --partial "does not exist"
+}
+
+@test "'psec environments create --alias alias $D2_ENVIRONMENT' creates link $D2_SECRETS_BASEDIR/alias" {
+    run $PSEC environments create --clone-from tests/secrets.d 1>&2
+    run $PSEC environments create --alias alias $D2_ENVIRONMENT 1>&2
+    [ -L $D2_SECRETS_BASEDIR/alias ]
+}
+
+@test "'psec environments create --alias alias' fails" {
+    run $PSEC environments create --alias alias 1>&2
+    assert_failure
+}
+
+@test "'psec environments create --alias alias environmentthatdoesnotexist' fails" {
+    run $PSEC environments create --alias alias environmentthatdoesnotexist 1>&2
+    assert_failure
+}
+
+@test "'psec environments create --alias alias $D2_ENVIRONMENT anotherarg' fails" {
+    run $PSEC environments create --clone-from tests/secrets.d 1>&2
+    run $PSEC environments create --alias alias $D2_ENVIRONMENT anotherarg 1>&2
+    assert_failure
 }
 
 @test "'psec environments path' works properly" {
@@ -81,33 +117,6 @@ teardown() {
     run $PSEC -vvv environments rename $D2_ENVIRONMENT ${D2_ENVIRONMENT}renamed 1>&2
     [ ! -d $D2_SECRETS_BASEDIR/$D2_ENVIRONMENT/secrets.d ]
     [ -d $D2_SECRETS_BASEDIR/${D2_ENVIRONMENT}renamed/secrets.d ]
-}
-
-@test "'psec environments create --clone-from nosuchsecrets' fails" {
-    run $PSEC environments create --clone-from nosuchsecrets 1>&2
-    assert_failure
-}
-
-@test "'psec environments create --alias alias $D2_ENVIRONMENT' creates link $D2_SECRETS_BASEDIR/alias" {
-    run $PSEC environments create --clone-from tests/secrets.d 1>&2
-    run $PSEC environments create --alias alias $D2_ENVIRONMENT 1>&2
-    [ -L $D2_SECRETS_BASEDIR/alias ]
-}
-
-@test "'psec environments create --alias alias' fails" {
-    run $PSEC environments create --alias alias 1>&2
-    assert_failure
-}
-
-@test "'psec environments create --alias alias environmentthatdoesnotexist' fails" {
-    run $PSEC environments create --alias alias environmentthatdoesnotexist 1>&2
-    assert_failure
-}
-
-@test "'psec environments create --alias alias $D2_ENVIRONMENT anotherarg' fails" {
-    run $PSEC environments create --clone-from tests/secrets.d 1>&2
-    run $PSEC environments create --alias alias $D2_ENVIRONMENT anotherarg 1>&2
-    assert_failure
 }
 
 # vim: set ts=4 sw=4 tw=0 et :
