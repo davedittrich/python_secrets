@@ -97,7 +97,7 @@ class SecretsDescribe(Lister):
                 [
                     (
                         k,
-                        self.app.secrets.get_group(k),
+                        self.app.secrets.get_owning_group(k),
                         self.app.secrets.get_secret_type(k),
                         self.app.secrets.get_prompt(k),
                         self.app.secrets.get_options(k)

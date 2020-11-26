@@ -91,7 +91,7 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "psec environments create --clone-from secrets.d",
+            "name": "psec environments create --clone-from tests/secrets.d",
             "type": "python",
             "request": "launch",
             "module": "psec.main",
@@ -100,7 +100,7 @@
                 "environments",
                 "create",
                 "--clone-from",
-                "secrets.d"
+                "tests/secrets.d"
             ],
             "env": {
                 "D2_ENVIRONMENT": "test",
@@ -389,6 +389,45 @@
                 "D2_SECRETS_BASEDIR": "/tmp/.secrets"
             },
             "stopOnEntry": true,
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "psec groups update --update-from tests/secrets.d",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "args": [
+                "--debug",
+                "groups",
+                "update",
+                "--update-from",
+                "tests/secrets.d"
+            ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
+            "stopOnEntry": false,
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "psec secrets create --group newgroup newsecret",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "args": [
+                "--debug",
+                "secrets",
+                "create",
+                "--group",
+                "newgroup",
+                "newsecret"
+            ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
+            "stopOnEntry": false,
             "console": "integratedTerminal"
         },
         {

@@ -844,16 +844,17 @@ class SecretsEnvironment(object):
             'Variable',
             item) is not None
 
-    def get_group(self, item):
+    def get_owning_group(self, item):
         """Return the group to which an item belongs."""
-        try:
-            return self.Group[item]
-        except (KeyError, AttributeError):
-            return None
+        return self.Group.get(item, None)
 
     def get_groups(self):
         """Get the secrets description groups"""
         return [g for g in self._descriptions]
+
+    def get_group_definitions(self, item):
+        """Return the definitions for a group."""
+        return self._descriptions.get(item, None)
 
 
 class Memoize:

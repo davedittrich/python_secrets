@@ -116,6 +116,7 @@ setup(
             'groups list = psec.groups.list:GroupsList',
             'groups path = psec.groups.path:GroupsPath',
             'groups show = psec.groups.show:GroupsShow',
+            'groups update = psec.groups.update:GroupsUpdate',
             'run = psec.run:Run',
             'secrets backup = psec.secrets.backup:SecretsBackup',
             'secrets create = psec.secrets.create:SecretsCreate',

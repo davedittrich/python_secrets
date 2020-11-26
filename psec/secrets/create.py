@@ -188,7 +188,7 @@ class SecretsCreate(Command):
                 # Default group to same name as environment identifier
                 group = env
             else:
-                group = se.get_group(parsed_args.arg[0])
+                group = se.get_owning_group(parsed_args.arg[0])
         if group not in groups:
             if parsed_args.update:
                 raise RuntimeError(
