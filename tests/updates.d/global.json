@@ -1,0 +1,14 @@
+[
+  {
+    "Variable": "log_path",
+    "Type": "string",
+    "Prompt": "Path for logging file (e.g., attack_range.log)",
+    "Options": "attack_range.log,*"
+  },
+  {
+    "Variable": "log_level",
+    "Type": "string",
+    "Prompt": "Level for logging",
+    "Options": "INFO,ERROR"
+  }
+]

@@ -1,0 +1,13 @@
+[
+  {
+    "Variable": "trident_sysadmin_pass",
+    "Type": "password",
+    "Prompt": "Password for Trident sysadmin account"
+  },
+  {
+    "Variable": "trident_db_pass",
+    "Type": "password",
+    "Options": "trident,*",
+    "Prompt": "Password for Trident postgres database"
+  }
+]

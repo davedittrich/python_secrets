@@ -392,7 +392,7 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "psec groups update --update-from tests/secrets.d",
+            "name": "psec groups update --update-from tests/updates.d",
             "type": "python",
             "request": "launch",
             "module": "psec.main",
@@ -401,7 +401,7 @@
                 "groups",
                 "update",
                 "--update-from",
-                "tests/secrets.d"
+                "tests/updates.d"
             ],
             "env": {
                 "D2_ENVIRONMENT": "test",

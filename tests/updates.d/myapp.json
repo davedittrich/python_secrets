@@ -20,8 +20,7 @@
   {
     "Variable": "myapp_client_ssid",
     "Type": "string",
-    "Prompt": "SSID for myapp client WiFi AP",
-    "Export": "DEMO_client_ssid"
+    "Prompt": "SSID for myapp client WiFi AP"
   },
   {
     "Variable": "myapp_ondemand_wifi",
