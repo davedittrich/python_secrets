@@ -6,13 +6,33 @@ import os
 import psec.secrets
 import textwrap
 
+# TODO(dittrich): https://github.com/Mckinsey666/bullet/issues/2
+# Workaround until bullet has Windows missing 'termios' fix.
+try:
+    from bullet import YesNo
+except ModuleNotFoundError:
+    pass
+
+
 from cliff.command import Command
 from collections import OrderedDict
 from operator import itemgetter
+from prettytable import PrettyTable
 
 
-def compare_descriptions_lists(orig_list=list(), new_list=list()):
+logger = logging.getLogger(__name__)
+
+
+def compare_descriptions_lists(
+    group=None,
+    orig_list=None,
+    new_list=None,
+):
     """Compare two lists of secrets descriptions."""
+    if orig_list is None:
+        raise RuntimeError("new")
+        # confirm_apply_group_changes(group=group,
+        #                             orig_list)
     orig_list = sorted(orig_list, key=itemgetter('Variable'))
     orig_list_as_dict = {i.get('Variable'): i for i in orig_list}
     orig_vars = set(i.get('Variable') for i in orig_list)
@@ -25,18 +45,96 @@ def compare_descriptions_lists(orig_list=list(), new_list=list()):
     removed_vars = orig_vars - new_vars
     common_vars = new_vars & orig_vars
     for v in added_vars:
-        print(f"Variable '{v}' was added'")
+        logger.info(f"[+] variable '{v}' was added'")
     for v in removed_vars:
-        print(f"Variable '{v}' was removed'")
+        logger.info(f"[+] variable '{v}' was removed'")
     for v in common_vars:
-        diff = DictDiffer(orig_list_as_dict.get(v),
-                          new_list_as_dict.get(v))
+        diff = DictDiffer(orig_dict=orig_list_as_dict.get(v),
+                          new_dict=new_list_as_dict.get(v))
         if not diff.different():
-            print(f"Variable '{v}' is described the same")
+            logger.debug(f"[+] variable '{v}' is described the same")
         else:
-            print(f"Variable '{v}' is described differently:")
-            changed = diff.changed()
-            print(changed)
+            logger.info(f"[+] description of '{v}' is different:")
+            differences = [
+                ('changed', list(diff.changed())),
+                ('added', list(diff.added())),
+                ('removed', list(diff.removed()))
+            ]
+            for difference, what in differences:
+                if len(what):
+                    confirm_apply_variable_changes(
+                        variable=v,
+                        difference=difference,
+                        what=what,
+                        orig_attributes=orig_list_as_dict.get(v),
+                        new_attributes=new_list_as_dict.get(v)
+                    )
+                    # client = YesNo("commit this description? ",
+                    #             default='n')
+                    # res = client.launch()
+            # if arg_row is not None:
+            #     descriptions[arg_row] = new_description
+            # else:
+            #     descriptions.append(new_description)
+            #     se.set_secret(arg)
+
+def confirm_apply_group_changes(
+    group=None,
+    difference=None,
+    what=None,
+    orig_list=None,
+    new_list=None
+):
+    """Confirm application of a group descriptions change."""
+    if difference == 'added':
+        for item in new_list:
+            v = item.get('Variable')
+            logger.info(f"[+] new variable '{v}'")
+            table = PrettyTable()
+            table.field_names = ('Attribute', 'Value')
+            table.align = 'l'
+            for k, v in item.items():
+                table.add_row((k, v))
+            print(table)
+    elif difference == 'removed':
+        for item in what:
+            logger.info(
+                f"[+] attribute '{what}' removed from "
+                f"variable '{item}'")
+    elif difference == 'changed':
+        raise RuntimeError('WIP')
+    else:
+        raise RuntimeError('[!] should not get here')
+
+
+def confirm_apply_variable_changes(
+    variable=None,
+    difference=None,
+    what=None,
+    orig_attributes=None,
+    new_attributes=None
+):
+    """Confirm application of change in a variable's description."""
+    if difference == 'added':
+        logger.info(
+            f"[+] new attribute{'' if len(what) == 1 else 's'} "
+            f"'{','.join(what)}'")
+        table = PrettyTable()
+        table.field_names = ('Attribute', 'Value')
+        table.align = 'l'
+        for item in new_attributes:
+            table.add_row((item, new_attributes.get(item)))
+        print(table)
+    elif difference == 'removed':
+        for item in what:
+            logger.info(
+                f"[+] attribute '{item}' removed from "
+                f"variable '{variable}'")
+    elif difference == 'changed':
+        raise RuntimeError('WIP')
+    else:
+        raise RuntimeError('[!] should not get here')
+
 
 
 class DictDiffer(object):
@@ -49,11 +147,15 @@ class DictDiffer(object):
 
     https://code.activestate.com/recipes/576644-diff-two-dictionaries/#c7
     """
-    def __init__(self, current_dict, past_dict):
-        self.current_dict, self.past_dict = current_dict, past_dict
-        self.set_current = set(current_dict.keys())
-        self.set_past = set(past_dict.keys())
-        self.intersect = self.set_current.intersection(self.set_past)
+    def __init__(
+        self,
+        orig_dict=None,
+        new_dict=None
+        ):
+        self.new_dict, self.orig_dict = new_dict, orig_dict
+        self.set_new = set(new_dict.keys())
+        self.set_orig = set(orig_dict.keys())
+        self.intersect = self.set_new.intersection(self.set_orig)
 
     def different(self):
         return (
@@ -63,23 +165,23 @@ class DictDiffer(object):
         )
 
     def added(self):
-        return self.set_current - self.intersect
+        return self.set_new - self.intersect
 
     def removed(self):
-        return self.set_past - self.intersect
+        return self.set_orig - self.intersect
 
     def changed(self):
         return set(
             o for o
             in self.intersect
-            if self.past_dict[o] != self.current_dict[o]
+            if self.orig_dict[o] != self.new_dict[o]
         )
 
     def unchanged(self):
         return set(
             o for o
             in self.intersect
-            if self.past_dict[o] == self.current_dict[o]
+            if self.orig_dict[o] == self.new_dict[o]
         )
 
 
@@ -143,23 +245,32 @@ class GroupsUpdate(Command):
                 new_descriptions = from_se.read_descriptions(
                     infile=update_from)
             elif update_from.endswith('.d'):
+                descriptions_dir = os.path.abspath(update_from)
                 group_files = [
-                    f for f in os.listdir(parsed_args.update_from)
+                    os.path.join(descriptions_dir, f)
+                    for f in os.listdir(parsed_args.update_from)
                     if f.endswith('.json')
                 ]
-                groups = [
-                    os.path.splitext(os.path.basename(f))[0]
-                    for f in group_files
-                ]
-                for group in groups:
+                # groups = [
+                #     os.path.splitext(os.path.basename(f))[0]
+                #     for f in group_files
+                # ]
+                for f in group_files:
+                    group = os.path.splitext(os.path.basename(f))[0]
                     orig_descriptions = se.get_group_definitions(group)
-                    new_descriptions = from_se.read_descriptions(group=group)
-                    new_descriptions[1] = OrderedDict({
-                        'Variable': 'google_plex',
-                        'Type': 'string',
-                        'Prompt': 'How big is it'})
-                    compare_descriptions_lists(orig_list=orig_descriptions,
-                                               new_list=new_descriptions)
+                    new_descriptions = from_se.read_descriptions(infile=f)
+                    if orig_descriptions is None:
+                        self.LOG.info(
+                            f"[+] group '{group}' is new")
+                        confirm_apply_group_changes(
+                            group=group,
+                            difference='added',
+                            orig_list=orig_descriptions,
+                            new_list=new_descriptions)
+                    else:
+                        compare_descriptions_lists(group=group,
+                                                   orig_list=orig_descriptions,
+                                                   new_list=new_descriptions)
             else:
                 raise RuntimeError(
                     "[-] update source must be JSON file or .d directory: "
