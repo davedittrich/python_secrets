@@ -36,6 +36,7 @@ def compare_descriptions_lists(orig_list=list(), new_list=list()):
         else:
             print(f"Variable '{v}' is described differently:")
             changed = diff.changed()
+            print(changed)
 
 
 class DictDiffer(object):
@@ -50,11 +51,16 @@ class DictDiffer(object):
     """
     def __init__(self, current_dict, past_dict):
         self.current_dict, self.past_dict = current_dict, past_dict
-        self.set_current, self.set_past = set(current_dict.keys()), set(past_dict.keys())
+        self.set_current = set(current_dict.keys())
+        self.set_past = set(past_dict.keys())
         self.intersect = self.set_current.intersection(self.set_past)
 
     def different(self):
-        return len(self.added()) or len(self.removed()) or len(self.changed())
+        return (
+            len(self.added()) or
+            len(self.removed()) or
+            len(self.changed())
+        )
 
     def added(self):
         return self.set_current - self.intersect
@@ -63,10 +69,18 @@ class DictDiffer(object):
         return self.set_past - self.intersect
 
     def changed(self):
-        return set(o for o in self.intersect if self.past_dict[o] != self.current_dict[o])
+        return set(
+            o for o
+            in self.intersect
+            if self.past_dict[o] != self.current_dict[o]
+        )
 
     def unchanged(self):
-        return set(o for o in self.intersect if self.past_dict[o] == self.current_dict[o])
+        return set(
+            o for o
+            in self.intersect
+            if self.past_dict[o] == self.current_dict[o]
+        )
 
 
 class GroupsUpdate(Command):
