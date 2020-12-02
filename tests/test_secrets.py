@@ -21,6 +21,7 @@ TESTENV = 'testing'
 SECRETS_SUBDIR = 'tsecrets'
 KEYS_SUBDIR = 'keys'
 
+
 def secrets_dir(env=os.getenv('D2_ENVIRONMENT', None),
                 basedir=os.getenv('D2_SECRETS_BASEDIR', None)):
     if env is not None:
@@ -46,7 +47,7 @@ def keys_dir(secrets_dir=secrets_dir(),
 
 
 def keys_with_host_dir(keys_dir=keys_dir(), host=HOST):
-     return os.path.join(keys_dir, host)
+    return os.path.join(keys_dir, host)
 
 
 class Test_SecretsEnvironment_general(unittest.TestCase):
@@ -57,7 +58,7 @@ class Test_SecretsEnvironment_general(unittest.TestCase):
             for v in ['D2_ENVIRONMENT', 'D2_SECRETS_BASEDIR']:
                 try:
                     del os.environ[v]
-                except KeyError as e:
+                except KeyError as e:  # noqa
                     pass
             self.secrets_env = psec.secrets.SecretsEnvironment()
 
@@ -76,7 +77,7 @@ class Test_SecretsEnvironment_general(unittest.TestCase):
 
     def test_environment_patchtest(self):
         """Sample test patching environment"""
-        self.env = patch.dict('os.environ', {'hello':'world'})
+        self.env = patch.dict('os.environ', {'hello': 'world'})
         with self.env:
             self.assertEqual(os.environ['hello'],
                              'world')
@@ -89,12 +90,15 @@ class Test_SecretsEnvironment_general(unittest.TestCase):
 
     def test_environment_path_subdir_leadingslash(self):
         """Rejects subdirectory with leading slash"""
-        self.assertRaises(RuntimeError, self.secrets_env.environment_path, subdir="/keys")
+        self.assertRaises(RuntimeError,
+                          self.secrets_env.environment_path,
+                          subdir="/keys")
 
     def test_environment_path_subdir_trailingslash(self):
         """Rejects subdirectory with training slash"""
-        self.assertRaises(RuntimeError, self.secrets_env.environment_path, subdir="keys/")
-
+        self.assertRaises(RuntimeError,
+                          self.secrets_env.environment_path,
+                          subdir="keys/")
 
 
 class Test_SecretsEnvironment_no_env_vars(unittest.TestCase):
@@ -108,7 +112,7 @@ class Test_SecretsEnvironment_no_env_vars(unittest.TestCase):
             for v in ['D2_ENVIRONMENT', 'D2_SECRETS_BASEDIR']:
                 try:
                     del os.environ[v]
-                except KeyError as e:
+                except KeyError as e:  # noqa
                     pass
             self.secrets_env = psec.secrets.SecretsEnvironment()
 
@@ -124,12 +128,16 @@ class Test_SecretsEnvironment_no_env_vars(unittest.TestCase):
                          secrets_dir())
 
     def test_environment_path_subdir(self):
-        self.assertEqual(self.secrets_env.environment_path(subdir=self.keys_subdir),
-                         keys_dir())
+        self.assertEqual(
+            self.secrets_env.environment_path(subdir=self.keys_subdir),
+            keys_dir())
 
     def test_environment_path_subdir_host(self):
-        self.assertEqual(self.secrets_env.environment_path(subdir=KEYS_SUBDIR, host=self.host),
-                         keys_with_host_dir(host=self.host))
+        self.assertEqual(
+            self.secrets_env.environment_path(
+                subdir=KEYS_SUBDIR,
+                host=self.host),
+            keys_with_host_dir(host=self.host))
 
 
 class Test_SecretsEnvironment_with_env_vars(unittest.TestCase):
@@ -141,7 +149,8 @@ class Test_SecretsEnvironment_with_env_vars(unittest.TestCase):
         self.envname = TESTENV
         self.basedir = os.path.join(
                 HOME,
-                SECRETS_SUBDIR if sys.platform.startswith('win') else '.' + SECRETS_SUBDIR)
+                SECRETS_SUBDIR if sys.platform.startswith('win')
+                else '.' + SECRETS_SUBDIR)
         self.secrets_env = None
         with patch.dict('os.environ'):
             os.environ['D2_ENVIRONMENT'] = self.envname
@@ -149,8 +158,9 @@ class Test_SecretsEnvironment_with_env_vars(unittest.TestCase):
             self.secrets_dir = secrets_dir(env=self.envname,
                                            basedir=self.basedir)
             self.keys_dir = keys_dir(secrets_dir=self.secrets_dir)
-            self.keys_with_host_dir = keys_with_host_dir(keys_dir=self.keys_dir,
-                                                         host=self.host)
+            self.keys_with_host_dir = keys_with_host_dir(
+                keys_dir=self.keys_dir,
+                host=self.host)
             self.secrets_env = psec.secrets.SecretsEnvironment(
                 environment=self.envname)
 
@@ -170,8 +180,9 @@ class Test_SecretsEnvironment_with_env_vars(unittest.TestCase):
                          self.keys_dir)
 
     def test_environment_path_subdir_host(self):
-        self.assertEqual(self.secrets_env.environment_path(subdir=KEYS_SUBDIR, host=HOST),
-                         self.keys_with_host_dir)
+        self.assertEqual(
+            self.secrets_env.environment_path(subdir=KEYS_SUBDIR, host=HOST),
+            self.keys_with_host_dir)
 
 
 class Test_SecretsEnvironment_args(unittest.TestCase):
@@ -183,19 +194,21 @@ class Test_SecretsEnvironment_args(unittest.TestCase):
         self.envname = TESTENV
         self.basedir = os.path.join(
                 HOME,
-                SECRETS_SUBDIR if sys.platform.startswith('win') else '.' + SECRETS_SUBDIR)
+                SECRETS_SUBDIR if sys.platform.startswith('win')
+                else '.' + SECRETS_SUBDIR)
         self.secrets_env = None
         with patch.dict('os.environ'):
             for v in ['D2_ENVIRONMENT', 'D2_SECRETS_BASEDIR']:
                 try:
                     del os.environ[v]
-                except KeyError as e:
+                except KeyError as e:  # noqa
                     pass
             self.secrets_dir = secrets_dir(env=self.envname,
                                            basedir=self.basedir)
             self.keys_dir = keys_dir(secrets_dir=self.secrets_dir)
-            self.keys_with_host_dir = keys_with_host_dir(keys_dir=self.keys_dir,
-                                                         host=self.host)
+            self.keys_with_host_dir = keys_with_host_dir(
+                keys_dir=self.keys_dir,
+                host=self.host)
             self.secrets_env = psec.secrets.SecretsEnvironment(
                 environment=self.envname,
                 secrets_basedir=self.basedir
@@ -213,14 +226,18 @@ class Test_SecretsEnvironment_args(unittest.TestCase):
                          self.secrets_dir)
 
     def test_environment_path_subdir(self):
-        self.assertEqual(self.secrets_env.environment_path(subdir=self.keys_subdir),
-                         self.keys_dir)
+        self.assertEqual(
+            self.secrets_env.environment_path(subdir=self.keys_subdir),
+            self.keys_dir)
 
     def test_environment_path_subdir_host(self):
-        self.assertEqual(self.secrets_env.environment_path(subdir=KEYS_SUBDIR, host=self.host),
-                         self.keys_with_host_dir)
+        self.assertEqual(
+            self.secrets_env.environment_path(subdir=KEYS_SUBDIR,
+                                              host=self.host),
+            self.keys_with_host_dir)
 
 
 if __name__ == '__main__':
-    import sys
     sys.exit(unittest.main())
+
+# vim: set fileencoding=utf-8 ts=4 sw=4 tw=0 et :
