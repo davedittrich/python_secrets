@@ -1,0 +1,4 @@
+tox-conda
+pip
+setuptools
+pytest
