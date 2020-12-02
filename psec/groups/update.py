@@ -15,7 +15,7 @@ except ModuleNotFoundError:
 
 
 from cliff.command import Command
-from collections import OrderedDict
+# from collections import OrderedDict
 from operator import itemgetter
 from prettytable import PrettyTable
 
@@ -69,14 +69,16 @@ def compare_descriptions_lists(
                         orig_attributes=orig_list_as_dict.get(v),
                         new_attributes=new_list_as_dict.get(v)
                     )
-                    # client = YesNo("commit this description? ",
-                    #             default='n')
-                    # res = client.launch()
+                    client = YesNo("commit this description? ",
+                                   default='n')
+                    res = client.launch()
+                    logger.info(f"[!] result is {res}")
             # if arg_row is not None:
             #     descriptions[arg_row] = new_description
             # else:
             #     descriptions.append(new_description)
             #     se.set_secret(arg)
+
 
 def confirm_apply_group_changes(
     group=None,
@@ -136,7 +138,6 @@ def confirm_apply_variable_changes(
         raise RuntimeError('[!] should not get here')
 
 
-
 class DictDiffer(object):
     """
     Calculate the difference between two dictionaries as:
@@ -151,7 +152,7 @@ class DictDiffer(object):
         self,
         orig_dict=None,
         new_dict=None
-        ):
+    ):
         self.new_dict, self.orig_dict = new_dict, orig_dict
         self.set_new = set(new_dict.keys())
         self.set_orig = set(orig_dict.keys())
