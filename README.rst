@@ -28,24 +28,35 @@ Features
 
 * Supports a "drop-in" model for defining variables in a modular manner
   (something like the `python-update-dotdee`_ program), supporting simplified
-  bulk setting or generating variables as needed.
+  bulk setting or generating values of variables as needed.
 
-* Like `python-update-dotdee`_, produces a single master ``.yml`` file for
-  use by programs like Ansible (e.g.
-  ``ansible-playbook playbook.yml -e @"$(psec secrets path)"``)
+* Like `python-update-dotdee`_, `psec` produces a single master
+  ``.json`` file to hold variables defined by the drop-in group
+  description files. That means you can use that file directly
+  to set variables to be used from within other programs like
+  Ansible (e.g.  ``ansible-playbook playbook.yml -e @"$(psec secrets path)"``)
 
 * Support multiple simultaneous sets of secrets (environments) for
   flexibility and scalability in multi-environment deployments and to
   support different use cases or different combinations of secrets.
 
+* Supports changing the storage location of secrets and variables to
+  allow them to be stored on secure mobile media (such as self-encrypting
+  external SSD or Flash drives) or encrypted disk images mounted at
+  run-time to ensure the confidentiality of data at rest.
+
 * List the groups of variables (and how many secrets in each group).
 
-* Describe secrets by their variable name, type (e.g., ``password``, ``uuid4``,
-  ``random_base64``) and an optional description that will be used
-  to prompt for values when setting ``string`` variables.
+* Describe secrets by their variable name and type (e.g., ``password``,
+  ``uuid4``, ``random_base64``). You can also include a descriptive
+  string to prompt the user for a value, a list of options to choose
+  from (or ``*`` for "any value the user enters"), and a list of
+  environment variables to export for other programs to use at
+  run time.
 
-* Allow manual entry of values, or automatic generation of secrets
-  according to their type.
+* Allows manual entry of values, setting non-secret variables from
+  a default value, or automatic generation of secrets according to
+  their type.
 
 * Manually set ``string`` variables based on the output of simple
   commands. This allows interfacing with external programs for
@@ -349,14 +360,14 @@ output similar to the Unix ``tree`` command:
     │           ├── 201802.private
     │           └── 201802.txt
     ├── secrets.d
-    │   ├── ca.yml
-    │   ├── consul.yml
-    │   ├── jenkins.yml
-    │   ├── rabbitmq.yml
-    │   ├── trident.yml
-    │   ├── vncserver.yml
-    │   └── zookeper.yml
-    ├── secrets.yml
+    │   ├── ca.json
+    │   ├── consul.json
+    │   ├── jenkins.json
+    │   ├── rabbitmq.json
+    │   ├── trident.json
+    │   ├── vncserver.json
+    │   └── zookeper.json
+    ├── secrets.json
     └── vault_password.txt
 
 ..
@@ -383,13 +394,13 @@ Secrets and group descriptions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The environment directories just created are all empty. Secrets are stored in a
-YML file (``.yml``) within the environment's directory, and group descriptions
+JSON file (``.json``) within the environment's directory, and group descriptions
 are stored in a drop-in directory with the same base name, but with an
-extention of ``.d`` instead of ``.yml`` (following the Linux drop-in
+extention of ``.d`` instead of ``.json`` (following the Linux drop-in
 configuration style directories used by programs like ``rsyslog``, ``dnsmasq``,
 etc.)
 
-The default secrets file name is ``secrets.yml``, which means the default
+The default secrets file name is ``secrets.json``, which means the default
 descriptions directory would be named ``secrets.d``.
 
 You can define environment variables to point to the root directory
@@ -428,19 +439,19 @@ file.
 
     .
     ├── secrets.d
-    │   ├── ca.yml
-    │   ├── consul.yml
-    │   ├── jenkins.yml
-    │   ├── rabbitmq.yml
-    │   ├── trident.yml
-    │   ├── vncserver.yml
-    │   └── zookeper.yml
-    └── secrets.yml
+    │   ├── ca.json
+    │   ├── consul.json
+    │   ├── jenkins.json
+    │   ├── rabbitmq.json
+    │   ├── trident.json
+    │   ├── vncserver.json
+    │   └── zookeper.json
+    └── secrets.json
 
 ..
 
 You can see one of the descriptions files from the template
-in this repository using ``cat secrets/secrets.d/myapp.yml``:
+in this repository using ``cat tests/secrets.d/myapp.json``:
 
 .. code-block:: yaml
 
@@ -522,7 +533,7 @@ to manage its own values.
 
 .. code-block:: console
 
-    $ psec groups create newgroup --clone-from ~/git/goSecure/secrets/secrets.d/gosecure.yml
+    $ psec groups create newgroup --clone-from ~/git/goSecure/secrets/secrets.d/gosecure.json
     created new group "newgroup"
     $ psec groups list 2>/dev/null
     +----------+-------+
@@ -1237,16 +1248,16 @@ Outputting structured information for use in other scripts
 
 Once secrets are created and stored, they will eventually need to be accessed
 in order to use them in program execution.  This can be done by passing the
-``.yml`` secrets file itself to a program, or by outputting the variables in
+``.json`` secrets file itself to a program, or by outputting the variables in
 other formats like CSV, JSON, or as environment type variables.
 
 Passing the secrets file by path
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 One way to do this is to take advantage of command line options like
-`Ansible`_'s ``--extra-vars`` and passing it a path to the ``.yml`` secrets
-file.  (See `Passing Variables On The Command Line`_). You can do that like
-this.
+`Ansible`_'s ``--extra-vars`` and passing it a path to the ``.json`` secrets
+file.  (See `Passing Variables On The Command Line`_). Here is how to do
+it.
 
 Let's assume we want to use ``consul_key`` variable to configure Consul
 using Ansible. Here is the variable as stored:
@@ -1282,7 +1293,7 @@ pre-defined inventory files, we need to pass a file path to the
 .. code-block:: console
 
     $ psec secrets path
-    /Users/dittrich/.secrets/python_secrets/secrets.yml
+    /Users/dittrich/.secrets/python_secrets/secrets.json
 
 ..
 
