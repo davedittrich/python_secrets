@@ -653,6 +653,7 @@ class SecretsEnvironment(object):
         group descriptions, (b) a single group descriptions file,
         or (c) an existing environment's descriptions file(s).
         """
+        src = src.strip('/')
         if src in ['', None]:
             raise RuntimeError('[-] no source provided')
         if os.path.isdir(src):

@@ -98,6 +98,12 @@ teardown() {
     [ ! -d $D2_SECRETS_BASEDIR/testenv ]
 }
 
+@test "'psec environments list' with no environments fails" {
+    run $PSEC environments list
+    assert_failure
+    assert_output ''
+}
+
 @test "'psec environments list' does not show aliases" {
     run $PSEC environments create --clone-from tests/secrets.d 1>&2
     run $PSEC environments create --alias alias $D2_ENVIRONMENT 1>&2
