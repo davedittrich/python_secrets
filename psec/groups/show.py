@@ -3,6 +3,7 @@
 import argparse
 import logging
 import textwrap
+import sys
 
 from cliff.lister import Lister
 
@@ -47,6 +48,8 @@ class GroupsShow(Lister):
         for group in parsed_args.group:
             for item in self.app.secrets.get_items_from_group(group):
                 data.append((group, item))
+        if not len(data):
+            sys.exit(1)
         return columns, data
 
 
