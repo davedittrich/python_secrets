@@ -6,6 +6,7 @@ import os
 import psec.secrets
 import psec.utils
 import textwrap
+import sys
 
 from . import default_environment
 from . import _is_default
@@ -90,6 +91,8 @@ class EnvironmentsList(Lister):
                         alias_for = ''
                     item = (e, default, alias_for)
                 data.append(item)
+        if not len(data):
+            sys.exit(1)
         return columns, data
 
 
