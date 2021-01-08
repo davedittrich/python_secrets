@@ -50,7 +50,7 @@ class SecretsBackup(Command):
         # '2020-03-01T06:11:16.572992+00:00'
         iso8601_string = datetime.datetime.utcnow().replace(
                 tzinfo=datetime.timezone.utc).isoformat().replace(":", "")
-        backup_name = f"{secrets.environment()}_{iso8601_string}.tgz"
+        backup_name = f"{secrets.environment}_{iso8601_string}.tgz"
         backup_path = os.path.join(backups_dir, backup_name)
 
         # Change directory to allow relative paths in tar file,

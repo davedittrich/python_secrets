@@ -123,6 +123,16 @@ logger = logging.getLogger(__name__)
 
 
 def natural_number(value):
+    """
+    Tests for a natural number.
+
+    Args:
+      value: The value to test
+
+    Returns:
+      A boolean indicating whether the value is a natural number or not.
+    """
+
     ivalue = int(value)
     if ivalue <= 0:
         raise argparse.ArgumentTypeError(
@@ -177,8 +187,18 @@ def copydescriptions(src, dst):
 
 
 def is_valid_environment(env_path, verbose_level=1):
-    """Check to see if this looks like a valid environment
-    directory based on contents."""
+    """
+    Check to see if this looks like a valid environment directory based on contents.
+
+    Args:
+      env_path: Path to candidate directory to test.
+      verbose_level: Verbosity level (pass from app args)
+
+    Returns:
+      A boolean indicating whether the directory appears to be a valid
+      environment directory or not based on contents including a
+      'secrets.json' file or a 'secrets.d' directory.
+    """
     contains_expected = False
     for root, directories, filenames in os.walk(env_path):
         if 'secrets.json' in filenames or 'secrets.d' in directories:
@@ -192,7 +212,30 @@ def is_valid_environment(env_path, verbose_level=1):
 
 
 class SecretsEnvironment(object):
-    """Class for handling secrets environment metadata."""
+    """
+    Class for handling secrets environment metadata.
+
+    Provides an interface to the directory contents for a secrets
+    environment, including groups descriptions, a tmp/ directory,
+    and any other required directories.
+
+      Typical usage example::
+
+          se = SecretsEnvironment(environment='env_name')
+
+
+    Attributes:
+        environment: Name of the environment.
+        secrets_basedir: Base directory path to environment's storage.
+        secrets_file: File name for storing secrets (defaults to 'secrets.json').
+        create_root: Controls whether the root directory is created on first use.
+        defer_loading: Don't load values (just initialize attributes).
+        export_env_vars: Export all variables to the environment.
+        preserve_existing: Don't over-write existing environment variables.
+        env_var_prefix: Prefix to apply to all exported environment variables.
+        source: Directory path from which to clone a new environment.
+        verbose_level: Verbosity level (pass from app args).
+    """  # noqa
 
     LOG = logging.getLogger(__name__)
 
@@ -207,17 +250,15 @@ class SecretsEnvironment(object):
                  preserve_existing=False,
                  env_var_prefix=None,
                  source=None,
-                 verbose_level=1,
-                 cwd=os.getcwd()):
+                 verbose_level=1):
         self._changed = False
-        self._cwd = cwd
         if environment is not None:
             self._environment = environment
         else:
             self._environment = psec.environments.default_environment()
         self._secrets_file = secrets_file
         self._secrets_basedir = secrets_basedir
-        self.verbose_level = verbose_level
+        self._verbose_level = verbose_level
         # Ensure root directory exists in which to create secrets
         # environments?
         if not self.secrets_basedir_exists():
@@ -230,7 +271,6 @@ class SecretsEnvironment(object):
         self._secrets_descriptions = f"{os.path.splitext(self._secrets_file)[0]}.d"  # noqa
         self.export_env_vars = export_env_vars
         self.preserve_existing = preserve_existing
-        self.saved_default = None
 
         # When exporting environment variables, include one that specifies the
         # environment from which these variables were derived. This also works
@@ -241,7 +281,7 @@ class SecretsEnvironment(object):
         # proper environment.)
 
         if self.export_env_vars is True:
-            os.environ['PYTHON_SECRETS_ENVIRONMENT'] = self.environment()
+            os.environ['PYTHON_SECRETS_ENVIRONMENT'] = self._environment
 
         self.env_var_prefix = env_var_prefix
         # Secrets attribute maps; anything else throws exception
@@ -255,7 +295,20 @@ class SecretsEnvironment(object):
 
     def __str__(self):
         """Produce string representation of environment identifier"""
-        return str(self.environment())
+        return str(self._environment)
+
+    def environment(self):
+        """Returns the environment identifier."""
+        return self._environment
+
+    @property
+    def verbose_level(self):
+        """Returns the verbosity level."""
+        return self._verbose_level
+
+    def changed(self):
+        """Return boolean reflecting changed secrets."""
+        return self._changed
 
     @classmethod
     def permissions_check(cls, basedir='.', verbose_level=0):
@@ -297,14 +350,10 @@ class SecretsEnvironment(object):
                     except OSError:
                         pass
 
-    def environment(self):
-        """Returns the environment identifier."""
-        return self._environment
-
     # TODO(dittrich): FIX Cere call
     def secrets_descriptions_dir(self):
         """Return the path to the drop-in secrets description directory"""
-        _env = self.environment()
+        _env = self._environment
         if not _env:
             return self.secrets_basedir()
         else:
@@ -314,10 +363,6 @@ class SecretsEnvironment(object):
     def secrets_basename(self):
         """Return the basename of the current secrets file"""
         return os.path.basename(self._secrets_file)
-
-    # def secrets_basedir(self):
-    #     """Return the basedir of the current secrets file"""
-    #     return os.path.dirname(self._secrets_file)
 
     def secrets_basedir(self, init=False):
         """
@@ -356,7 +401,7 @@ class SecretsEnvironment(object):
         """Returns the absolute path to secrets environment directory
         or subdirectories within it"""
         if env is None:
-            env = self.environment()
+            env = self._environment
         _path = os.path.join(self.secrets_basedir(), env)
 
         if not (subdir is None and host is None):
@@ -417,7 +462,7 @@ class SecretsEnvironment(object):
             # existing environment)
             if self.environment_exists():
                 raise RuntimeError(
-                    f"[-] environment '{self.environment()}' "
+                    f"[-] environment '{self._environment}' "
                     "already exists")
             os.makedirs(env_path,
                         exist_ok=True,
@@ -429,7 +474,7 @@ class SecretsEnvironment(object):
             # an existing environment
             if self.environment_exists():
                 raise RuntimeError(
-                    f"[-] environment '{self.environment()}' "
+                    f"[-] environment '{self._environment}' "
                     "already exists")
             source_env = SecretsEnvironment(environment=source)
             # Create a symlink with a relative path
@@ -438,13 +483,10 @@ class SecretsEnvironment(object):
     def secrets_file_path(self, env=None):
         """Returns the absolute path to secrets file"""
         if env is None:
-            env = self.environment()
-        if self.environment() is None:
-            return os.path.join(self.secrets_basedir(), self._secrets_file)
-        else:
-            return os.path.join(self.secrets_basedir(),
-                                self.environment(),
-                                self._secrets_file)
+            env = self._environment
+        return os.path.join(self.secrets_basedir(),
+                            env,
+                            self._secrets_file)
 
     def secrets_file_path_exists(self):
         """Return whether secrets file exists"""
@@ -483,7 +525,7 @@ class SecretsEnvironment(object):
         """
         if not self.environment_exists(path_only=path_only):
             raise RuntimeError(
-                f"[-] environment '{self.environment()}' "
+                f"[-] environment '{self._environment}' "
                 "does not exist or is empty")
 
     def keys(self):
@@ -573,10 +615,6 @@ class SecretsEnvironment(object):
     def get_type(self, variable):
         """Return type for variable or None if no description"""
         return self.Type.get(variable, None)
-
-    def changed(self):
-        """Return boolean reflecting changed secrets."""
-        return self._changed
 
     def read_secrets_and_descriptions(self):
         """Read secrets descriptions and secrets."""
@@ -1006,7 +1044,10 @@ def generate_token_urlsafe(unique=False, nbytes=16):
 
 @Memoize
 def generate_consul_key(unique=False):
-    """Generate a consul key per the following description:
+    """
+    Generate a consul key.
+
+    Key generated per the following description:
     https://github.com/hashicorp/consul/blob/b3292d13fb8bbc8b14b2a1e2bbae29c6e105b8f4/command/keygen/keygen.go
     """  # noqa
     keybytes = np_random_bytes(16)

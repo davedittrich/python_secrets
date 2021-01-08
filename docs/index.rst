@@ -21,6 +21,7 @@ Contents:
    installation
    usage
    advanced
+   reference
    contributing
    authors
    history

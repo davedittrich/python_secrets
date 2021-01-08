@@ -75,7 +75,7 @@ bdist_wheel:
 
 #HELP sdist - build a source package
 .PHONY: sdist
-sdist: docs
+sdist: clean-docs docs
 	rm -f dist/.LATEST_SDIST
 	python setup.py sdist
 	ls -t dist/*.tar.gz 2>/dev/null | head -n 1 > dist/.LATEST_SDIST
@@ -88,11 +88,14 @@ twine-check: sdist bdist_egg bdist_wheel
 
 #HELP clean - remove build artifacts
 .PHONY: clean
-clean:
+clean: clean-docs
 	python setup.py clean
 	rm -rf dist build *.egg-info
 	find . -name '*.pyc' -delete
-	(cd docs && make clean && rm -f psec_help.txt)
+
+.PHONY: clean-docs
+clean-docs:
+	cd docs && make clean
 
 #HELP install - install in required Python virtual environment (default $(REQUIRED_VENV))
 .PHONY: install
@@ -114,7 +117,6 @@ install:
 .PHONY: install-active
 install-active:
 	python -m pip install -U .
-	psec help | tee docs/psec_help.txt
 
 #HELP docs-tests - generate bats test output for documentation
 .PHONY: docs-tests
@@ -127,8 +129,11 @@ docs-tests:
 
 #HELP docs - build Sphinx docs (NOT INTEGRATED YET FROM OPENSTACK CODE BASE)
 .PHONY: docs
-docs:
-	(cd docs && make clean html)
+docs: docs/psec_help.txt
+	cd docs && make html
+
+docs/psec_help.txt: install-active
+	psec help | tee docs/psec_help.txt
 
 # Git submodules and subtrees are both a huge PITA. This is way simpler.
 
