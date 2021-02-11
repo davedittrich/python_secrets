@@ -29,6 +29,13 @@ teardown() {
     [ $(ls $(psec groups path) | wc -l) -gt 1 ]
 }
 
+@test "'psec environments create --clone-from tests/secrets.d/' works, too" {
+    run $PSEC -vvv environments create --clone-from tests/secrets.d/ 1>&2
+    [ -d $D2_SECRETS_BASEDIR/$D2_ENVIRONMENT/secrets.d ]
+    [ $(ls $D2_SECRETS_BASEDIR/$D2_ENVIRONMENT/secrets.d | wc -l) -gt 1 ]
+    [ $(ls $(psec groups path) | wc -l) -gt 1 ]
+}
+
 @test "'psec environments create --clone-from tests/secrets.d/jenkins.json' works" {
     run $PSEC -vvv environments create --clone-from tests/secrets.d/jenkins.json 1>&2
     [ -d $D2_SECRETS_BASEDIR/$D2_ENVIRONMENT/secrets.d ]
