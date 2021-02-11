@@ -188,7 +188,7 @@ def copydescriptions(src, dst):
 
 def is_valid_environment(env_path, verbose_level=1):
     """
-    Check to see if this looks like a valid environment directory based on contents.
+    Check to see if this looks like a valid environment directory.
 
     Args:
       env_path: Path to candidate directory to test.
