@@ -152,7 +152,7 @@ install:
 .PHONY: install-active
 i install-active: bdist_wheel
 	$(PYTHON) -m pip uninstall -y $(PROJECT)
-	$(PYTHON) -m pip install -U "dist/$(shell cat dist/.LATEST_WHEEL)" | grep -v 'already satisfied'
+	$(PYTHON) -m pip install -U "$(shell cat dist/.LATEST_WHEEL)" | grep -v 'already satisfied'
 	git checkout ChangeLog
 
 #HELP docs-tests - generate bats test output for documentation
