@@ -21,7 +21,7 @@ of a command is:
    ``python_secrets`` is a little unwieldy to type on the command line, so a
    shorter script name ``psec`` was also included in the original release.  The
    original ``python_secrets`` program name is now deprecated.
-   
+
    In this documentation and command line help, the program name ``psec`` is
    used. (The PyPi package may be renamed at a later date to avoid confusion
    between the package and the program.)

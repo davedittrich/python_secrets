@@ -653,6 +653,15 @@ class SecretsEnvironment(object):
         to ensure these are written out.
         """
         _fname = self.secrets_file_path()
+        yaml_fname = f"{os.path.splitext(_fname)[0]}.yml"
+        # TODO(dittrich): Add upgrade feature... some day.
+        # Until then, reference a way for anyone affected to manually
+        # convert files.
+        if os.path.exists(yaml_fname):
+            raise RuntimeError(
+                f"[-] old YAML style file '{yaml_fname}' found:\n"
+                f"[-] see ``psec utils yaml-to-json --help`` for "
+                "information about converting to JSON")
         self.LOG.debug(f"[+] reading secrets from '{_fname}'")
         try:
             with open(_fname, 'r') as f:
