@@ -51,7 +51,7 @@ setup(
     name='psec',
     pbr=True,
 
-    setup_requires=['pbr>=5.4.5', 'setuptools>=17.1'],
+    setup_requires=['pbr>=5.4.5', 'setuptools>=40.9.0', 'pip>=20.2.2'],
 
     description="Python CLI for managing secrets (passwords, API keys, etc)",
     long_description="\n".join([long_description, "", history]),
