@@ -75,6 +75,7 @@ class GroupsCreate(Command):
             raise RuntimeError(
                 '[-] no group name or group description source specified')
         group = parsed_args.arg
+        groups = se.get_groups()
         clone_from = parsed_args.clone_from
         # Default is to create a new empty group
         descriptions = dict()
@@ -105,10 +106,12 @@ class GroupsCreate(Command):
                 descriptions = clonefrom_se.read_descriptions(group=group)
         if len(descriptions):
             se.check_duplicates(descriptions)
+        if group in groups:
+            raise RuntimeError(f"[-] group '{group}' already exists")
+        self.LOG.info(f"[+] creating new group '{group}'")
         se.write_descriptions(
             data=descriptions,
             group=group)
-        self.LOG.info(f"[+] created new group '{group}'")
 
 
 # vim: set fileencoding=utf-8 ts=4 sw=4 tw=0 et :

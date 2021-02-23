@@ -91,8 +91,7 @@ class YAMLToJSON(Command):
                   "(default: standard input)")
         )
         parser.epilog = textwrap.dedent("""
-            Utility to convert YAML format secrets and/or descriptions file(s)
-            to JSON format.
+            Utility to convert YAML format file(s) to JSON format.
 
             You can specify one or more files or directories to convert
             (including '-' for standard input). By default the JSON format
@@ -107,6 +106,51 @@ class YAMLToJSON(Command):
             add the ``--keep-original`` option.  If a directory is passed as
             an argument with the ``--convert`` option, *all* files ending in
             ``.yml`` in the directory will be processed.
+
+            .. note::
+
+                The original format for secrets files and secrets
+                description files was YAML. The format was changed to
+                JSON in a recent release, necessitating that existing
+                secrets descriptions in repositories and/or existing
+                secrets environments be converted.  As of now, this
+                utility subcommand provides a mechanism for you to use
+                in making this change. Future releases may include a
+                more user-friendly upgrade mechanism.
+
+                Here is a demonstration using an old YAML-style secrets
+                descriptions directory used by tests in the ``tests/``
+                subdirectory::
+
+                    $ cp -r tests/secrets /tmp
+                    $ tree /tmp/secrets/
+                    /tmp/secrets/
+                    └── secrets.d
+                        ├── jenkins.yml
+                        ├── myapp.yml
+                        ├── oauth.yml
+                        └── trident.yml
+
+                    1 directory, 4 files
+                    $ psec utils yaml-to-json --convert /tmp/secrets/secrets.d
+                    [+] converting '/tmp/secrets/secrets.d/jenkins.yml' to JSON
+                    [+] removing '/tmp/secrets/secrets.d/jenkins.yml'
+                    [+] converting '/tmp/secrets/secrets.d/myapp.yml' to JSON
+                    [+] removing '/tmp/secrets/secrets.d/myapp.yml'
+                    [+] converting '/tmp/secrets/secrets.d/trident.yml' to JSON
+                    [+] removing '/tmp/secrets/secrets.d/trident.yml'
+                    [+] converting '/tmp/secrets/secrets.d/oauth.yml' to JSON
+                    [+] removing '/tmp/secrets/secrets.d/oauth.yml'
+                    $ tree /tmp/secrets/
+                    /tmp/secrets/
+                    └── secrets.d
+                        ├── jenkins.json
+                        ├── myapp.json
+                        ├── oauth.json
+                        └── trident.json
+
+                    1 directory, 4 files
+
 
         """)
         return parser

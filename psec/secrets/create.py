@@ -50,6 +50,17 @@ def get_description(name=None, defaults=None):
                     default=defaults.get('Options'),
                     word_color=colors.foreground["yellow"])
         result = cli.launch()
+        # TODO(dittrich): BUG or ISSUE in waiting.
+        # Items in an Options list can't end in '.*' without
+        # causing confusion with ',*' wildcard feature.
+        # Maybe switch to using '|' for alternaives instead?
+        if '.*' in result:
+            if result == '.*':
+                msg = "[-] '.*' is not valid: did you mean '*'?"
+            else:
+                msg = ("[-] options list items can't have '.*' "
+                       "wildcards: did you mean to end with ',*'?")
+            raise RuntimeError(msg)
         new_description['Options'] = result
     # Environment variable export alternative optional
     prompt = "Environment variable to export: "
@@ -149,7 +160,7 @@ class SecretsCreate(Command):
             raise RuntimeError(
                 '[-] this command only works when a TTY is available')
         se = self.app.secrets
-        env = se.environment()
+        env = se.environment
         if not se.environment_exists():
             if parsed_args.update:
                 raise RuntimeError(
@@ -164,13 +175,20 @@ class SecretsCreate(Command):
             self.LOG.info(
                 f"[+] environment '{env}' "
                 f"({se.environment_path()}) created")
-        # Does the group exist?
+        if parsed_args.update and len(parsed_args.arg) > 1:
+            # TODO(dittrich): Refactor to loop over parsed_arg.arg
+            # from here (not farther down).
+            raise RuntimeError(
+                "[!] only one variable can be updated at a time")
         se.read_secrets_and_descriptions()
+        groups = se.get_groups()
         group = parsed_args.group
         if group is None:
-            # Default group to same name as environment identifier
-            group = env
-        groups = se.get_groups()
+            if not parsed_args.update:
+                # Default group to same name as environment identifier
+                group = env
+            else:
+                group = se.get_group(parsed_args.arg[0])
         if group not in groups:
             if parsed_args.update:
                 raise RuntimeError(

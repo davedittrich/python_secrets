@@ -3,8 +3,9 @@
 """
 Utility functions.
 
-Author: Dave Dittrich
-URL: https://python_secrets.readthedocs.org.
+  Author: Dave Dittrich <dave.dittrich@gmail.com>
+
+  URL: https://python_secrets.readthedocs.org.
 """
 
 import logging
@@ -37,14 +38,27 @@ logger = logging.getLogger(__name__)
 
 
 def bell():
+    """
+    Output an ASCII BEL character to ``stderr``.
+    """
+
     if sys.stderr.isatty():
         sys.stderr.write('\a')
         sys.stderr.flush()
 
 
-# https://stackoverflow.com/questions/7119630/in-python-how-can-i-get-the-file-system-of-a-given-file-path  # NOQA
+# https://stackoverflow.com/questions/7119630/in-python-how-can-i-get-the-file-system-of-a-given-file-path  # noqa
 def getmount(mypath):
-    """Return the mount point for mypath."""
+    """
+    Identifies the filesystem mount point for the partition containing ``mypath``.
+
+    Args:
+      mypath (str): Candidate path.
+
+    Returns:
+      string: The mount point for the filesystem partition containing ``path``.
+    """  # noqa
+
     path_ = os.path.realpath(os.path.abspath(mypath))
     while path_ != os.path.sep:
         if os.path.ismount(path_):
@@ -54,13 +68,31 @@ def getmount(mypath):
 
 
 def getmount_fstype(mypath):
-    """Return the file system type for a specific mount path."""
+    """
+    Identifies the file system type for a specific mount path.
+
+    Args:
+      mypath (str): Candidate path.
+
+    Returns:
+      string: File system type for partition containing ``mypath``.
+    """
+
     mountpoint = getmount(mypath)
     return get_fs_type(mountpoint)
 
 
 def get_fs_type(mypath):
-    """Return the file system type for mypath."""
+    """
+    Identifies the file system type for a specific mount path.
+
+    Args:
+      mypath (str): Candidate path.
+
+    Returns:
+      string: File system type for partition containing ``mypath``.
+    """
+
     root_type = ''
     for part in psutil.disk_partitions():
         if part.mountpoint == os.path.sep:
@@ -72,7 +104,19 @@ def get_fs_type(mypath):
 
 
 def get_files_from_path(path=None):
-    """Return a list of files associated with a path."""
+    """
+    Gets a list of absolute paths to one or more files associated with a path.
+
+    If ``path`` is a directory, the files contained in it are returned,
+    otherwise the path to the file is the only item in the list.
+
+    Args:
+      path (str): Candidate path.
+
+    Returns:
+      list: A list of one or more absolute file paths.
+    """
+
     abspath = os.path.abspath(path)
     if os.path.isfile(abspath):
         files = [abspath]
@@ -87,7 +131,16 @@ def get_files_from_path(path=None):
 
 
 def get_netblock(ip=None):
-    """Get the CIDR netblocks for an IP via WHOIS lookup."""
+    """
+    Derives the CIDR netblocks for an IP via WHOIS lookup.
+
+    Args:
+      ip (str): IP address
+
+    Returns:
+      string: One or more CIDR blocks
+    """
+
     ip = str(ip).split('/')[0] if '/' in str(ip) else ip
     obj = IPWhois(ip)
     results = obj.lookup_whois()
@@ -95,7 +148,12 @@ def get_netblock(ip=None):
 
 
 def remove_other_perms(dst):
-    """Make all files in path ``dst`` have ``o-rwx`` permissions."""
+    """
+    Make all files in path ``dst`` have ``o-rwx`` permissions.
+
+    NOTE: This does not work on file system types ``NTFS``, ``FAT``, or
+    ``FAT32``. A log message will be produced when this is encountered.
+    """
     # File permissions on Cygwin/Windows filesystems don't work the
     # same way as Linux. Don't try to change them.
     # TODO(dittrich): Is there a Better way to handle perms on Windows?
@@ -113,7 +171,19 @@ def get_output(cmd=['echo', 'NO COMMAND SPECIFIED'],
                cwd=os.getcwd(),
                stderr=subprocess.STDOUT,
                shell=False):
-    """Use subprocess.check_ouput to run subcommand"""
+    """
+    Uses ``subprocess.check_ouput()`` to run a sub-command.
+
+    Args:
+      cmd (list): Argument list
+      cwd (str): Directory to use for current working directory by shell
+      stderr (file handle): Where should ``stderr`` be directed? (default: ``subprocess.STDOUT``)
+      shell (bool): Use a shell (default: ``FALSE``)
+
+    Returns:
+      list of str: Output from command
+    """  # noqa
+
     output = subprocess.check_output(  # nosec
             cmd,
             cwd=cwd,
@@ -124,8 +194,21 @@ def get_output(cmd=['echo', 'NO COMMAND SPECIFIED'],
 
 
 def find(lst, key, value):
-    """Find a dictionary entry from a list of dicts where the
-    key identified by 'key' has the desired value 'value'."""
+    """
+    Searches a list of dictionaries by value of a specified key.
+
+    Find the first item from a list of dicts where the key identified by
+    ``key`` has the value specified by ``value``.
+
+    Args:
+      lst (list of dict): List of dictionaries to search
+      key (str): Key to compare
+      value (str): Value to find
+
+    Returns:
+      Index to the first entry with the matching value or ``None``
+    """
+
     for i, dic in enumerate(lst):
         if dic[key] == value:
             return i
@@ -211,7 +294,7 @@ def prompt_options_dict(options=[],
     # {'descr': 'DigitalOcean', 'ident': 'digitalocean'}
     try:
         return options[selected]['ident']
-    except Exception as exc:  # NOQA
+    except Exception as exc:  # noqa
         return None
 
 

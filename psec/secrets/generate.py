@@ -80,7 +80,7 @@ class SecretsGenerate(Command):
             dest="case",
             type=str,
             metavar="CASE",
-            choices=list(CASE_METHODS.keys()), default="lower",
+            choices=list(CASE_METHODS.keys()), default="alternating",
             help=(
                 "Choose the method for setting the case of each word "
                 "in the passphrase. "

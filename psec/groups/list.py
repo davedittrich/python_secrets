@@ -4,6 +4,7 @@ import argparse
 import logging
 import textwrap
 from cliff.lister import Lister
+import sys
 
 
 class GroupsList(Lister):
@@ -34,14 +35,16 @@ class GroupsList(Lister):
 
     def take_action(self, parsed_args):
         self.LOG.debug('[*] listing secret groups')
-        self.app.secrets.requires_environment()
+        self.app.secrets.requires_environment(path_only=True)
         self.app.secrets.read_secrets_descriptions()
+        columns = ('Group', 'Items')
         items = {}
         for g in self.app.secrets.get_groups():
             items[g] = self.app.secrets.get_items_from_group(g)
-        return (('Group', 'Items'),
-                ((k, len(v)) for k, v in items.items())
-                )
+        data = [(k, len(v)) for k, v in items.items()]
+        if not len(data):
+            sys.exit(1)
+        return columns, data
 
 
 # vim: set fileencoding=utf-8 ts=4 sw=4 tw=0 et :
