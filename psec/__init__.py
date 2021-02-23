@@ -20,7 +20,7 @@ if 'python_secrets' in p.parts or 'psec' in p.parts:
     except Exception:
         pass
 else:
-    __version__ = '20.11.0'
+    __version__ = '21.2.0'
     __release__ = __version__
 
 __author__ = 'Dave Dittrich'

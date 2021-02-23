@@ -1,6 +1,32 @@
 CHANGES
 =======
 
+* Bump version for release
+* Add exception and documentation re: YAML to JSON
+* Fix erroneous path (missed edit)
+* Normalize GitHub actions with lim-cli repo
+* Normalize tox, Makefile, setup.py with lim-cli
+* Resolve pep8 finding
+* Documentation improvements
+* Handle trailing slash (from tab completion) better
+* Improve handling empty list
+* Attempt to fix broken ReadTheDocs (?)
+* Forgot to add a new bats test file
+* Update README.rst to reflect YML to JSON change
+* Increate password complexity a bit more
+* Deal w/bug in bats-core v1.2.1 causing failures
+* Fix environment cloning bug
+* Get group from variable name (partial fix)
+* Ensure full path created
+* Rename test for ordering purposes
+* Better handling of wildcard in options list
+* Update .readthedocs.yml
+* Fix ReadTheDocs (build broken, psec not installed)
+
+20.11.0
+-------
+
+* Bump version
 * Fix temp directory handling
 * Fix GitHub Actions workflow for proper versioning
 * Fix f-string
