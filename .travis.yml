@@ -28,10 +28,6 @@ matrix:
       env: TOXENV=pypi
 
 
-before_script:
-  - git clone https://github.com/ztombol/bats-support.git ../bats-support
-  - git clone https://github.com/jasonkarns/bats-assert-1.git ../bats-assert-1
-
 branches:
   only:
     - master
@@ -39,8 +35,16 @@ branches:
 
 # command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
 install:
-  - pip install .
-  - pip install -r requirements.txt
+  - wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh
+  - bash miniconda.sh -b -p $HOME/miniconda
+  - export PATH=$HOME/miniconda/bin:$PATH
+  - source "$HOME/miniconda/etc/profile.d/conda.sh"
+  - hash -r
+  - conda config --set always_yes yes --set changeps1 no
+  - conda update --yes conda  # Update CONDA without command line prompt
+  - conda install -c conda-forge --yes tox
+  # Useful for debugging any issues with conda
+  - conda info -a
 
 # command to run tests, e.g. python setup.py test
 script:
