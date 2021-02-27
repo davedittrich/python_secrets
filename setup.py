@@ -14,6 +14,9 @@ from psec import __release__
 from setuptools import find_packages, setup
 
 
+# NOTE: The project name began as "python_secrets", but the shorter
+# alias "psec" is used for the command. This causes a little confusion,
+# but I don't want to completely rename the project at this time.
 PROJECT = 'python_secrets'
 
 long_description = ''
@@ -42,7 +45,8 @@ def get_absolute_path(*args):
 
 
 setup(
-    name='psec',
+    # Controls the build product name.
+    name='python_secrets',
     pbr=False,
     use_scm_version=True,
     version=__release__,
@@ -58,7 +62,9 @@ setup(
 
     namespace_packages=[],
     packages=find_packages(exclude=['libs*']),
-    package_dir={'psec': 'psec'},
+    # Alias the package name ("python_secrets") to the source directory
+    # ("psec").
+    package_dir={'python_secrets': 'psec'},
     include_package_data=True,
     # exclude_package_data={'psec': ['libs']},
     # Make sure this matches tox.ini!
