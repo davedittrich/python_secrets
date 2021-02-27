@@ -8,7 +8,8 @@
 
 import codecs
 import os
-import re
+
+from psec import __release__
 
 from setuptools import find_packages, setup
 
@@ -35,13 +36,6 @@ def get_contents(*args):
         return handle.read()
 
 
-def get_version(*args):
-    """Extract the version number from a Python module."""
-    contents = get_contents(*args)
-    metadata = dict(re.findall(r'__([a-z]+)__ = [\'"]([^\'"]+)', contents))
-    return metadata['version']
-
-
 def get_absolute_path(*args):
     """Transform relative pathnames into absolute pathnames."""
     return os.path.join(os.path.dirname(os.path.abspath(__file__)), *args)
@@ -49,10 +43,9 @@ def get_absolute_path(*args):
 
 setup(
     name='psec',
-    pbr=True,
-
-    setup_requires=['pbr>=5.4.5', 'setuptools>=40.9.0', 'pip>=20.2.2'],
-
+    pbr=False,
+    use_scm_version=True,
+    version=__release__,
     description="Python CLI for managing secrets (passwords, API keys, etc)",
     long_description="\n".join([long_description, "", history]),
     long_description_content_type='text/x-rst',
@@ -68,6 +61,13 @@ setup(
     package_dir={'psec': 'psec'},
     include_package_data=True,
     # exclude_package_data={'psec': ['libs']},
+    # Make sure this matches tox.ini!
+    setup_requires=[
+        'pbr>=5.4.5',
+        'setuptools>=40.9.0',
+        'pip>=20.2.2'
+    ],
+
 
     python_requires='>=3.6',
     install_requires=get_contents('requirements.txt'),

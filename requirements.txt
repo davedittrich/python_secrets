@@ -16,10 +16,8 @@ Pygments
 property_manager
 psutil
 requests
-setuptools
+setuptools>=42
+setuptools_scm
 sphinx
-tox
-twine
 yamlreader
-wheel
 xkcdpass

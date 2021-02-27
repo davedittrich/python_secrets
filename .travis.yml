@@ -32,6 +32,7 @@ branches:
   only:
     - master
     - develop
+    - cicd
 
 # command to install dependencies, e.g. pip install -r requirements.txt --use-mirrors
 install:
@@ -42,7 +43,8 @@ install:
   - hash -r
   - conda config --set always_yes yes --set changeps1 no
   - conda update --yes conda  # Update CONDA without command line prompt
-  - conda install -c conda-forge --yes tox
+  - python3 -m pip install tox wheel twine
+  - python3 -m pip install -Ur requirements.txt
   # Useful for debugging any issues with conda
   - conda info -a
 

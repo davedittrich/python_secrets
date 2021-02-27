@@ -2,24 +2,43 @@
 
 import os
 import pathlib
-import pbr.version
 
-# PBR has a bug that produces incorrect version numbers
-# if you run ``psec --version`` in another Git repo.
-# This attempted workaround only uses PBR for getting
-# version and revision number if run in a directory
-# path that contains strings that appear to be
-# a python_secrets repo clone.
+__version__, __release__ = None, None
 
-p = pathlib.Path(os.getcwd())
-if 'python_secrets' in p.parts or 'psec' in p.parts:
+if __version__ is None:
     try:
-        version_info = pbr.version.VersionInfo('psec')
-        __version__ = version_info.cached_version_string()
-        __release__ = version_info.release_string()
-    except Exception:
+        from setuptools_scm import get_version
+        __version__ = get_version(root='..', relative_to=__file__)
+        __release__ = __version__.split('+')[0]
+    except (LookupError, ModuleNotFoundError):
         pass
-else:
+
+if __version__ is None:
+    try:
+        from pkg_resources import get_distribution, DistributionNotFound
+        __version__ = get_distribution("psec").version
+        __release__ = __version__
+    except (DistributionNotFound, ModuleNotFoundError):
+        pass
+
+if __version__ is None:
+    # PBR has a bug that produces incorrect version numbers
+    # if you run ``psec --version`` in another Git repo.
+    # This attempted workaround only uses PBR for getting
+    # version and revision number if run in a directory
+    # path that contains strings that appear to be
+    # a python_secrets repo clone.
+    p = pathlib.Path(os.getcwd())
+    if 'python_secrets' in p.parts or 'psec' in p.parts:
+        try:
+            import pbr.version
+            version_info = pbr.version.VersionInfo('psec')
+            __version__ = version_info.cached_version_string()
+            __release__ = version_info.release_string()
+        except ModuleNotFoundError:
+            pass
+
+if __version__ is None:
     __version__ = '21.2.0'
     __release__ = __version__
 
