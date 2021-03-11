@@ -221,7 +221,11 @@ class SecretsCreate(Command):
                 )
             else:
                 if arg in variables:
-                    self.LOG.info(f"[-] variable '{arg}' already exists")
+                    if parsed_args.mirror_locally:
+                        # This will trigger saving local description update.
+                        changed = True
+                    else:
+                        self.LOG.info(f"[-] variable '{arg}' already exists")
                     continue
                 self.LOG.info(
                     f"[+] creating variable '{arg}' in group '{group}'")
