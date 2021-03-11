@@ -16,7 +16,6 @@ import logging
 import os
 import psec.utils
 import psec.environments
-import random
 import re
 import secrets
 import stat
@@ -1004,7 +1003,7 @@ def generate_password(unique,
     if acrostic is None:
         # Chose a random word for acrostic with length
         # equal to desired number of words.
-        acrostic = random.choice(  # nosec
+        acrostic = secrets.choice(
             xp.generate_wordlist(
                 wordfile=wordfile,
                 min_length=numwords,
