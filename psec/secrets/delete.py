@@ -92,7 +92,7 @@ class SecretsDelete(Command):
             raise RuntimeError(
                 (
                     f"[!] group '{group}' does not exist in "
-                    f"environment '{str(se.environment)}'"
+                    f"environment '{str(se)}'"
                 )
                 if parsed_args.group is not None else
                 "[!] please specify a group with '--group'"

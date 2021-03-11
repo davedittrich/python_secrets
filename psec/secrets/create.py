@@ -160,7 +160,7 @@ class SecretsCreate(Command):
             raise RuntimeError(
                 '[-] this command only works when a TTY is available')
         se = self.app.secrets
-        env = se.environment
+        env = str(se)
         if not se.environment_exists():
             if parsed_args.update:
                 raise RuntimeError(

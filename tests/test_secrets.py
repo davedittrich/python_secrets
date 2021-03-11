@@ -158,7 +158,7 @@ class Test_SecretsEnvironment_with_env_vars(unittest.TestCase):
         pass
 
     def test_environment(self):
-        self.assertEqual(self.secrets_env.environment(),
+        self.assertEqual(str(self.secrets_env),
                          self.envname)
 
     def test_environment_path(self):

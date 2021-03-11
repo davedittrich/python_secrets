@@ -33,7 +33,7 @@ class EnvironmentsCreate(Command):
             default=None,
             help="Environment directory to clone from (default: None)"
         )
-        default_environment = psec.secrets.SecretsEnvironment().environment()
+        default_environment = str(psec.secrets.SecretsEnvironment())
         parser.add_argument('env',
                             nargs='*',
                             default=[default_environment])

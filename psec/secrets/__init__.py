@@ -295,10 +295,6 @@ class SecretsEnvironment(object):
 
     def __str__(self):
         """Produce string representation of environment identifier"""
-        return str(self._environment)
-
-    def environment(self):
-        """Returns the environment identifier."""
         return self._environment
 
     @property

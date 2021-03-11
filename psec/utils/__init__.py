@@ -337,7 +337,7 @@ def default_environment(parsed_args=None):
         # Set default to specified environment
         default_env = parsed_args.environment
         if default_env is None:
-            default_env = psec.secrets.SecretsEnvironment().environment()
+            default_env = str(psec.secrets.SecretsEnvironment())
         with open(env_file, 'w') as f:
             f.write(default_env)
         logger.info(f"[+] default environment set to '{default_env}'")

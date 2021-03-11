@@ -16,7 +16,7 @@ class GroupsPath(Command):
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
         parser.formatter_class = argparse.RawDescriptionHelpFormatter
-        default_environment = psec.secrets.SecretsEnvironment().environment()
+        default_environment = str(psec.secrets.SecretsEnvironment())
         parser.add_argument('environment',
                             nargs='?',
                             default=default_environment)
