@@ -15,13 +15,12 @@ from __future__ import print_function
 import argparse
 import logging
 import os
+import psec
 import sys
 import textwrap
 import time
 import webbrowser
 
-from psec import __version__
-from psec import __release__
 from psec.environments import default_environment
 from psec.secrets import SecretsEnvironment
 from psec.utils import bell
@@ -77,7 +76,7 @@ class PythonSecretsApp(App):
     def __init__(self):
         super().__init__(
             description=__doc__.strip(),
-            version=__release__ if __release__ != __version__ else __version__,
+            version=psec.__version__,
             command_manager=CommandManager(
                 namespace='psec'
             ),

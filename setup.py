@@ -11,6 +11,7 @@ import os
 import re
 
 from setuptools import find_packages, setup
+from setuptools_scm import get_version
 
 
 PROJECT = 'python_secrets'
@@ -49,9 +50,9 @@ def get_absolute_path(*args):
 
 setup(
     name='psec',
-    pbr=True,
 
-    setup_requires=['pbr>=5.4.5', 'setuptools>=40.9.0', 'pip>=20.2.2'],
+    setup_requires=['setuptools>=40.9.0', 'pip>=20.2.2'],
+    use_scm_version=True,
 
     description="Python CLI for managing secrets (passwords, API keys, etc)",
     long_description="\n".join([long_description, "", history]),
