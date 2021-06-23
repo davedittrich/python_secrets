@@ -53,15 +53,17 @@ jobs:
         echo "VERSION=${VERSION}"
         echo ::set-output name=VERSION::${VERSION}
 
-        TAG_VERSION=$(git describe --abbrev=0 --tags)
+        TAG_VERSION=$(git describe --abbrev=0 --tags 2>/dev/null || true)
         echo "TAG_VERSION=${TAG_VERSION}"
         echo ::set-output name=TAG_VERSION::${TAG_VERSION}
 
         ARTIFACT="${REPO}-${BRANCH}"
         echo "ARTIFACT=${ARTIFACT}"
         echo ::set-output name=ARTIFACT::${REPO}-${BRANCH}
+    # [1-test-build-publish]
     - name: Run tests
       run: make test
+    # ![1-test-build-publish]
     - name: Build artifacts
       run: make bdist_wheel sdist twine-check
       if: >-
@@ -112,27 +114,29 @@ jobs:
     - name: Display artifacts
       run: |
         ls -lR
+    # [2-test-build-publish]
     - name: Publish release candidate artifacts to TestPyPI
       if: >-
         github.event_name == 'push' &&
         startsWith(github.ref, 'refs/tags') &&
-        contains(github.ref, '.RC') == true
+        contains(github.ref, 'rc') == true
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
         repository_url: https://test.pypi.org/legacy/
         user: __token__
-        password: ${{ secrets.TEST_PYPI_PASSWORD }}
+        password: ${{ secrets.PSEC_TEST_PYPI_PASSWORD }}
         packages_dir: ${{ steps.get_vars.outputs.ARTIFACT }}
         verify_metadata: false
     - name: Publish tagged artifacts to PyPI
       if: >-
         github.event_name == 'push' &&
         startsWith(github.ref, 'refs/tags') &&
-        contains(github.ref, '.RC') == false
+        contains(github.ref, 'rc') == false
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
         user: __token__
-        password: ${{ secrets.PYPI_PASSWORD }}
+        password: ${{ secrets.PSEC_PYPI_PASSWORD }}
         packages_dir: ${{ steps.get_vars.outputs.ARTIFACT }}
         verify_metadata: false
+    # ![2-test-build-publish]
 
