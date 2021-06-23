@@ -2,12 +2,11 @@
 
 import argparse
 import logging
-import psec.secrets
-import psec.utils
 import textwrap
 
 
 from cliff.command import Command
+from psec.secrets_environment import SecretsEnvironment
 
 
 class EnvironmentsCreate(Command):
@@ -33,7 +32,7 @@ class EnvironmentsCreate(Command):
             default=None,
             help="Environment directory to clone from (default: None)"
         )
-        default_environment = str(psec.secrets.SecretsEnvironment())
+        default_environment = str(SecretsEnvironment())
         parser.add_argument('env',
                             nargs='*',
                             default=[default_environment])
@@ -102,7 +101,7 @@ class EnvironmentsCreate(Command):
             if len(parsed_args.env) != 1:
                 raise RuntimeError(
                     '[-] --alias requires one source environment')
-            se = psec.secrets.SecretsEnvironment(environment=parsed_args.alias)
+            se = SecretsEnvironment(environment=parsed_args.alias)
             se.environment_create(source=parsed_args.env[0],
                                   alias=True)
             if se.environment_exists():
@@ -116,7 +115,7 @@ class EnvironmentsCreate(Command):
             if len(parsed_args.env) == 0:
                 parsed_args.env = list(self.app.environment)
             for e in parsed_args.env:
-                se = psec.secrets.SecretsEnvironment(environment=e)
+                se = SecretsEnvironment(environment=e)
                 se.environment_create(source=parsed_args.clone_from)
                 self.LOG.info(
                     f"[+] environment '{e}' ({se.environment_path()}) created")

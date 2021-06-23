@@ -3,7 +3,6 @@
 import argparse
 import logging
 import os
-import psec.utils
 import textwrap
 
 # TODO(dittrich): https://github.com/Mckinsey666/bullet/issues/2
@@ -17,8 +16,12 @@ except ModuleNotFoundError:
 
 from cliff.command import Command
 from prettytable import PrettyTable
-from psec.secrets import SECRET_TYPES
-from psec.utils import find
+from psec.secrets_environment import SECRET_TYPES
+from psec.utils import (
+    find,
+    prompt_options_list,
+)
+
 from sys import stdin
 
 
@@ -30,7 +33,7 @@ def get_description(name=None, defaults=None):
     # Variable type is required (obviously)
     original_type = defaults.get('Type', None)
     type_hint = "" if original_type is None else f" [was '{original_type}']"
-    new_description['Type'] = psec.utils.prompt_options_list(
+    new_description['Type'] = prompt_options_list(
         prompt=f"Variable type{type_hint}: ",
         default=original_type,
         options=[item['Type'] for item in SECRET_TYPES]

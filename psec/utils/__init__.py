@@ -12,7 +12,6 @@ import logging
 import os
 import tempfile
 import time
-import psec.secrets
 import psutil
 import subprocess  # nosec
 import sys
@@ -287,9 +286,9 @@ def prompt_options_dict(options=[],
     if choice == "<CANCEL>":
         logger.info('[-] cancelled selection of choice')
         return None
-    selected = psec.utils.find(options,
-                               'descr' if by_descr else 'ident',
-                               choice)
+    selected = find(options,
+                    'descr' if by_descr else 'ident',
+                    choice)
     # options[selected]
     # {'descr': 'DigitalOcean', 'ident': 'digitalocean'}
     try:
@@ -322,25 +321,15 @@ def prompt_string(prompt="Enter a value",
     return default if _new in [None, ''] else _new
 
 
-def default_environment(parsed_args=None):
-    """Return the default environment for this cwd"""
-    env_file = os.path.join(os.getcwd(),
-                            '.python_secrets_environment')
-    if parsed_args.unset:
-        try:
-            os.remove(env_file)
-        except Exception as e:  # noqa
-            logger.info('[-] no default environment was set')
-        else:
-            logger.info('[-] default environment unset')
-    elif parsed_args.set:
-        # Set default to specified environment
-        default_env = parsed_args.environment
-        if default_env is None:
-            default_env = str(psec.secrets.SecretsEnvironment())
-        with open(env_file, 'w') as f:
-            f.write(default_env)
-        logger.info(f"[+] default environment set to '{default_env}'")
+# def get_default_environment():
+#     """Return the default environment for this cwd"""
+#     env_file = os.path.join(os.getcwd(),
+#                             '.python_secrets_environment')
+#     try:
+#         with open(env_file, 'r') as f_in:
+#             return f_in.read().strip()
+#     except FileNotFoundError:
+#         return os.path.basename(os.getcwd())
 
 
 def safe_delete_file(

@@ -7,9 +7,11 @@ import psec
 import textwrap
 
 from cliff.command import Command
-from psec.secrets import BOOLEAN_OPTIONS
-from psec.secrets import is_generable
-from psec.secrets import SecretsEnvironment
+from psec.secrets_environment import (
+    BOOLEAN_OPTIONS,
+    SecretsEnvironment,
+    is_generable,
+)
 from subprocess import run, PIPE  # nosec
 
 

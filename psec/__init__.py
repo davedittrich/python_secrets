@@ -1,25 +1,24 @@
 # -*- coding: utf-8 -*-
 
-__version__, __release__ = None, None
+__version__ = None
+__release__ = '21.2.0'
 
+# Get development version from repository tags.
 try:
     from setuptools_scm import get_version
     __version__ = get_version(root='..', relative_to=__file__)
-    __release__ = __version__.split('+')[0]
-except (LookupError, ModuleNotFoundError):
+except (ImportError, LookupError):
     pass
 
 if __version__ is None:
     from pkg_resources import get_distribution, DistributionNotFound
     try:
-        __version__ = get_distribution("lim-cli").version
-        __release__ = __version__
-    except (DistributionNotFound, ModuleNotFoundError):
+        __version__ = get_distribution("psec").version
+    except DistributionNotFound:
         pass
 
 if __version__ is None:
-    __version__ = '21.2.0'
-    __release__ = __version__
+    __version__ = __release__
 
 __author__ = 'Dave Dittrich'
 __email__ = 'dave.dittrich@gmail.com'

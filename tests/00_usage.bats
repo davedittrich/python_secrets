@@ -14,6 +14,7 @@ teardown() {
 
 @test "'psec help' can load all entry points" {
     run $PSEC help 2>&1
+    refute_output --partial "Traceback"
     refute_output --partial "Could not load EntryPoint"
 }
 

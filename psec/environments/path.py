@@ -3,11 +3,10 @@
 import argparse
 import logging
 import os
-import psec.secrets
-import psec.utils
 import textwrap
 
 from cliff.command import Command
+from psec.secrets_environment import SecretsEnvironment
 from stat import S_IMODE
 
 
@@ -102,7 +101,7 @@ class EnvironmentsPath(Command):
     def take_action(self, parsed_args):
         self.LOG.debug('[*] returning environment path')
         environment = self.app.options.environment
-        e = psec.secrets.SecretsEnvironment(environment)
+        e = SecretsEnvironment(environment)
         if parsed_args.tmpdir:
             tmpdir = e.tmpdir_path()
             tmpdir_mode = 0o700

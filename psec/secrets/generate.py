@@ -5,13 +5,15 @@ import logging
 import textwrap
 
 from cliff.command import Command
-from psec.secrets import generate_secret
-from psec.secrets import natural_number
-from psec.secrets import DELIMITER
-from psec.secrets import MAX_WORDS_LENGTH
-from psec.secrets import MIN_WORDS_LENGTH
-from psec.secrets import MAX_ACROSTIC_LENGTH
-from psec.secrets import MIN_ACROSTIC_LENGTH
+from psec._secrets import (
+    generate_secret,
+    natural_number,
+    DELIMITER,
+    MAX_WORDS_LENGTH,
+    MIN_WORDS_LENGTH,
+    MAX_ACROSTIC_LENGTH,
+    MIN_ACROSTIC_LENGTH,
+)
 from xkcdpass.xkcd_password import CASE_METHODS
 
 

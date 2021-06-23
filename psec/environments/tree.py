@@ -2,12 +2,12 @@
 
 import argparse
 import logging
-import psec.secrets
-import psec.utils
 import sys
 import textwrap
 
 from cliff.command import Command
+from psec.secrets_environment import SecretsEnvironment
+from psec.utils import atree
 
 
 class EnvironmentsTree(Command):
@@ -99,13 +99,12 @@ class EnvironmentsTree(Command):
         environment = parsed_args.environment
         if environment is None:
             environment = self.app.options.environment
-        e = psec.secrets.SecretsEnvironment(
-            environment=environment)
+        e = SecretsEnvironment(environment=environment)
         e.requires_environment()
         print_files = bool(parsed_args.no_files is False)
-        psec.utils.atree(e.environment_path(),
-                         print_files=print_files,
-                         outfile=sys.stdout)
+        atree(e.environment_path(),
+              print_files=print_files,
+              outfile=sys.stdout)
 
 
 # vim: set fileencoding=utf-8 ts=4 sw=4 tw=0 et :

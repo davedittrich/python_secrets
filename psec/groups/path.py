@@ -2,10 +2,10 @@
 
 import argparse
 import logging
-import psec.secrets
 import textwrap
 
 from cliff.command import Command
+from psec.secrets_environment import SecretsEnvironment
 
 
 class GroupsPath(Command):
@@ -16,7 +16,7 @@ class GroupsPath(Command):
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
         parser.formatter_class = argparse.RawDescriptionHelpFormatter
-        default_environment = str(psec.secrets.SecretsEnvironment())
+        default_environment = str(SecretsEnvironment())
         parser.add_argument('environment',
                             nargs='?',
                             default=default_environment)
@@ -32,8 +32,7 @@ class GroupsPath(Command):
 
     def take_action(self, parsed_args):
         self.LOG.debug('[*] returning groups path')
-        e = psec.secrets.SecretsEnvironment(
-                environment=parsed_args.environment)
+        e = SecretsEnvironment(environment=parsed_args.environment)
         print(e.descriptions_path())
 
 
