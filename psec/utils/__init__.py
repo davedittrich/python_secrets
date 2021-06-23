@@ -321,17 +321,6 @@ def prompt_string(prompt="Enter a value",
     return default if _new in [None, ''] else _new
 
 
-# def get_default_environment():
-#     """Return the default environment for this cwd"""
-#     env_file = os.path.join(os.getcwd(),
-#                             '.python_secrets_environment')
-#     try:
-#         with open(env_file, 'r') as f_in:
-#             return f_in.read().strip()
-#     except FileNotFoundError:
-#         return os.path.basename(os.getcwd())
-
-
 def safe_delete_file(
     file_name=None,
     passes=3,
