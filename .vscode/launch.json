@@ -661,6 +661,23 @@
             "console": "integratedTerminal"
         },
         {
+            "name": "psec secrets generate --from-options",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "args": [
+                "--debug",
+                "secrets",
+                "generate",
+                "--from-options"
+            ],
+            "env": {
+                "D2_ENVIRONMENT": "flash"
+            },
+            "stopOnEntry": false,
+            "console": "integratedTerminal"
+        },
+        {
             "name": "psec secrets generate --max-acrostic-length 3",
             "type": "python",
             "request": "launch",

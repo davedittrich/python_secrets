@@ -22,6 +22,16 @@ teardown() {
     assert_output --partial "$TEST_PASSWORD"
 }
 
+@test "'psec secrets set --from-options' sets variables properly" {
+    run $PSEC secrets set --from-options
+    run $PSEC secrets get hypriot_hostname
+    assert_output "hypriot"
+    run $PSEC secrets get hypriot_user
+    assert_output "pirate"
+    run $PSEC secrets get hypriot_wifi_country
+    assert_output "US"
+}
+
 @test "'psec secrets show' table header is correct" {
     run bash -c "$PSEC secrets show -f csv | head -n 1"
     assert_output '"Variable","Value","Export"'
