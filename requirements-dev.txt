@@ -1,0 +1,9 @@
+docutils==0.15
+flake8>=3.8.3
+bandit>=1.1.0
+twine
+setuptools>=42
+setuptools_scm
+sphinx
+pip>=20.2.2
+pytest
