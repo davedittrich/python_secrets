@@ -64,6 +64,27 @@ class EnvironmentsList(Lister):
                 +-------------+---------+----------+
 
             ..
+
+            If there are any older environments that contain ``.yml`` files for storing
+            secrets or definitions, they will be called out when you list environments.
+            (Adding ``-v`` will explicitly list the names of files that are found if
+            you wish to see them.)
+
+            .. code-block:: console
+
+                $ psec environments list
+                [!] environment 'algo' needs conversion (see 'psec utils yaml-to-json --help')
+                [!] environment 'hypriot' needs conversion (see 'psec utils yaml-to-json --help')
+                [!] environment 'kali-packer' needs conversion (see 'psec utils yaml-to-json --help')
+                +-------------------------+---------+
+                | Environment             | Default |
+                +-------------------------+---------+
+                | attack_range            | No      |
+                | attack_range_local      | No      |
+                | flash                   | No      |
+                | python_secrets          | Yes     |
+                +-------------------------+---------+
+
             """)
 
         return parser
