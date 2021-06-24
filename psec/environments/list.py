@@ -85,7 +85,7 @@ class EnvironmentsList(Lister):
                 | python_secrets          | Yes     |
                 +-------------------------+---------+
 
-            """)
+            """)  # noqa
 
         return parser
 
