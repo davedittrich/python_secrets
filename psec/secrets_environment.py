@@ -283,15 +283,36 @@ def is_valid_environment(env_path, verbose_level=1):
       environment directory or not based on contents including a
       'secrets.json' file or a 'secrets.d' directory.
     """
+    environment = os.path.split(env_path)[1]
     contains_expected = False
+    yaml_files = []
     for root, directories, filenames in os.walk(env_path):
         if 'secrets.json' in filenames or 'secrets.d' in directories:
             contains_expected = True
-    is_valid = os.path.exists(env_path) and contains_expected
+        if 'secrets.yml' in filenames:
+            yaml_files.append(os.path.join(root, 'secrets.yml'))
+        if root.endswith('secrets.d'):
+            yaml_files.extend([
+                os.path.join(root, filename)
+                for filename in filenames
+                if filename.endswith('.yml')
+            ])
+    for filename in yaml_files:
+        if verbose_level > 1:
+            logger.warning("[!] found '%s'", filename)
+    is_valid = (
+        os.path.exists(env_path)
+        and contains_expected
+        and len(yaml_files) == 0
+    )
+    if len(yaml_files) and verbose_level > 0:
+        logger.warning(
+            "[!] environment '%s' needs conversion (see 'psec utils yaml-to-json --help')",  # noqa
+            environment)
     if not is_valid and verbose_level > 1:
         logger.warning(
-            f"[!] environment directory '{env_path}' exists"
-            "but is empty")
+            "[!] environment directory '%s' exists but looks incomplete",
+            env_path)
     return is_valid
 
 
@@ -339,21 +360,19 @@ def generate_secret(secret_type=None, *arguments, **kwargs):
                                  wordfile)
     if secret_type == 'crypt_6':  # nosec
         return generate_crypt6(unique)
-    elif secret_type == 'token_hex':  # nosec
+    if secret_type == 'token_hex':  # nosec
         return generate_token_hex(unique)
-    elif secret_type == 'token_urlsafe':  # nosec
+    if secret_type == 'token_urlsafe':  # nosec
         return generate_token_urlsafe(unique)
-    elif secret_type == 'consul_key':  # nosec
+    if secret_type == 'consul_key':  # nosec
         return generate_consul_key(unique)
-    elif secret_type == 'zookeeper_digest':  # nosec
+    if secret_type == 'zookeeper_digest':  # nosec
         return generate_zookeeper_digest(unique)
-    elif secret_type == 'uuid4':  # nosec
+    if secret_type == 'uuid4':  # nosec
         return generate_uuid4(unique)
-    elif secret_type == 'random_base64':  # nosec
+    if secret_type == 'random_base64':  # nosec
         return generate_random_base64(unique)
-    else:
-        raise TypeError("Secret type " +
-                        "'{}' is not supported".format(secret_type))
+    raise TypeError(f"Secret type '{secret_type}' is not supported")
 
 
 class Memoize:
