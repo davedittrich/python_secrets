@@ -18,7 +18,7 @@ from psec.secrets_environment import (
 class EnvironmentsList(Lister):
     """List the current environments."""
 
-    LOG = logging.getLogger(__name__)
+    logger = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
@@ -90,7 +90,7 @@ class EnvironmentsList(Lister):
         return parser
 
     def take_action(self, parsed_args):
-        self.LOG.debug('[*] listing environment(s)')
+        self.logger.debug('[*] listing environment(s)')
         secrets_environment = SecretsEnvironment()
         default_env = get_default_environment()
         columns = (['Environment', 'Default'])

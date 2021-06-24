@@ -12,7 +12,7 @@ from psec.utils import redact
 class SecretsShow(Lister):
     """List the contents of the secrets file or definitions."""
 
-    LOG = logging.getLogger(__name__)
+    logger = logging.getLogger(__name__)
 
     # Note: Not totally DRY. Replicates some logic from SecretsDescribe()
 
@@ -99,7 +99,7 @@ class SecretsShow(Lister):
         return parser
 
     def take_action(self, parsed_args):
-        self.LOG.debug('[*] showing secrets')
+        self.logger.debug('[*] showing secrets')
         self.app.secrets.requires_environment()
         self.app.secrets.read_secrets_and_descriptions()
         variables = []

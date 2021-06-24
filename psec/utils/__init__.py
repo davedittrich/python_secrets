@@ -333,7 +333,7 @@ def safe_delete_file(
     if not os.path.isfile(file_name):
         raise RuntimeError(f"[-] '{file_name}' is not a file")
     if verbose:
-        logger.info(f"[+] removing '{file_name}'")
+        logger.info("[+] removing '%s'", file_name)
     with open(file_name, 'ba+', buffering=0) as fp:
         length = fp.tell()
     for i in range(passes):

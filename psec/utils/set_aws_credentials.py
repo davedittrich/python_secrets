@@ -11,7 +11,7 @@ from configobj import ConfigObj
 
 
 AWS_CONFIG_FILE = os.path.join(os.path.expanduser('~'), '.aws', 'credentials')
-LOG = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class SetAWSCredentials(Command):

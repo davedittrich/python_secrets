@@ -11,7 +11,7 @@ from psec.secrets_environment import SecretsEnvironment
 class SecretsPath(Command):
     """Return path to secrets file"""
 
-    LOG = logging.getLogger(__name__)
+    logger = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
         try:
@@ -32,7 +32,7 @@ class SecretsPath(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.LOG.debug('[*] returning secrets path')
+        self.logger.debug('[*] returning secrets path')
         e = SecretsEnvironment(environment=parsed_args.environment)
         print(e.secrets_file_path())
 

@@ -538,7 +538,7 @@ class SecretsEnvironment(object):
         verbose_level: Verbosity level (pass from app args).
     """  # noqa
 
-    LOG = logging.getLogger(__name__)
+    logger = logging.getLogger(__name__)
 
     def __init__(self,
                  environment=None,
@@ -617,7 +617,7 @@ class SecretsEnvironment(object):
         if fs_type in ['NTFS', 'FAT', 'FAT32']:
             msg = (f"[-] {basedir} has file system type '{fs_type}': "
                    "skipping permissions check")
-            cls.LOG.info(msg)
+            cls.logger.info(msg)
             return False
         any_other_perms = stat.S_IROTH | stat.S_IWOTH | stat.S_IXOTH
         for root, dirs, files in os.walk(basedir, topdown=True):
@@ -935,9 +935,11 @@ class SecretsEnvironment(object):
                 t = i['Type']
                 if self.get_secret(s, allow_none=True) is None:
                     if self.verbose_level > 1:
-                        self.LOG.warning(
-                            f"[!] new {t} variable '{s}' "
-                            "is not defined")
+                        self.logger.warning(
+                            "[!] new %s variable '%s' is not defined",
+                            t,
+                            s
+                        )
                     self._set_secret(s, None)
 
     def read_secrets(self, from_descriptions=False):
@@ -959,7 +961,7 @@ class SecretsEnvironment(object):
                 f"[-] old YAML style file '{yaml_fname}' found:\n"
                 f"[-] see ``psec utils yaml-to-json --help`` for "
                 "information about converting to JSON")
-        self.LOG.debug(f"[+] reading secrets from '{_fname}'")
+        self.logger.debug("[+] reading secrets from '%s'", _fname)
         try:
             with open(_fname, 'r') as f:
                 _secrets = json.load(f, object_pairs_hook=OrderedDict)
@@ -980,14 +982,14 @@ class SecretsEnvironment(object):
         """Write out the current secrets if any changes were made"""
         if self._changed:
             _fname = self.secrets_file_path()
-            self.LOG.debug(f"[+] writing secrets to '{_fname}'")
+            self.logger.debug("[+] writing secrets to '%s'", _fname)
             with open(_fname, 'w') as f:
                 json.dump(self.Variable, f, indent=2)
                 f.write('\n')
             self._changed = False
             remove_other_perms(_fname)
         else:
-            self.LOG.debug('[-] not writing secrets (unchanged)')
+            self.logger.debug('[-] not writing secrets (unchanged)')
 
     def clone_from(self, src=None):
         """
@@ -1095,18 +1097,18 @@ class SecretsEnvironment(object):
         """Load the descriptions of groups of secrets from a .d directory"""
         groups_dir = self.descriptions_path()
         if not os.path.exists(groups_dir):
-            self.LOG.info('[-] secrets descriptions directory not found')
+            self.logger.info('[-] secrets descriptions directory not found')
         else:
             # Ignore .order file and any other file extensions
             extensions = ['json']
             file_names = [fn for fn in os.listdir(groups_dir)
                           if any(fn.endswith(ext) for ext in extensions)]
-            self.LOG.debug(
-                f"[+] reading secrets descriptions from '{groups_dir}'")
+            self.logger.debug(
+                "[+] reading secrets descriptions from '%s'", groups_dir)
             # Iterate over files in directory, loading them into
             # dictionaries as dictionary keyed on group name.
             if len(file_names) == 0:
-                self.LOG.info('[-] no secrets descriptions files found')
+                self.logger.info('[-] no secrets descriptions files found')
             for fname in file_names:
                 group = os.path.splitext(fname)[0]
                 if os.path.splitext(group)[1] != "":

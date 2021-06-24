@@ -11,7 +11,7 @@ from cliff.command import Command
 class SecretsGet(Command):
     """Get value associated with a secret."""
 
-    LOG = logging.getLogger(__name__)
+    logger = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
@@ -32,7 +32,7 @@ class SecretsGet(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.LOG.debug('[*] get secret')
+        self.logger.debug('[*] get secret')
         self.app.secrets.requires_environment()
         self.app.secrets.read_secrets_and_descriptions()
         if parsed_args.secret is not None:

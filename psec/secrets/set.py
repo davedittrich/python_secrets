@@ -18,7 +18,7 @@ from subprocess import run, PIPE  # nosec
 class SecretsSet(Command):
     """Set values manually for secrets."""
 
-    LOG = logging.getLogger(__name__)
+    logger = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
@@ -102,7 +102,7 @@ class SecretsSet(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.LOG.debug('[*] setting secrets')
+        self.logger.debug('[*] setting secrets')
         if (
             len(parsed_args.arg) == 0
             and not parsed_args.undefined
@@ -150,7 +150,7 @@ class SecretsSet(Command):
                 k = arg
                 k_type = self.app.secrets.get_type(k)
                 if k_type is None:
-                    self.LOG.info(f"[-] no description for '{k}'")
+                    self.logger.info("[-] no description for '%s'", k)
                     raise RuntimeError(
                         f"[-] variable '{k}' has no description")
                 if from_env is not None:
@@ -179,16 +179,18 @@ class SecretsSet(Command):
                 lhs, rhs = arg.split('=')
                 k_type = self.app.secrets.get_type(lhs)
                 if k_type is None:
-                    self.LOG.info(f"[-] no description for '{lhs}'")
+                    self.logger.info("[-] no description for '%s'", lhs)
                     raise RuntimeError(
                         f"[-] variable '{lhs}' has no description")
                 k = lhs
                 if from_env is not None:
                     # Get value from different var in different environment
                     v = from_env.get_secret(rhs, allow_none=True)
-                    self.LOG.info(
-                        f"[+] getting value from '{rhs}' in "
-                        f"environment '{str(from_env)}'")
+                    self.logger.info(
+                        "[+] getting value from '%s' in environment '%s'",
+                        rhs,
+                        str(from_env)
+                    )
                 else:
                     # Value was specified in arg
                     v = rhs
@@ -212,9 +214,9 @@ class SecretsSet(Command):
                         v = p.stdout.decode('UTF-8').strip()
             # After all that, did we get a value?
             if v is None:
-                self.LOG.info(f"[-] could not obtain value for '{k}'")
+                self.logger.info("[-] could not obtain value for '%s'", k)
             else:
-                self.LOG.debug(f"[+] setting variable '{k}'")
+                self.logger.debug("[+] setting variable '%s'", k)
                 self.app.secrets.set_secret(k, v)
 
 

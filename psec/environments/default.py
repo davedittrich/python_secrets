@@ -25,7 +25,7 @@ from sys import stdin
 class EnvironmentsDefault(Command):
     """Manage default environment via file in cwd."""
 
-    LOG = logging.getLogger(__name__)
+    logger = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
@@ -100,14 +100,14 @@ class EnvironmentsDefault(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.LOG.debug('[*] managing localized environment default')
+        self.logger.debug('[*] managing localized environment default')
         if parsed_args.unset:
             if parsed_args.environment is not None:
                 raise RuntimeError("[-] '--unset' does not take an argument")
             if clear_saved_default_environment():
-                self.LOG.info('[+] explicit default environment unset')
+                self.logger.info('[+] explicit default environment unset')
             else:
-                self.LOG.info('[+] no default environment was set')
+                self.logger.info('[+] no default environment was set')
         elif parsed_args.set:
             # If it is not possible to interactively ask for environment,
             # just raise an exception.
@@ -133,10 +133,12 @@ class EnvironmentsDefault(Command):
                 choice = cli.launch()
                 # Having second thoughts, eh?
                 if choice == "<CANCEL>":
-                    self.LOG.info('[-] cancelled setting default')
+                    self.logger.info('[-] cancelled setting default')
             if save_default_environment(choice):
-                self.LOG.info(
-                    f"[+] default environment explicitly set to '{choice}'")
+                self.logger.info(
+                    "[+] default environment explicitly set to '%s'",
+                    choice
+                )
         elif parsed_args.environment is not None:
             print(parsed_args.environment)
         else:
@@ -144,16 +146,18 @@ class EnvironmentsDefault(Command):
             env_string = get_saved_default_environment()
             if env_string is not None:
                 if self.app_args.verbose_level > 1:
-                    self.LOG.info(
-                        "[+] default environment explicitly set "
-                        f"to '{env_string}'")
+                    self.logger.info(
+                        "[+] default environment explicitly set to '%s'",
+                        env_string
+                    )
             else:
                 # No explicit saved default.
                 env_string = get_default_environment()
                 if self.app_args.verbose_level > 1:
-                    self.LOG.info(
-                        "[+] default environment is implicitly "
-                        f"'{env_string}'")
+                    self.logger.info(
+                        "[+] default environment is implicitly '%s'",
+                        env_string
+                    )
             print(env_string)
 
 

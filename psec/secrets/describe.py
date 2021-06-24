@@ -11,7 +11,7 @@ from psec.secrets_environment import SECRET_TYPES
 class SecretsDescribe(Lister):
     """Describe supported secret types."""
 
-    LOG = logging.getLogger(__name__)
+    logger = logging.getLogger(__name__)
 
     # Note: Not totally DRY. Replicates some logic from SecretsShow()
 
@@ -67,7 +67,7 @@ class SecretsDescribe(Lister):
         return parser
 
     def take_action(self, parsed_args):
-        self.LOG.debug('[*] describing secrets')
+        self.logger.debug('[*] describing secrets')
         if parsed_args.types:
             columns = [k.title() for k in SECRET_TYPES[0].keys()]
             data = [[v for k, v in i.items()] for i in SECRET_TYPES]

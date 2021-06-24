@@ -13,7 +13,7 @@ from psec.utils import atree
 class EnvironmentsTree(Command):
     """Output tree listing of files/directories in environment."""
 
-    LOG = logging.getLogger(__name__)
+    logger = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
@@ -95,7 +95,7 @@ class EnvironmentsTree(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.LOG.debug('[*] outputting environment tree')
+        self.logger.debug('[*] outputting environment tree')
         environment = parsed_args.environment
         if environment is None:
             environment = self.app.options.environment

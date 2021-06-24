@@ -21,7 +21,7 @@ from sys import stdin
 class GroupsDelete(Command):
     """Delete a secrets descriptions group."""
 
-    LOG = logging.getLogger(__name__)
+    logger = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
@@ -46,7 +46,7 @@ class GroupsDelete(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.LOG.debug('[*] deleting group')
+        self.logger.debug('[*] deleting group')
         self.app.secrets.requires_environment()
         self.app.secrets.read_secrets_descriptions()
         group = parsed_args.group
@@ -71,7 +71,7 @@ class GroupsDelete(Command):
                          pad_right=5)
             choice = cli.launch()
             if choice == "<CANCEL>":
-                self.LOG.info('[-] cancelled deleting group')
+                self.logger.info('[-] cancelled deleting group')
                 return
 
         # Group chosen. Now do we need to confirm?
@@ -86,7 +86,7 @@ class GroupsDelete(Command):
                             word_color=colors.foreground["yellow"])
                 confirm = cli.launch()
                 if confirm != choice:
-                    self.LOG.info('[-] cancelled deleting group')
+                    self.logger.info('[-] cancelled deleting group')
                     return
 
         group_file = self.app.secrets.descriptions_path(group=group)
@@ -99,8 +99,11 @@ class GroupsDelete(Command):
             self.app.secrets.delete_secret(secret)
         # Delete group descriptions.
         safe_delete_file(group_file)
-        self.LOG.info(
-            f"[+] deleted secrets group '{choice}' ({group_file})")
+        self.logger.info(
+            "[+] deleted secrets group '%s' (%s)",
+            choice,
+            group_file
+        )
 
 
 # vim: set fileencoding=utf-8 ts=4 sw=4 tw=0 et :

@@ -10,7 +10,7 @@ import sys
 class GroupsList(Lister):
     """Show a list of secrets groups."""
 
-    LOG = logging.getLogger(__name__)
+    logger = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
@@ -34,7 +34,7 @@ class GroupsList(Lister):
         return parser
 
     def take_action(self, parsed_args):
-        self.LOG.debug('[*] listing secret groups')
+        self.logger.debug('[*] listing secret groups')
         self.app.secrets.requires_environment(path_only=True)
         self.app.secrets.read_secrets_descriptions()
         columns = ('Group', 'Items')

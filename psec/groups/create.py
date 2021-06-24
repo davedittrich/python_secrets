@@ -12,7 +12,7 @@ from psec.secrets_environment import SecretsEnvironment
 class GroupsCreate(Command):
     """Create a secrets descriptions group."""
 
-    LOG = logging.getLogger(__name__)
+    logger = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
@@ -64,7 +64,7 @@ class GroupsCreate(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.LOG.debug('[*] creating group')
+        self.logger.debug('[*] creating group')
         se = self.app.secrets
         # Creating a new group in an empty environment that exists is OK.
         se.requires_environment(path_only=True)
@@ -106,7 +106,7 @@ class GroupsCreate(Command):
             se.check_duplicates(descriptions)
         if group in groups:
             raise RuntimeError(f"[-] group '{group}' already exists")
-        self.LOG.info(f"[+] creating new group '{group}'")
+        self.logger.info("[+] creating new group '%s'", group)
         se.write_descriptions(
             data=descriptions,
             group=group)

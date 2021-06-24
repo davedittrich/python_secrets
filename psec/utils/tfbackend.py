@@ -9,7 +9,7 @@ import textwrap
 from cliff.command import Command
 from psec.secrets_environment import SecretsEnvironment
 
-LOG = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class TfBackend(Command):
@@ -60,9 +60,9 @@ class TfBackend(Command):
         else:
             self.log.debug('[+] setting up terraform backend')
             if os.path.exists(backend_file):
-                LOG.debug(f"[+] updating '{backend_file}'")
+                logger.debug("[+] updating '%s'", backend_file)
             else:
-                LOG.debug(f"[+] creating '{backend_file}")
+                logger.debug("[+] creating '%s'", backend_file)
             with open(backend_file, 'w') as f:
                 f.write(backend_text)
 

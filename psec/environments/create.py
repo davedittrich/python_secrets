@@ -12,7 +12,7 @@ from psec.secrets_environment import SecretsEnvironment
 class EnvironmentsCreate(Command):
     """Create environment(s)."""
 
-    LOG = logging.getLogger(__name__)
+    logger = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
@@ -96,7 +96,7 @@ class EnvironmentsCreate(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.LOG.debug('[*] creating environment(s)')
+        self.logger.debug('[*] creating environment(s)')
         if parsed_args.alias is not None:
             if len(parsed_args.env) != 1:
                 raise RuntimeError(
@@ -105,9 +105,11 @@ class EnvironmentsCreate(Command):
             se.environment_create(source=parsed_args.env[0],
                                   alias=True)
             if se.environment_exists():
-                self.LOG.info(
-                    f"[+] environment '{parsed_args.alias}' aliased "
-                    f"to '{parsed_args.env[0]}'")
+                self.logger.info(
+                    "[+] environment '%s' aliased to '%s'",
+                    parsed_args.alias,
+                    parsed_args.env[0]
+                )
             else:
                 raise RuntimeError('[-] creating environment failed')
         else:
@@ -117,8 +119,11 @@ class EnvironmentsCreate(Command):
             for e in parsed_args.env:
                 se = SecretsEnvironment(environment=e)
                 se.environment_create(source=parsed_args.clone_from)
-                self.LOG.info(
-                    f"[+] environment '{e}' ({se.environment_path()}) created")
+                self.logger.info(
+                    "[+] environment '%s' (%s) created",
+                    e,
+                    se.environment_path()
+                )
                 if parsed_args.clone_from:
                     se.read_secrets(from_descriptions=True)
                     se.write_secrets()
