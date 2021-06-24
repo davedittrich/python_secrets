@@ -3,11 +3,10 @@
 import argparse
 import logging
 import os
-import psec.secrets
-import psec.utils
 import textwrap
 
 from cliff.command import Command
+from psec.secrets_environment import SecretsEnvironment
 
 
 class EnvironmentsRename(Command):
@@ -62,11 +61,11 @@ class EnvironmentsRename(Command):
             raise RuntimeError('[-] no source name provided')
         if dest is None:
             raise RuntimeError('[-] no destination name provided')
-        if not psec.secrets.SecretsEnvironment(
+        if not SecretsEnvironment(
                 environment=source).environment_exists():
             raise RuntimeError(
                 f"[-] source environment '{source}' does not exist")
-        if psec.secrets.SecretsEnvironment(
+        if SecretsEnvironment(
                 environment=dest).environment_exists():
             raise RuntimeError(
                 f"[-] destination environment '{dest}' already exist")

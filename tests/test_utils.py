@@ -7,9 +7,9 @@ test_psec.utils
 Tests for `psec.utils` module.
 """
 
+import psec.utils
 import unittest
 
-import psec.utils
 
 class Test_Utils(unittest.TestCase):
 

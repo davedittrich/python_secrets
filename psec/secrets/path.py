@@ -5,7 +5,7 @@ import logging
 import textwrap
 
 from cliff.command import Command
-from psec.secrets import SecretsEnvironment
+from psec.secrets_environment import SecretsEnvironment
 
 
 class SecretsPath(Command):

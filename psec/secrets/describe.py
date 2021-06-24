@@ -5,7 +5,7 @@ import logging
 import textwrap
 
 from cliff.lister import Lister
-from psec.secrets import SECRET_TYPES
+from psec.secrets_environment import SECRET_TYPES
 
 
 class SecretsDescribe(Lister):

@@ -20,17 +20,19 @@ import textwrap
 import time
 import webbrowser
 
-from psec import __version__
-from psec import __release__
-from psec.environments import default_environment
-from psec.secrets import SecretsEnvironment
-from psec.utils import bell
-from psec.utils import Timer
-
 # External dependencies.
 
 from cliff.app import App
 from cliff.commandmanager import CommandManager
+from psec import __version__
+from psec.secrets_environment import (
+    get_default_environment,
+    SecretsEnvironment,
+)
+from psec.utils import (
+    bell,
+    Timer,
+)
 
 if sys.version_info < (3, 6, 0):
     print((f"[-] The {os.path.basename(sys.argv[0])} "
@@ -55,10 +57,11 @@ def show_current_value(variable=None):
 
 
 def umask(value):
+    """Set umask."""
     if value.lower().find("o") < 0:
         raise argparse.ArgumentTypeError(
-                'value ({}) must be expressed in ' +
-                'octal form (e.g., "0o077")')
+            'value ({}) must be expressed in '
+            'octal form (e.g., "0o077")')
     ivalue = int(value, base=8)
     if ivalue < 0 or ivalue > MAX_UMASK:
         raise argparse.ArgumentTypeError(
@@ -77,7 +80,7 @@ class PythonSecretsApp(App):
     def __init__(self):
         super().__init__(
             description=__doc__.strip(),
-            version=__release__ if __release__ != __version__ else __version__,
+            version=__version__,
             command_manager=CommandManager(
                 namespace='psec'
             ),
@@ -117,7 +120,7 @@ class PythonSecretsApp(App):
                  "(Env: D2_SECRETS_BASEDIR; default: {})".format(
                      _env.secrets_basedir())
         )
-        default_env = default_environment()
+        default_env = get_default_environment()
         parser.add_argument(
             '-e', '--environment',
             metavar='<environment>',
@@ -232,7 +235,7 @@ class PythonSecretsApp(App):
         rtd_url = 'https://python-secrets.readthedocs.io/en/latest/usage.html'
         if cmd.cmd_name == 'help' and self.options.rtd:
             for line in [
-                '[+] Opening online documentation for python_secrets on ReadTheDocs.',   # noqa
+                '[+] Opening online documentation for python_secrets on ReadTheDocs.',  # noqa
                 '[+] If a browser does not open, make sure that you are online and/or',  # noqa
                 '[+] enter the following URL in your chosen browser:',
                 rtd_url,

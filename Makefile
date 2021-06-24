@@ -51,7 +51,7 @@ test-tox:
 	@if [ -f .python_secrets_environment ]; then (echo '[!] Remove .python_secrets_environment prior to testing'; exit 1); fi
 	touch docs/psec_help.txt
 	@# See comment in tox.ini file.
-	tox -e pep8,bandit,docs,bats && tox -e py36,py37,py38,pypi
+	tox -e pep8,bandit,docs,bats && tox -e py36,py37,py38,py39,pypi
 	@-git checkout ChangeLog
 
 .PHONY: test-bats

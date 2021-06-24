@@ -3,10 +3,10 @@
 import argparse
 import logging
 import os
-import psec.secrets
 import textwrap
 
 from cliff.command import Command
+from psec.secrets_environment import SecretsEnvironment
 
 
 class GroupsCreate(Command):
@@ -96,9 +96,7 @@ class GroupsCreate(Command):
                     raise RuntimeError(
                         "[-] please specify which group from environment "
                         f"'{parsed_args.clone_from}' you want to clone")
-                clonefrom_se = psec.secrets.SecretsEnvironment(
-                    environment=clone_from
-                )
+                clonefrom_se = SecretsEnvironment(environment=clone_from)
                 if group not in clonefrom_se.get_groups():
                     raise RuntimeError(
                         f"[-] group '{group}' does not exist in "

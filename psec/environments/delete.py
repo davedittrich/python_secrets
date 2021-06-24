@@ -3,8 +3,6 @@
 import argparse
 import logging
 import os
-import psec.secrets
-import psec.utils
 import shutil
 import textwrap
 
@@ -18,6 +16,8 @@ except ModuleNotFoundError:
     pass
 
 from cliff.command import Command
+from psec.secrets_environment import SecretsEnvironment
+from psec.utils import atree
 from sys import stdin
 
 
@@ -36,7 +36,7 @@ class EnvironmentsDelete(Command):
             default=False,
             help="Mandatory confirmation (default: False)"
         )
-        # default_environment = psec.secrets.SecretsEnvironment().environment()
+        # default_environment = str(SecretsEnvironment())
         parser.add_argument('environment',
                             nargs='?',
                             default=None)
@@ -99,13 +99,13 @@ class EnvironmentsDelete(Command):
                 return
 
         # Environment chosen. Now do we need to confirm?
-        e = psec.secrets.SecretsEnvironment(choice)
+        e = SecretsEnvironment(choice)
         env_path = e.environment_path()
         if not parsed_args.force:
             if not stdin.isatty():
-                output = psec.utils.atree(env_path,
-                                          outfile=None,
-                                          print_files=True)
+                output = atree(env_path,
+                               outfile=None,
+                               print_files=True)
                 raise RuntimeError(
                     "[-] must use '--force' flag to delete an environment.\n"
                     "[-] the following will be deleted: \n"

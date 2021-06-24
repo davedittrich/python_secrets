@@ -3,10 +3,10 @@
 import argparse
 import logging
 import os
-import psec.utils
 import textwrap
 
 from cliff.command import Command
+from psec.utils import safe_delete_file
 from sys import stdin
 
 # TODO(dittrich): https://github.com/Mckinsey666/bullet/issues/2
@@ -92,7 +92,7 @@ class SecretsDelete(Command):
             raise RuntimeError(
                 (
                     f"[!] group '{group}' does not exist in "
-                    f"environment '{str(se.environment)}'"
+                    f"environment '{str(se)}'"
                 )
                 if parsed_args.group is not None else
                 "[!] please specify a group with '--group'"
@@ -128,7 +128,7 @@ class SecretsDelete(Command):
                 paths.append(se.descriptions_path(root=os.getcwd(),
                                                   group=group))
             for path in paths:
-                psec.utils.safe_delete_file(path)
+                safe_delete_file(path)
                 self.LOG.info(f"[+] deleted empty group '{group}' ({path})")
         else:
             se.write_descriptions(

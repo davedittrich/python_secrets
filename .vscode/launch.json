@@ -5,6 +5,13 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Python: Current File",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal"
+        },
+        {
             "name": "psec help",
             "type": "python",
             "request": "launch",
@@ -29,6 +36,22 @@
                 "--debug",
                 "-q",
                 "complete"
+            ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
+            "stopOnEntry": true,
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "psec --version",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "args": [
+                "-vv",
+                "--version"
             ],
             "env": {
                 "D2_ENVIRONMENT": "test",
@@ -400,6 +423,24 @@
                 "--debug",
                 "secrets",
                 "create",
+                "newsecret"
+            ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
+            "stopOnEntry": false,
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "psec secrets create newsecret --mirror-locally",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "args": [
+                "--debug",
+                "secrets",
+                "create",
                 "newsecret",
                 "--mirror-locally"
             ],
@@ -615,6 +656,23 @@
             "env": {
                 "D2_ENVIRONMENT": "test",
                 "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
+            "stopOnEntry": false,
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "psec secrets generate --from-options",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "args": [
+                "--debug",
+                "secrets",
+                "generate",
+                "--from-options"
+            ],
+            "env": {
+                "D2_ENVIRONMENT": "flash"
             },
             "stopOnEntry": false,
             "console": "integratedTerminal"

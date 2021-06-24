@@ -4,10 +4,10 @@
 import argparse
 import logging
 import os
-import psec.secrets
 import textwrap
 
 from cliff.command import Command
+from psec.secrets_environment import SecretsEnvironment
 
 LOG = logging.getLogger(__name__)
 
@@ -42,8 +42,7 @@ class TfBackend(Command):
         return parser
 
     def take_action(self, parsed_args):
-        e = psec.secrets.SecretsEnvironment(
-                environment=self.app.options.environment)
+        e = SecretsEnvironment(environment=self.app.options.environment)
         tmpdir = e.tmpdir_path()
         backend_file = os.path.join(os.getcwd(), 'tfbackend.tf')
         tfstate_file = os.path.join(tmpdir, 'terraform.tfstate')

@@ -3,10 +3,10 @@
 import argparse
 import logging
 import os
-import psec
 import textwrap
 
 from cliff.lister import Lister
+from psec.utils import redact
 
 
 class SecretsShow(Lister):
@@ -20,8 +20,8 @@ class SecretsShow(Lister):
         # Sorry for the double-negative, but it works better
         # this way for the user as a flag and to have a default
         # of redacting (so they need to turn it off)
-        redact = not (os.getenv('D2_NO_REDACT', "FALSE").upper()
-                      in ["true".upper(), "1", "yes".upper()])
+        do_redact = not (os.getenv('D2_NO_REDACT', "FALSE").upper()
+                         in ["true".upper(), "1", "yes".upper()])
 
         parser = super().get_parser(prog_name)
         parser.formatter_class = argparse.RawDescriptionHelpFormatter
@@ -29,8 +29,9 @@ class SecretsShow(Lister):
             '-C', '--no-redact',
             action='store_false',
             dest='redact',
-            default=redact,
-            help="Do not redact values in output (default: {})".format(redact)
+            default=do_redact,
+            help=("Do not redact values in output "
+                  f"(default: {do_redact})")
         )
         parser.add_argument(
             '-p', '--prompts',
@@ -134,7 +135,7 @@ class SecretsShow(Lister):
                 else [k for k, v in self.app.secrets.items()]
         columns = ('Variable', 'Value', 'Export')
         data = ([(k,
-                  psec.utils.redact(v, parsed_args.redact),
+                  redact(v, parsed_args.redact),
                   self.app.secrets.get_secret_export(k))
                 for k, v in self.app.secrets.items()
                 if (k in variables and

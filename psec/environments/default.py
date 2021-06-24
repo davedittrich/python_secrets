@@ -12,10 +12,12 @@ try:
 except ModuleNotFoundError:
     pass
 
-from . import default_environment
-from . import clear_saved_default_environment
-from . import get_saved_default_environment
-from . import save_default_environment
+from . import (
+    clear_saved_default_environment,
+    get_default_environment,
+    get_saved_default_environment,
+    save_default_environment,
+)
 from cliff.command import Command
 from sys import stdin
 
@@ -147,7 +149,7 @@ class EnvironmentsDefault(Command):
                         f"to '{env_string}'")
             else:
                 # No explicit saved default.
-                env_string = default_environment()
+                env_string = get_default_environment()
                 if self.app_args.verbose_level > 1:
                     self.LOG.info(
                         "[+] default environment is implicitly "

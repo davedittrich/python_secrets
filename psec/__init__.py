@@ -1,27 +1,24 @@
 # -*- coding: utf-8 -*-
 
-import os
-import pathlib
-import pbr.version
+__version__ = None
+__release__ = '21.2.0'
 
-# PBR has a bug that produces incorrect version numbers
-# if you run ``psec --version`` in another Git repo.
-# This attempted workaround only uses PBR for getting
-# version and revision number if run in a directory
-# path that contains strings that appear to be
-# a python_secrets repo clone.
+# Get development version from repository tags.
+try:
+    from setuptools_scm import get_version
+    __version__ = get_version(root='..', relative_to=__file__)
+except (ImportError, LookupError):
+    pass
 
-p = pathlib.Path(os.getcwd())
-if 'python_secrets' in p.parts or 'psec' in p.parts:
+if __version__ is None:
+    from pkg_resources import get_distribution, DistributionNotFound
     try:
-        version_info = pbr.version.VersionInfo('psec')
-        __version__ = version_info.cached_version_string()
-        __release__ = version_info.release_string()
-    except Exception:
+        __version__ = get_distribution("psec").version
+    except DistributionNotFound:
         pass
-else:
-    __version__ = '21.2.0'
-    __release__ = __version__
+
+if __version__ is None:
+    __version__ = __release__
 
 __author__ = 'Dave Dittrich'
 __email__ = 'dave.dittrich@gmail.com'

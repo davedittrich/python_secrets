@@ -38,7 +38,7 @@ teardown() {
 @test "'psec environments create --clone-from /tmp' fails" {
     run $PSEC -vvv environments create --clone-from /tmp 1>&2
     assert_failure
-    assert_output --partial "refusing to process"
+    assert_output --partial "does not exist"
 }
 
 @test "'psec environments create --clone-from nosuchenvironment' fails" {

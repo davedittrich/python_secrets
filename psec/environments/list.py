@@ -3,15 +3,16 @@
 import argparse
 import logging
 import os
-import psec.secrets
-import psec.utils
 import textwrap
 import sys
 
-from . import default_environment
-from . import _is_default
-
 from cliff.lister import Lister
+from psec.secrets_environment import (
+    SecretsEnvironment,
+    get_default_environment,
+    _is_default,
+    is_valid_environment,
+)
 
 
 class EnvironmentsList(Lister):
@@ -63,14 +64,35 @@ class EnvironmentsList(Lister):
                 +-------------+---------+----------+
 
             ..
+
+            If there are any older environments that contain ``.yml`` files for storing
+            secrets or definitions, they will be called out when you list environments.
+            (Adding ``-v`` will explicitly list the names of files that are found if
+            you wish to see them.)
+
+            .. code-block:: console
+
+                $ psec environments list
+                [!] environment 'algo' needs conversion (see 'psec utils yaml-to-json --help')
+                [!] environment 'hypriot' needs conversion (see 'psec utils yaml-to-json --help')
+                [!] environment 'kali-packer' needs conversion (see 'psec utils yaml-to-json --help')
+                +-------------------------+---------+
+                | Environment             | Default |
+                +-------------------------+---------+
+                | attack_range            | No      |
+                | attack_range_local      | No      |
+                | flash                   | No      |
+                | python_secrets          | Yes     |
+                +-------------------------+---------+
+
             """)
 
         return parser
 
     def take_action(self, parsed_args):
         self.LOG.debug('[*] listing environment(s)')
-        secrets_environment = psec.secrets.SecretsEnvironment()
-        default_env = default_environment()
+        secrets_environment = SecretsEnvironment()
+        default_env = get_default_environment()
         columns = (['Environment', 'Default'])
         basedir = secrets_environment.secrets_basedir()
         if parsed_args.aliasing:
@@ -79,8 +101,8 @@ class EnvironmentsList(Lister):
         environments = os.listdir(basedir)
         for e in sorted(environments):
             env_path = os.path.join(basedir, e)
-            if psec.secrets.is_valid_environment(env_path,
-                                                 self.app_args.verbose_level):
+            if is_valid_environment(env_path,
+                                    self.app_args.verbose_level):
                 default = _is_default(e, default_env)
                 if not parsed_args.aliasing:
                     item = (e, default)
