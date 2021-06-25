@@ -104,6 +104,32 @@ teardown() {
     assert_output ''
 }
 
+@test "'psec environments list' with D2_SECRETS_BASEDIR set works" {
+    run $PSEC environments create --clone-from tests/secrets.d 1>&2
+    run $PSEC environments list
+    assert_output '+-------------+---------+
+| Environment | Default |
++-------------+---------+
+| test        | Yes     |
++-------------+---------+'
+}
+
+@test "'psec -d $D2_SECRETS_BASEDIR environments list' works" {
+    run $PSEC -q environments create --clone-from tests/secrets.d
+    #
+    # Force unsetting of environment variable (but still use same value
+    # for command line argument) for this specific test.
+    #
+    BASEDIR=$D2_SECRETS_BASEDIR
+    unset D2_SECRETS_BASEDIR
+    run $PSEC -d $BASEDIR environments list
+    assert_output '+-------------+---------+
+| Environment | Default |
++-------------+---------+
+| test        | Yes     |
++-------------+---------+'
+}
+
 @test "'psec environments list' does not show aliases" {
     run $PSEC environments create --clone-from tests/secrets.d 1>&2
     run $PSEC environments create --alias alias $D2_ENVIRONMENT 1>&2
