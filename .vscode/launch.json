@@ -599,16 +599,15 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "psec secrets set newsecret",
+            "name": "psec secrets set hypriot_hostname",
             "type": "python",
             "request": "launch",
             "module": "psec.main",
             "args": [
                 "--debug",
-                "-v",
                 "secrets",
                 "set",
-                "newsecret"
+                "hypriot_hostname"
             ],
             "env": {
                 "D2_ENVIRONMENT": "test",
