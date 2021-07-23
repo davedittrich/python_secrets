@@ -1,0 +1,82 @@
+[
+  {
+    "Variable": "hypriot_user",
+    "Type": "string",
+    "Prompt": "User name for primary account",
+    "Options": "pirate,*"
+  },
+  {
+    "Variable": "hypriot_password",
+    "Type": "password",
+    "Prompt": "Password for primary account"
+  },
+  {
+    "Variable": "hypriot_hostname",
+    "Type": "string",
+    "Prompt": "Host name for your RPi",
+    "Options": "hypriot,*"
+  },
+  {
+    "Variable": "hypriot_eth0_addr",
+    "Type": "string",
+    "Prompt": "Static IP address for eth0 interface",
+    "Options": "192.168.50.1,*"
+  },
+  {
+    "Variable": "hypriot_eth0_netmask",
+    "Type": "string",
+    "Prompt": "Netmask for eth0 interface",
+    "Options": "255.255.255.0,*"
+  },
+  {
+    "Variable": "hypriot_client_psk",
+    "Type": "string",
+    "Prompt": "Pre-shared key for HypriotOS client WiFi AP"
+  },
+  {
+    "Variable": "hypriot_client_ssid",
+    "Type": "string",
+    "Prompt": "SSID for HypriotOS client WiFi AP"
+  },
+  {
+    "Variable": "hypriot_pubkey",
+    "Type": "string",
+    "Prompt": "SSH public key for accessing primary account"
+  },
+  {
+    "Variable": "hypriot_locale",
+    "Type": "string",
+    "Prompt": "Locale",
+    "Options": "en_US.UTF-8,*"
+  },
+  {
+    "Variable": "hypriot_timezone",
+    "Type": "string",
+    "Prompt": "Timezone",
+    "Options": "America/Los_Angeles,*"
+  },
+  {
+    "Variable": "hypriot_wifi_country",
+    "Type": "string",
+    "Prompt": "WiFi country code",
+    "Options": "US,*"
+  },
+  {
+    "Variable": "hypriot_keyboard_model",
+    "Type": "string",
+    "Prompt": "Keyboard model",
+    "Options": "pc105,*"
+  },
+  {
+    "Variable": "hypriot_keyboard_layout",
+    "Type": "string",
+    "Prompt": "Keyboard layout",
+    "Options": "us,*"
+  },
+  {
+    "Variable": "hypriot_keyboard_options",
+    "Type": "string",
+    "Prompt": "Keyboard options",
+    "Options": "ctrl:swapcaps,*"
+  }
+]
