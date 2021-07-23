@@ -226,15 +226,26 @@ def require_options(options, *args):
     return True
 
 
-def prompt_options_list(options=[],
+def prompt_options_list(options=None,
                         default=None,
                         prompt="Select from the following options"):
-    """Prompt the user for a string using a list of options."""
-    cancel = '<CANCEL>'
+    """Prompt the user for a string using a list of options.
+
+    The options will be one of the following:
+
+    '*' - Any user input
+    'A,*' - 'A', or any user input.
+    'A,B' - Only choices are 'A' or 'B'.
+
+    """
     if 'Bullet' not in globals():
         raise RuntimeError("[-] can't use Bullet on Windows")
-    if not len(options) or type(options[0]) is not str:
+    if (
+        len(options) == 0
+        or not isinstance(options[0], str)
+    ):
         raise RuntimeError('[-] a list of options is required')
+    cancel = '<CANCEL>'
     if default is None:
         default = cancel
     else:
@@ -257,17 +268,24 @@ def prompt_options_list(options=[],
     return choice
 
 
-def prompt_options_dict(options=[],
+def prompt_options_dict(options=None,
                         by_descr=True,
                         prompt="Select from the following options"):
-    """Prompt the user for a string using option dictionaries."""
+    """
+    Prompt the user for a string using option dictionaries.
+
+    These dictionaries map a descriptive name to an identifier::
+
+        {'descr': 'DigitalOcean', 'ident': 'digitalocean'}
+
+
+    """
     if 'Bullet' not in globals():
         raise RuntimeError("[-] can't use Bullet on Windows")
-    try:
-        if type(options[0]) is not dict:
-            raise RuntimeError('[-] options is not a list of dictionaries')
-    except Exception as exc:
-        print(str(exc))
+    if options is None:
+        raise RuntimeError('[-] no options specified')
+    if not isinstance(options[0], dict):
+        raise RuntimeError('[-] options is not a list of dictionaries')
     choices = ['<CANCEL>'] + [
                                 opt['descr']
                                 if by_descr
@@ -289,8 +307,6 @@ def prompt_options_dict(options=[],
     selected = find(options,
                     'descr' if by_descr else 'ident',
                     choice)
-    # options[selected]
-    # {'descr': 'DigitalOcean', 'ident': 'digitalocean'}
     try:
         return options[selected]['ident']
     except Exception as exc:  # noqa

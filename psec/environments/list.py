@@ -8,7 +8,6 @@ import sys
 
 from cliff.lister import Lister
 from psec.secrets_environment import (
-    SecretsEnvironment,
     get_default_environment,
     _is_default,
     is_valid_environment,

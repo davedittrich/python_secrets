@@ -836,8 +836,17 @@ class SecretsEnvironment(object):
     def get_secret(self, secret, allow_none=False):
         """Get the value of secret
 
-        :param secret: :type: string
-        :return: value of secret
+        Args:
+            secret (string): Name of the secret to get
+            allow_none (boolean): Allow returning ``None``
+
+        Returns:
+            string: The value of the secret
+
+        Raises:
+            RuntimeError: If value is ``None`` and
+                ``allow_none`` is ``False``
+
         """
         if secret is None:
             raise RuntimeError('[-] must specify secret to get')

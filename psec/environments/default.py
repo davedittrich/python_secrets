@@ -12,7 +12,7 @@ try:
 except ModuleNotFoundError:
     pass
 
-from . import (
+from psec.secrets_environment import (
     clear_saved_default_environment,
     get_default_environment,
     get_saved_default_environment,

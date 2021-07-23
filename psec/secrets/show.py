@@ -110,8 +110,10 @@ class SecretsShow(Lister):
             for g in parsed_args.arg:
                 try:
                     variables.extend(
-                        [v for v
-                         in self.app.secrets.get_items_from_group(g)]
+                        [
+                            v for v
+                            in self.app.secrets.get_items_from_group(g)
+                        ]
                     )
                 except KeyError as e:
                     raise RuntimeError(
