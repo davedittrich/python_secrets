@@ -247,7 +247,7 @@ class SecretsCreate(Command):
                         'Export': " ",
                     }
                 )
-            if len(new_description):
+            if len(new_description) > 0:
                 table = PrettyTable()
                 table.field_names = ('Key', 'Value')
                 table.align = 'l'

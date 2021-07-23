@@ -42,7 +42,7 @@ class GroupsList(Lister):
         for g in self.app.secrets.get_groups():
             items[g] = self.app.secrets.get_items_from_group(g)
         data = [(k, len(v)) for k, v in items.items()]
-        if not len(data):
+        if len(data) == 0:
             sys.exit(1)
         return columns, data
 

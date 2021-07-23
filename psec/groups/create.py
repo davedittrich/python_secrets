@@ -102,7 +102,7 @@ class GroupsCreate(Command):
                         f"[-] group '{group}' does not exist in "
                         f"environment '{clone_from}'")
                 descriptions = clonefrom_se.read_descriptions(group=group)
-        if len(descriptions):
+        if len(descriptions) > 0:
             se.check_duplicates(descriptions)
         if group in groups:
             raise RuntimeError(f"[-] group '{group}' already exists")

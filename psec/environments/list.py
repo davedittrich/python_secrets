@@ -112,7 +112,7 @@ class EnvironmentsList(Lister):
                         alias_for = ''
                     item = (e, default, alias_for)
                 data.append(item)
-        if not len(data):
+        if len(data) == 0:
             sys.exit(1)
         return columns, data
 

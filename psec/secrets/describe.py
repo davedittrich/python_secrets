@@ -76,7 +76,7 @@ class SecretsDescribe(Lister):
             self.app.secrets.read_secrets_and_descriptions()
             variables = []
             if parsed_args.args_group:
-                if not len(parsed_args.arg):
+                if len(parsed_args.arg) == 0:
                     raise RuntimeError('[-] no group specified')
                 for g in parsed_args.arg:
                     try:

@@ -113,7 +113,7 @@ def get_myip(method='random'):
     logger.debug("[+] determining IP address using '%s'", method)
     arg = myip_methods[method].get('arg')
     ip = str(func(arg=arg))
-    if not len(ip) or ip is None:
+    if len(ip) == 0 or ip is None:
         raise RuntimeError(
             f"[-] method '{method}' failed to get an IP address")
     return ip
@@ -260,7 +260,7 @@ class MyIPMethods(Lister):
         columns = ('Method', 'Type', 'Source')
         data = []
         methods = (parsed_args.method
-                   if len(parsed_args.method)
+                   if len(parsed_args.method) > 0
                    else myip_methods.keys())
 
         for method, mechanics in sorted(myip_methods.items()):

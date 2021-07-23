@@ -105,7 +105,7 @@ class SecretsShow(Lister):
         variables = []
         all_items = [k for k, v in self.app.secrets.items()]
         if parsed_args.args_group:
-            if not len(parsed_args.arg):
+            if len(parsed_args.arg) == 0:
                 raise RuntimeError('[-] no group(s) specified')
             for g in parsed_args.arg:
                 try:
@@ -117,7 +117,7 @@ class SecretsShow(Lister):
                     raise RuntimeError(
                         f"[-] group '{str(e)}' does not exist")
         elif parsed_args.args_type:
-            if not len(parsed_args.arg):
+            if len(parsed_args.arg) == 0:
                 raise RuntimeError('[-] no type(s) specified')
             variables = [
                 k for k, v

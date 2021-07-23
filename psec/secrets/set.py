@@ -120,18 +120,18 @@ class SecretsSet(Command):
             from_env = SecretsEnvironment(
                 environment=parsed_args.from_environment)
             from_env.read_secrets()
-            options = dict(from_env.secrets.Options)
-            variables = dict(from_env.secrets.Variable)
-            types = dict(from_env.secrets.Type)
+            options = dict(from_env._secrets.Options)
+            variables = dict(from_env._secrets.Variable)
+            types = dict(from_env._secrets.Type)
         args = (
-            list(variables.keys()) if not len(parsed_args.arg)
+            list(variables.keys()) if len(parsed_args.arg) == 0
             else parsed_args.arg
         )
         if parsed_args.undefined:
             # Downselect to just those currently undefined
             args = [k for k, v in variables
                     if v in [None, '']]
-        if not len(args):
+        if len(args) == 0:
             raise RuntimeError('[-] no secrets identified to be set')
         for arg in args:
             k, v, k_type = None, None, None

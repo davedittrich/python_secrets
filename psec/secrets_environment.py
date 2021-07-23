@@ -305,7 +305,7 @@ def is_valid_environment(env_path, verbose_level=1):
         and contains_expected
         and len(yaml_files) == 0
     )
-    if len(yaml_files) and verbose_level > 0:
+    if len(yaml_files) > 0 and verbose_level > 0:
         logger.warning(
             "[!] environment '%s' needs conversion (see 'psec utils yaml-to-json --help')",  # noqa
             environment)
@@ -928,7 +928,7 @@ class SecretsEnvironment(object):
         # TODO(dittrich): Replace this with simpler use of attribute maps
         for group in self._descriptions.keys():
             for i in self._descriptions[group]:
-                if not len(i):
+                if len(i) == 0:
                     raise RuntimeError(
                         f"[-] found empty dictionary item in group '{group}'")
                 s = i['Variable']

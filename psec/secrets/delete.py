@@ -122,7 +122,7 @@ class SecretsDelete(Command):
                 if item['Variable'] != arg
             ]
             se.delete_secret(arg)
-        if not len(descriptions):
+        if len(descriptions) == 0:
             paths = [se.descriptions_path(group=group)]
             if parsed_args.mirror_locally:
                 paths.append(se.descriptions_path(root=os.getcwd(),
