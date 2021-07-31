@@ -61,21 +61,42 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "psec environments list --aliasing",
+            "name": "psec environments create --clone-from secrets.d",
             "type": "python",
             "request": "launch",
             "module": "psec.main",
             "args": [
                 "--debug",
                 "environments",
-                "list",
-                "--aliasing"
+                "create",
+                "--clone-from",
+                "secrets.d"
             ],
             "env": {
                 "D2_ENVIRONMENT": "test",
                 "D2_SECRETS_BASEDIR": "/tmp/.secrets"
             },
-            "stopOnEntry": true,
+            "stopOnEntry": false,
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "psec environments create --alias alias notanalias",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "args": [
+                "--debug",
+                "environments",
+                "create",
+                "--alias",
+                "alias",
+                "notanalias"
+            ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
+            "stopOnEntry": false,
             "console": "integratedTerminal"
         },
         {
@@ -114,42 +135,53 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "psec environments create --clone-from secrets.d",
+            "name": "psec environments list (using D2_SECRETS_BASEDIR))",
             "type": "python",
             "request": "launch",
             "module": "psec.main",
             "args": [
                 "--debug",
                 "environments",
-                "create",
-                "--clone-from",
-                "secrets.d"
+                "list"
             ],
             "env": {
                 "D2_ENVIRONMENT": "test",
                 "D2_SECRETS_BASEDIR": "/tmp/.secrets"
             },
-            "stopOnEntry": false,
+            "stopOnEntry": true,
             "console": "integratedTerminal"
         },
         {
-            "name": "psec environments create --alias alias notanalias",
+            "name": "psec -d /tmp/.secrets environments list",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "args": [
+                "--debug",
+                "-d",
+                "/tmp/.secrets",
+                "environments",
+                "list"
+            ],
+            "stopOnEntry": true,
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "psec environments list --aliasing",
             "type": "python",
             "request": "launch",
             "module": "psec.main",
             "args": [
                 "--debug",
                 "environments",
-                "create",
-                "--alias",
-                "alias",
-                "notanalias"
+                "list",
+                "--aliasing"
             ],
             "env": {
                 "D2_ENVIRONMENT": "test",
                 "D2_SECRETS_BASEDIR": "/tmp/.secrets"
             },
-            "stopOnEntry": false,
+            "stopOnEntry": true,
             "console": "integratedTerminal"
         },
         {
@@ -567,7 +599,7 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "psec secrets set test_url",
+            "name": "psec secrets set hypriot_hostname",
             "type": "python",
             "request": "launch",
             "module": "psec.main",
@@ -575,7 +607,7 @@
                 "--debug",
                 "secrets",
                 "set",
-                "test_url"
+                "hypriot_hostname"
             ],
             "env": {
                 "D2_ENVIRONMENT": "test",

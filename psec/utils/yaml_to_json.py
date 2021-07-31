@@ -29,11 +29,11 @@ def update_from_yaml(
         # json_file = f"{os.path.splitext(yaml_file)[0]}.json"
         json_file = yaml_file.replace('.yml', '.json')
         if verbose:
-            logger.info(f"[+] converting '{yaml_file}' to JSON")
+            logger.info("[+] converting '%s' to JSON", yaml_file)
         yaml_to_json(yaml_file=yaml_file, json_file=json_file)
         if not keep_original:
             if verbose:
-                logger.info(f"[+] removing '{yaml_file}'")
+                logger.info("[+] removing '%s'", yaml_file)
             safe_delete_file(yaml_file)
 
 
@@ -61,7 +61,7 @@ def yaml_to_json(
 class YAMLToJSON(Command):
     """Convert YAML file(s) to JSON file(s)."""
 
-    log = logging.getLogger(__name__)
+    logger = logging.getLogger(__name__)
 
     def __init__(self, app, app_args, cmd_name=None):
         super().__init__(app, app_args, cmd_name=cmd_name)
@@ -156,7 +156,7 @@ class YAMLToJSON(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.log.debug('[*] converting from YAML to JSON file format')
+        self.logger.debug('[*] converting from YAML to JSON file format')
         if '-' in parsed_args.arg and parsed_args.convert:
             raise RuntimeError('[-] stdin cannot be used with ``--convert``')
         for arg in parsed_args.arg:
@@ -173,7 +173,7 @@ class YAMLToJSON(Command):
                     if fn.endswith('.yml')
                 ]
                 for yaml_file in yaml_files:
-                    self.log.info(f"[+] converting '{yaml_file}")
+                    self.logger.info("[+] converting '%s'", yaml_file)
                     yaml_to_json(yaml_file=yaml_file)
 
 

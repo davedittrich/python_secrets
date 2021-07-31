@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 __version__ = None
-__release__ = '21.2.0'
+__release__ = '21.7.0'
 
 # Get development version from repository tags.
 try:

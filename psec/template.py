@@ -12,7 +12,7 @@ from jinja2 import (Environment, FileSystemLoader,
 class Template(Command):
     """Template file(s)."""
 
-    LOG = logging.getLogger(__name__)
+    logger = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
@@ -46,7 +46,7 @@ class Template(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.LOG.debug('[*] templating file(s)')
+        self.logger.debug('[*] templating file(s)')
         if parsed_args.no_env:
             template_vars = dict()
         else:
@@ -57,7 +57,7 @@ class Template(Command):
         base = Undefined if parsed_args.check_defined is True \
             else StrictUndefined
         LoggingUndefined = make_logging_undefined(
-            logger=self.LOG,
+            logger=self.logger,
             base=base)
         template_env = Environment(
             loader=template_loader,

@@ -16,7 +16,7 @@ import time
 from cliff.command import Command
 from jinja2 import Template
 
-LOG = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 # Delay variables for reading AWS console-output
 _TRIES = 45
@@ -163,7 +163,7 @@ def _write_fingerprints_pubkeys_to_files(hostdict=None,
     for subdir in ['known_hosts', 'fingerprints']:
         dir = os.path.join(known_hosts_root, subdir)
         if not os.path.exists(dir):
-            LOG.debug('[+] creating directory "{}"'.format(dir))
+            logger.debug("[+] creating directory '%s'", dir)
             os.makedirs(dir, exist_ok=True)
         else:
             if not os.path.isdir(dir):
@@ -177,7 +177,7 @@ def _write_fingerprints_pubkeys_to_files(hostdict=None,
             fp_file = os.path.join(dir, '{}.fingerprint'.format(ktype))
             with open(fp_file, 'w') as f:
                 f.write('{}\n'.format(fingerprint))
-                LOG.debug('[+] wrote fingerprint to {}'.format(fp_file))
+                logger.debug("[+] wrote fingerprint to '%s'", fp_file)
 
         for hostkey in v['hostkey']:
             dir = os.path.join(known_hosts_root, 'known_hosts', host)
@@ -186,7 +186,7 @@ def _write_fingerprints_pubkeys_to_files(hostdict=None,
             hk_file = os.path.join(dir, '{}.known_hosts'.format(ktype))
             with open(hk_file, 'w') as f:
                 f.write('{}\n'.format(hostkey))
-                LOG.debug('[+] wrote hostkey to {}'.format(hk_file))
+                logger.debug("[+] wrote hostkey to '%s'", hk_file)
     pass
 
 
@@ -406,7 +406,7 @@ def _get_latest_console_output():
 class PublicKeys(object):
     """Class for managing SSH public keys"""
 
-    log = logging.getLogger(__name__)
+    logger = logging.getLogger(__name__)
 
     def __init__(self,
                  known_hosts_root=None,
@@ -489,13 +489,15 @@ class PublicKeys(object):
                 for instance in stack['Instances']:
                     state = instance['State']['Name']
                     if state != 'running':
-                        self.log.debug('Ignoring {} '.format(state) +
-                                       'instance {}'.format(
-                                            instance['InstanceId']))
+                        self.logger.debug(
+                            'Ignoring %s instance %s',
+                            state,
+                            instance['InstanceId']
+                        )
                     else:
-                        self.log.debug('Found running ' +
-                                       'instance {}'.format(
-                                            instance['InstanceId']))
+                        self.logger.debug(
+                            'Found running instance %s',
+                            instance['InstanceId'])
                         self.public_ip = instance.get(
                             'PublicIpAddress', None)
                         self.public_dns = instance.get(
@@ -533,8 +535,10 @@ class PublicKeys(object):
             time.sleep(_DELAY)
             tries_left -= 1
             if self.debug:
-                self.log.debug('get-console-output: ' +
-                               'attempt {} failed'.format(_TRIES - tries_left))
+                self.logger.debug(
+                    'get-console-output: attempt %s failed',
+                    (_TRIES - tries_left)
+                )
         if tries_left == 0 or response is None:
             raise RuntimeError(
                 "[-] could not get-console-output in "
@@ -645,7 +649,7 @@ class PublicKeys(object):
                 except KeyError:
                     self.hostdict[short_name]['fingerprint'] = [fingerprint]
                 if self.debug:
-                    self.log.info('fingerprint: {}'.format(fingerprint))
+                    self.logger.info('fingerprint: %s', fingerprint)
             elif in_pubkeys:
                 # TODO(dittrich): Should use regex instead.
                 fields = line.split(' ')
@@ -660,7 +664,7 @@ class PublicKeys(object):
                 except KeyError:
                     self.hostdict[short_name]['hostkey'] = [pubkey]
                 if self.debug:
-                    self.log.info('pubkey: {}'.format(pubkey))
+                    self.logger.info('pubkey: %s', pubkey)
 
     def get_hostfingerprint_list(self):
         """Return the hostfingerprint list"""
@@ -766,7 +770,7 @@ class SSHConfig(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.log.debug('[*] creating SSH configuration snippet(s)')
+        self.logger.debug('[*] creating SSH configuration snippet(s)')
         self.app.secrets.requires_environment()
         self.app.secrets.read_secrets_and_descriptions()
         # if parsed_args.public_ip is None or parsed_args.public_dns is None:
@@ -783,7 +787,7 @@ class SSHConfig(Command):
                                            snippet_prefix + ".*"))
             for f in files:
                 if self.app_args.verbose_level > 1:
-                    self.log.info('[+] deleting "{}"'.format(f))
+                    self.logger.info("[+] deleting '%s'", f)
                 os.remove(f)
         host_info = _parse_known_hosts(root=parsed_args.known_hosts_root)
         private_key_file = self._get_private_key_file()
@@ -936,7 +940,7 @@ class SSHKnownHostsAdd(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.log.debug('[*] adding SSH known host keys')
+        self.logger.debug('[*] adding SSH known host keys')
         if parsed_args.show_playbook:
             print('[+] playbook for managing SSH known_hosts files')
             print(REKEY_PLAYBOOK.decode('utf-8'))
@@ -991,7 +995,7 @@ class SSHKnownHostsExtract(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.log.debug('[-] extracting SSH known host keys')
+        self.logger.debug('[-] extracting SSH known host keys')
         self.app.secrets.requires_environment()
         self.app.secrets.read_secrets_and_descriptions()
 
@@ -1166,7 +1170,7 @@ class SSHKnownHostsRemove(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.log.debug('[*] removing SSH known host keys')
+        self.logger.debug('[*] removing SSH known host keys')
         if parsed_args.show_playbook:
             print('[+] playbook for managing SSH known_hosts files')
             print(REKEY_PLAYBOOK.decode('utf-8'))

@@ -11,7 +11,7 @@ from psec.secrets_environment import SecretsEnvironment
 class GroupsPath(Command):
     """Return path to secrets descriptions (groups) directory."""
 
-    LOG = logging.getLogger(__name__)
+    logger = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
@@ -31,7 +31,7 @@ class GroupsPath(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.LOG.debug('[*] returning groups path')
+        self.logger.debug('[*] returning groups path')
         e = SecretsEnvironment(environment=parsed_args.environment)
         print(e.descriptions_path())
 

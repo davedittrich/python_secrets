@@ -8,7 +8,6 @@ import sys
 
 from cliff.lister import Lister
 from psec.secrets_environment import (
-    SecretsEnvironment,
     get_default_environment,
     _is_default,
     is_valid_environment,
@@ -18,7 +17,7 @@ from psec.secrets_environment import (
 class EnvironmentsList(Lister):
     """List the current environments."""
 
-    LOG = logging.getLogger(__name__)
+    logger = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
@@ -90,11 +89,10 @@ class EnvironmentsList(Lister):
         return parser
 
     def take_action(self, parsed_args):
-        self.LOG.debug('[*] listing environment(s)')
-        secrets_environment = SecretsEnvironment()
+        self.logger.debug('[*] listing environment(s)')
         default_env = get_default_environment()
         columns = (['Environment', 'Default'])
-        basedir = secrets_environment.secrets_basedir()
+        basedir = self.app.secrets.secrets_basedir()
         if parsed_args.aliasing:
             columns.append('AliasFor')
         data = list()
@@ -113,7 +111,7 @@ class EnvironmentsList(Lister):
                         alias_for = ''
                     item = (e, default, alias_for)
                 data.append(item)
-        if not len(data):
+        if len(data) == 0:
             sys.exit(1)
         return columns, data
 

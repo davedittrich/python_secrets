@@ -19,7 +19,7 @@ from sys import stdin
 class SecretsRestore(Command):
     """Restore secrets and descriptions from a backup file."""
 
-    LOG = logging.getLogger(__name__)
+    logger = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
@@ -31,7 +31,7 @@ class SecretsRestore(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.LOG.debug('[*] restore secrets')
+        self.logger.debug('[*] restore secrets')
         secrets = self.app.secrets
         secrets.requires_environment()
         backups_dir = os.path.join(
@@ -58,7 +58,7 @@ class SecretsRestore(Command):
                          pad_right=5)
             choice = cli.launch()
             if choice == "<CANCEL>":
-                self.LOG.info('cancelled restoring from backup')
+                self.logger.info('cancelled restoring from backup')
                 return
         backup_path = os.path.join(backups_dir, choice)
         with tarfile.open(backup_path, "r:gz") as tf:
@@ -73,7 +73,7 @@ class SecretsRestore(Command):
             env_path = secrets.environment_path()
             for name in names:
                 tf.extract(name, path=env_path)
-        self.LOG.info(f'[+] restored backup {backup_path} to {env_path}')
+        self.logger.info('[+] restored backup %s to %s', backup_path, env_path)
 
 
 # vim: set fileencoding=utf-8 ts=4 sw=4 tw=0 et :

@@ -16,7 +16,7 @@ from subprocess import call  # nosec
 class Run(Command):
     """Run a command using exported secrets."""
 
-    LOG = logging.getLogger(__name__)
+    logger = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
@@ -41,7 +41,7 @@ class Run(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.LOG.debug('[*] running command')
+        self.logger.debug('[*] running command')
         cmd = " ".join(
             [
                 shlex.quote(a.encode('unicode-escape').decode())

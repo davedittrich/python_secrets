@@ -11,7 +11,7 @@ from cliff.lister import Lister
 class GroupsShow(Lister):
     """Show a list of secrets in a group."""
 
-    LOG = logging.getLogger(__name__)
+    logger = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
@@ -40,7 +40,7 @@ class GroupsShow(Lister):
         return parser
 
     def take_action(self, parsed_args):
-        self.LOG.debug('[*] showing secrets in group')
+        self.logger.debug('[*] showing secrets in group')
         self.app.secrets.requires_environment()
         self.app.secrets.read_secrets_descriptions()
         columns = ('Group', 'Variable')
@@ -48,7 +48,7 @@ class GroupsShow(Lister):
         for group in parsed_args.group:
             for item in self.app.secrets.get_items_from_group(group):
                 data.append((group, item))
-        if not len(data):
+        if len(data) == 0:
             sys.exit(1)
         return columns, data
 

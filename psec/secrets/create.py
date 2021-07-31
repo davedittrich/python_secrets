@@ -80,7 +80,7 @@ def get_description(name=None, defaults=None):
 class SecretsCreate(Command):
     """Create a new secret definition."""
 
-    LOG = logging.getLogger(__name__)
+    logger = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
@@ -157,7 +157,7 @@ class SecretsCreate(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.LOG.debug('[*] creating secrets')
+        self.logger.debug('[*] creating secrets')
         # Does an environment already exist?
         if not stdin.isatty():
             raise RuntimeError(
@@ -172,12 +172,14 @@ class SecretsCreate(Command):
                            default='n')
             res = client.launch()
             if not res:
-                self.LOG.info('[!] cancelled creating environment')
+                self.logger.info('[!] cancelled creating environment')
                 return 1
             se.environment_create()
-            self.LOG.info(
-                f"[+] environment '{env}' "
-                f"({se.environment_path()}) created")
+            self.logger.info(
+                "[+] environment '%s' (%s) created",
+                env,
+                se.environment_path()
+            )
         if parsed_args.update and len(parsed_args.arg) > 1:
             # TODO(dittrich): Refactor to loop over parsed_arg.arg
             # from here (not farther down).
@@ -200,7 +202,7 @@ class SecretsCreate(Command):
                            default='n')
             res = client.launch()
             if not res:
-                self.LOG.info('[!] cancelled creating group')
+                self.logger.info('[!] cancelled creating group')
                 return 1
             descriptions = list()
             variables = list()
@@ -213,11 +215,14 @@ class SecretsCreate(Command):
             arg_row = find(descriptions, 'Variable', arg)
             if parsed_args.update:
                 if arg not in variables:
-                    self.LOG.info(
-                        f"[-] can't update nonexistent variable '{arg}'")
+                    self.logger.info(
+                        "[-] can't update nonexistent variable '%s'", arg)
                     continue
-                self.LOG.info(
-                    f"[+] updating variable '{arg}' in group '{group}'")
+                self.logger.info(
+                    "[+] updating variable '%s' in group '%s'",
+                    arg,
+                    group
+                )
                 new_description = get_description(
                     name=arg,
                     defaults=descriptions[arg_row]
@@ -228,10 +233,11 @@ class SecretsCreate(Command):
                         # This will trigger saving local description update.
                         changed = True
                     else:
-                        self.LOG.info(f"[-] variable '{arg}' already exists")
+                        self.logger.info(
+                            "[-] variable '%s' already exists", arg)
                     continue
-                self.LOG.info(
-                    f"[+] creating variable '{arg}' in group '{group}'")
+                self.logger.info(
+                    "[+] creating variable '%s' in group '%s'", arg, group)
                 new_description = get_description(
                     name=arg,
                     defaults={
@@ -241,7 +247,7 @@ class SecretsCreate(Command):
                         'Export': " ",
                     }
                 )
-            if len(new_description):
+            if len(new_description) > 0:
                 table = PrettyTable()
                 table.field_names = ('Key', 'Value')
                 table.align = 'l'

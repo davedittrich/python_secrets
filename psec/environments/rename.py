@@ -12,7 +12,7 @@ from psec.secrets_environment import SecretsEnvironment
 class EnvironmentsRename(Command):
     """Rename environment."""
 
-    LOG = logging.getLogger(__name__)
+    logger = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
@@ -51,7 +51,7 @@ class EnvironmentsRename(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.LOG.debug('[*] renaming environment')
+        self.logger.debug('[*] renaming environment')
         basedir = self.app.secrets.secrets_basedir()
         source = parsed_args.source[0]
         source_path = os.path.join(basedir, source)
@@ -70,8 +70,11 @@ class EnvironmentsRename(Command):
             raise RuntimeError(
                 f"[-] destination environment '{dest}' already exist")
         os.rename(source_path, dest_path)
-        self.LOG.info(
-            f"[+] environment '{source}' renamed to '{dest}'")
+        self.logger.info(
+            "[+] environment '%s' renamed to '%s'",
+            source,
+            dest
+        )
 
 
 # vim: set fileencoding=utf-8 ts=4 sw=4 tw=0 et :

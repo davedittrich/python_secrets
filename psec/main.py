@@ -13,7 +13,6 @@ from __future__ import print_function
 
 # Standard library modules.
 import argparse
-import logging
 import os
 import sys
 import textwrap
@@ -70,10 +69,6 @@ def umask(value):
     return ivalue
 
 
-# Initialize a logger for this module.
-logger = logging.getLogger(__name__)
-
-
 class PythonSecretsApp(App):
     """Python secrets application class."""
 
@@ -91,6 +86,9 @@ class PythonSecretsApp(App):
         self.secrets_basedir = None
         self.secrets_file = None
         self.timer = Timer()
+        # Alias the following variable for consistency using code
+        # using "logger" instead of "LOG".
+        self.logger = self.LOG
 
     def build_option_parser(self, description, version):
         parser = super(PythonSecretsApp, self).build_option_parser(
@@ -218,13 +216,13 @@ class PythonSecretsApp(App):
         return parser
 
     def initialize_app(self, argv):
-        self.LOG.debug('[*] initialize_app')
+        self.logger.debug('[*] initialize_app(%s)', str(self.__class__))
         if sys.version_info <= (3, 6):
             raise RuntimeError('This program uses the Python "secrets" ' +
                                'module, which requires Python 3.6 or higher')
 
     def prepare_to_run_command(self, cmd):
-        self.LOG.debug(f"[*] prepare_to_run_command() '{cmd.cmd_name}'")
+        self.logger.debug("[*] prepare_to_run_command('%s')", cmd.cmd_name)
         #
         # Process ReadTheDocs web browser request here and then
         # fall through, which also produces help output on the
@@ -240,7 +238,7 @@ class PythonSecretsApp(App):
                 '[+] enter the following URL in your chosen browser:',
                 rtd_url,
             ]:
-                self.LOG.info(line)
+                self.logger.info(line)
             print('\n\n')
             bell()
             time.sleep(3)
@@ -251,7 +249,8 @@ class PythonSecretsApp(App):
             webbrowser.open(rtd_url, new=0, autoraise=True)
         self.timer.start()
         os.umask(self.options.umask)
-        self.LOG.debug(f"[+] using environment '{self.options.environment}'")
+        self.logger.debug("[+] using environment '%s'",
+                          self.options.environment)
         self.environment = self.options.environment
         self.secrets_basedir = self.options.secrets_basedir
         # Don't output error messages when "complete" command used
@@ -272,11 +271,11 @@ class PythonSecretsApp(App):
                 )
 
     def clean_up(self, cmd, result, err):
-        self.LOG.debug(f"[-] clean_up command '{cmd.cmd_name}'")
+        self.logger.debug("[-] clean_up command '%s'", cmd.cmd_name)
         if err:
-            self.LOG.debug(f"[-] got an error: {str(err)}")
+            self.logger.debug("[-] got an error: %s", str(err))
             if self.secrets is not None and self.secrets.changed():
-                self.LOG.info('[-] not writing secrets out due to error')
+                self.logger.info('[-] not writing secrets out due to error')
         elif cmd.cmd_name not in ['help', 'complete']:
             if self.secrets.changed():
                 self.secrets.write_secrets()

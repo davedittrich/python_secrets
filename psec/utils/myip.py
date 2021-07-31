@@ -35,7 +35,7 @@ def myip_http(arg=None):
     if page.status_code != 200:
         raise RuntimeError(
             f"[-] error: {page.reason}\n{soup.body.text}")
-    logger.debug(f'[-] got page: "{page.text}"')
+    logger.debug('[-] got page: "%s"', page.text)
     interface = ipaddress.ip_interface(str(soup).strip())
     return interface
 
@@ -110,10 +110,10 @@ def get_myip(method='random'):
             f"[-] method '{method}' for obtaining IP address is "
             "not implemented")
     func = myip_methods[method].get('func')
-    logger.debug(f"[+] determining IP address using '{method}'")
+    logger.debug("[+] determining IP address using '%s'", method)
     arg = myip_methods[method].get('arg')
     ip = str(func(arg=arg))
-    if not len(ip) or ip is None:
+    if len(ip) == 0 or ip is None:
         raise RuntimeError(
             f"[-] method '{method}' failed to get an IP address")
     return ip
@@ -202,7 +202,7 @@ class MyIP(Command):
 class MyIPMethods(Lister):
     """Show methods for obtaining routable IP address."""
 
-    LOG = logging.getLogger(__name__)
+    logger = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
@@ -256,11 +256,11 @@ class MyIPMethods(Lister):
         return parser
 
     def take_action(self, parsed_args):
-        self.LOG.debug('[*] listing IP address discovery methods')
+        self.logger.debug('[*] listing IP address discovery methods')
         columns = ('Method', 'Type', 'Source')
         data = []
         methods = (parsed_args.method
-                   if len(parsed_args.method)
+                   if len(parsed_args.method) > 0
                    else myip_methods.keys())
 
         for method, mechanics in sorted(myip_methods.items()):

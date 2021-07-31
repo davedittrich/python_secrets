@@ -24,7 +24,7 @@ def cd(path):
 class SecretsBackup(Command):
     """Back up just secrets and descriptions."""
 
-    LOG = logging.getLogger(__name__)
+    logger = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
@@ -36,7 +36,7 @@ class SecretsBackup(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.LOG.debug('[*] backup secrets')
+        self.logger.debug('[*] backup secrets')
         secrets = self.app.secrets
         secrets.requires_environment()
         backups_dir = os.path.join(
@@ -64,7 +64,7 @@ class SecretsBackup(Command):
                 tf.add(
                     secrets.descriptions_path().replace(env_path, "", 1))
 
-        self.LOG.info(f"[+] created backup '{backup_path}'")
+        self.logger.info("[+] created backup '%s'", backup_path)
 
 
 # vim: set fileencoding=utf-8 ts=4 sw=4 tw=0 et :

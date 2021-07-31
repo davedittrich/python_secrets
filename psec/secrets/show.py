@@ -12,7 +12,7 @@ from psec.utils import redact
 class SecretsShow(Lister):
     """List the contents of the secrets file or definitions."""
 
-    LOG = logging.getLogger(__name__)
+    logger = logging.getLogger(__name__)
 
     # Note: Not totally DRY. Replicates some logic from SecretsDescribe()
 
@@ -99,25 +99,27 @@ class SecretsShow(Lister):
         return parser
 
     def take_action(self, parsed_args):
-        self.LOG.debug('[*] showing secrets')
+        self.logger.debug('[*] showing secrets')
         self.app.secrets.requires_environment()
         self.app.secrets.read_secrets_and_descriptions()
         variables = []
         all_items = [k for k, v in self.app.secrets.items()]
         if parsed_args.args_group:
-            if not len(parsed_args.arg):
+            if len(parsed_args.arg) == 0:
                 raise RuntimeError('[-] no group(s) specified')
             for g in parsed_args.arg:
                 try:
                     variables.extend(
-                        [v for v
-                         in self.app.secrets.get_items_from_group(g)]
+                        [
+                            v for v
+                            in self.app.secrets.get_items_from_group(g)
+                        ]
                     )
                 except KeyError as e:
                     raise RuntimeError(
                         f"[-] group '{str(e)}' does not exist")
         elif parsed_args.args_type:
-            if not len(parsed_args.arg):
+            if len(parsed_args.arg) == 0:
                 raise RuntimeError('[-] no type(s) specified')
             variables = [
                 k for k, v

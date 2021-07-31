@@ -20,7 +20,7 @@ from xkcdpass.xkcd_password import CASE_METHODS
 class SecretsGenerate(Command):
     """Generate values for secrets."""
 
-    LOG = logging.getLogger(__name__)
+    logger = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
@@ -126,7 +126,7 @@ class SecretsGenerate(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.LOG.debug('[*] generating secrets')
+        self.logger.debug('[*] generating secrets')
         self.app.secrets.read_secrets_and_descriptions()
         # If no secrets specified, default to all secrets
         to_change = parsed_args.arg \
@@ -154,8 +154,8 @@ class SecretsGenerate(Command):
                                         *arguments,
                                         **dict(parsed_args._get_kwargs()))
             if value is not None:
-                self.LOG.debug(
-                    f"[+] generated {secret_type} for {secret}")
+                self.logger.debug(
+                    "[+] generated %s for %s", secret_type, secret)
                 self.app.secrets.set_secret(secret, value)
 
 

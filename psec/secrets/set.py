@@ -3,22 +3,25 @@
 import argparse
 import logging
 import os
-import psec
 import textwrap
 
+from subprocess import run, PIPE  # nosec
 from cliff.command import Command
 from psec.secrets_environment import (
     BOOLEAN_OPTIONS,
     SecretsEnvironment,
     is_generable,
 )
-from subprocess import run, PIPE  # nosec
+from psec.utils import (
+    prompt_options_list,
+    prompt_string,
+)
 
 
 class SecretsSet(Command):
     """Set values manually for secrets."""
 
-    LOG = logging.getLogger(__name__)
+    logger = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
@@ -56,9 +59,6 @@ class SecretsSet(Command):
                 $ psec secrets set trident_db_pass="rural coffee purple sedan"
 
             ..
-
-            If no secrets as specified, you will be prompted for each
-            secrets.
 
             Adding the ``--undefined`` flag will limit the secrets being set
             to only those that are currently not set.  If values are not set,
@@ -98,11 +98,33 @@ class SecretsSet(Command):
 
             ..
 
+            If you do not provide values for variables using assignment syntax
+            and you are not copying values from another environment, you will be
+            prompted for values according to how the options field is defined.
+
+            * If the *only* option is ``*`` (meaning "any string"), you will be
+              prompted to enter a value. When prompted this way, you can cancel
+              setting the variable by entering an empty string. If you really
+              want the value to be an empty string, you *must* use the
+              assignment syntax with an empty string like this: ``variable=''``
+
+            * An options list that *does not contain* a ``*`` defines a finite
+              set of options. This means you are resticted to *only* choosing
+              from the list. This is similar to the ``Boolean`` type, which can
+              only have a value of ``true`` or ``false``.
+
+            * If one or more options are listed *along with* ``*``, you can either
+              choose from one of the listed values or select ``*`` to manually
+              enter a value not in the list.
+
+            * You can back out of making a change by selecting ``<CANCEL>`` from
+              the list.
+
             """)  # noqa
         return parser
 
     def take_action(self, parsed_args):
-        self.LOG.debug('[*] setting secrets')
+        self.logger.debug('[*] setting secrets')
         if (
             len(parsed_args.arg) == 0
             and not parsed_args.undefined
@@ -120,18 +142,18 @@ class SecretsSet(Command):
             from_env = SecretsEnvironment(
                 environment=parsed_args.from_environment)
             from_env.read_secrets()
-            options = dict(from_env.secrets.Options)
-            variables = dict(from_env.secrets.Variable)
-            types = dict(from_env.secrets.Type)
+            options = dict(from_env._secrets.Options)
+            variables = dict(from_env._secrets.Variable)
+            types = dict(from_env._secrets.Type)
         args = (
-            list(variables.keys()) if not len(parsed_args.arg)
+            list(variables.keys()) if len(parsed_args.arg) == 0
             else parsed_args.arg
         )
         if parsed_args.undefined:
             # Downselect to just those currently undefined
             args = [k for k, v in variables
                     if v in [None, '']]
-        if not len(args):
+        if len(args) == 0:
             raise RuntimeError('[-] no secrets identified to be set')
         for arg in args:
             k, v, k_type = None, None, None
@@ -150,7 +172,7 @@ class SecretsSet(Command):
                 k = arg
                 k_type = self.app.secrets.get_type(k)
                 if k_type is None:
-                    self.LOG.info(f"[-] no description for '{k}'")
+                    self.logger.info("[-] no description for '%s'", k)
                     raise RuntimeError(
                         f"[-] variable '{k}' has no description")
                 if from_env is not None:
@@ -158,37 +180,54 @@ class SecretsSet(Command):
                     v = from_env.get_secret(k, allow_none=True)
                 else:
                     # Try to prompt user for value
-                    if (k_type == 'boolean' and
-                            k not in self.app.secrets.Options):
+                    if (
+                        k_type == 'boolean'
+                        and k not in self.app.secrets.Options
+                    ):
                         # Default options for boolean type
                         self.app.secrets.Options[k] = BOOLEAN_OPTIONS
-                    if k in self.app.secrets.Options:
-                        # Attempt to select from list of option dictionaries
-                        v = psec.utils.prompt_options_dict(
-                            options=self.app.secrets.Options[k],
+                    k_options = self.app.secrets.get_options(k)
+                    if (
+                        k_options != '*'
+                        and k in self.app.secrets.Options
+                    ):
+                        # Attempt to select from list. Options will look like
+                        # 'a,b' or 'a,b,*', or 'a,*'.
+                        old_v = self.app.secrets.get_secret(k, allow_none=True)
+
+                        v = prompt_options_list(
+                            options=k_options.split(','),
+                            default=(None if old_v in ['', None] else old_v),
                             prompt=self.app.secrets.get_prompt(k)
-                            )
-                    else:
-                        # Just ask user for value
-                        v = psec.utils.prompt_string(
+                        )
+                        if v is None:
+                            # User cancelled selection.
+                            break
+                        v = v if v not in ['', '*'] else None
+                    # Ask user for value
+                    if v is None:
+                        v = prompt_string(
                             prompt=self.app.secrets.get_prompt(k),
-                            default=("" if v is None else v)
-                            )
+                            default=""
+                        )
+                    v = v if v != '' else None
             else:  # ('=' in arg)
                 # Assignment syntax found (a=b)
                 lhs, rhs = arg.split('=')
                 k_type = self.app.secrets.get_type(lhs)
                 if k_type is None:
-                    self.LOG.info(f"[-] no description for '{lhs}'")
+                    self.logger.info("[-] no description for '%s'", lhs)
                     raise RuntimeError(
                         f"[-] variable '{lhs}' has no description")
                 k = lhs
                 if from_env is not None:
                     # Get value from different var in different environment
                     v = from_env.get_secret(rhs, allow_none=True)
-                    self.LOG.info(
-                        f"[+] getting value from '{rhs}' in "
-                        f"environment '{str(from_env)}'")
+                    self.logger.info(
+                        "[+] getting value from '%s' in environment '%s'",
+                        rhs,
+                        str(from_env)
+                    )
                 else:
                     # Value was specified in arg
                     v = rhs
@@ -212,9 +251,9 @@ class SecretsSet(Command):
                         v = p.stdout.decode('UTF-8').strip()
             # After all that, did we get a value?
             if v is None:
-                self.LOG.info(f"[-] could not obtain value for '{k}'")
+                self.logger.info("[-] could not obtain value for '%s'", k)
             else:
-                self.LOG.debug(f"[+] setting variable '{k}'")
+                self.logger.debug("[+] setting variable '%s'", k)
                 self.app.secrets.set_secret(k, v)
 
 

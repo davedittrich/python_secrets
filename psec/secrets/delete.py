@@ -21,7 +21,7 @@ except ModuleNotFoundError:
 class SecretsDelete(Command):
     """Delete secrets and their definitions."""
 
-    LOG = logging.getLogger(__name__)
+    logger = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
@@ -78,7 +78,7 @@ class SecretsDelete(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.LOG.debug('[*] deleting secrets')
+        self.logger.debug('[*] deleting secrets')
         se = self.app.secrets
         se.requires_environment()
         se.read_secrets_and_descriptions()
@@ -115,21 +115,22 @@ class SecretsDelete(Command):
                                 word_color=colors.foreground["yellow"])
                     confirm = cli.launch()
                     if confirm != arg:
-                        self.LOG.info('[-] cancelled deleting secret')
+                        self.logger.info('[-] cancelled deleting secret')
                         return
             descriptions = [
                 item for item in descriptions
                 if item['Variable'] != arg
             ]
             se.delete_secret(arg)
-        if not len(descriptions):
+        if len(descriptions) == 0:
             paths = [se.descriptions_path(group=group)]
             if parsed_args.mirror_locally:
                 paths.append(se.descriptions_path(root=os.getcwd(),
                                                   group=group))
             for path in paths:
                 safe_delete_file(path)
-                self.LOG.info(f"[+] deleted empty group '{group}' ({path})")
+                self.logger.info(
+                    "[+] deleted empty group '%s' (%s)", group, path)
         else:
             se.write_descriptions(
                 data=descriptions,

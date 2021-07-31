@@ -13,7 +13,7 @@ from stat import S_IMODE
 class EnvironmentsPath(Command):
     """Return path to files and directories for environment."""
 
-    LOG = logging.getLogger(__name__)
+    logger = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
@@ -99,7 +99,7 @@ class EnvironmentsPath(Command):
             print(item)
 
     def take_action(self, parsed_args):
-        self.LOG.debug('[*] returning environment path')
+        self.logger.debug('[*] returning environment path')
         environment = self.app.options.environment
         e = SecretsEnvironment(environment)
         if parsed_args.tmpdir:
@@ -107,15 +107,18 @@ class EnvironmentsPath(Command):
             tmpdir_mode = 0o700
             try:
                 os.makedirs(tmpdir, tmpdir_mode)
-                self.LOG.info(f"[+] created tmpdir {tmpdir}")
+                self.logger.info("[+] created tmpdir %s", tmpdir)
             except FileExistsError:
                 mode = os.stat(tmpdir).st_mode
                 current_mode = S_IMODE(mode)
                 if current_mode != tmpdir_mode:
                     os.chmod(tmpdir, tmpdir_mode)
-                    self.LOG.info(
-                        f"[+] changed mode on {tmpdir} "
-                        f"from {oct(current_mode)} to {oct(tmpdir_mode)}")
+                    self.logger.info(
+                        "[+] changed mode on %s from %s to %s",
+                        oct(current_mode),
+                        oct(tmpdir_mode),
+                        tmpdir
+                    )
             finally:
                 self._print(tmpdir, parsed_args.json)
         else:
@@ -127,14 +130,17 @@ class EnvironmentsPath(Command):
                 mode = 0o700
                 os.makedirs(full_path, mode)
                 if self.app_args.verbose_level > 1:
-                    self.LOG.info(f"[+] created {full_path}")
+                    self.logger.info("[+] created %s", full_path)
             if parsed_args.exists:
                 # Just check existance and return result
                 exists = os.path.exists(full_path)
                 if self.app_args.verbose_level > 1:
                     status = "exists" if exists else "does not exist"
-                    self.LOG.info(
-                        f"[+] environment path '{full_path}' {status}")
+                    self.logger.info(
+                        "[+] environment path '%s' %s",
+                        full_path,
+                        status
+                    )
                 return 0 if exists else 1
             else:
                 self._print(full_path, parsed_args.json)

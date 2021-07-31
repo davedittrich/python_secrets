@@ -10,7 +10,7 @@ import textwrap
 from cliff.lister import Lister
 
 
-LOG = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 # The TfOutput Lister assumes `terraform output` structured as

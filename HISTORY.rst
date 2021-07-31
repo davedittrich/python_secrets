@@ -24,14 +24,237 @@ History
 .. Fixed for any bug fixes.
 .. Security in case of vulnerabilities.
 
-Unreleased
-~~~~~~~~~~
+21.7.0 (2021-07-30)
+~~~~~~~~~~~~~~~~~~~
 
 Added
 ^^^^^
 
-- Ability to create an alias for an existing environment
+- Secrets descriptions for demoing HypriotOS Flash mods Medium article
 
+Changed
+^^^^^^^
+
+- Improve `secrets set --from-options`
+- General code quality, documentation, and testing enhancements
+
+21.6.0 (2021-06-23)
+~~~~~~~~~~~~~~~~~~~
+
+Added
+^^^^^
+
+- Ability to set and generate secrets from defaults options
+- Ability to create an alias for an existing environment
+- Allow retroactive mirroring of new secrets
+
+Changed
+^^^^^^^
+
+- Switched from `pbr` to `setuptools_scm` for version numbering
+- Switched to more secure random number generation
+
+21.2.0 (20201-02-23)
+~~~~~~~~~~~~~~~~~~~~
+
+Added
+^^^^^
+
+- Improve GitHub Actions workflows
+- Overall documentation and code enhancements
+- Improve handling of wildcards in options list
+
+Changed
+^^^^^^^
+
+- Fix bugs with handling empty lists, cloning environments, BATS tests
+- Increase password complexity a bit more
+- Fix ReadTheDocs
+
+20.11.0 (2020-11-17)
+~~~~~~~~~~~~~~~~~~~~
+
+Added
+^^^^^
+
+- Add `secrets create` and `secrets delete` commands
+
+Changed
+^^^^^^^
+
+- Normalize all logger and exception output text
+- Refactoring code for better modulatiry
+- Normalize `group create` and `group delete` code
+- Normalize `secrets show` and `secrets describe` code
+- Fix bug that left variables missing after cloning
+- Add Python 3.9 to testing matrix
+- Switch from .yml to .json format for secrets
+- Expand IP address support in `utils` subcommand
+
+20.8.1 (2020-08-11)
+~~~~~~~~~~~~~~~~~~~
+
+Changes
+^^^^^^^
+
+- Fixes to v20.8.0
+
+20.8.0 (2020-08-11)
+~~~~~~~~~~~~~~~~~~~
+
+Added
+^^^^^
+
+- Add GitHub workflow to publish to test.pypi.org
+- Add `secrets backup` and `secrets restore` logic
+- Open web browser to documentation for help
+
+Changed
+^^^^^^^
+
+- Go back to date-based version numbering
+- General CI/CD workflow updates
+- Improve directory handling in `environments path`
+
+20.2.15
+~~~~~~~
+
+Added
+^^^^^
+
+- Added Python 3.8 support to test matrix
+
+Changed
+^^^^^^^
+
+- Fix bug in `environments default`
+- Put elapsed time (and BELL) on stdout
+- Fix bug in `environments tree`
+- Allow setting vars using diff names+environment
+
+19.12.0 (2019-12-16)
+~~~~~~~~~~~~~~~~~~~~
+
+Added
+^^^^^
+
+- Add and document new `boolean` data type
+- Add `groups delete` command
+
+
+Changed
+^^^^^^^
+
+- Improve default environment handling
+- Improve tox+BATS testing
+- Address security issue per "Your xkcd passwords are pwned" article
+- General code quality and test improvements
+- Add protection from over-writing existing env vars
+- Add `Options` attribute
+
+19.11.1 (2019-11-29)
+~~~~~~~~~~~~~~~~~~~~
+
+Changed
+^^^^^^^
+
+- Enhancements to better support Windows 10
+- Allow cloning group descriptions from environment
+- Fix tty/no-tty handling with `environments delete`
+- Expose terraform command on `-v`
+- Validate variable exists in environment
+- Fix broken `environments tree` code
+
+19.10.1 (2019-10-20)
+~~~~~~~~~~~~~~~~~~~~
+
+Changed
+^^^^^^^
+
+- Move BATS unit tests into tox testing
+- Avoid attempting interactive things when no tty
+- Improve file and directory permissions logic
+
+19.10.0 (2019-10-14)
+~~~~~~~~~~~~~~~~~~~~
+
+Added
+^^^^^
+
+- Working SSH key and configuration management
+- Use `bullet` for interactive list selection
+- Elapsed timer feature
+- Parsing of terraform output to extract SSH public keys
+- `umask` control for better new file permission settings
+- Support configuring terraform `tfstate` backend
+- Allow setting secrets by copying from another environment
+
+Changed
+^^^^^^^
+
+- Numerous bug fixes
+- Refine testing
+- Option to only show undefined variables
+- Sort environments when listing
+
+19.9.0 (2019-09-05)
+~~~~~~~~~~~~~~~~~~~
+
+Added
+^^^^^
+
+- Add `environments delete` subcommand
+- Allow cloning environment from an existing one
+
+Changed
+^^^^^^^
+
+19.8.3 (2019-08-28)
+~~~~~~~~~~~~~~~~~~~
+
+Changed
+^^^^^^^
+
+- Dynamically get version number
+- General testing enhancements
+- General code quality enhancements
+- Ensure more secure file permissions
+
+19.8.2 (2019-08-23)
+~~~~~~~~~~~~~~~~~~~
+
+Changed
+^^^^^^^
+
+- General code quality enhancements
+
+19.8.0 (2019-08-22)
+~~~~~~~~~~~~~~~~~~~
+
+Added
+^^^^^
+
+- IP address determination
+- Allow cloning new group in an empty environment
+- Make `python -m psec` work
+- JSON output method
+- Environment aliasing feature
+
+Changed
+^^^^^^^
+
+- General code quality and testing enhancements
+- Be more explicit about default environment
+- Tighten permissions on cloned environments/groups
+- Add insecure permissions checking
+
+19.5.1 (2019-05-08)
+~~~~~~~~~~~~~~~~~~~
+
+Changed
+^^^^^^^
+
+Add `HISTORY.rst` file
 
 19.4.5 (2019-05-08)
 ~~~~~~~~~~~~~~~~~~~
@@ -39,9 +262,9 @@ Added
 Added
 ^^^^^
 
-- Add command 'ssh config' to manage SSH configuration snippet
-  for use by 'update-dotdee' to generate ~/.ssh/config file
-- Add command 'ssh known-hosts add' and 'ssh known-hosts remove'
+- Add command `ssh config` to manage SSH configuration snippet
+  for use by `update-dotdee` to generate ~/.ssh/config file
+- Add command `ssh known-hosts add` and `ssh known-hosts remove`
   to manage system known_hosts file(s)
 
 Changed
