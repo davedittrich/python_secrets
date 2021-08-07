@@ -54,6 +54,7 @@ setup(
     # ("psec").
     package_dir={'python_secrets': 'psec'},
     packages=find_packages(exclude=['libs*']),
+    scripts=['bin/psec'],
     test_suite='tests',
     zip_safe=False,
 )
