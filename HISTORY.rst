@@ -24,6 +24,14 @@ History
 .. Fixed for any bug fixes.
 .. Security in case of vulnerabilities.
 
+21.8.0 (2021-08-12)
+~~~~~~~~~~~~~~~~~~~
+
+Changed
+^^^^^
+
+- Fixed bug in setup.py+setup.cfg
+
 21.7.0 (2021-07-30)
 ~~~~~~~~~~~~~~~~~~~
 
@@ -94,7 +102,7 @@ Changed
 20.8.1 (2020-08-11)
 ~~~~~~~~~~~~~~~~~~~
 
-Changes
+Changed
 ^^^^^^^
 
 - Fixes to v20.8.0

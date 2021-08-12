@@ -61,3 +61,5 @@ setup(
     package_dir={'python_secrets': 'psec'},
     test_suite='tests',
 )
+
+# vim: set fileencoding=utf-8 ts=4 sw=4 tw=0 et :
