@@ -28,7 +28,7 @@ History
 ~~~~~~~~~~~~~~~~~~~
 
 Changed
-^^^^^
+^^^^^^^
 
 - Fixed bug in setup.py+setup.cfg
 
