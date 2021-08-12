@@ -9,7 +9,7 @@
 import codecs
 import os
 
-from setuptools import find_packages, setup
+from setuptools import setup
 
 
 # NOTE: The project name began as "python_secrets", but the shorter
@@ -17,7 +17,10 @@ from setuptools import find_packages, setup
 # but I don't want to completely rename the project at this time.
 PROJECT = 'python_secrets'
 
-long_description = 'Python CLI for decoupling secrets (passwords, API keys, etc.) from source code'
+long_description = (
+    'Python CLI for decoupling secrets '
+    '(passwords, API keys, etc.) from source code'
+)
 description_file = 'README.rst'
 
 try:
