@@ -704,7 +704,8 @@
                 "--from-options"
             ],
             "env": {
-                "D2_ENVIRONMENT": "flash"
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
             },
             "stopOnEntry": false,
             "console": "integratedTerminal"

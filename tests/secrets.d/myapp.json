@@ -15,7 +15,7 @@
     "Variable": "myapp_client_psk",
     "Type": "string",
     "Prompt": "Pre-shared key for myapp client WiFi AP",
-    "Export": "DEMO_client_ssid"
+    "Export": "DEMO_client_psk"
   },
   {
     "Variable": "myapp_client_ssid",

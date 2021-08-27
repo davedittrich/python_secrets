@@ -8,7 +8,6 @@ ipwhois
 jinja2
 lxml
 gnupg
-numpy
 pyflakes
 pexpect
 Pygments

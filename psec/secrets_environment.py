@@ -22,11 +22,6 @@ import sys
 import uuid
 
 from collections import OrderedDict
-from numpy.random import bytes as np_random_bytes
-# >> Issue: [B404:blacklist] Consider possible security implications associated with run module.  # noqa
-#    Severity: Low   Confidence: High
-#    Location: psec/secrets.py:21
-#    More Info: https://bandit.readthedocs.io/en/latest/blacklists/blacklist_imports.html#b404-import-subprocess  # noqa
 from shutil import copy
 from shutil import copytree
 from shutil import Error
@@ -469,7 +464,7 @@ def generate_consul_key(unique=False):
     Key generated per the following description:
     https://github.com/hashicorp/consul/blob/b3292d13fb8bbc8b14b2a1e2bbae29c6e105b8f4/command/keygen/keygen.go
     """  # noqa
-    keybytes = np_random_bytes(16)
+    keybytes = secrets.token_bytes(16)
     ckey = binascii.b2a_base64(keybytes)
     return ckey.decode("utf-8").strip()
 
