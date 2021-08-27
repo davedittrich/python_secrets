@@ -149,9 +149,9 @@ class SecretsSet(Command):
             list(variables.keys()) if len(parsed_args.arg) == 0
             else parsed_args.arg
         )
-        if parsed_args.undefined:
+        if parsed_args.undefined and len(variables) > 0:
             # Downselect to just those currently undefined
-            args = [k for k, v in variables
+            args = [k for k, v in variables.items()
                     if v in [None, '']]
         if len(args) == 0:
             raise RuntimeError('[-] no secrets identified to be set')
