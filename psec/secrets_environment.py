@@ -71,11 +71,11 @@ SECRET_TYPES = [
             'Generable': True}),
         OrderedDict({
             'Type': 'token_hex',
-            'Description': 'Hexadecimal token',
+            'Description': '32-bit hexadecimal token',
             'Generable': True}),
         OrderedDict({
             'Type': 'token_urlsafe',
-            'Description': 'URL-safe token',
+            'Description': '32-bit URL-safe token',
             'Generable': True}),
         OrderedDict({
             'Type': 'consul_key',
@@ -445,13 +445,13 @@ def generate_crypt6(unique=False, password=None, salt=None):
 
 
 @Memoize
-def generate_token_hex(unique=False, nbytes=16):
+def generate_token_hex(unique=False, nbytes=32):
     """Generate an random hexadecimal token."""
     return secrets.token_hex(nbytes=nbytes)
 
 
 @Memoize
-def generate_token_urlsafe(unique=False, nbytes=16):
+def generate_token_urlsafe(unique=False, nbytes=32):
     """Generate an URL-safe random token."""
     return secrets.token_urlsafe(nbytes=nbytes)
 
