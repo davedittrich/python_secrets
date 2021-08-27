@@ -79,7 +79,7 @@ SECRET_TYPES = [
             'Generable': True}),
         OrderedDict({
             'Type': 'consul_key',
-            'Description': '16-byte BASE64 token',
+            'Description': '32-byte BASE64 token',
             'Generable': True}),
         OrderedDict({
             'Type': 'sha1_digest',
@@ -460,11 +460,12 @@ def generate_token_urlsafe(unique=False, nbytes=16):
 def generate_consul_key(unique=False):
     """
     Generate a consul key.
+    https://www.consul.io/docs/security/encryption
 
     Key generated per the following description:
     https://github.com/hashicorp/consul/blob/b3292d13fb8bbc8b14b2a1e2bbae29c6e105b8f4/command/keygen/keygen.go
     """  # noqa
-    keybytes = secrets.token_bytes(16)
+    keybytes = secrets.token_bytes(32)
     ckey = binascii.b2a_base64(keybytes)
     return ckey.decode("utf-8").strip()
 
