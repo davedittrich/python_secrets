@@ -24,6 +24,22 @@ History
 .. Fixed for any bug fixes.
 .. Security in case of vulnerabilities.
 
+21.9.0 (2021-09-07)
+~~~~~~~~~~~~~~~~~~~
+
+Added
+^^^^^
+
+- Increased test coverage to address bugs (below) being fixed.
+
+Changed
+^^^^^^^
+
+- Fixed bugs in `Makefile` and `tox.ini` file.
+- Fixed bug setting undefined variables.
+- Switched from `numpy` to Python `secrets` module for random bytes.
+- Increased key size from 16 to 32 bits for `consul_key`, `token_hex` and `token_urlsafe`.
+
 21.8.0 (2021-08-12)
 ~~~~~~~~~~~~~~~~~~~
 

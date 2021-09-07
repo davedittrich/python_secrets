@@ -10,7 +10,7 @@ teardown() {
     run $PSEC environments delete $D2_ENVIRONMENT --force 1>&2
 }
 
-@test "'psec secrets set' fails" {
+@test "'psec secrets set' without arguments fails" {
     run $PSEC secrets set 2>&1
     assert_failure
     assert_output --partial "no secrets specified"
@@ -20,6 +20,20 @@ teardown() {
     run $PSEC secrets set jenkins_admin_password=$TEST_PASSWORD
     run $PSEC secrets show jenkins_admin_password --no-redact -f csv
     assert_output --partial "$TEST_PASSWORD"
+}
+
+@test "'psec secrets generate sets variables properly" {
+    run $PSEC secrets show --no-redact consul_key hypriot_password myapp_client_psk -f value
+    assert_output 'hypriot_password None hypriot_password
+consul_key None consul_key
+myapp_client_psk None DEMO_client_ssid'
+    run $PSEC secrets generate consul_key hypriot_password myapp_client_psk
+    run $PSEC secrets get consul_key
+    assert_output --partial "="
+    run $PSEC secrets show --no-redact hypriot_password
+    refute_output 'None'
+    run $PSEC secrets get myapp_client_psk
+    assert_output 'None'
 }
 
 @test "'psec secrets set --from-options' sets variables properly" {

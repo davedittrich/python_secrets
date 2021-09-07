@@ -22,11 +22,6 @@ import sys
 import uuid
 
 from collections import OrderedDict
-from numpy.random import bytes as np_random_bytes
-# >> Issue: [B404:blacklist] Consider possible security implications associated with run module.  # noqa
-#    Severity: Low   Confidence: High
-#    Location: psec/secrets.py:21
-#    More Info: https://bandit.readthedocs.io/en/latest/blacklists/blacklist_imports.html#b404-import-subprocess  # noqa
 from shutil import copy
 from shutil import copytree
 from shutil import Error
@@ -76,15 +71,15 @@ SECRET_TYPES = [
             'Generable': True}),
         OrderedDict({
             'Type': 'token_hex',
-            'Description': 'Hexadecimal token',
+            'Description': '32-bit hexadecimal token',
             'Generable': True}),
         OrderedDict({
             'Type': 'token_urlsafe',
-            'Description': 'URL-safe token',
+            'Description': '32-bit URL-safe token',
             'Generable': True}),
         OrderedDict({
             'Type': 'consul_key',
-            'Description': '16-byte BASE64 token',
+            'Description': '32-byte BASE64 token',
             'Generable': True}),
         OrderedDict({
             'Type': 'sha1_digest',
@@ -450,13 +445,13 @@ def generate_crypt6(unique=False, password=None, salt=None):
 
 
 @Memoize
-def generate_token_hex(unique=False, nbytes=16):
+def generate_token_hex(unique=False, nbytes=32):
     """Generate an random hexadecimal token."""
     return secrets.token_hex(nbytes=nbytes)
 
 
 @Memoize
-def generate_token_urlsafe(unique=False, nbytes=16):
+def generate_token_urlsafe(unique=False, nbytes=32):
     """Generate an URL-safe random token."""
     return secrets.token_urlsafe(nbytes=nbytes)
 
@@ -465,11 +460,12 @@ def generate_token_urlsafe(unique=False, nbytes=16):
 def generate_consul_key(unique=False):
     """
     Generate a consul key.
+    https://www.consul.io/docs/security/encryption
 
     Key generated per the following description:
     https://github.com/hashicorp/consul/blob/b3292d13fb8bbc8b14b2a1e2bbae29c6e105b8f4/command/keygen/keygen.go
     """  # noqa
-    keybytes = np_random_bytes(16)
+    keybytes = secrets.token_bytes(32)
     ckey = binascii.b2a_base64(keybytes)
     return ckey.decode("utf-8").strip()
 

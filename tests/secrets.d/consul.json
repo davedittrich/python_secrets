@@ -1,0 +1,7 @@
+[
+  {
+    "Variable": "consul_key",
+    "Type": "consul_key",
+    "Prompt": "Key for Consul cluster"
+  }
+]
