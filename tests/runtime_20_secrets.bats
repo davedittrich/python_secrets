@@ -26,7 +26,7 @@ teardown() {
     run $PSEC secrets show --no-redact consul_key hypriot_password myapp_client_psk -f value
     assert_output 'hypriot_password None hypriot_password
 consul_key None consul_key
-myapp_client_psk None DEMO_client_ssid'
+myapp_client_psk None DEMO_client_psk'
     run $PSEC secrets generate consul_key hypriot_password myapp_client_psk
     run $PSEC secrets get consul_key
     assert_output --partial "="
@@ -123,6 +123,17 @@ myapp_client_psk None DEMO_client_ssid'
     run $PSEC secrets show jenkins_admin_password -f value
     assert_failure
     [ ! -f $D2_SECRETS_BASEDIR/$D2_ENVIRONMENT/secrets.d/jenkins.json ]
+}
+
+@test "'psec secrets tree $D2_SECRETS_ENVIRONMENT' succeeds" {
+    run $PSEC secrets tree $D2_SECRETS_ENVIRONMENT
+    assert_output --partial '└'
+    assert_success
+}
+
+@test "'psec secrets tree environment_that_does_not_exist' fails" {
+    run $PSEC secrets tree environment_that_does_not_exist
+    assert_failure
 }
 
 # vim: set ts=4 sw=4 tw=0 et :
