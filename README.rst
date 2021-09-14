@@ -13,11 +13,13 @@ psec (python_secrets)
         :alt: Documentation Status
 
 
-Python CLI for managing secrets (passwords, API keys, etc)
+Python command line app for managing groups of secrets (passwords, API keys, etc) and
+other project variables. Reduces security risks from things like weak default passwords,
+secrets stored in files in the source code repository directory.
 
 Version: 21.9.0
 
-* Free software: Apache 2.0 License
+* Free software: `Apache 2.0 License <https://www.apache.org/licenses/LICENSE-2.0>`_
 * Documentation: https://python_secrets.readthedocs.org.
 
 Features
