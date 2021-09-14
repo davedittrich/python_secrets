@@ -1,4 +1,4 @@
-.. :changelog:
+.. _changelog:
 
 History
 -------

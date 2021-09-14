@@ -178,12 +178,12 @@ docs: docs/psec_help.txt
 	cd docs && make html
 
 docs/psec_help.txt: install-active
-	psec help | tee docs/psec_help.txt
+	PYTHONPATH=$(shell pwd) python -m psec help | tee docs/psec_help.txt
 
 #HELP examples - produce some example output for docs
 .PHONY: examples
 examples:
-	psec --help
+	@PYTHONPATH=$(shell pwd) python -m psec --help
 
 # Git submodules and subtrees are both a huge PITA. This is way simpler.
 

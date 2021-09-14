@@ -1572,7 +1572,7 @@ General or more elaborate potential enhancements are listed here:
   ..
 
 Credits
----------
+-------
 
 Tools used in rendering this package:
 
