@@ -25,6 +25,7 @@ Contents:
    contributing
    authors
    history
+   license
 
 Indices and tables
 ==================
