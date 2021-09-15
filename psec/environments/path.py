@@ -66,12 +66,9 @@ class EnvironmentsPath(Command):
 
             ..
 
-            Using the ``--exists`` option will just return ``0`` if the path
-            exists, or ``1`` if it does not. No path is printed on stdout.
-
-            Using the ``--tmpdir`` option will return the path to the
-            temporary directory for the environment. If it does not already
-            exist, it will be created so it is ready for use.
+            Using the ``--exists`` option will just exit with return code ``0``
+            when the environment directory exists, or ``1`` if it does not, and
+            no path is printed on stdout.
 
             To append subdirectory components, provide them as arguments and
             they will be concatenated with the appropriate OS path separator.
@@ -84,8 +81,15 @@ class EnvironmentsPath(Command):
             ..
 
             To ensure the directory path specified by command line arguments
-            is present, use the ``--create`` option.
+            is present in the file system, use the ``--create`` option.
 
+            Using the ``--tmpdir`` option will return the path to the temporary
+            directory for the environment.  If the environment's directory
+            already exists, the temporary directory will be also be created
+            so it is ready for use.  If the environment directory does not
+            already exist, the program will exit with an error message. Again,
+            the ``--create`` changes this behavior and the missing directory
+            path will be created.
             """)
         return parser
 
@@ -103,6 +107,9 @@ class EnvironmentsPath(Command):
         environment = self.app.options.environment
         e = SecretsEnvironment(environment)
         if parsed_args.tmpdir:
+            if not e.environment_exists() and not parsed_args.create:
+                return (f"[-] environment '{str(e)}' does not exist; "
+                        "use '--create' to create it")
             tmpdir = e.tmpdir_path()
             tmpdir_mode = 0o700
             try:
