@@ -852,6 +852,26 @@
             "console": "integratedTerminal"
         },
         {
+            "name": "psec --elapsed run -- sleep 5",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "args": [
+                "--debug",
+                "--elapsed",
+                "run",
+                "--",
+                "sleep",
+                "5"
+            ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
+            "stopOnEntry": false,
+            "console": "integratedTerminal"
+        },
+        {
             "name": "psec ssh known-hosts add console-output.txt",
             "type": "python",
             "request": "launch",
