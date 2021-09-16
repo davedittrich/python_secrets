@@ -1,4 +1,4 @@
-.. :changelog:
+.. _changelog:
 
 History
 -------
@@ -23,6 +23,22 @@ History
 .. Removed for now removed features.
 .. Fixed for any bug fixes.
 .. Security in case of vulnerabilities.
+
+21.9.1 (2021-09-15)
+~~~~~~~~~~~~~~~~~~~
+
+Added
+^^^^^
+
+- Added `secrets tree` subcommand.
+
+Changed
+^^^^^^^
+
+- Fixed bugs with `environments path --tmpdir` subcommand and
+  `run` subcommand with `--elapsed` option when no environment exists.
+- Changed license file name.
+- Improved documentation.
 
 21.9.0 (2021-09-07)
 ~~~~~~~~~~~~~~~~~~~

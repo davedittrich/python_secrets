@@ -402,6 +402,44 @@ def atree(dir,
         return output
 
 
+def secrets_tree(
+    env=None,
+    outfile=None
+):
+    """
+    Produces the tree structure for groups and secrets in an environment.
+
+    If output is specified (e.g., as sys.stdout) it will be used,
+    otherwise a list of strings is returned.
+
+    Uses anytree: https://anytree.readthedocs.io/en/latest/
+
+    :param environment_dir:
+    :param outfile:
+    :return: str
+    """
+
+    nodes = dict()
+    env_name = str(env)
+    nodes[env_name] = Node(env_name)
+    root_node = nodes[env_name]
+    for group in sorted(env.get_groups()):
+        group_name = os.path.join(env_name, group)
+        nodes[group_name] = Node(group, parent=root_node)
+        for variable in sorted(env.get_items_from_group(group)):
+            nodes[os.path.join(group_name, variable)] = \
+                Node(variable, parent=nodes[group_name])
+
+    output = []
+    for pre, fill, node in RenderTree(root_node):
+        output.append((f'{ pre }{ node.name }'))
+    if outfile is not None:
+        for line in output:
+            print(line, file=outfile)
+    else:
+        return output
+
+
 class Timer(object):
     """
     Timer object usable as a context manager, or for manual timing.

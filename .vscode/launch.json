@@ -525,6 +525,23 @@
             "console": "integratedTerminal"
         },
         {
+            "name": "psec secrets describe",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "args": [
+                "--debug",
+                "secrets",
+                "describe"
+            ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
+            "stopOnEntry": false,
+            "console": "integratedTerminal"
+        },
+        {
             "name": "psec secrets describe jenkins_admin_password",
             "type": "python",
             "request": "launch",
@@ -764,6 +781,23 @@
             "console": "integratedTerminal"
         },
         {
+            "name": "psec secrets tree",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "args": [
+                "--debug",
+                "secrets",
+                "tree"
+            ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
+            "stopOnEntry": false,
+            "console": "integratedTerminal"
+        },
+        {
             "name": "psec secrets backup",
             "type": "python",
             "request": "launch",
@@ -809,6 +843,26 @@
                 "-E",
                 "run",
                 "printenv"
+            ],
+            "env": {
+                "D2_ENVIRONMENT": "test",
+                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
+            },
+            "stopOnEntry": false,
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "psec --elapsed run -- sleep 5",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.main",
+            "args": [
+                "--debug",
+                "--elapsed",
+                "run",
+                "--",
+                "sleep",
+                "5"
             ],
             "env": {
                 "D2_ENVIRONMENT": "test",

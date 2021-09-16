@@ -6,8 +6,23 @@ teardown() {
     rm -rf /tmp/.secrets/{testenv,alias}
 }
 
-@test "'psec environments path --tmpdir' creates $D2_SECRETS_BASEDIR/$D2_ENVIRONMENT/tmp" {
+@test "'psec environments path --tmpdir' succeeds when $D2_SECRETS_BASEDIR/$D2_ENVIRONMENT exists" {
+    run $PSEC environments create --clone-from tests/secrets.d 1>&2
     run $PSEC environments path --tmpdir 1>&2
+    assert_output --partial "$D2_SECRETS_BASEDIR/$D2_ENVIRONMENT/tmp"
+    [ -d $D2_SECRETS_BASEDIR/$D2_ENVIRONMENT/tmp ]
+}
+
+@test "'psec environments path --tmpdir' fails when $D2_SECRETS_BASEDIR/$D2_ENVIRONMENT does not exist" {
+    run $PSEC environments path --tmpdir 1>&2
+    assert_failure
+    assert_output --partial "does not exist"
+    [ ! -d $D2_SECRETS_BASEDIR/$D2_ENVIRONMENT/tmp ]
+}
+
+@test "'psec environments path --tmpdir --create' succeeds when $D2_SECRETS_BASEDIR/$D2_ENVIRONMENT does not exist" {
+    run $PSEC environments path --tmpdir --create 1>&2
+    assert_success
     [ -d $D2_SECRETS_BASEDIR/$D2_ENVIRONMENT/tmp ]
 }
 
