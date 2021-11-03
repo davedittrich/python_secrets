@@ -30,6 +30,7 @@ from psec.secrets_environment import (
 )
 from psec.utils import (
     bell,
+    show_current_value,
     Timer,
 )
 
@@ -47,12 +48,6 @@ SYSLOG = False
 
 DEFAULT_UMASK = 0o077
 MAX_UMASK = 0o777
-
-
-def show_current_value(variable=None):
-    """Pretty-print environment variable (if set)."""
-    value = os.getenv(variable, None)
-    return f" ('{value}')" if value is not None else ''
 
 
 def umask(value):

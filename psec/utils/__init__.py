@@ -440,6 +440,12 @@ def secrets_tree(
         return output
 
 
+def show_current_value(variable=None):
+    """Pretty-print environment variable (if set)."""
+    value = os.getenv(variable, None)
+    return f" ('{value}')" if value is not None else ''
+
+
 class Timer(object):
     """
     Timer object usable as a context manager, or for manual timing.
