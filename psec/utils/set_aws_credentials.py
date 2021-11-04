@@ -19,7 +19,7 @@ class SetAWSCredentials(Command):
 
     # See https://docs.aws.amazon.com/cli/latest/userguide/cli-config-files.html  # noqa
 
-    log = logging.getLogger(__name__)
+    logger = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
@@ -56,7 +56,7 @@ class SetAWSCredentials(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.log.debug('[*] setting AWS CLI IAM user credentials')
+        self.logger.debug('[*] setting AWS CLI IAM user credentials')
         self.app.secrets.requires_environment()
         self.app.secrets.read_secrets_and_descriptions()
         required_vars = ['aws_access_key_id', 'aws_secret_access_key']

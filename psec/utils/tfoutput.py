@@ -4,13 +4,11 @@ import argparse
 import json
 import logging
 import os
+import shlex
 import subprocess  # nosec
 import textwrap
 
 from cliff.lister import Lister
-
-
-logger = logging.getLogger(__name__)
 
 
 # The TfOutput Lister assumes `terraform output` structured as
@@ -66,7 +64,7 @@ logger = logging.getLogger(__name__)
 class TfOutput(Lister):
     """Retrieve current 'terraform output' results."""
 
-    log = logging.getLogger(__name__)
+    logger = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
@@ -102,7 +100,7 @@ class TfOutput(Lister):
         return parser
 
     def take_action(self, parsed_args):
-        self.log.debug('[*] getting terraform output')
+        self.logger.debug('[*] getting terraform output')
         columns = ('Variable', 'Value')
         data = list()
         tfstate = parsed_args.tfstate
@@ -117,21 +115,24 @@ class TfOutput(Lister):
             raise RuntimeError(f"[-] file does not exist: '{tfstate}'")
         if self.app_args.verbose_level > 1:
             # NOTE(dittrich): Not DRY, but spend time fixing later.
-            self.log.info(' '.join(['terraform',
-                                    'output',
-                                    '-state={}'.format(tfstate),
-                                    '-json']))
-        # >> Issue: [B607:start_process_with_partial_path] Starting a process with a partial executable path  # noqa
-        #    Severity: Low   Confidence: High
-        #    Location: psec/utils.py:152
-        p = subprocess.Popen(['terraform',  # nosec
-                              'output',
-                              '-state={}'.format(tfstate),
-                              '-json'],
-                             env=dict(os.environ),
-                             stdout=subprocess.PIPE,
-                             stderr=subprocess.PIPE,
-                             shell=False)
+            self.logger.info(
+                ' '.join(['/usr/local/bin/terraform',
+                          'output',
+                          '-state={}'.format(tfstate),
+                          '-json'])
+            )
+        p = subprocess.Popen(
+            [
+                '/usr/local/bin/terraform',
+                'output',
+                '-state={}'.format(shlex.quote(tfstate)),
+                '-json'
+            ],
+            env=dict(os.environ),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            shell=False  # nosec
+        )
         jout, err = p.communicate()
         dout = json.loads(jout.decode('UTF-8'))
         for prefix in dout.keys():

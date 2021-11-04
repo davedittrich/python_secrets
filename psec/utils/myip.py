@@ -122,7 +122,7 @@ def get_myip(method='random'):
 class MyIP(Command):
     """Get currently active internet routable IPv4 address."""
 
-    log = logging.getLogger(__name__)
+    logger = logging.getLogger(__name__)
 
     def __init__(self, app, app_args, cmd_name=None):
         super().__init__(app, app_args, cmd_name=cmd_name)
@@ -188,7 +188,7 @@ class MyIP(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.log.debug('[*] getting source IP address')
+        self.logger.debug('[*] getting source IP address')
         interface = ipaddress.ip_interface(
             get_myip(method=parsed_args.method))
         if parsed_args.cidr:
