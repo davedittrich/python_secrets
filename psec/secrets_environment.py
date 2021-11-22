@@ -103,6 +103,7 @@ SECRET_TYPES = [
 SECRET_ATTRIBUTES = [
     'Variable',
     'Group',
+    'Help',
     'Type',
     'Export',
     'Prompt',
@@ -923,7 +924,7 @@ class SecretsEnvironment(object):
         :return:
         """
         try:
-            del(self.Variable[secret])
+            del self.Variable[secret]
         except KeyError:
             pass
         else:
@@ -1176,6 +1177,10 @@ class SecretsEnvironment(object):
     def get_options(self, secret):
         """Get the options for setting the secret"""
         return self.Options.get(secret, '*')
+
+    def get_help(self, secret):
+        """Get the help documentation URL for the secret"""
+        return self.Help.get(secret, '*')
 
     def get_prompt(self, secret):
         """Get the prompt for the secret"""
