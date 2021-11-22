@@ -7,7 +7,6 @@ import textwrap
 
 from cliff.command import Command
 from psec.secrets_environment import SecretsEnvironment
-from stat import S_IMODE
 
 
 class EnvironmentsPath(Command):
@@ -110,24 +109,8 @@ class EnvironmentsPath(Command):
             if not e.environment_exists() and not parsed_args.create:
                 return (f"[-] environment '{str(e)}' does not exist; "
                         "use '--create' to create it")
-            tmpdir = e.tmpdir_path()
-            tmpdir_mode = 0o700
-            try:
-                os.makedirs(tmpdir, tmpdir_mode)
-                self.logger.info("[+] created tmpdir %s", tmpdir)
-            except FileExistsError:
-                mode = os.stat(tmpdir).st_mode
-                current_mode = S_IMODE(mode)
-                if current_mode != tmpdir_mode:
-                    os.chmod(tmpdir, tmpdir_mode)
-                    self.logger.info(
-                        "[+] changed mode on %s from %s to %s",
-                        oct(current_mode),
-                        oct(tmpdir_mode),
-                        tmpdir
-                    )
-            finally:
-                self._print(tmpdir, parsed_args.json)
+            tmpdir = e.tmpdir_path(create_path=parsed_args.create)
+            self._print(tmpdir, parsed_args.json)
         else:
             base_path = e.environment_path()
             subdir = parsed_args.subdir

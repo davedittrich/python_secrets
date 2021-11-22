@@ -18,16 +18,14 @@ import secrets
 #
 import stat
 import sys
-
 import uuid
 
 from collections import OrderedDict
 from shutil import copy
 from shutil import copytree
 from shutil import Error
-
+from stat import S_IMODE
 from xkcdpass import xkcd_password as xp
-
 from psec.utils import (
     find,
     get_files_from_path,
@@ -807,9 +805,26 @@ class SecretsEnvironment(object):
             path = os.path.join(path, f"{group}.json")
         return path
 
-    def tmpdir_path(self):
+    def tmpdir_path(self, create_path=False):
         """Return the absolute path to secrets descriptions tmp directory"""
-        return os.path.join(self.environment_path(), "tmp")
+        tmpdir = os.path.join(self.environment_path(), "tmp")
+        if create_path:
+            tmpdir_mode = 0o700
+            try:
+                os.makedirs(tmpdir, tmpdir_mode)
+                self.logger.info("[+] created tmpdir %s", tmpdir)
+            except FileExistsError:
+                mode = os.stat(tmpdir).st_mode
+                current_mode = S_IMODE(mode)
+                if current_mode != tmpdir_mode:
+                    os.chmod(tmpdir, tmpdir_mode)
+                    self.logger.info(
+                        "[+] changed mode on %s from %s to %s",
+                        oct(current_mode),
+                        oct(tmpdir_mode),
+                        tmpdir
+                    )
+        return tmpdir
 
     def requires_environment(self, path_only=False):
         """
