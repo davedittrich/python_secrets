@@ -38,7 +38,7 @@ from psec.utils import (
 
 if sys.version_info < (3, 6, 0):
     print((f"[-] The {os.path.basename(sys.argv[0])} "
-           "prequires Python 3.6.0 or newer\n"
+           "requires Python 3.6.0 or newer\n"
            f"[-] Found Python {sys.version}"),
           file=sys.stderr)
     sys.exit(1)
