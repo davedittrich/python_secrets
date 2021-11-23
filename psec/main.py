@@ -36,9 +36,9 @@ from psec.utils import (
     Timer,
 )
 
-if sys.version_info < (3, 7, 0):
+if sys.version_info < (3, 6, 0):
     print((f"[-] The {os.path.basename(sys.argv[0])} "
-           "requires Python 3.7.0 or newer\n"
+           "prequires Python 3.6.0 or newer\n"
            f"[-] Found Python {sys.version}"),
           file=sys.stderr)
     sys.exit(1)
@@ -197,6 +197,9 @@ class PythonSecretsApp(App):
 
     def initialize_app(self, argv):
         self.logger.debug('[*] initialize_app(%s)', str(self.__class__))
+        if sys.version_info <= (3, 6):
+            raise RuntimeError('This program uses the Python "secrets" ' +
+                               'module, which requires Python 3.6 or higher')
 
     def prepare_to_run_command(self, cmd):
         self.logger.debug("[*] prepare_to_run_command('%s')", cmd.cmd_name)
