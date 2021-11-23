@@ -8,6 +8,7 @@ Utility functions.
   URL: https://python_secrets.readthedocs.org.
 """
 
+import argparse
 import logging
 import os
 import tempfile
@@ -34,6 +35,23 @@ from ipwhois import IPWhois
 
 
 logger = logging.getLogger(__name__)
+
+DEFAULT_UMASK = 0o077
+MAX_UMASK = 0o777
+
+
+def umask(value):
+    """Set umask."""
+    if value.lower().find("o") < 0:
+        raise argparse.ArgumentTypeError(
+            'value ({}) must be expressed in '
+            'octal form (e.g., "0o077")')
+    ivalue = int(value, base=8)
+    if ivalue < 0 or ivalue > MAX_UMASK:
+        raise argparse.ArgumentTypeError(
+            f"value ({ value }) must be between 0 and 0o777"
+        )
+    return ivalue
 
 
 def bell():
@@ -438,6 +456,12 @@ def secrets_tree(
             print(line, file=outfile)
     else:
         return output
+
+
+def show_current_value(variable=None):
+    """Pretty-print environment variable (if set)."""
+    value = os.getenv(variable, None)
+    return f" ('{value}')" if value is not None else ''
 
 
 class Timer(object):

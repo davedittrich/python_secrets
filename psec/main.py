@@ -30,12 +30,15 @@ from psec.secrets_environment import (
 )
 from psec.utils import (
     bell,
+    show_current_value,
+    umask,
+    DEFAULT_UMASK,
     Timer,
 )
 
 if sys.version_info < (3, 6, 0):
     print((f"[-] The {os.path.basename(sys.argv[0])} "
-           "prequires Python 3.6.0 or newer\n"
+           "requires Python 3.6.0 or newer\n"
            f"[-] Found Python {sys.version}"),
           file=sys.stderr)
     sys.exit(1)
@@ -44,29 +47,6 @@ if sys.version_info < (3, 6, 0):
 # Use syslog for logging?
 # TODO(dittrich) Make this configurable, since it can fail on Mac OS X
 SYSLOG = False
-
-DEFAULT_UMASK = 0o077
-MAX_UMASK = 0o777
-
-
-def show_current_value(variable=None):
-    """Pretty-print environment variable (if set)."""
-    value = os.getenv(variable, None)
-    return f" ('{value}')" if value is not None else ''
-
-
-def umask(value):
-    """Set umask."""
-    if value.lower().find("o") < 0:
-        raise argparse.ArgumentTypeError(
-            'value ({}) must be expressed in '
-            'octal form (e.g., "0o077")')
-    ivalue = int(value, base=8)
-    if ivalue < 0 or ivalue > MAX_UMASK:
-        raise argparse.ArgumentTypeError(
-            f"value ({ value }) must be between 0 and 0o777"
-        )
-    return ivalue
 
 
 class PythonSecretsApp(App):

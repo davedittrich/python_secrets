@@ -9,8 +9,6 @@ import textwrap
 from cliff.command import Command
 from psec.secrets_environment import SecretsEnvironment
 
-logger = logging.getLogger(__name__)
-
 
 class TfBackend(Command):
     """
@@ -18,7 +16,7 @@ class TfBackend(Command):
     out of current working directory into environment path.
     """
 
-    log = logging.getLogger(__name__)
+    logger = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
@@ -55,14 +53,14 @@ class TfBackend(Command):
             """.format(tfstate_file=tfstate_file))
 
         if parsed_args.path:
-            self.log.debug('[+] showing terraform state file path')
+            self.logger.debug('[+] showing terraform state file path')
             print(tfstate_file)
         else:
-            self.log.debug('[+] setting up terraform backend')
+            self.logger.debug('[+] setting up terraform backend')
             if os.path.exists(backend_file):
-                logger.debug("[+] updating '%s'", backend_file)
+                self.logger.debug("[+] updating '%s'", backend_file)
             else:
-                logger.debug("[+] creating '%s'", backend_file)
+                self.logger.debug("[+] creating '%s'", backend_file)
             with open(backend_file, 'w') as f:
                 f.write(backend_text)
 

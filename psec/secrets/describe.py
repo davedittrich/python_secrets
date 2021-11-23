@@ -92,7 +92,9 @@ class SecretsDescribe(Lister):
                 variables = parsed_args.arg \
                     if len(parsed_args.arg) > 0 \
                     else [k for k, v in self.app.secrets.items()]
-            columns = ('Variable', 'Group', 'Type', 'Prompt', 'Options')
+            columns = (
+                'Variable', 'Group', 'Type', 'Prompt', 'Options', 'Help'
+            )
             data = (
                 [
                     (
@@ -100,7 +102,8 @@ class SecretsDescribe(Lister):
                         self.app.secrets.get_group(k),
                         self.app.secrets.get_secret_type(k),
                         self.app.secrets.get_prompt(k),
-                        self.app.secrets.get_options(k)
+                        self.app.secrets.get_options(k),
+                        self.app.secrets.get_help(k)
                     )
                     for k, v in self.app.secrets.items()
                     if (k in variables and

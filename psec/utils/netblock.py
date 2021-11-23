@@ -12,7 +12,7 @@ from psec.utils.myip import get_myip
 class Netblock(Command):
     """Get network CIDR block(s) for IP from WHOIS lookup."""
 
-    log = logging.getLogger(__name__)
+    logger = logging.getLogger(__name__)
 
     def __init__(self, app, app_args, cmd_name=None):
         super().__init__(app, app_args, cmd_name=cmd_name)
@@ -38,7 +38,7 @@ class Netblock(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.log.debug('[*] getting netblock CIDR(s) for IP')
+        self.logger.debug('[*] getting netblock CIDR(s) for IP')
         if len(parsed_args.ip) == 0:
             # TODO(dittrich): Just use random for now
             # until refactoring out the choice method.

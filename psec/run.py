@@ -8,9 +8,10 @@ import shlex
 from cliff.command import Command
 from subprocess import call  # nosec
 
-# NOTE: While calling subprocess.call() with shell=True can have security
-# implications, the person running this command already has control of her
-# account.
+# NOTE: Calling subprocess.call() with shell=True can have security
+# implications. To prevent user-supplied data from injecting commands
+# into shell command lines, pass arguments as a list and ensure they
+# are properly quoted.
 
 
 class Run(Command):

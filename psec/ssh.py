@@ -714,7 +714,7 @@ class SSHConfig(Command):
     the prefix for this environment prior to creating new files.
     """
 
-    log = logging.getLogger(__name__)
+    logger = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
@@ -841,7 +841,7 @@ class SSHKnownHostsAdd(Command):
     an embedded Ansible playbook.
     """  # noqa
 
-    log = logging.getLogger(__name__)
+    logger = logging.getLogger(__name__)
 
     def __init__(self, app, app_args, cmd_name=None):
         super().__init__(app, app_args, cmd_name=None)
@@ -970,7 +970,7 @@ class SSHKnownHostsExtract(Command):
     in order to post-process them.
     """
 
-    log = logging.getLogger(__name__)
+    logger = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
@@ -1081,7 +1081,7 @@ class SSHKnownHostsRemove(Command):
     using an embedded Ansible playbook.
     """  # noqa
 
-    log = logging.getLogger(__name__)
+    logger = logging.getLogger(__name__)
 
     def __init__(self, app, app_args, cmd_name=None):
         super().__init__(app, app_args, cmd_name=None)

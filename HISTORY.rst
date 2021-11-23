@@ -24,6 +24,26 @@ History
 .. Fixed for any bug fixes.
 .. Security in case of vulnerabilities.
 
+21.11.0 (2021-11-22)
+~~~~~~~~~~~~~~~~~~~~
+
+Added
+^^^^^
+
+- Add `Help` attribute to descriptions for URL to more information.
+
+Changed
+^^^^^^^
+
+- General code quality, documentation, and testing enhancements
+- Move `tmpdir` path creation to `secrets_environment.SecretsEnvironment()`.
+- Move `umask()` function and variables to `utils`.
+
+Removed
+^^^^^^^
+
+- Drop Python 3.6 support due to it being EOL.
+
 21.9.1 (2021-09-15)
 ~~~~~~~~~~~~~~~~~~~
 

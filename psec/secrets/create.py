@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+# External imports
 import argparse
 import logging
 import os
@@ -13,16 +14,16 @@ try:
     from bullet import YesNo
 except ModuleNotFoundError:
     pass
-
 from cliff.command import Command
 from prettytable import PrettyTable
+from sys import stdin
+
+# Local imports
 from psec.secrets_environment import SECRET_TYPES
 from psec.utils import (
     find,
     prompt_options_list,
 )
-
-from sys import stdin
 
 
 def get_description(name=None, defaults=None):
@@ -73,6 +74,14 @@ def get_description(name=None, defaults=None):
     result = cli.launch()
     if result not in [' ', '', None]:
         new_description['Export'] = result
+    # URL for further information on options, etc.
+    prompt = "URL for help documentation: "
+    cli = Input(prompt,
+                default=defaults.get('Help', ' '),
+                word_color=colors.foreground["yellow"])
+    result = cli.launch()
+    if result not in [' ', '', None]:
+        new_description['Help'] = result
     print('')
     return new_description
 
@@ -245,6 +254,7 @@ class SecretsCreate(Command):
                         'Prompt': f"Value for '{arg}'",
                         'Options': "*",
                         'Export': " ",
+                        'Help': " ",
                     }
                 )
             if len(new_description) > 0:
