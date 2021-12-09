@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import argparse
 import logging
-import textwrap
 
 from cliff.command import Command
 from psec.utils import get_netblock
@@ -10,7 +8,17 @@ from psec.utils.myip import get_myip
 
 
 class Netblock(Command):
-    """Get network CIDR block(s) for IP from WHOIS lookup."""
+    """
+    Get network CIDR block(s) for IP from WHOIS lookup.
+
+    Look up the network address blocks serving the specified IP address(es)
+    using the Python ``IPWhois`` module.
+
+    https://pypi.org/project/ipwhois/
+
+    If no arguments are given, the routable address of the host on which
+    ``psec`` is being run will be determined and used as the default.
+    """
 
     logger = logging.getLogger(__name__)
 
@@ -19,22 +27,12 @@ class Netblock(Command):
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
-        parser.formatter_class = argparse.RawDescriptionHelpFormatter
-        parser.add_argument('ip',
-                            nargs='*',
-                            default=[],
-                            help="IP address to use (default: current IP)"
-                            )
-        parser.epilog = textwrap.dedent("""
-        Look up the network address blocks serving the specified IP
-        address(es) using the Python ``IPWhois`` module.
-
-        https://pypi.org/project/ipwhois/
-
-        If no arguments are given, the routable address of the host on
-        which ``psec`` is being run will be determined and used as the
-        default.
-        """)
+        parser.add_argument(
+            'ip',
+            nargs='*',
+            default=[],
+            help='IP address to use'
+        )
         return parser
 
     def take_action(self, parsed_args):

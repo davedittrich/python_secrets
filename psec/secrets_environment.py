@@ -509,9 +509,9 @@ class SecretsEnvironment(object):
     """
     Class for handling secrets environment metadata.
 
-    Provides an interface to the directory contents for a secrets
-    environment, including groups descriptions, a tmp/ directory,
-    and any other required directories.
+    Provides an interface to the directory contents for a secrets environment,
+    including groups descriptions, a tmp/ directory, and any other required
+    directories.
 
       Typical usage example::
 

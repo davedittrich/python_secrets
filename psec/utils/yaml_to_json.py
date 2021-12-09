@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 
-import argparse
 import json
 import logging
 import os
-import textwrap
 import sys
 import yaml
 
@@ -59,7 +57,62 @@ def yaml_to_json(
 
 
 class YAMLToJSON(Command):
-    """Convert YAML file(s) to JSON file(s)."""
+    """
+    Convert YAML file(s) to JSON file(s).
+
+    You can specify one or more files or directories to convert (including '-'
+    for standard input). By default the JSON format data will be written to
+    standard output.  This is useful for one-off conversion of YAML content to
+    see the resulting JSON, or to produce a file with a different name by
+    redirecting into a new file.
+
+    The ``--convert`` option writes the JSON to a file with the same base name,
+    but with the ``.json`` extension, then deletes the original YAML file. If
+    you need to keep the original YAML file, add the ``--keep-original``
+    option.  If a directory is passed as an argument with the ``--convert``
+    option, *all* files ending in ``.yml`` in the directory will be processed.
+
+    .. note::
+
+        The original format for secrets files and secrets description files was
+        YAML. The format was changed to JSON in a recent release, necessitating
+        that existing secrets descriptions in repositories and/or existing
+        secrets environments be converted.  As of now, this utility subcommand
+        provides a mechanism for you to use in making this change. Future
+        releases may include a more user-friendly upgrade mechanism.
+
+        Here is a demonstration using an old YAML-style secrets descriptions
+        directory used by tests in the ``tests/`` subdirectory::
+
+            $ cp -r tests/secrets /tmp
+            $ tree /tmp/secrets/
+            /tmp/secrets/
+            └── secrets.d
+                ├── jenkins.yml
+                ├── myapp.yml
+                ├── oauth.yml
+                └── trident.yml
+
+            1 directory, 4 files
+            $ psec utils yaml-to-json --convert /tmp/secrets/secrets.d
+            [+] converting '/tmp/secrets/secrets.d/jenkins.yml' to JSON
+            [+] removing '/tmp/secrets/secrets.d/jenkins.yml'
+            [+] converting '/tmp/secrets/secrets.d/myapp.yml' to JSON
+            [+] removing '/tmp/secrets/secrets.d/myapp.yml'
+            [+] converting '/tmp/secrets/secrets.d/trident.yml' to JSON
+            [+] removing '/tmp/secrets/secrets.d/trident.yml'
+            [+] converting '/tmp/secrets/secrets.d/oauth.yml' to JSON
+            [+] removing '/tmp/secrets/secrets.d/oauth.yml'
+            $ tree /tmp/secrets/
+            /tmp/secrets/
+            └── secrets.d
+                ├── jenkins.json
+                ├── myapp.json
+                ├── oauth.json
+                └── trident.json
+
+            1 directory, 4 files
+    """
 
     logger = logging.getLogger(__name__)
 
@@ -68,91 +121,26 @@ class YAMLToJSON(Command):
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
-        parser.formatter_class = argparse.RawDescriptionHelpFormatter
         parser.add_argument(
             '--convert',
             action='store_true',
             dest='convert',
             default=False,
-            help="Convert YAML to JSON format (default: False)"
+            help='Convert YAML to JSON format'
         )
         parser.add_argument(
             '--keep-original',
             action='store_true',
             dest='keep_original',
             default=False,
-            help="Keep original YAML file after conversion (default: False)"
+            help='Keep original YAML file after conversion'
         )
         parser.add_argument(
             'arg',
             nargs='*',
             default=['-'],
-            help=("Files and/or directories convert "
-                  "(default: standard input)")
+            help='Files and/or directories convert'
         )
-        parser.epilog = textwrap.dedent("""
-            Utility to convert YAML format file(s) to JSON format.
-
-            You can specify one or more files or directories to convert
-            (including '-' for standard input). By default the JSON format
-            data will be written to standard output.  This is useful for
-            one-off conversion of YAML content to see the resulting JSON, or
-            to produce a file with a different name by redirecting into a
-            new file.
-
-            The ``--convert`` option writes the JSON to a file with the same
-            base name, but with the ``.json`` extension, then deletes the
-            original YAML file. If you need to keep the original YAML file,
-            add the ``--keep-original`` option.  If a directory is passed as
-            an argument with the ``--convert`` option, *all* files ending in
-            ``.yml`` in the directory will be processed.
-
-            .. note::
-
-                The original format for secrets files and secrets
-                description files was YAML. The format was changed to
-                JSON in a recent release, necessitating that existing
-                secrets descriptions in repositories and/or existing
-                secrets environments be converted.  As of now, this
-                utility subcommand provides a mechanism for you to use
-                in making this change. Future releases may include a
-                more user-friendly upgrade mechanism.
-
-                Here is a demonstration using an old YAML-style secrets
-                descriptions directory used by tests in the ``tests/``
-                subdirectory::
-
-                    $ cp -r tests/secrets /tmp
-                    $ tree /tmp/secrets/
-                    /tmp/secrets/
-                    └── secrets.d
-                        ├── jenkins.yml
-                        ├── myapp.yml
-                        ├── oauth.yml
-                        └── trident.yml
-
-                    1 directory, 4 files
-                    $ psec utils yaml-to-json --convert /tmp/secrets/secrets.d
-                    [+] converting '/tmp/secrets/secrets.d/jenkins.yml' to JSON
-                    [+] removing '/tmp/secrets/secrets.d/jenkins.yml'
-                    [+] converting '/tmp/secrets/secrets.d/myapp.yml' to JSON
-                    [+] removing '/tmp/secrets/secrets.d/myapp.yml'
-                    [+] converting '/tmp/secrets/secrets.d/trident.yml' to JSON
-                    [+] removing '/tmp/secrets/secrets.d/trident.yml'
-                    [+] converting '/tmp/secrets/secrets.d/oauth.yml' to JSON
-                    [+] removing '/tmp/secrets/secrets.d/oauth.yml'
-                    $ tree /tmp/secrets/
-                    /tmp/secrets/
-                    └── secrets.d
-                        ├── jenkins.json
-                        ├── myapp.json
-                        ├── oauth.json
-                        └── trident.json
-
-                    1 directory, 4 files
-
-
-        """)
         return parser
 
     def take_action(self, parsed_args):

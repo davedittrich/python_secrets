@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 
-import argparse
 import logging
 import os
-import textwrap
 
 # TODO(dittrich): https://github.com/Mckinsey666/bullet/issues/2
 # Workaround until bullet has Windows missing 'termios' fix.
@@ -19,30 +17,32 @@ from sys import stdin
 
 
 class GroupsDelete(Command):
-    """Delete a secrets descriptions group."""
+    """
+    Delete a secrets descriptions group.
+
+    Deletes a group of secrets and variables by removing them from
+    the secrets environment and deleting their descriptions file.
+
+    If the ``--force`` option is not specified, you will be prompted
+    to confirm the group name before it is deleted.
+    """
 
     logger = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
-        parser.formatter_class = argparse.RawDescriptionHelpFormatter
         parser.add_argument(
             '--force',
             action='store_true',
             dest='force',
             default=False,
-            help="Mandatory confirmation (default: False)"
+            help='Mandatory confirmation'
         )
-        parser.add_argument('group',
-                            nargs='?',
-                            default=None)
-        parser.epilog = textwrap.dedent("""
-            Deletes a group of secrets and variables by removing them from
-            the secrets environment and deleting their descriptions file.
-
-            If the ``--force`` ption is not specified, you will be prompted
-            to confirm the group name before it is deleted.
-            """)  # noqa
+        parser.add_argument(
+            'group',
+            nargs='?',
+            default=None
+        )
         return parser
 
     def take_action(self, parsed_args):

@@ -1,66 +1,60 @@
 # -*- coding: utf-8 -*-
 
-import argparse
 import logging
 import os
-import textwrap
 
 from cliff.command import Command
 from psec.secrets_environment import SecretsEnvironment
 
 
 class GroupsCreate(Command):
-    """Create a secrets descriptions group."""
+    """
+    Create a secrets descriptions group.
+
+    Secrets and variables are described in files in a drop-in style directory
+    ending in ``.d``. This forms 'groups' that organize secrets and variables
+    by purpose, by open source tool, etc. This command creates a new group
+    descriptions file in the selected environment.
+
+    When integrating a new open source tool or project with an existing tool or
+    project, you can create a new group in the current environment and clone
+    its secrets descriptions from pre-existing definitions. This does not copy
+    any values, just the descriptions, allowing you to manage the values
+    independently of other projects using a different environment::
+
+        $ psec groups create newgroup --clone-from ~/git/goSecure/secrets.d/gosecure.json
+        [+] created new group 'newgroup'
+        $ psec groups list
+        +----------+-------+
+        | Group    | Items |
+        +----------+-------+
+        | jenkins  |     1 |
+        | myapp    |     4 |
+        | newgroup |    12 |
+        | trident  |     2 |
+        +----------+-------+
+
+    Note: Directory and file permissions on cloned groups will prevent
+    ``other`` from having read/write/execute permissions (i.e., ``o-rwx``
+    in terms of the ``chmod`` command.)
+    """  # noqa
 
     logger = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
-        parser.formatter_class = argparse.RawDescriptionHelpFormatter
         parser.add_argument(
             '-C', '--clone-from',
             action='store',
             dest='clone_from',
             default=None,
-            help="Group descriptions file to clone from (default: None)"
+            help='Group descriptions file to clone from'
         )
-        parser.add_argument('arg',
-                            nargs='?',
-                            default=None)
-        parser.epilog = textwrap.dedent("""
-            Secrets and variables are described in files in a drop-in
-            style directory ending in ``.d``. This forms 'groups' that
-            organize secrets and variables by purpose, by open source
-            tool, etc. This command creates a new group descriptions
-            file in the selected environment.
-
-            When integrating a new open source tool or project with an
-            existing tool or project, you can create a new group in the
-            current environment and clone its secrets descriptions from
-            pre-existing definitions. This does not copy any values, just
-            the descriptions, allowing you to manage the values independently
-            of other projects using a different environment.
-
-            .. code-block:: console
-
-                $ psec groups create newgroup --clone-from ~/git/goSecure/secrets.d/gosecure.json
-                [+] created new group 'newgroup'
-                $ psec groups list
-                +----------+-------+
-                | Group    | Items |
-                +----------+-------+
-                | jenkins  |     1 |
-                | myapp    |     4 |
-                | newgroup |    12 |
-                | trident  |     2 |
-                +----------+-------+
-
-            ..
-
-            Note: Directory and file permissions on cloned groups will prevent
-            ``other`` from having read/write/execute permissions (i.e., ``o-rwx``
-            in terms of the ``chmod`` command.)
-            """)  # noqa
+        parser.add_argument(
+            'arg',
+            nargs='?',
+            default=None
+        )
         return parser
 
     def take_action(self, parsed_args):

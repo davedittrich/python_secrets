@@ -1,53 +1,53 @@
 # -*- coding: utf-8 -*-
 
-import argparse
 import logging
 import os
-import textwrap
 
 from cliff.command import Command
 from psec.secrets_environment import SecretsEnvironment
 
 
 class EnvironmentsRename(Command):
-    """Rename environment."""
+    """
+    Rename environment.
+
+    Just like `mv`, renames an environment from the name specified by the
+    first argument to that of the second argument::
+
+        $ psec environments list
+        +----------------+---------+
+        | Environment    | Default |
+        +----------------+---------+
+        | old            | No      |
+        +----------------+---------+
+        $ psec environments rename new old
+        [-] source environment "new" does not exist
+        $ psec environments rename old new
+        [+] environment "old" renamed to "new"
+        $ psec environments list
+        +----------------+---------+
+        | Environment    | Default |
+        +----------------+---------+
+        | new            | No      |
+        +----------------+---------+
+    """
 
     logger = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
-        parser.formatter_class = argparse.RawDescriptionHelpFormatter
-        parser.add_argument('source',
-                            nargs=1,
-                            default=None,
-                            help='environment to rename')
-        parser.add_argument('dest',
-                            nargs=1,
-                            default=None,
-                            help='new environment name')
-        parser.epilog = textwrap.dedent("""
-            .. code-block:: console
-
-                $ psec environments list
-                +----------------+---------+
-                | Environment    | Default |
-                +----------------+---------+
-                | old            | No      |
-                +----------------+---------+
-                $ psec environments rename new old
-                [-] source environment "new" does not exist
-                $ psec environments rename old new
-                [+] environment "old" renamed to "new"
-                $ psec environments list
-                +----------------+---------+
-                | Environment    | Default |
-                +----------------+---------+
-                | new            | No      |
-                +----------------+---------+
-
-            ..
-            """)
-
+        parser.add_argument(
+            'source',
+            nargs=1,
+            default=None,
+            help='environment to rename'
+        )
+        parser.add_argument(
+            'dest',
+            nargs=1,
+            default=None,
+            help='new environment name'
+        )
         return parser
 
     def take_action(self, parsed_args):

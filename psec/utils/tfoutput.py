@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
 
-import argparse
 import json
 import logging
 import os
 import shlex
 import subprocess  # nosec
-import textwrap
 
 from cliff.lister import Lister
 
@@ -62,41 +60,36 @@ from cliff.lister import Lister
 
 
 class TfOutput(Lister):
-    """Retrieve current 'terraform output' results."""
+    """
+    Retrieve current ``terraform output`` results.
+
+    If the ``tfstate`` argument is not provided, this command will attempt to
+    search for a ``terraform.tfstate`` file in (1) the active environment's
+    secrets storage directory (see ``environments path``), or (2) the current
+    working directory. The former is documented preferred location for storing
+    this file, since it will contain secrets that *should not* be stored in a
+    source repository directory to avoid potential leaking of those secrets::
+
+        $ psec environments path
+        /Users/dittrich/.secrets/psec
+    """
 
     logger = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
-        parser.formatter_class = argparse.RawDescriptionHelpFormatter
         tfstate = None
         try:
             tfstate = os.path.join(self.app.secrets.tmpdir_path(),
                                    "terraform.tfstate")
         except AttributeError:
             pass
-        parser.add_argument('tfstate',
-                            nargs='?',
-                            default=tfstate,
-                            help="Path to Terraform state file " +
-                                 "(default: {})".format(tfstate)
-                            )
-        parser.epilog = textwrap.dedent("""
-            If the ``tfstate`` argument is not provided, this command will
-            attempt to search for a ``terraform.tfstate`` file in (1) the
-            active environment's secrets storage directory (see ``environments
-            path``), or (2) the current working directory. The former is
-            documented preferred location for storing this file, since it
-            will contain secrets that *should not* be stored in a source
-            repository directory to avoid potential leaking of those secrets.
-
-            .. code-block:: console
-
-                $ psec environments path
-                /Users/dittrich/.secrets/psec
-
-            ..
-            """)  # noqa
+        parser.add_argument(
+            'tfstate',
+            nargs='?',
+            default=tfstate,
+            help='Path to Terraform state file'
+        )
         return parser
 
     def take_action(self, parsed_args):

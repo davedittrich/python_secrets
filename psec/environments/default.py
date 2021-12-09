@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 
-import argparse
 import logging
 import os
-import textwrap
 
 # TODO(dittrich): https://github.com/Mckinsey666/bullet/issues/2
 # Workaround until bullet has Windows missing 'termios' fix.
@@ -23,13 +21,50 @@ from sys import stdin
 
 
 class EnvironmentsDefault(Command):
-    """Manage default environment via file in cwd."""
+    """
+    Manage default environment via file in cwd.
+
+    If no default is explicitly set, the default that would be applied is
+    returned::
+
+        $ cd ~/git/psec
+        $ psec environments default
+        [+] default environment is "psec"
+
+    When listing environments, the default environment that would be implicitly
+    used will be identified::
+
+        $ psec environments list
+        +-------------+---------+
+        | Environment | Default |
+        +-------------+---------+
+        | development | No      |
+        | testing     | No      |
+        | production  | No      |
+        +-------------+---------+
+
+    The following shows setting and unsetting the default::
+
+        $ psec environments default testing
+        [+] default environment set to "testing"
+        $ psec environments default
+        testing
+        $ psec environments list
+        +-------------+---------+
+        | Environment | Default |
+        +-------------+---------+
+        | development | No      |
+        | testing     | Yes     |
+        | production  | No      |
+        +-------------+---------+
+        $ psec environments default --unset-default
+        [+] default environment unset
+    """
 
     logger = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
-        parser.formatter_class = argparse.RawDescriptionHelpFormatter
         what = parser.add_mutually_exclusive_group(required=False)
         what.add_argument(
             '--set',
@@ -45,58 +80,11 @@ class EnvironmentsDefault(Command):
             default=False,
             help="Unset localized environment default"
         )
-        parser.add_argument('environment',
-                            nargs='?',
-                            default=None)
-        parser.epilog = textwrap.dedent("""
-            If no default is explicitly set, the default that would be
-            applied is returned:
-
-            .. code-block:: console
-
-                $ cd ~/git/psec
-                $ psec environments default
-                [+] default environment is "psec"
-
-            ..
-
-            When listing environments, the default environment that would
-            be implicitly used will be identified:
-
-            .. code-block:: console
-
-                $ psec environments list
-                +-------------+---------+
-                | Environment | Default |
-                +-------------+---------+
-                | development | No      |
-                | testing     | No      |
-                | production  | No      |
-                +-------------+---------+
-
-            ..
-
-            The following shows setting and unsetting the default:
-
-            .. code-block:: console
-
-                $ psec environments default testing
-                [+] default environment set to "testing"
-                $ psec environments default
-                testing
-                $ psec environments list
-                +-------------+---------+
-                | Environment | Default |
-                +-------------+---------+
-                | development | No      |
-                | testing     | Yes     |
-                | production  | No      |
-                +-------------+---------+
-                $ psec environments default --unset-default
-                [+] default environment unset
-
-            ..
-            """)
+        parser.add_argument(
+            'environment',
+            nargs='?',
+            default=None
+        )
         return parser
 
     def take_action(self, parsed_args):

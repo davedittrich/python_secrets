@@ -1,18 +1,21 @@
 # -*- coding: utf-8 -*-
 
-import argparse
+"""
+Back up just secrets and descriptions.
+"""
+
 import contextlib
 import datetime
 import logging
 import os
 import tarfile
-import textwrap
 
 from cliff.command import Command
 
 
 @contextlib.contextmanager
 def cd(path):
+    """Change directory."""
     old_path = os.getcwd()
     os.chdir(path)
     try:
@@ -22,18 +25,18 @@ def cd(path):
 
 
 class SecretsBackup(Command):
-    """Back up just secrets and descriptions."""
+    """
+    Back up just secrets and descriptions.
+
+    Creates a backup (``tar`` format) of the secrets.json file
+    and all description files.
+    """
 
     logger = logging.getLogger(__name__)
 
-    def get_parser(self, prog_name):
-        parser = super().get_parser(prog_name)
-        parser.formatter_class = argparse.RawDescriptionHelpFormatter
-        parser.epilog = textwrap.dedent("""
-            Creates a backup (``tar`` format) of the secrets.json file
-            and all description files.
-            """)
-        return parser
+    # def get_parser(self, prog_name):
+    #     parser = super().get_parser(prog_name)
+    #     return parser
 
     def take_action(self, parsed_args):
         self.logger.debug('[*] backup secrets')

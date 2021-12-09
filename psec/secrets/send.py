@@ -1,15 +1,22 @@
 # -*- coding: utf-8 -*-
 
-import argparse
+"""
+Send secrets using GPG encrypted email.
+"""
+
 import logging
-import textwrap
 
 from cliff.command import Command
 from psec.google_oauth2 import GoogleSMTP
 
 
 class SecretsSend(Command):
-    """Send secrets using GPG encrypted email."""
+    """
+    Send secrets using GPG encrypted email.
+
+    Recipients for the secrets are specified as ``USERNAME@EMAIL.ADDRESS``
+    strings and/or ``VARIABLE`` references.
+    """
 
     logger = logging.getLogger(__name__)
 
@@ -19,57 +26,53 @@ class SecretsSend(Command):
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
-        parser.formatter_class = argparse.RawDescriptionHelpFormatter
         parser.add_argument(
             '-T', '--refresh-token',
             action='store_true',
             dest='refresh_token',
             default=False,
-            help="Refresh Google API Oauth2 token and exit (default: False)"
+            help='Refresh Google API Oauth2 token and exit'
         )
         parser.add_argument(
             '--test-smtp',
             action='store_true',
             dest='test_smtp',
             default=False,
-            help='Test Oauth2 SMTP authentication and exit ' +
-                 '(default: False)'
+            help='Test Oauth2 SMTP authentication and exit'
         )
         parser.add_argument(
             '-H', '--smtp-host',
             action='store',
             dest='smtp_host',
             default='localhost',
-            help="SMTP host (default: localhost)"
+            help='SMTP host'
         )
         parser.add_argument(
             '-U', '--smtp-username',
             action='store',
             dest='smtp_username',
             default=None,
-            help="SMTP authentication username (default: None)"
+            help='SMTP authentication username'
         )
         parser.add_argument(
             '-F', '--from',
             action='store',
             dest='smtp_sender',
             default='noreply@nowhere',
-            help="Sender address (default: 'noreply@nowhere')"
+            help='Sender address'
         )
         parser.add_argument(
             '-S', '--subject',
             action='store',
             dest='smtp_subject',
             default='For Your Information',
-            help="Subject line (default: 'For Your Information')"
+            help='Subject line'
         )
-        parser.add_argument('arg', nargs='*', default=None)
-        parser.epilog = textwrap.dedent("""
-            Recipients for the secrets are specified as
-            ``USERNAME@EMAIL.ADDRESS`` strings and/or ``VARIABLE``
-            references.
-            """)
-
+        parser.add_argument(
+            'arg',
+            nargs='*',
+            default=None
+        )
         return parser
 
     def take_action(self, parsed_args):

@@ -2,7 +2,7 @@ export OS=$(uname -s)
 # Sets D2_ENVIRONMENT and D2_SECRETS_BASEDIR environment variables.
 source test-environment.bash
 export PYTHONPATH=$(pwd)
-export PSEC="python -m psec.main --debug"
+export PSEC="python -m psec.__main__ --debug"
 
 load 'libs/bats-support/load'
 load 'libs/bats-assert/load'

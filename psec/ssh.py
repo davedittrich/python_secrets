@@ -404,7 +404,7 @@ def _get_latest_console_output():
 
 
 class PublicKeys(object):
-    """Class for managing SSH public keys"""
+    """Class for managing SSH public keys."""
 
     logger = logging.getLogger(__name__)
 
@@ -712,6 +712,9 @@ class SSHConfig(Command):
     To ensure that no inactive instances still have configurations,
     the ``--clean`` option will delete all existing snippets with
     the prefix for this environment prior to creating new files.
+
+    Use ``-vvv`` to see the configuration file in the terminal
+    command line output.
     """
 
     logger = logging.getLogger(__name__)
@@ -724,15 +727,14 @@ class SSHConfig(Command):
             action='store_true',
             dest='clean',
             default=False,
-            help="Clean out all existing snippets before writing " +
-                 "new files (default: False)"
+            help='Clean out all existing snippets before writing new files'
         )
         parser.add_argument(
             '--public-ip',
             action='store',
             dest='public_ip',
             default=None,
-            help='IP address of host (default: None)'
+            help='IP address of host'
         )
         _known_hosts_root = os.path.join(os.getcwd(), 'known_hosts')
         parser.add_argument(
@@ -740,33 +742,29 @@ class SSHConfig(Command):
             action='store',
             dest='known_hosts_root',
             default=_known_hosts_root,
-            help='Root for extracted known_hosts files ' +
-                 '(default: {})'.format(_known_hosts_root)
+            help='Root for extracted known_hosts files'
         )
         parser.add_argument(
             '--ssh-user',
             action='store',
             dest='ssh_user',
             default='root',
-            help='SSH user account (default: "root")'
+            help='SSH user account'
         )
         parser.add_argument(
             '--public-dns',
             action='store',
             dest='public_dns',
             default=None,
+            help='Public DNS name of host'
         )
         parser.add_argument(
             '--show-config',
             action='store_true',
             dest='show_config',
             default=False,
-            help="Show the SSH configuration on standard output and exit."
+            help='Show the SSH configuration on standard output and exit'
         )
-        parser.epilog = textwrap.dedent("""
-            Use ``-vvv`` to see the configuration file in the terminal
-            command line output.
-            """)
         return parser
 
     def take_action(self, parsed_args):
@@ -839,6 +837,30 @@ class SSHKnownHostsAdd(Command):
     file (``/etc/ssh/ssh_known_hosts``, which is not writeable by normal
     users) for added security. The file is manipulated indirectly using
     an embedded Ansible playbook.
+
+    Use ``--show-playbook`` to just see the Ansible playbook without
+    running it. Use ``-vvv`` to see the Ansible playbook while it is
+    being applied.
+
+    The Ansible playbook uses ``become`` to elevate privileges. On
+    Linux systems, this usually relies on ``sudo``. If plays in the
+    playbook fail with ``"module_stderr": "sudo: a password is required"``
+    in the message, you will need to use the ``--ask-become-pass``
+    option to be prompted for your password.
+
+    NOTE: Because of the use of Ansible, with the potential need for
+    using ``sudo``, you cannot pipe console-output text into ``psec``
+    using I/O redirection or piping. The following exception will be
+    thrown::
+
+      ...
+      File "[...]/site-packages/pexpect/pty_spawn.py", line 783, in interact
+        mode = tty.tcgetattr(self.STDIN_FILENO)
+      termios.error: (25, 'Inappropriate ioctl for device')
+      ...
+
+    If this happens, save the console output to a file and pass its
+    name as a command line argument.
     """  # noqa
 
     logger = logging.getLogger(__name__)
@@ -850,93 +872,64 @@ class SSHKnownHostsAdd(Command):
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
-        parser.formatter_class = argparse.RawDescriptionHelpFormatter
         _known_hosts_root = os.path.join(os.getcwd(), 'known_hosts')
         parser.add_argument(
             '--known-hosts-root',
             action='store',
             dest='known_hosts_root',
             default=_known_hosts_root,
-            help='Root for extracted known_hosts files ' +
-                 '(default: {})'.format(_known_hosts_root)
+            help='Root for extracted known_hosts files'
         )
         parser.add_argument(
             '--public-ip',
             action='store',
             dest='public_ip',
             default=None,
-            help='IP address of host (default: None)'
+            help='IP address of host'
         )
         parser.add_argument(
             '--public-dns',
             action='store',
             dest='public_dns',
             default=None,
-            help='DNS name of host (default: None)'
+            help='Public DNS name of host'
         )
         parser.add_argument(
             '--instance-id',
             action='store',
             dest='instance_id',
             default=None,
-            help='instance ID for getting direct AWS ' +
-                 'console output (default: None)'
+            help='instance ID for getting direct AWS console output'
         )
         parser.add_argument(
             '--ask-become-pass',
             action='store_const',
             const='--ask-become-pass',
             default='',
-            help='Ask for sudo password for Ansible privilege escalation ' +
-                 '(default: do not ask)'
+            help='Ask for sudo password for Ansible privilege escalation'
         )
         parser.add_argument(
             '--show-playbook',
             action='store_true',
             dest='show_playbook',
             default=False,
-            help="Show the playbook on standard output and exit."
+            help='Show the playbook on standard output and exit'
         )
         parser.add_argument(
             '--save-to-files',
             action='store_true',
             dest='save_to_files',
             default=False,
-            help="Write extracted fingerprints and public " +
-                 "keys out to files (default: False)"
+            help='Write extracted fingerprints and public keys out to files'
         )
         # _latest_console_output = _get_latest_console_output()
-        parser.add_argument('source',
-                            nargs="?",
-                            type=argparse.FileType('r'),
-                            help="console output to process",
-                            # default=_latest_console_output)  # sys.stdin)
-                            default=None)
-        parser.epilog = textwrap.dedent("""
-            Use ``--show-playbook`` to just see the Ansible playbook without
-            running it. Use ``-vvv`` to see the Ansible playbook while it is
-            being applied.
-
-            The Ansible playbook uses ``become`` to elevate privileges. On
-            Linux systems, this usually relies on ``sudo``. If plays in the
-            playbook fail with ``"module_stderr": "sudo: a password is required"``
-            in the message, you will need to use the ``--ask-become-pass``
-            option to be prompted for your password.
-
-            NOTE: Because of the use of Ansible, with the potential need for
-            using ``sudo``, you cannot pipe console-output text into ``psec``
-            using I/O redirection or piping. The following exception will be
-            thrown::
-
-              ...
-              File "[...]/site-packages/pexpect/pty_spawn.py", line 783, in interact
-                mode = tty.tcgetattr(self.STDIN_FILENO)
-              termios.error: (25, 'Inappropriate ioctl for device')
-              ...
-            \n
-            If this happens, save the console output to a file and pass its
-            name as a command line argument.
-            """)  # noqa
+        parser.add_argument(
+            'source',
+            nargs="?",
+            type=argparse.FileType('r'),
+            default=None,
+            help='console output to process'
+        )
         return parser
 
     def take_action(self, parsed_args):
@@ -974,7 +967,6 @@ class SSHKnownHostsExtract(Command):
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
-        parser.formatter_class = argparse.RawDescriptionHelpFormatter
         _latest_console_output = _get_latest_console_output()
         _known_hosts_root = os.getcwd()
         parser.add_argument(
@@ -982,16 +974,15 @@ class SSHKnownHostsExtract(Command):
             action='store',
             dest='known_hosts_root',
             default=_known_hosts_root,
-            help='Root for extracted known_hosts files ' +
-                 '(default: {})'.format(_known_hosts_root)
+            help='Root for extracted known_hosts files'
         )
-        parser.add_argument('source',
-                            nargs="?",
-                            type=argparse.FileType('r'),
-                            help="console output to process",
-                            default=_latest_console_output)  # sys.stdin)
-        parser.epilog = textwrap.dedent("""
-            """)  # noqa
+        parser.add_argument(
+            'source',
+            nargs="?",
+            type=argparse.FileType('r'),
+            default=_latest_console_output,
+            help='console output to process'
+        )
         return parser
 
     def take_action(self, parsed_args):
@@ -1077,8 +1068,30 @@ class SSHKnownHostsRemove(Command):
     """
     Remove SSH keys from known_hosts file(s).
 
-    This command indirectly manipulates the known hosts file
-    using an embedded Ansible playbook.
+    This command indirectly manipulates the known hosts file using an
+    embedded Ansible playbook.
+
+    Use ``--show-playbook`` to just see the Ansible playbook without running
+    it. Use ``-vvv`` to see the Ansible playbook while it is being applied.
+
+    The Ansible playbook uses ``become`` to elevate privileges. On Linux
+    systems, this usually relies on ``sudo``. If plays in the playbook fail
+    with ``"module_stderr": "sudo: a password is required"`` in the message,
+    you will need to use the ``--ask-become-pass`` option to be prompted for
+    your password.
+
+    NOTE: Because of the use of Ansible, with the potential need for using
+    ``sudo``, you cannot pipe console-output text into ``psec`` using I/O
+    redirection or piping. The following exception will be thrown::
+
+      ...
+      File "[...]/site-packages/pexpect/pty_spawn.py", line 783, in interact
+        mode = tty.tcgetattr(self.STDIN_FILENO)
+      termios.error: (25, 'Inappropriate ioctl for device')
+      ...
+    \n
+    If this happens, save the console output to a file and pass its name as
+    a command line argument.
     """  # noqa
 
     logger = logging.getLogger(__name__)
@@ -1090,83 +1103,56 @@ class SSHKnownHostsRemove(Command):
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
-        parser.formatter_class = argparse.RawDescriptionHelpFormatter
         _known_hosts_root = os.path.join(os.getcwd(), 'known_hosts')
         parser.add_argument(
             '--known-hosts-root',
             action='store',
             dest='known_hosts_root',
             default=_known_hosts_root,
-            help='Root for extracted known_hosts files ' +
-                 '(default: {})'.format(_known_hosts_root)
+            help='Root for extracted known_hosts files'
         )
         # parser.add_argument(
         #     '--public-ip',
         #     action='store',
         #     dest='public_ip',
         #     default=None,
-        #     help='IP address of host (default: None)'
+        #     help='IP address of host'
         # )
         # parser.add_argument(
         #     '--public-dns',
         #     action='store',
         #     dest='public_dns',
         #     default=None,
-        #     help='DNS name of host (default: None)'
+        #     help='Public DNS name of host'
         # )
         # parser.add_argument(
         #     '--instance-id',
         #     action='store',
         #     dest='instance_id',
         #     default=None,
-        #     help='instance ID for getting direct AWS ' +
-        #          'console output (default: None)'
+        #     help='instance ID for getting direct AWS'
         # )
         parser.add_argument(
             '--ask-become-pass',
             action='store_const',
             const='--ask-become-pass',
             default='',
-            help='Ask for sudo password for Ansible privilege escalation ' +
-                 '(default: do not ask)'
+            help='Ask for sudo password for Ansible privilege escalation'
         )
         parser.add_argument(
             '--show-playbook',
             action='store_true',
             dest='show_playbook',
             default=False,
-            help="Show the playbook on standard output and exit."
+            help='Show the playbook on standard output and exit'
         )
-        parser.add_argument('source',
-                            nargs="?",
-                            type=argparse.FileType('r'),
-                            help="console output to process",
-                            default=None)  # sys.stdin)
-        parser.epilog = textwrap.dedent("""
-            Use ``--show-playbook`` to just see the Ansible playbook without
-            running it. Use ``-vvv`` to see the Ansible playbook while it is
-            being applied.
-
-            The Ansible playbook uses ``become`` to elevate privileges. On
-            Linux systems, this usually relies on ``sudo``. If plays in the
-            playbook fail with ``"module_stderr": "sudo: a password is required"``
-            in the message, you will need to use the ``--ask-become-pass``
-            option to be prompted for your password.
-
-            NOTE: Because of the use of Ansible, with the potential need for
-            using ``sudo``, you cannot pipe console-output text into ``psec``
-            using I/O redirection or piping. The following exception will be
-            thrown::
-
-              ...
-              File "[...]/site-packages/pexpect/pty_spawn.py", line 783, in interact
-                mode = tty.tcgetattr(self.STDIN_FILENO)
-              termios.error: (25, 'Inappropriate ioctl for device')
-              ...
-            \n
-            If this happens, save the console output to a file and pass its
-            name as a command line argument.
-            """)  # noqa
+        parser.add_argument(
+            'source',
+            nargs="?",
+            type=argparse.FileType('r'),
+            default=None,
+            help='console output to process'
+        )
         return parser
 
     def take_action(self, parsed_args):

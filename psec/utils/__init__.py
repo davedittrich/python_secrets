@@ -467,6 +467,7 @@ def show_current_value(variable=None):
 class Timer(object):
     """
     Timer object usable as a context manager, or for manual timing.
+
     Based on code from http://coreygoldberg.blogspot.com/2012/06/python-timer-class-context-manager-for.html  # noqa
 
     As a context manager, do:

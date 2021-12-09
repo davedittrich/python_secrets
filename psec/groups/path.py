@@ -1,33 +1,31 @@
 # -*- coding: utf-8 -*-
 
-import argparse
 import logging
-import textwrap
 
 from cliff.command import Command
 from psec.secrets_environment import SecretsEnvironment
 
 
 class GroupsPath(Command):
-    """Return path to secrets descriptions (groups) directory."""
+    """
+    Return path to secrets descriptions (groups) directory.
+
+    ::
+
+        $ psec groups path
+        /Users/dittrich/.secrets/psec/secrets.d
+    """
 
     logger = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
-        parser.formatter_class = argparse.RawDescriptionHelpFormatter
         default_environment = str(SecretsEnvironment())
-        parser.add_argument('environment',
-                            nargs='?',
-                            default=default_environment)
-        parser.epilog = textwrap.dedent("""
-            .. code-block:: console
-
-                $ psec groups path
-                /Users/dittrich/.secrets/psec/secrets.d
-
-            ..
-            """)
+        parser.add_argument(
+            'environment',
+            nargs='?',
+            default=default_environment
+        )
         return parser
 
     def take_action(self, parsed_args):

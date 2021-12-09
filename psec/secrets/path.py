@@ -1,15 +1,23 @@
 # -*- coding: utf-8 -*-
 
-import argparse
+"""
+Return path to secrets file.
+"""
+
 import logging
-import textwrap
 
 from cliff.command import Command
 from psec.secrets_environment import SecretsEnvironment
 
 
 class SecretsPath(Command):
-    """Return path to secrets file"""
+    """
+    Return path to secrets file.
+
+    If no arguments are present, the path to the secrets for the default
+    environment is returned. If you want to get the secrets path for a specific
+    environment, specify it as the argument to this command.
+    """
 
     logger = logging.getLogger(__name__)
 
@@ -19,16 +27,11 @@ class SecretsPath(Command):
         except AttributeError:
             default = None
         parser = super().get_parser(prog_name)
-        parser.formatter_class = argparse.RawDescriptionHelpFormatter
-        parser.add_argument('environment',
-                            nargs='?',
-                            default=default)
-        parser.epilog = textwrap.dedent("""
-            If no arguments are present, the path to the secrets for
-            the default environment is returned. If you want to get the
-            secrets path for a specific environment, specify it as the
-            argument to this command.
-            """)
+        parser.add_argument(
+            'environment',
+            nargs='?',
+            default=default
+        )
         return parser
 
     def take_action(self, parsed_args):

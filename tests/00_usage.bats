@@ -20,7 +20,8 @@ teardown() {
 
 @test "'psec --version' works" {
     run $PSEC --version
-    assert_output --partial "main"
+    refute_output --partial "main"
+    assert_output --partial "psec"
 }
 
 @test "'psec --help' shows usage" {
