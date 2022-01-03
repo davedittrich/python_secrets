@@ -53,7 +53,7 @@ myapp_client_psk None DEMO_client_psk'
 
 @test "'psec secrets describe' table header is correct" {
     run bash -c "$PSEC secrets describe -f csv | head -n 1"
-    assert_output '"Variable","Group","Type","Prompt","Options"'
+    assert_output '"Variable","Group","Type","Prompt","Options","Help"'
 }
 
 @test "'psec secrets path' from env var works properly" {
@@ -79,11 +79,11 @@ myapp_client_psk None DEMO_client_psk'
 
 @test "'psec secrets describe --group jenkins' works properly" {
     run $PSEC secrets describe --group jenkins
-    assert_output "+------------------------+---------+----------+--------------------------------------+---------+
-| Variable               | Group   | Type     | Prompt                               | Options |
-+------------------------+---------+----------+--------------------------------------+---------+
-| jenkins_admin_password | jenkins | password | Password for Jenkins 'admin' account | *       |
-+------------------------+---------+----------+--------------------------------------+---------+"
+    assert_output "+------------------------+---------+----------+--------------------------------------+---------+------+
+| Variable               | Group   | Type     | Prompt                               | Options | Help |
++------------------------+---------+----------+--------------------------------------+---------+------+
+| jenkins_admin_password | jenkins | password | Password for Jenkins 'admin' account | *       | *    |
++------------------------+---------+----------+--------------------------------------+---------+------+"
 }
 
 # TODO(dittrich): This should really fail with $? != 0 if no group.
