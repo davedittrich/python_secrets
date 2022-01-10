@@ -20,10 +20,6 @@
                 "--debug",
                 "help"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": true,
             "console": "integratedTerminal"
         },
@@ -38,10 +34,6 @@
                 "set",
                 "--help"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": true,
             "console": "integratedTerminal"
         },
@@ -55,10 +47,6 @@
                 "-q",
                 "complete"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": true,
             "console": "integratedTerminal"
         },
@@ -71,10 +59,6 @@
                 "-vv",
                 "--version"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": true,
             "console": "integratedTerminal"
         },
@@ -90,10 +74,6 @@
                 "--clone-from",
                 "secrets.d"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -110,10 +90,6 @@
                 "alias",
                 "notanalias"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -127,10 +103,6 @@
                 "environments",
                 "default"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": true,
             "console": "integratedTerminal"
         },
@@ -145,10 +117,6 @@
                 "default",
                 "--set"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": true,
             "console": "integratedTerminal"
         },
@@ -162,10 +130,6 @@
                 "environments",
                 "list"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": true,
             "console": "integratedTerminal"
         },
@@ -195,10 +159,6 @@
                 "list",
                 "--aliasing"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": true,
             "console": "integratedTerminal"
         },
@@ -214,10 +174,6 @@
                 "alias",
                 "renamed_alias"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -234,10 +190,6 @@
                 "--clone-from",
                 "do"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -251,10 +203,6 @@
                 "environments",
                 "delete"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -269,10 +217,6 @@
                 "delete",
                 "aclone"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -289,10 +233,6 @@
                 "--clone-from",
                 "secrets"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -308,10 +248,6 @@
                 "notanalias",
                 "not_an_alias"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": true,
             "console": "integratedTerminal"
         },
@@ -326,10 +262,6 @@
                 "default",
                 "--set"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": true,
             "console": "integratedTerminal"
         },
@@ -344,10 +276,6 @@
                 "path",
                 "--tmpdir"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": true,
             "console": "integratedTerminal"
         },
@@ -364,10 +292,6 @@
                 "doesntexist",
                 "--exists"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": true,
             "console": "integratedTerminal"
         },
@@ -381,10 +305,6 @@
                 "environments",
                 "tree"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": true,
             "console": "integratedTerminal"
         },
@@ -399,10 +319,6 @@
                 "create",
                 "emptygroup"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -419,10 +335,6 @@
                 "--clone-from",
                 "tests/gosecure.json"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -439,10 +351,6 @@
                 "--clone-from",
                 "tests/gosecure.json"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": true,
             "console": "integratedTerminal"
         },
@@ -457,10 +365,6 @@
                 "delete",
                 "gosecure"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": true,
             "console": "integratedTerminal"
         },
@@ -475,10 +379,6 @@
                 "create",
                 "newsecret"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -494,10 +394,6 @@
                 "newsecret",
                 "--mirror-locally"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -514,10 +410,6 @@
                 "newsecret",
                 "--mirror-locally"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -535,10 +427,6 @@
                 "newsecret",
                 "--mirror-locally"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -552,10 +440,6 @@
                 "secrets",
                 "describe"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -570,10 +454,6 @@
                 "describe",
                 "jenkins_admin_password"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -588,10 +468,6 @@
                 "get",
                 "jenkins_admin_password"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -606,10 +482,6 @@
                 "set",
                 "algo_store_pki"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -626,10 +498,6 @@
                 "--from-environment",
                 "python_secrets"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -644,10 +512,6 @@
                 "set",
                 "hypriot_hostname"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -664,10 +528,6 @@
                 "--from-environment",
                 "python_secrets"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -682,10 +542,6 @@
                 "set",
                 "--from-options"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -700,10 +556,6 @@
                 "show",
                 "--no-redact"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -720,10 +572,6 @@
                 "password",
                 "--no-redact"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -738,10 +586,6 @@
                 "generate",
                 "--from-options"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -757,10 +601,6 @@
                 "--max-acrostic-length",
                 "3"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -774,10 +614,6 @@
                 "secrets",
                 "path"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -791,10 +627,6 @@
                 "secrets",
                 "path"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -808,10 +640,6 @@
                 "secrets",
                 "tree"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -826,10 +654,6 @@
                 "secrets",
                 "backup"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -844,10 +668,6 @@
                 "secrets",
                 "restore"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -862,10 +682,6 @@
                 "run",
                 "printenv"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -882,10 +698,6 @@
                 "sleep",
                 "5"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -901,10 +713,6 @@
                 "add",
                 "console-output.txt"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -921,10 +729,6 @@
                 "--ask-become-pass",
                 "terraform.log"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -942,10 +746,6 @@
                 "--ask-become-pass",
                 "terraform.log"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -961,10 +761,6 @@
                 "remove",
                 "--ask-become-pass"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -981,10 +777,6 @@
                 "--ask-become-pass",
                 "console-output.txt"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -1001,10 +793,6 @@
                 "--public-ip",
                 "52.34.168.102"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -1021,10 +809,6 @@
                 "--ask-become-pass",
                 "i-036b9d28241dacf68-console-output.txt"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -1042,10 +826,6 @@
                 "/tmp/foo",
                 "--ask-become-pass"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -1063,10 +843,6 @@
                 "/tmp/foo",
                 "terraform.log"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -1084,10 +860,6 @@
                 "--instance-id",
                 "$(pulumi -C ../ansible-dims-playbooks/deploy/pulumi-aws stack output instance_id)"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -1105,10 +877,6 @@
                 "--instance-id",
                 "$(pulumi -C ../ansible-dims-playbooks/deploy/pulumi-aws stack output instance_id)"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -1124,10 +892,6 @@
                 "config",
                 "--clean"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -1143,10 +907,6 @@
                 "--rebase",
                 "test.cast"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -1161,10 +921,6 @@
                 "myip",
                 "--cidr"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -1181,10 +937,6 @@
                 "--method",
                 "amazon_http"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -1201,10 +953,6 @@
                 "--method",
                 "random"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -1219,10 +967,6 @@
                 "myip",
                 "--netblock"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -1237,10 +981,6 @@
                 "myip",
                 "methods"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -1254,10 +994,6 @@
                 "utils",
                 "netblock"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -1272,10 +1008,6 @@
                 "netblock",
                 "8.8.8.8"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -1291,10 +1023,6 @@
                 "--convert",
                 "tests/secrets.d"
             ],
-            "env": {
-                "D2_ENVIRONMENT": "test",
-                "D2_SECRETS_BASEDIR": "/tmp/.secrets"
-            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         }
