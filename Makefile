@@ -59,6 +59,7 @@ test-bats: bats-libraries
 		if ! type bats 2>/dev/null >/dev/null; then \
 			echo "[-] Skipping bats tests"; \
 		else \
+			source test-environment.bash; \
 			echo "[+] Running bats tests: $(shell cd tests && echo [0-9][0-9]*.bats)"; \
 			PYTHONWARNINGS="ignore" bats --tap tests/[0-9][0-9]*.bats; \
 		fi \
@@ -67,7 +68,7 @@ test-bats: bats-libraries
 .PHONY: test-bats-runtime
 test-bats-runtime: bats-libraries
 	@echo "[+] Running bats runtime tests: $(shell cd tests && echo runtime_[0-9][0-9]*.bats)"; \
-	PYTHONWARNINGS="ignore" bats --tap tests/runtime_[0-9][0-9]*.bats
+	(source test-environment.bash; PYTHONWARNINGS="ignore" bats --tap tests/runtime_[0-9][0-9]*.bats)
 
 .PHONY: no-diffs
 no-diffs:
