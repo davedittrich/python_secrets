@@ -3,6 +3,7 @@
 import logging
 import os
 import shutil
+import sys
 
 # TODO(dittrich): https://github.com/Mckinsey666/bullet/issues/2
 # Workaround until bullet has Windows missing 'termios' fix.
@@ -23,13 +24,13 @@ class EnvironmentsDelete(Command):
     """
     Delete environment.
 
-    Deleting an environment requires confirmation from the user. This is
-    done in one of two ways: by prompting the user to confirm, or by
-    requiring the ``--force`` option flag be set.
+    Deleting an environment requires explicitly naming the environment
+    to delete and confirmation from the user. This is done in one of
+    two ways: by prompting the user to confirm the environment to delete,
+    or by requiring the ``--force`` option flag be set along with the name.
 
     When this command is run in a terminal shell (i.e., with a TTY),
-    the user will be asked to type the name again to confirm the
-    operationn::
+    the user will be asked to type the name again to confirm the operation::
 
         $ psec environments delete testenv
         Type the name 'testenv' to confirm: testenv
@@ -73,7 +74,6 @@ class EnvironmentsDelete(Command):
             default=False,
             help='Mandatory confirmation'
         )
-        # default_environment = str(SecretsEnvironment())
         parser.add_argument(
             'environment',
             nargs='?',
@@ -86,10 +86,7 @@ class EnvironmentsDelete(Command):
         choice = None
         if parsed_args.environment is not None:
             choice = parsed_args.environment
-        elif not (stdin.isatty() and 'Bullet' in globals()):
-            # Can't involve user in getting a choice.
-            raise RuntimeError('[-] no environment specified to delete')
-        else:
+        elif stdin.isatty() and 'Bullet' in globals():
             # Give user a chance to choose.
             environments = os.listdir(self.app.secrets.secrets_basedir())
             choices = ['<CANCEL>'] + sorted(environments)
@@ -105,15 +102,19 @@ class EnvironmentsDelete(Command):
             if choice == "<CANCEL>":
                 self.logger.info('[-] cancelled deleting environment')
                 return
-
+        else:
+            # Can't involve user in getting a choice.
+            sys.exit('[-] no environment specified to delete')
         # Environment chosen. Now do we need to confirm?
         e = SecretsEnvironment(choice)
         env_path = e.environment_path()
         if not parsed_args.force:
             if not stdin.isatty():
-                output = atree(env_path,
-                               outfile=None,
-                               print_files=True)
+                output = atree(
+                    env_path,
+                    outfile=None,
+                    print_files=True
+                )
                 raise RuntimeError(
                     "[-] must use '--force' flag to delete an environment.\n"
                     "[-] the following will be deleted: \n"
@@ -128,11 +129,14 @@ class EnvironmentsDelete(Command):
                 if confirm != choice:
                     self.logger.info('[-] cancelled deleting environment')
                     return
-
         # We have confirmation or --force. Now safe to delete.
         # TODO(dittrich): Use safe_delete_file over file list
-        shutil.rmtree(env_path)
-        self.logger.info("[+] deleted directory path '%s'", env_path)
+        if env_path.is_symlink():
+            env_path.unlink()
+            self.logger.info("[+] deleted alias '%s'", env_path)
+        else:
+            shutil.rmtree(env_path)
+            self.logger.info("[+] deleted directory path '%s'", env_path)
 
 
 # vim: set fileencoding=utf-8 ts=4 sw=4 tw=0 et :
