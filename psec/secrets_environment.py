@@ -21,6 +21,7 @@ import sys
 import uuid
 
 from collections import OrderedDict
+from pathlib import Path
 from shutil import copy
 from shutil import copytree
 from shutil import Error
@@ -110,6 +111,8 @@ SECRET_ATTRIBUTES = [
     'Options'
 ]
 DEFAULT_MODE = 0o710
+DELIMITER = '.'
+MARKER = '.psec'
 # XKCD password defaults
 # See: https://www.unix-ninja.com/p/your_xkcd_passwords_are_pwned
 WORDS = 4
@@ -117,7 +120,8 @@ MIN_WORDS_LENGTH = 3
 MAX_WORDS_LENGTH = 6
 MIN_ACROSTIC_LENGTH = 6
 MAX_ACROSTIC_LENGTH = 6
-DELIMITER = '.'
+SECRETS_FILE = 'secrets.json'
+SECRETS_DESCRIPTIONS_DIR = f'{os.path.splitext(SECRETS_FILE)[0]}.d'
 
 
 def natural_number(value):
@@ -152,8 +156,8 @@ def get_local_default_file(cwd=None):
     # TODO(dittrich): May need to do this differently to support
     # Windows file systems.
     if cwd is None:
-        cwd = os.getcwd()
-    return os.path.join(cwd, '.python_secrets_environment')
+        cwd = Path(os.getcwd())
+    return cwd / '.python_secrets_environment'
 
 
 def save_default_environment(
@@ -185,6 +189,17 @@ def get_saved_default_environment(cwd=None):
         with open(env_file, 'r') as f:
             saved_default = f.read().replace('\n', '')
     return saved_default
+
+
+def get_default_secrets_basedir():
+    """
+    Return the default secrets base directory path.
+    """
+    dirname = '.secrets' if os.sep == '/' else 'secrets'
+    default_basedir = Path.home() / dirname
+    return Path(
+        os.getenv('D2_SECRETS_BASEDIR', default_basedir)
+    )
 
 
 def get_default_environment(cwd=None):
@@ -279,13 +294,17 @@ def is_valid_environment(env_path, verbose_level=1):
     """
     environment = os.path.split(env_path)[1]
     contains_expected = False
+    YAML_SECRETS_FILE = str(SECRETS_FILE).replace('json', 'yml')
     yaml_files = []
     for root, directories, filenames in os.walk(env_path):
-        if 'secrets.json' in filenames or 'secrets.d' in directories:
+        if (
+            SECRETS_FILE in filenames
+            or SECRETS_DESCRIPTIONS_DIR in directories
+        ):
             contains_expected = True
-        if 'secrets.yml' in filenames:
-            yaml_files.append(os.path.join(root, 'secrets.yml'))
-        if root.endswith('secrets.d'):
+        if YAML_SECRETS_FILE in filenames:
+            yaml_files.append(Path(root) / YAML_SECRETS_FILE))
+        if root.endswith(SECRETS_DESCRIPTIONS_DIR):
             yaml_files.extend([
                 os.path.join(root, filename)
                 for filename in filenames
@@ -505,6 +524,26 @@ def generate_random_base64(unique=False, size=DEFAULT_SIZE):
     return base64.b64encode(os.urandom(size)).decode('UTF-8')
 
 
+def _is_secrets_basedir(basedir=None, raise_exception=True):
+    """
+    Validate secrets base directory by presense of a marker file.
+    """
+    result = False
+    if basedir is None:
+        if raise_exception:
+            raise RuntimeError("[-] no basedir was specified")
+    basedir_path = Path(basedir)
+    marker_path = Path(basedir) / MARKER
+    if not (basedir_path.exists() and marker_path.exists()):
+        if raise_exception:
+            raise RuntimeError(
+                f"[-] directory '{basedir}' is not a valid psec base directory"
+            )
+    else:
+        result = True
+    return result
+
+
 class SecretsEnvironment(object):
     """
     Class for handling secrets environment metadata.
@@ -535,39 +574,78 @@ class SecretsEnvironment(object):
 
     logger = logging.getLogger(__name__)
 
-    def __init__(self,
-                 environment=None,
-                 secrets_basedir=None,
-                 secrets_file=os.getenv('D2_SECRETS_BASENAME',
-                                        'secrets.json'),
-                 create_root=True,
-                 defer_loading=True,
-                 export_env_vars=False,
-                 preserve_existing=False,
-                 env_var_prefix=None,
-                 source=None,
-                 verbose_level=1):
-        self._changed = False
+    def __init__(
+        self,
+        environment=None,
+        secrets_basedir=None,
+        secrets_file=None,
+        create_root=True,
+        defer_loading=False,
+        export_env_vars=False,
+        preserve_existing=False,
+        env_var_prefix=None,
+        source=None,
+        verbose_level=1,
+    ):
+        """
+        Initialize secrets environment object.
+        """
+        if secrets_file and secrets_basedir:
+            raise RuntimeError(
+                "[-] 'secrets_file' and 'secrets_basedir' are mutually exclusive "
+                "when initializing a SecretsEnvironment()"
+            )
         if environment is not None:
             self._environment = environment
         else:
             self._environment = get_default_environment()
-        self._secrets_file = secrets_file
-        self._secrets_basedir = secrets_basedir
-        self._verbose_level = verbose_level
-        # Ensure root directory exists in which to create secrets
-        # environments?
-        if not self.secrets_basedir_exists():
-            if create_root:
-                self.secrets_basedir_create()
-            else:
+        if (
+            secrets_basedir is not None
+            and _is_secrets_basedir(basedir=secrets_basedir, raise_exception=True)
+        ):
+            self._secrets_basedir = Path(secrets_basedir)
+        else:
+            self._secrets_basedir = get_default_secrets_basedir()
+            if not self._secrets_basedir.exists():
+                if create_root:
+                    self.secrets_basedir_create()
+                else:
+                    raise RuntimeError(
+                        f"[-] directory '{self.secrets_basedir()}' "
+                        "does not exist and create_root=False"
+                    )
+        if secrets_file is not None:
+            self._secrets_file = Path(secrets_file)
+            if len(self._secrets_file.parts) < 3:
+                # This might not exactly be true in all cases, but I don't
+                # have time to run down all possible use cases (or put in
+                # all necessary checks) at the moment.
                 raise RuntimeError(
-                    f"[-] directory '{self.secrets_basedir()}' "
-                    "does not exist and create_root=False")
-        self._secrets_descriptions = f"{os.path.splitext(self._secrets_file)[0]}.d"  # noqa
+                    '[-] the path to a secrets file should have '
+                    f"at least 3 components ('{self._secrets_file}')"
+                )
+            if not self._secrets_file.exists():
+                raise RuntimeError(
+                    f"[-] the specified secrets file '{secrets_file}' "
+                    'does not exist'
+                )
+            if self._environment != self._secrets_file.parts[-2]:
+                raise RuntimeError(
+                    f"[-] environment name '{environment}' does not "
+                    f"match secrets file path '{secrets_file}'"
+                )
+            if Path(secrets_basedir) not in self._secrets_file.parents:
+                raise RuntimeError(
+                    f"[-] base directory '{secrets_basedir}' does not "
+                    f"match secrets file path '{secrets_file}'"
+                )
+            self.secrets_basedir = self._secrets_file.parents[1]
+        else:
+            self._secrets_file = self._secrets_basedir / self._environment / SECRETS_FILE  # noqa
+        self._secrets_descriptions = self._secrets_file.parent / SECRETS_DESCRIPTIONS_DIR # noqa
+        self._verbose_level = verbose_level
         self.export_env_vars = export_env_vars
         self.preserve_existing = preserve_existing
-
         # When exporting environment variables, include one that specifies the
         # environment from which these variables were derived. This also works
         # around a limitation in Ansible where the current working directory
@@ -588,6 +666,7 @@ class SecretsEnvironment(object):
             self.read_secrets_descriptions()
         self._secrets = OrderedDict()
         self._descriptions = OrderedDict()
+        self._changed = False
 
     def __str__(self):
         """Produce string representation of environment identifier"""
@@ -649,14 +728,13 @@ class SecretsEnvironment(object):
         if not _env:
             return self.secrets_basedir()
         else:
-            return os.path.join(self.secrets_basedir(),
-                                self.secrets_basename().replace('.json', '.d'))
+            return self.secrets_basedir() / self.secrets_basename().replace('.json', '.d')  # noqa
 
     def secrets_basename(self):
         """Return the basename of the current secrets file"""
         return os.path.basename(self._secrets_file)
 
-    def secrets_basedir(self, init=False):
+    def secrets_basedir(self, init=False, mode=DEFAULT_MODE):
         """
         Returns the directory path root for secrets storage and definitions.
 
@@ -776,9 +854,7 @@ class SecretsEnvironment(object):
         """Returns the absolute path to secrets file"""
         if env is None:
             env = self._environment
-        return os.path.join(self.secrets_basedir(),
-                            env,
-                            self._secrets_file)
+        return self.secrets_basedir() / env / self._secrets_file
 
     def secrets_file_path_exists(self):
         """Return whether secrets file exists"""
@@ -793,22 +869,18 @@ class SecretsEnvironment(object):
     ):
         """Return path to secrets descriptions directory or file."""
         if root is not None:
-            path = os.path.join(os.path.abspath(root),
-                                self._secrets_descriptions)
+            path = Path(root) / self._secrets_descriptions
         else:
-            path = os.path.join(self.environment_path(),
-                                self._secrets_descriptions)
+            path = self.environment_path() / self._secrets_descriptions
         if create:
-            os.makedirs(path,
-                        exist_ok=True,
-                        mode=mode)
+            path.mkdir(parents=True, exist_ok=True, mode=mode)
         if group is not None:
-            path = os.path.join(path, f"{group}.json")
+            path = path / f"{group}.json"
         return path
 
     def tmpdir_path(self, create_path=False):
         """Return the absolute path to secrets descriptions tmp directory"""
-        tmpdir = os.path.join(self.environment_path(), "tmp")
+        tmpdir = self.environment_path() / "tmp"
         if create_path:
             tmpdir_mode = 0o700
             try:

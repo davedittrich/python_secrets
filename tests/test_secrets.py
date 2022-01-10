@@ -13,12 +13,13 @@ import os
 import psec.secrets_environment
 import sys
 
+from pathlib import Path
 from unittest.mock import patch
 
 HOST = 'example.com'
 HOME = os.path.expanduser('~')
-TESTENV = 'testing'
-SECRETS_SUBDIR = 'tsecrets'
+TESTENV = 'pytest'
+SECRETS_SUBDIR = 'pytest'
 KEYS_SUBDIR = 'keys'
 
 
@@ -28,31 +29,26 @@ def secrets_dir(env=os.getenv('D2_ENVIRONMENT', None),
         env_str = str(env)
     else:
         cwd = os.getcwd()
-        default_file = os.path.join(cwd, '.python_secrets_environment')
+        default_file = Path(cwd) / '.python_secrets_environment'
         if os.path.exists(default_file):
             with open(default_file, 'r') as f:
                 env_str = f.read().strip()
         else:
             env_str = os.path.basename(cwd)
     if basedir is None:
-        basedir = os.path.join(
-            HOME,
-            (
-                'secrets'
-                if sys.platform.startswith('win')
-                else '.secrets'
-            )
+        basedir = Path(HOME) / (
+            'secrets' if sys.platform.startswith('win') else '.secrets'
         )
-    return os.path.join(basedir, env_str)
+    return Path(basedir) / env_str
 
 
 def keys_dir(secrets_dir=secrets_dir(),
              keys_subdir=KEYS_SUBDIR):
-    return os.path.join(secrets_dir, keys_subdir)
+    return Path(secrets_dir) / keys_subdir
 
 
 def keys_with_host_dir(keys_dir=keys_dir(), host=HOST):
-    return os.path.join(keys_dir, host)
+    return Path(keys_dir) / host
 
 
 class Test_SecretsEnvironment_general(unittest.TestCase):
@@ -160,18 +156,15 @@ class Test_SecretsEnvironment_with_env_vars(unittest.TestCase):
         self.host = HOST
         self.keys_subdir = KEYS_SUBDIR
         self.envname = TESTENV
-        self.basedir = os.path.join(
-            HOME,
-            (
-               SECRETS_SUBDIR
-               if sys.platform.startswith('win')
-               else '.' + SECRETS_SUBDIR
-            )
+        self.basedir = Path(HOME) / (
+           SECRETS_SUBDIR
+           if sys.platform.startswith('win')
+           else '.' + SECRETS_SUBDIR
         )
         self.secrets_env = None
         with patch.dict('os.environ'):
-            os.environ['D2_ENVIRONMENT'] = self.envname
-            os.environ['D2_SECRETS_BASEDIR'] = self.basedir
+            os.environ['D2_ENVIRONMENT'] = str(self.envname)
+            os.environ['D2_SECRETS_BASEDIR'] = str(self.basedir)
             self.secrets_dir = secrets_dir(
                 env=self.envname,
                 basedir=self.basedir
@@ -220,13 +213,10 @@ class Test_SecretsEnvironment_args(unittest.TestCase):
         self.host = HOST
         self.keys_subdir = KEYS_SUBDIR
         self.envname = TESTENV
-        self.basedir = os.path.join(
-            HOME,
-            (
-                SECRETS_SUBDIR
-                if sys.platform.startswith('win')
-                else '.' + SECRETS_SUBDIR
-            )
+        self.basedir = Path(HOME) / (
+            SECRETS_SUBDIR
+            if sys.platform.startswith('win')
+            else '.' + SECRETS_SUBDIR
         )
         self.secrets_env = None
         with patch.dict('os.environ'):
@@ -293,7 +283,7 @@ class Test_SecretsEnvironment_defaults(unittest.TestCase):
         )
         self.assertEqual(
             new_env_file,
-            os.path.join(tmp_dir, '.python_secrets_environment')
+            Path(tmp_dir) / '.python_secrets_environment'
         )
         with open(new_env_file, 'w') as f_out:
             f_out.write(TESTENV)

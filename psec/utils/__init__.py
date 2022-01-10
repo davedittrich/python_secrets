@@ -115,7 +115,7 @@ def get_fs_type(mypath):
         if part.mountpoint == os.path.sep:
             root_type = part.fstype
             continue
-        if mypath.startswith(part.mountpoint):
+        if str(mypath).startswith(part.mountpoint):
             return part.fstype
     return root_type
 
