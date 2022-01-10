@@ -121,7 +121,6 @@ class SecretsSet(Command):
             raise RuntimeError('[-] no secrets specified to be set')
         se = self.app.secrets
         se.read_secrets_and_descriptions()
-        options = dict(se.Options)
         # TODO(dittrich): Use Variable map like this elsewhere
         variables = dict(se.Variable)
         types = dict(se.Type)
@@ -130,7 +129,6 @@ class SecretsSet(Command):
             from_env = SecretsEnvironment(
                 environment=parsed_args.from_environment)
             from_env.read_secrets()
-            options = dict(from_env._secrets.Options)
             variables = dict(from_env._secrets.Variable)
             types = dict(from_env._secrets.Type)
         args = (
@@ -148,13 +146,12 @@ class SecretsSet(Command):
             if parsed_args.from_options:
                 k, v, k_type = (
                     arg,
-                    options.get(arg, '').split(',')[0],
+                    self.app.secrets.get_default_value(arg),
                     types.get(arg)
                 )
                 # Don't set from options if the type is generable
                 if is_generable(k_type):
                     continue
-                v = None if v == '*' else v
             elif '=' not in arg:
                 # No value was specified with the argument
                 k = arg
@@ -182,7 +179,6 @@ class SecretsSet(Command):
                         # Attempt to select from list. Options will look like
                         # 'a,b' or 'a,b,*', or 'a,*'.
                         old_v = self.app.secrets.get_secret(k, allow_none=True)
-
                         v = prompt_options_list(
                             options=k_options.split(','),
                             default=(None if old_v in ['', None] else old_v),

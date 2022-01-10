@@ -46,7 +46,7 @@ class SecretsGenerate(Command):
             action='store_true',
             dest='from_options',
             default=False,
-            help='Set string variables from first available option'
+            help='Set variables from first available option'
         )
         parser.add_argument(
             '--min-words-length',
@@ -139,15 +139,15 @@ class SecretsGenerate(Command):
                     f"[-] secret '{secret}' "
                     "has no type definition")
             arguments = self.app.secrets.get_secret_arguments(secret)
-            if parsed_args.from_options and secret_type == 'string':  # nosec
-                try:
-                    value = self.app.secrets.Options.get(secret).split(',')[0]
-                except Exception:
-                    value = None
+            default_value = self.app.secrets.get_default_value(secret)
+            if parsed_args.from_options and default_value:
+                value = default_value
             else:
-                value = generate_secret(secret_type=secret_type,
-                                        *arguments,
-                                        **dict(parsed_args._get_kwargs()))
+                value = generate_secret(
+                    secret_type=secret_type,
+                    *arguments,
+                    **dict(parsed_args._get_kwargs())
+                )
             if value is not None:
                 self.logger.debug(
                     "[+] generated %s for %s", secret_type, secret)

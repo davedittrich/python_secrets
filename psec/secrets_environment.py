@@ -1006,6 +1006,18 @@ class SecretsEnvironment(object):
         """Return type for variable or None if no description"""
         return self.Type.get(variable, None)
 
+    def get_default_value(self, variable):
+        """Return the default value from the Options attribute"""
+        try:
+            values = self.Options.get(variable).split(',')
+        except AttributeError:
+            values = []
+        return (
+            values[0]
+            if len(values) > 0 and values[0] != '*'
+            else ''
+        )
+
     def read_secrets_and_descriptions(self):
         """Read secrets descriptions and secrets."""
         self.read_secrets_descriptions()

@@ -22,7 +22,7 @@ teardown() {
     assert_output --partial "$TEST_PASSWORD"
 }
 
-@test "'psec secrets generate sets variables properly" {
+@test "'psec secrets generate' sets variables properly" {
     run $PSEC secrets show --no-redact consul_key hypriot_password myapp_client_psk -f value
     assert_output 'hypriot_password None hypriot_password
 consul_key None consul_key
@@ -42,8 +42,32 @@ myapp_client_psk None DEMO_client_psk'
     assert_output "hypriot"
     run $PSEC secrets get hypriot_user
     assert_output "pirate"
+    run $PSEC secrets get hypriot_password
+    assert_output "None"
     run $PSEC secrets get hypriot_wifi_country
     assert_output "US"
+    run $PSEC secrets get myapp_ondemand_wifi
+    assert_output "true"
+    run $PSEC secrets get myapp_optional_setting
+    assert_output "false"
+    run $PSEC secrets get consul_key
+    assert_output "None"
+}
+
+@test "'psec secrets generate --from-options' sets variables properly" {
+    run $PSEC secrets generate --from-options
+    run $PSEC secrets get hypriot_hostname
+    assert_output "hypriot"
+    run $PSEC secrets get hypriot_user
+    assert_output "pirate"
+    run $PSEC secrets get hypriot_wifi_country
+    assert_output "US"
+    run $PSEC secrets get myapp_ondemand_wifi
+    assert_output "true"
+    run $PSEC secrets get myapp_optional_setting
+    assert_output "false"
+    run $PSEC secrets get consul_key
+    refute_output ""
 }
 
 @test "'psec secrets show' table header is correct" {
