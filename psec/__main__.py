@@ -234,6 +234,9 @@ class PythonSecretsApp(App):
                           self.options.environment)
         self.environment = self.options.environment
         self.secrets_basedir = self.options.secrets_basedir
+        if os.environ.get('D2_SECRETS_BASEDIR') is None:
+            # Make sure environment variable is set to match option flag.
+            os.environ['D2_SECRETS_BASEDIR'] = self.secrets_basedir
         # Don't output error messages when "complete" command used
         if cmd.cmd_name != 'complete':
             SecretsEnvironment.permissions_check(

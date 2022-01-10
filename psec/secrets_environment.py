@@ -653,10 +653,10 @@ class SecretsEnvironment(object):
         # script needs to communicate this back to python_secrets in order for
         # it's .python_secrets_environment file to be used to identify the
         # proper environment.)
-
         if self.export_env_vars is True:
+            os.environ['D2_ENVIRONMENT'] = self._environment
+            # Deprecating this variable name:
             os.environ['PYTHON_SECRETS_ENVIRONMENT'] = self._environment
-
         self.env_var_prefix = env_var_prefix
         # Secrets attribute maps; anything else throws exception
         for a in SECRET_ATTRIBUTES:
