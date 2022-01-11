@@ -27,6 +27,13 @@ from shutil import copytree
 from shutil import Error
 from stat import S_IMODE
 from xkcdpass import xkcd_password as xp
+
+from psec.exceptions import (
+    BasedirNotFoundError,
+    InvalidBasedirError,
+    InvalidDescriptionsError,
+    SecretNotFoundError,
+)
 from psec.utils import (
     find,
     get_files_from_path,
@@ -255,7 +262,7 @@ def copydescriptions(src, dst):
     """
 
     if not dst.endswith('.d'):
-        raise RuntimeError(
+        raise InvalidDescriptionsError(
             f"[-] destination '{dst}' is not a descriptions "
             "('.d') directory")
     # Ensure destination directory exists.
@@ -265,7 +272,7 @@ def copydescriptions(src, dst):
         if src.endswith('.d') and os.path.isdir(src):
             copytree(src, dst)
         else:
-            raise RuntimeError(
+            raise InvalidDescriptionsError(
                 f"[-] source '{src}' is not a descriptions "
                 "('.d') directory")
     except OSError as err:
@@ -534,10 +541,15 @@ def _is_secrets_basedir(basedir=None, raise_exception=True):
             raise RuntimeError("[-] no basedir was specified")
     basedir_path = Path(basedir)
     marker_path = Path(basedir) / MARKER
-    if not (basedir_path.exists() and marker_path.exists()):
+    if not basedir_path.exists():
         if raise_exception:
-            raise RuntimeError(
-                f"[-] directory '{basedir}' is not a valid psec base directory"
+            raise BasedirNotFoundError(
+                f"[-] directory '{basedir}' does not exist"
+            )
+    elif not marker_path.exists():
+        if raise_exception:
+            raise InvalidBasedirError(
+                f"[-] '{basedir}' is not a valid psec base directory"
             )
     else:
         result = True
@@ -928,7 +940,7 @@ class SecretsEnvironment(object):
             string: The value of the secret
 
         Raises:
-            RuntimeError: If value is ``None`` and
+            SecretNotFoundError: If value is ``None`` and
                 ``allow_none`` is ``False``
 
         """
@@ -936,7 +948,7 @@ class SecretsEnvironment(object):
             raise RuntimeError('[-] must specify secret to get')
         v = self._secrets.get(secret, None)
         if v is None and not allow_none:
-            raise RuntimeError(f"[-] '{secret}' is not defined")
+            raise SecretNotFoundError(f"[-] '{secret}' is not defined")
         return v
 
     def get_secret_export(self, secret):
