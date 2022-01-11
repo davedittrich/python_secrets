@@ -1,10 +1,23 @@
 # -*- coding: utf-8 -*-
 
+"""
+Create environment(s).
+"""
+
 import logging
+from pathlib import Path
 
-
+# TODO(dittrich): https://github.com/Mckinsey666/bullet/issues/2
+# Workaround until bullet has Windows missing 'termios' fix.
+try:
+    from bullet import YesNo
+except ModuleNotFoundError:
+    pass
 from cliff.command import Command
-from psec.secrets_environment import SecretsEnvironment
+from psec.secrets_environment import (
+    get_default_environment,
+    SecretsEnvironment,
+)
 
 
 class EnvironmentsCreate(Command):
@@ -79,7 +92,13 @@ class EnvironmentsCreate(Command):
             default=None,
             help='Environment directory to clone from'
         )
-        default_environment = str(SecretsEnvironment())
+        parser.add_argument(
+            '--force',
+            action='store_true',
+            dest='force',
+            default=False,
+            help='Create secrets base directory'
+        )
         parser.add_argument(
             'env',
             nargs='*',
@@ -89,13 +108,30 @@ class EnvironmentsCreate(Command):
 
     def take_action(self, parsed_args):
         self.logger.debug('[*] creating environment(s)')
+        secrets_basedir = self.app.secrets_basedir
+        if not Path(secrets_basedir).exists():
+            if not parsed_args.force:
+                client = YesNo(
+                    f"create directory '{secrets_basedir}'? ",
+                    default='n'
+                )
+                res = client.launch()
+                if not res:
+                    self.logger.info('[!] cancelled creating environment')
+                    return 1
         if parsed_args.alias is not None:
             if len(parsed_args.env) != 1:
                 raise RuntimeError(
                     '[-] --alias requires one source environment')
-            se = SecretsEnvironment(environment=parsed_args.alias)
-            se.environment_create(source=parsed_args.env[0],
-                                  alias=True)
+            se = SecretsEnvironment(
+                environment=parsed_args.alias,
+                secrets_basedir=secrets_basedir,
+                create_root=True,
+            )
+            se.environment_create(
+                source=parsed_args.env[0],
+                alias=True
+            )
             if se.environment_exists():
                 self.logger.info(
                     "[+] environment '%s' aliased to '%s'",
@@ -108,12 +144,16 @@ class EnvironmentsCreate(Command):
             # Default to app environment identifier
             if len(parsed_args.env) == 0:
                 parsed_args.env = list(self.app.environment)
-            for e in parsed_args.env:
-                se = SecretsEnvironment(environment=e)
+            for environment in parsed_args.env:
+                se = SecretsEnvironment(
+                    environment=environment,
+                    secrets_basedir=secrets_basedir,
+                    create_root=True,
+                )
                 se.environment_create(source=parsed_args.clone_from)
                 self.logger.info(
                     "[+] environment '%s' (%s) created",
-                    e,
+                    environment,
                     se.environment_path()
                 )
                 if parsed_args.clone_from:

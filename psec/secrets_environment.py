@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
 
+"""
+Secrets environment class and related variables, functions.
+"""
+
 import argparse
 import base64
 import binascii
@@ -58,6 +62,7 @@ BOOLEAN_OPTIONS = [
 ]
 
 DEFAULT_SIZE = 18
+# TODO(dittrich): Replace this with pydantic classes at some point.
 SECRET_TYPES = [
         OrderedDict({
             'Type': 'password',
@@ -163,8 +168,8 @@ def get_local_default_file(cwd=None):
     # TODO(dittrich): May need to do this differently to support
     # Windows file systems.
     if cwd is None:
-        cwd = Path(os.getcwd())
-    return cwd / '.python_secrets_environment'
+        cwd = os.getcwd()
+    return Path(cwd) / '.python_secrets_environment'
 
 
 def save_default_environment(
@@ -243,10 +248,12 @@ def get_default_environment(cwd=None):
 def copyanything(src, dst):
     """Copy anything from src to dst."""
     try:
-        copytree(src, dst)
+        copytree(src, dst, dirs_exist_ok=True)
     except FileExistsError as e:  # noqa
         pass
     except OSError as err:
+        # TODO(dittrich): This causes a pylint error
+        # Not sure what test cases would trigger this, or best fix.
         if err.errno == os.errno.ENOTDIR:
             copy(src, dst)
         else:
@@ -275,12 +282,12 @@ def copydescriptions(src, dst):
             raise InvalidDescriptionsError(
                 f"[-] source '{src}' is not a descriptions "
                 "('.d') directory")
-    except OSError as err:
-        errors.append((src, dst, str(err)))
     # catch the Error from the recursive copytree so that we can
     # continue with other files
     except Error as err:
         errors.extend(err.args[0])
+    except OSError as err:
+        errors.append((src, dst, str(err)))
     if errors:
         raise Error(errors)
     remove_other_perms(dst)
@@ -310,7 +317,7 @@ def is_valid_environment(env_path, verbose_level=1):
         ):
             contains_expected = True
         if YAML_SECRETS_FILE in filenames:
-            yaml_files.append(Path(root) / YAML_SECRETS_FILE))
+            yaml_files.append(Path(root) / YAML_SECRETS_FILE)
         if root.endswith(SECRETS_DESCRIPTIONS_DIR):
             yaml_files.extend([
                 os.path.join(root, filename)
@@ -458,7 +465,7 @@ def generate_password(unique,
 def generate_crypt6(unique=False, password=None, salt=None):
     """Generate a crypt() style SHA512 ("$6$") digest"""
     try:  # Python 3
-        import crypt
+        import crypt  # pylint: disable=import-outside-toplevel
     except ModuleNotFoundError as e:  # noqa
         raise
     if password is None:
@@ -531,9 +538,12 @@ def generate_random_base64(unique=False, size=DEFAULT_SIZE):
     return base64.b64encode(os.urandom(size)).decode('UTF-8')
 
 
-def _is_secrets_basedir(basedir=None, raise_exception=True):
+def is_secrets_basedir(basedir=None, raise_exception=True):
     """
     Validate secrets base directory by presense of a marker file.
+
+    Returns False if the directory either does not exist or does not
+    contain the expected marker file, or True otherwise.
     """
     result = False
     if basedir is None:
@@ -591,7 +601,7 @@ class SecretsEnvironment(object):
         environment=None,
         secrets_basedir=None,
         secrets_file=None,
-        create_root=True,
+        create_root=False,
         defer_loading=False,
         export_env_vars=False,
         preserve_existing=False,
@@ -604,28 +614,25 @@ class SecretsEnvironment(object):
         """
         if secrets_file and secrets_basedir:
             raise RuntimeError(
-                "[-] 'secrets_file' and 'secrets_basedir' are mutually exclusive "
-                "when initializing a SecretsEnvironment()"
+                "[-] 'secrets_file' and 'secrets_basedir' are mutually "
+                "exclusive when initializing a SecretsEnvironment()"
             )
-        if environment is not None:
-            self._environment = environment
-        else:
-            self._environment = get_default_environment()
-        if (
-            secrets_basedir is not None
-            and _is_secrets_basedir(basedir=secrets_basedir, raise_exception=True)
-        ):
+        self._environment = (
+            get_default_environment() if environment is None
+            else environment
+        )
+        if secrets_basedir is None:
+            secrets_basedir = get_default_secrets_basedir()
+        try:
+            is_secrets_basedir(basedir=secrets_basedir, raise_exception=True)
             self._secrets_basedir = Path(secrets_basedir)
-        else:
-            self._secrets_basedir = get_default_secrets_basedir()
-            if not self._secrets_basedir.exists():
-                if create_root:
-                    self.secrets_basedir_create()
-                else:
-                    raise RuntimeError(
-                        f"[-] directory '{self.secrets_basedir()}' "
-                        "does not exist and create_root=False"
-                    )
+        except BasedirNotFoundError:
+            if create_root:
+                self._secrets_basedir = self.secrets_basedir_create(
+                    basedir=secrets_basedir
+                )
+            else:
+                raise
         if secrets_file is not None:
             self._secrets_file = Path(secrets_file)
             if len(self._secrets_file.parts) < 3:
@@ -694,11 +701,16 @@ class SecretsEnvironment(object):
         return self._changed
 
     @classmethod
-    def permissions_check(cls, basedir='.', verbose_level=0):
+    def permissions_check(
+        cls,
+        basedir='.',
+        verbose_level=0,
+    ):
         """Check for presense of pernicious overly-permissive permissions."""
         # File permissions on Cygwin/Windows filesystems don't work the
         # same way as Linux. Don't try to change them.
         # TODO(dittrich): Is there a Better way to handle perms on Windows?
+        is_secrets_basedir(basedir)
         fs_type = get_fs_type(basedir)
         if fs_type in ['NTFS', 'FAT', 'FAT32']:
             msg = (f"[-] {basedir} has file system type '{fs_type}': "
@@ -758,68 +770,79 @@ class SecretsEnvironment(object):
         If the environment variable "D2_SECRETS_BASEDIR" is set, that location
         is used instead.
         """
-        if self._secrets_basedir is None:
-            _home = os.path.expanduser('~')
-            _secrets_subdir = os.path.join(
-                _home, 'secrets' if '\\' in _home else '.secrets')
-            self._secrets_basedir = os.getenv('D2_SECRETS_BASEDIR',
-                                              _secrets_subdir)
-            if not os.path.exists(self._secrets_basedir) and init:
-                self.secrets_basedir_create()
-        return self._secrets_basedir
+        try:
+            secrets_basedir = self._secrets_basedir
+        except AttributeError:
+            secrets_basedir = get_default_secrets_basedir()
+        if init:
+            self.secrets_basedir_create(
+                basedir=secrets_basedir,
+                mode=mode,
+            )
+        else:
+            is_secrets_basedir(basedir=secrets_basedir, raise_exception=True)
+        return secrets_basedir
 
     def secrets_basedir_exists(self):
         """Return whether secrets root directory exists"""
-        _secrets_basedir = self.secrets_basedir()
-        return os.path.exists(_secrets_basedir)
+        return self._secrets_basedir.exists()
 
-    def secrets_basedir_create(self, mode=DEFAULT_MODE):
+    def secrets_basedir_create(
+        self,
+        basedir=None,
+        mode=DEFAULT_MODE,
+    ):
         """Create secrets root directory"""
-        os.makedirs(self.secrets_basedir(),
-                    exist_ok=True,
-                    mode=mode)
+        if basedir is None:
+            raise RuntimeError("[-] a base directory is required")
+        _secrets_basedir = Path(basedir)
+        _secrets_basedir.mkdir(
+            parents=True,
+            mode=mode,
+            exist_ok=True
+        )
+        marker = _secrets_basedir / MARKER
+        marker.touch(mode=mode, exist_ok=True)
+        return _secrets_basedir
 
     def environment_path(self, env=None, subdir=None, host=None):
         """Returns the absolute path to secrets environment directory
         or subdirectories within it"""
         if env is None:
             env = self._environment
-        _path = os.path.join(self.secrets_basedir(), env)
-
+        _path = self.secrets_basedir() / env
         if not (subdir is None and host is None):
             valid_subdir = r'a-zA-Z0-9_/'
             invalid_subdir = re.compile('[^{}]'.format(valid_subdir))
             valid_host = r'a-zA-Z0-9_\./'  # noqa
             invalid_host = re.compile('[^{}]'.format(valid_host))
-
             if subdir is None and host is not None:
                 raise RuntimeError(
                     '[-] Must specify subdir when specifying host')
-
             if subdir is not None:
                 if subdir.startswith('/'):
                     raise RuntimeError('[-] subdir may not start with "/"')
                 elif subdir.endswith('/'):
                     raise RuntimeError('[-] subdir may not end with "/"')
                 if not bool(invalid_subdir.search(subdir)):
-                    _path = os.path.join(_path, subdir)
+                    _path = _path / subdir
                 else:
-                    raise RuntimeError("[-] invalid character in subdir: "
-                                       f"must be in [{valid_subdir}]")
-
+                    raise RuntimeError(
+                        "[-] invalid character in subdir: "
+                        f"must be in [{valid_subdir}]"
+                    )
             if host is not None:
                 if not bool(invalid_host.search(host)):
-                    _path = os.path.join(_path, host)
+                    _path = _path / host
                 else:
                     raise RuntimeError(
                         "[-] invalid character in host: "
                         f"must be in [{valid_host}]")
-
-        return _path
+        return Path(_path)
 
     def environment_exists(self, env=None, path_only=False):
         """Return whether secrets environment directory exists
-        and contains files"""
+        and contains files other than 'tmp' directory."""
         _ep = self.environment_path(env=env)
         result = os.path.isdir(self.descriptions_path())
         if not result and os.path.exists(_ep):
@@ -829,7 +852,8 @@ class SecretsEnvironment(object):
                 _files = list()
                 for root, directories, filenames in os.walk(_ep):
                     for filename in filenames:
-                        _files.append(os.path.join(root, filename))
+                        if filename != 'tmp':
+                            _files.append(os.path.join(root, filename))
                 result = len(_files) > 0
         return result
 
@@ -1130,7 +1154,7 @@ class SecretsEnvironment(object):
                 f"a '.json' extension ('{src}')")
         if not (os.path.exists(src) or self.environment_exists(env=src)):
             raise RuntimeError(
-                f"[-] '{src}' does not exist")
+                f"[-] directory or environment '{src}' does not exist")
         dest = self.descriptions_path(create=True)
         if src.endswith('.d'):
             # Copy anything when cloning from directory.
@@ -1196,7 +1220,7 @@ class SecretsEnvironment(object):
                 f.write(json.dumps(data, indent=2))
                 f.write('\n')
 
-    def check_duplicates(self, data=list()):
+    def check_duplicates(self, data=None):
         """
         Check to see if any 'Variable' dictionary elements in list match
         any already defined variables. If so, raise RuntimeError().
@@ -1204,11 +1228,13 @@ class SecretsEnvironment(object):
         :param data: list of dictionaries containing secret descriptions
         :return: None
         """
-        for d in data:
-            v = d.get('Variable')
-            if v in self._secrets:
-                raise RuntimeError(
-                    f"[-] variable '{v}' duplicates an existing variable")
+        if isinstance(data, list):
+            for d in data:
+                v = d.get('Variable')
+                if v in self._secrets:
+                    raise RuntimeError(
+                        f"[-] variable '{v}' duplicates an existing variable"
+                    )
 
     def read_secrets_descriptions(self):
         """Load the descriptions of groups of secrets from a .d directory"""
