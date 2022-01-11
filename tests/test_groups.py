@@ -16,8 +16,8 @@ import sys
 
 HOST = 'example.com'
 HOME = os.path.expanduser('~')
-TESTENV = 'testing'
-SECRETS_SUBDIR = 'tsecrets'
+TESTENV = 'pytest'
+SECRETS_SUBDIR = 'pytest'
 KEYS_SUBDIR = 'keys'
 
 
