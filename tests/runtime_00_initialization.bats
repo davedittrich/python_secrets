@@ -1,7 +1,7 @@
 load test_helper
 
 teardown() {
-    rm -rf /tmp/.secrets
+    clean_environments testenv
 }
 
 @test "'psec --umask -1 fails'" {

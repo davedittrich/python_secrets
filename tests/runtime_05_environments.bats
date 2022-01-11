@@ -192,6 +192,18 @@ teardown() {
     assert_output ''
 }
 
+@test "'psec -d /this/is/not/a/real/directory environments list' fails" {
+    run $PSEC -d /this/is/not/a/real/directory environments list 1>&2
+    assert_failure
+    assert_output --partial "does not exist"
+}
+
+@test "'psec -d /tmp environments list' fails" {
+    run $PSEC -d /tmp environments list 1>&2
+    assert_failure
+    assert_output --partial "is not a valid psec base directory"
+}
+
 @test "'psec environments list' works" {
     run $PSEC environments list
     assert_output '+-------------+---------+
