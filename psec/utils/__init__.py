@@ -40,6 +40,14 @@ DEFAULT_UMASK = 0o077
 MAX_UMASK = 0o777
 
 
+class CustomFormatter(
+    argparse.RawDescriptionHelpFormatter,
+    argparse.ArgumentDefaultsHelpFormatter,
+):
+    """Custom class to control arparse help output formatting."""
+    pass  # noqa
+
+
 def umask(value):
     """Set umask."""
     if value.lower().find("o") < 0:

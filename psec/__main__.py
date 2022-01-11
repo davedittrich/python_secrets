@@ -17,19 +17,14 @@ import webbrowser
 
 # pylint: disable=wrong-import-position
 
-
-# ----
+# pylint: disable=wrong-import-order
+#
 # Replace the cliff SmartHelpFormatter class before first use.
-class CustomFormatter(
-    argparse.RawDescriptionHelpFormatter,
-    argparse.ArgumentDefaultsHelpFormatter,
-):
-    """Custom class to control arparse help output formatting."""
-
-
-from cliff import _argparse  # noqa
+from psec.utils import CustomFormatter
+from cliff import _argparse
 _argparse.SmartHelpFormatter = CustomFormatter
-# ----
+#
+# pylint: enable=wrong-import-order
 
 
 # External dependencies.
