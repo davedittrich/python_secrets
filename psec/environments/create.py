@@ -60,6 +60,11 @@ class EnvironmentsCreate(Command):
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
         how = parser.add_mutually_exclusive_group(required=False)
+        try:
+            default_environment = self.app.environment
+        except AttributeError:
+            # Make sphinx cliff extension happy.
+            default_environment = get_default_environment()
         how.add_argument(
             '-A', '--alias',
             action='store',
