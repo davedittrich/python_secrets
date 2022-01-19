@@ -200,52 +200,52 @@ class MyIP(Command):
 
 
 class MyIPMethods(Lister):
-    """Show methods for obtaining routable IP address."""
+    """
+    Show methods for obtaining routable IP address.
+
+    Provides the details of the methods coded into this app for
+    obtaining this host's routable IP address::
+
+        $ psec utils myip methods
+        +-----------+-------+--------------------------------------------------------+
+        | Method    | Type  | Source                                                 |
+        +-----------+-------+--------------------------------------------------------+
+        | akamai    | dns   | dig +short @ns1-1.akamaitech.net ANY whoami.akamai.net |
+        | amazon    | https | https://checkip.amazonaws.com                          |
+        | google    | dns   | dig +short @ns1.google.com TXT o-o.myaddr.l.google.com |
+        | icanhazip | https | https://icanhazip.com/                                 |
+        | infoip    | https | https://api.infoip.io/ip                               |
+        | opendns_h | https | https://diagnostic.opendns.com/myip                    |
+        | opendns_r | dns   | dig +short @resolver1.opendns.com myip.opendns.com -4  |
+        | tnx       | https | https://tnx.nl/ip                                      |
+        +-----------+-------+--------------------------------------------------------+
+
+    It can be used for looping in tests, etc. like this::
+
+        $ for method in $(psec utils myip methods -f value -c Method)
+        > do
+        >   echo "$method: $(psec utils myip --method $method)"
+        > done
+        akamai: 93.184.216.34
+        amazon: 93.184.216.34
+        google: 93.184.216.34
+        icanhazip: 93.184.216.34
+        infoip: 93.184.216.34
+        opendns_h: 93.184.216.34
+        opendns_r: 93.184.216.34
+        tnx: 93.184.216.34
+    """  # noqa
 
     logger = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
-        parser.formatter_class = argparse.RawDescriptionHelpFormatter
         parser.add_argument(
             'method',
             nargs='*',
             default=None
         )
-        parser.epilog = textwrap.dedent("""
-            Provides the details of the methods coded into this app for
-            obtaining this host's routable IP address::
-
-                $ psec utils myip methods
-                +-----------+-------+--------------------------------------------------------+
-                | Method    | Type  | Source                                                 |
-                +-----------+-------+--------------------------------------------------------+
-                | akamai    | dns   | dig +short @ns1-1.akamaitech.net ANY whoami.akamai.net |
-                | amazon    | https | https://checkip.amazonaws.com                          |
-                | google    | dns   | dig +short @ns1.google.com TXT o-o.myaddr.l.google.com |
-                | icanhazip | https | https://icanhazip.com/                                 |
-                | infoip    | https | https://api.infoip.io/ip                               |
-                | opendns_h | https | https://diagnostic.opendns.com/myip                    |
-                | opendns_r | dns   | dig +short @resolver1.opendns.com myip.opendns.com -4  |
-                | tnx       | https | https://tnx.nl/ip                                      |
-                +-----------+-------+--------------------------------------------------------+
-
-            It can be used for looping in tests, etc. like this::
-
-                $ for method in $(psec utils myip methods -f value -c Method)
-                > do
-                >   echo "$method: $(psec utils myip --method $method)"
-                > done
-                akamai: 93.184.216.34
-                amazon: 93.184.216.34
-                google: 93.184.216.34
-                icanhazip: 93.184.216.34
-                infoip: 93.184.216.34
-                opendns_h: 93.184.216.34
-                opendns_r: 93.184.216.34
-                tnx: 93.184.216.34
-
-            """) + QUOTA_WARNING  # noqa
+        parser.epilog = QUOTA_WARNING
         return parser
 
     def take_action(self, parsed_args):
