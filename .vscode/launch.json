@@ -12,13 +12,13 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "psec help",
+            "name": "psec -v init",
             "type": "python",
             "request": "launch",
             "module": "psec.__main__",
             "args": [
-                "--debug",
-                "help"
+                "-v",
+                "init"
             ],
             "stopOnEntry": true,
             "console": "integratedTerminal"
@@ -78,7 +78,23 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "psec environments create --alias alias notanalias",
+            "name": "psec environments create aclone --clone-from psectest",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.__main__",
+            "args": [
+                "--debug",
+                "environments",
+                "create",
+                "aclone",
+                "--clone-from",
+                "psectest"
+            ],
+            "stopOnEntry": false,
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "psec environments create --alias alias aclone",
             "type": "python",
             "request": "launch",
             "module": "psec.__main__",
@@ -88,7 +104,7 @@
                 "create",
                 "--alias",
                 "alias",
-                "notanalias"
+                "aclone"
             ],
             "stopOnEntry": false,
             "console": "integratedTerminal"
@@ -121,7 +137,7 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "psec environments list (using D2_SECRETS_BASEDIR))",
+            "name": "psec environments list",
             "type": "python",
             "request": "launch",
             "module": "psec.__main__",
@@ -134,14 +150,14 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "psec -d /tmp/.secrets environments list",
+            "name": "psec -d /tmp/not/a/real/path environments list",
             "type": "python",
             "request": "launch",
             "module": "psec.__main__",
             "args": [
                 "--debug",
                 "-d",
-                "/tmp/.secrets",
+                "/tmp/not/a/real/path",
                 "environments",
                 "list"
             ],
@@ -178,22 +194,6 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "psec environments create aclone --clone-from do",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "environments",
-                "create",
-                "aclone",
-                "--clone-from",
-                "do"
-            ],
-            "stopOnEntry": false,
-            "console": "integratedTerminal"
-        },
-        {
             "name": "psec environments delete",
             "type": "python",
             "request": "launch",
@@ -216,22 +216,6 @@
                 "environments",
                 "delete",
                 "aclone"
-            ],
-            "stopOnEntry": false,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec environments create notanalias --clone-from secrets",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "environments",
-                "create",
-                "notanalias",
-                "--clone-from",
-                "secrets"
             ],
             "stopOnEntry": false,
             "console": "integratedTerminal"
