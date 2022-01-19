@@ -10,14 +10,16 @@ try:
 except ModuleNotFoundError:
     pass
 
-from psec.secrets_environment import (
+from cliff.command import Command
+from sys import stdin
+
+from psec.utils import (
     clear_saved_default_environment,
     get_default_environment,
+    get_environment_paths,
     get_saved_default_environment,
     save_default_environment,
 )
-from cliff.command import Command
-from sys import stdin
 
 
 class EnvironmentsDefault(Command):
@@ -108,7 +110,11 @@ class EnvironmentsDefault(Command):
             if parsed_args.environment is not None:
                 choice = parsed_args.environment
             else:
-                environments = os.listdir(self.app.secrets.secrets_basedir())
+                basedir = self.app.secrets.get_secrets_basedir()
+                environments = [
+                    env_path.name
+                    for env_path in get_environment_paths(basedir=basedir)
+                ]
                 choices = ['<CANCEL>'] + sorted(environments)
                 cli = Bullet(prompt="\nChose a new default environment:",
                              choices=choices,

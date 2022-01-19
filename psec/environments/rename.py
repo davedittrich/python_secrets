@@ -52,7 +52,7 @@ class EnvironmentsRename(Command):
 
     def take_action(self, parsed_args):
         self.logger.debug('[*] renaming environment')
-        basedir = self.app.secrets.secrets_basedir()
+        basedir = self.app.secrets.get_secrets_basedir()
         source = parsed_args.source[0]
         source_path = os.path.join(basedir, source)
         dest = parsed_args.dest[0]

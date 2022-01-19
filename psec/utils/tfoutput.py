@@ -7,6 +7,7 @@ import shlex
 import subprocess  # nosec
 
 from cliff.lister import Lister
+from pathlib import Path
 
 
 # The TfOutput Lister assumes `terraform output` structured as
@@ -80,7 +81,7 @@ class TfOutput(Lister):
         parser = super().get_parser(prog_name)
         tfstate = None
         try:
-            tfstate = os.path.join(self.app.secrets.tmpdir_path(),
+            tfstate = os.path.join(self.app.secrets.get_tmpdir_path(),
                                    "terraform.tfstate")
         except AttributeError:
             pass
@@ -99,9 +100,9 @@ class TfOutput(Lister):
         tfstate = parsed_args.tfstate
         if tfstate is None:
             base = 'terraform.tfstate'
-            tfstate = os.path.join(self.app.secrets.environment_path(), base)
+            tfstate = self.app.secrets.get_environment_path() / base
             if not os.path.exists(tfstate):
-                tfstate = os.path.join(os.getcwd(), base)
+                tfstate = Path(os.getcwd()) / base
             if not os.path.exists(tfstate):
                 raise RuntimeError('[-] no terraform state file specified')
         if not os.path.exists(tfstate):

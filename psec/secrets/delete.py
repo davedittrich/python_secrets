@@ -126,10 +126,14 @@ class SecretsDelete(Command):
             ]
             se.delete_secret(arg)
         if len(descriptions) == 0:
-            paths = [se.descriptions_path(group=group)]
+            paths = [se.get_descriptions_path(group=group)]
             if parsed_args.mirror_locally:
-                paths.append(se.descriptions_path(root=os.getcwd(),
-                                                  group=group))
+                paths.append(
+                    se.get_descriptions_path(
+                        root=os.getcwd(),
+                        group=group,
+                    )
+                )
             for path in paths:
                 safe_delete_file(path)
                 self.logger.info(

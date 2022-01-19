@@ -43,7 +43,7 @@ class SecretsBackup(Command):
         secrets = self.app.secrets
         secrets.requires_environment()
         backups_dir = os.path.join(
-            secrets.environment_path(),
+            secrets.get_environment_path(),
             "backups")
         if not os.path.exists(backups_dir):
             os.mkdir(backups_dir, mode=0o700)
@@ -59,13 +59,13 @@ class SecretsBackup(Command):
         # Change directory to allow relative paths in tar file,
         # then force relative paths (there has to be a better way...
         # just not right now.)
-        env_path = secrets.environment_path() + os.path.sep
+        env_path = secrets.get_environment_path() + os.path.sep
         with cd(env_path):
             with tarfile.open(backup_path, "w:gz") as tf:
                 tf.add(
-                    secrets.secrets_file_path().replace(env_path, "", 1))
+                    secrets.get_secrets_file_path().replace(env_path, "", 1))
                 tf.add(
-                    secrets.descriptions_path().replace(env_path, "", 1))
+                    secrets.get_descriptions_path().replace(env_path, "", 1))
 
         self.logger.info("[+] created backup '%s'", backup_path)
 

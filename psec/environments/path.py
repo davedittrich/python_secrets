@@ -97,10 +97,10 @@ class EnvironmentsPath(Command):
             if not e.environment_exists() and not parsed_args.create:
                 return (f"[-] environment '{str(e)}' does not exist; "
                         "use '--create' to create it")
-            tmpdir = e.tmpdir_path(create_path=parsed_args.create)
+            tmpdir = e.get_tmpdir_path(create_path=parsed_args.create)
             self._print(tmpdir, parsed_args.json)
         else:
-            base_path = e.environment_path()
+            base_path = e.get_environment_path()
             subdir = parsed_args.subdir
             full_path = base_path if subdir is None \
                 else os.path.join(base_path, *subdir)

@@ -5,9 +5,9 @@ import os
 import sys
 
 from cliff.lister import Lister
-from psec.secrets_environment import (
+from psec.utils import (
     get_default_environment,
-    _is_default,
+    get_environment_paths,
     is_valid_environment,
 )
 
@@ -79,24 +79,26 @@ class EnvironmentsList(Lister):
         self.logger.debug('[*] listing environment(s)')
         default_env = get_default_environment()
         columns = (['Environment', 'Default'])
-        basedir = self.app.secrets.secrets_basedir()
         if parsed_args.aliasing:
             columns.append('AliasFor')
         data = list()
-        environments = os.listdir(basedir)
-        for e in sorted(environments):
-            env_path = os.path.join(basedir, e)
-            if is_valid_environment(env_path,
-                                    self.app_args.verbose_level):
-                default = _is_default(e, default_env)
+        for env_path in get_environment_paths(basedir=self.app.secrets_basedir):  # noqa
+            if is_valid_environment(
+                env_path,
+                self.app_args.verbose_level,
+            ):
+                is_default = (
+                    "Yes" if env_path.name == default_env
+                    else "No"
+                )
                 if not parsed_args.aliasing:
-                    item = (e, default)
+                    item = (env_path.name, is_default)
                 else:
                     try:
                         alias_for = os.path.basename(os.readlink(env_path))
                     except OSError:
                         alias_for = ''
-                    item = (e, default, alias_for)
+                    item = (env_path.name, is_default, alias_for)
                 data.append(item)
         if len(data) == 0:
             sys.exit(1)

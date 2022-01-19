@@ -92,7 +92,7 @@ class EnvironmentsTree(Command):
         e = SecretsEnvironment(environment=environment)
         e.requires_environment()
         print_files = bool(parsed_args.no_files is False)
-        atree(e.environment_path(),
+        atree(e.get_environment_path(),
               print_files=print_files,
               outfile=sys.stdout)
 

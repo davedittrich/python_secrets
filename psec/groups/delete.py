@@ -89,7 +89,7 @@ class GroupsDelete(Command):
                     self.logger.info('[-] cancelled deleting group')
                     return
 
-        group_file = self.app.secrets.descriptions_path(group=group)
+        group_file = self.app.secrets.get_descriptions_path(group=group)
         if not os.path.exists(group_file):
             raise RuntimeError(
                 f"[-] group file '{group_file}' does not exist")

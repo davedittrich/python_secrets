@@ -746,19 +746,20 @@ class SecretsEnvironment(object):
                         pass
 
     # TODO(dittrich): FIX Cere call
-    def secrets_descriptions_dir(self):
+    def get_secrets_descriptions_dir(self):
         """Return the path to the drop-in secrets description directory"""
         _env = self._environment
         if not _env:
-            return self.secrets_basedir()
+            return self.get_secrets_basedir()
         else:
-            return self.secrets_basedir() / self.secrets_basename().replace('.json', '.d')  # noqa
+            return self.get_secrets_basedir() / self.get_secrets_basename().replace('.json', '.d')  # noqa
 
-    def secrets_basename(self):
+    def get_secrets_basename(self):
         """Return the basename of the current secrets file"""
         return os.path.basename(self._secrets_file)
 
-    def secrets_basedir(self, init=False, mode=DEFAULT_MODE):
+    # def get_secrets_basedir(self, init=False, mode=DEFAULT_MODE):
+    def get_secrets_basedir(self):
         """
         Returns the directory path root for secrets storage and definitions.
 
@@ -805,12 +806,12 @@ class SecretsEnvironment(object):
         marker.touch(mode=mode, exist_ok=True)
         return _secrets_basedir
 
-    def environment_path(self, env=None, subdir=None, host=None):
+    def get_environment_path(self, env=None, subdir=None, host=None):
         """Returns the absolute path to secrets environment directory
         or subdirectories within it"""
         if env is None:
             env = self._environment
-        _path = self.secrets_basedir() / env
+        _path = self.get_secrets_basedir() / env
         if not (subdir is None and host is None):
             valid_subdir = r'a-zA-Z0-9_/'
             invalid_subdir = re.compile('[^{}]'.format(valid_subdir))
@@ -843,14 +844,14 @@ class SecretsEnvironment(object):
     def environment_exists(self, env=None, path_only=False):
         """Return whether secrets environment directory exists
         and contains files other than 'tmp' directory."""
-        _ep = self.environment_path(env=env)
-        result = os.path.isdir(self.descriptions_path())
+        _ep = self.get_environment_path(env=env)
+        result = os.path.isdir(self.get_descriptions_path())
         if not result and os.path.exists(_ep):
             if path_only:
                 result = True
             else:
                 _files = list()
-                for root, directories, filenames in os.walk(_ep):
+                for root, _, filenames in os.walk(_ep):
                     for filename in filenames:
                         if filename != 'tmp':
                             _files.append(os.path.join(root, filename))
@@ -862,7 +863,7 @@ class SecretsEnvironment(object):
                            alias=False,
                            mode=DEFAULT_MODE):
         """Create secrets environment directory"""
-        env_path = self.environment_path()
+        env_path = self.get_environment_path()
         if not alias:
             # Create a new environment (optionally from an
             # existing environment)
@@ -886,17 +887,17 @@ class SecretsEnvironment(object):
             # Create a symlink with a relative path
             os.symlink(str(source_env), env_path)
 
-    def secrets_file_path(self, env=None):
+    def get_secrets_file_path(self, env=None):
         """Returns the absolute path to secrets file"""
         if env is None:
             env = self._environment
-        return self.secrets_basedir() / env / self._secrets_file
+        return self.get_secrets_basedir() / env / self._secrets_file
 
     def secrets_file_path_exists(self):
         """Return whether secrets file exists"""
-        return os.path.exists(self.secrets_file_path())
+        return os.path.exists(self.get_secrets_file_path())
 
-    def descriptions_path(
+    def get_descriptions_path(
         self,
         root=None,
         group=None,
@@ -907,16 +908,16 @@ class SecretsEnvironment(object):
         if root is not None:
             path = Path(root) / self._secrets_descriptions
         else:
-            path = self.environment_path() / self._secrets_descriptions
+            path = self.get_environment_path() / self._secrets_descriptions
         if create:
             path.mkdir(parents=True, exist_ok=True, mode=mode)
         if group is not None:
             path = path / f"{group}.json"
         return path
 
-    def tmpdir_path(self, create_path=False):
+    def get_tmpdir_path(self, create_path=False):
         """Return the absolute path to secrets descriptions tmp directory"""
-        tmpdir = self.environment_path() / "tmp"
+        tmpdir = self.get_environment_path() / "tmp"
         if create_path:
             tmpdir_mode = 0o700
             try:
@@ -1092,7 +1093,7 @@ class SecretsEnvironment(object):
         descriptions dictionary defined to be None and set self._changed
         to ensure these are written out.
         """
-        _fname = self.secrets_file_path()
+        _fname = self.get_secrets_file_path()
         yaml_fname = f"{os.path.splitext(_fname)[0]}.yml"
         # TODO(dittrich): Add upgrade feature... some day.
         # Until then, reference a way for anyone affected to manually
@@ -1122,7 +1123,7 @@ class SecretsEnvironment(object):
     def write_secrets(self):
         """Write out the current secrets if any changes were made"""
         if self._changed:
-            _fname = self.secrets_file_path()
+            _fname = self.get_secrets_file_path()
             self.logger.debug("[+] writing secrets to '%s'", _fname)
             with open(_fname, 'w') as f:
                 json.dump(self.Variable, f, indent=2)
@@ -1155,7 +1156,7 @@ class SecretsEnvironment(object):
         if not (os.path.exists(src) or self.environment_exists(env=src)):
             raise RuntimeError(
                 f"[-] directory or environment '{src}' does not exist")
-        dest = self.descriptions_path(create=True)
+        dest = self.get_descriptions_path(create=True)
         if src.endswith('.d'):
             # Copy anything when cloning from directory.
             src_files = get_files_from_path(src)
@@ -1168,7 +1169,7 @@ class SecretsEnvironment(object):
             # Only copy descriptions when cloning from environment.
             src_env = SecretsEnvironment(environment=src)
             copydescriptions(
-                src_env.descriptions_path(),
+                src_env.get_descriptions_path(),
                 dest
             )
         remove_other_perms(dest)
@@ -1185,7 +1186,7 @@ class SecretsEnvironment(object):
         """
         if group is not None:
             # raise RuntimeError('[!] no group specified')
-            infile = self.descriptions_path(group=group)
+            infile = self.get_descriptions_path(group=group)
         if infile is None:
             raise RuntimeError(
                 '[!] must specify an existing group or file to read')
@@ -1208,10 +1209,14 @@ class SecretsEnvironment(object):
         """Write out the secrets descriptions to a file."""
         if group is None:
             raise RuntimeError('[!] no group specified')
-        outfiles = [self.descriptions_path(group=group)]
+        outfiles = [self.get_descriptions_path(group=group)]
         if mirror_to is not None:
-            outfiles.append(self.descriptions_path(root=mirror_to,
-                                                   group=group))
+            outfiles.append(
+                self.get_descriptions_path(
+                    root=mirror_to,
+                    group=group,
+                )
+            )
         for outfile in outfiles:
             os.makedirs(os.path.dirname(outfile),
                         exist_ok=True,
@@ -1238,7 +1243,7 @@ class SecretsEnvironment(object):
 
     def read_secrets_descriptions(self):
         """Load the descriptions of groups of secrets from a .d directory"""
-        groups_dir = self.descriptions_path()
+        groups_dir = self.get_descriptions_path()
         if not os.path.exists(groups_dir):
             self.logger.info('[-] secrets descriptions directory not found')
         else:

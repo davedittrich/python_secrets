@@ -154,7 +154,7 @@ class EnvironmentsCreate(Command):
                 self.logger.info(
                     "[+] environment '%s' (%s) created",
                     environment,
-                    se.environment_path()
+                    se.get_environment_path()
                 )
                 if parsed_args.clone_from:
                     se.read_secrets(from_descriptions=True)

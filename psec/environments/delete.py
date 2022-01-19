@@ -88,7 +88,7 @@ class EnvironmentsDelete(Command):
             choice = parsed_args.environment
         elif stdin.isatty() and 'Bullet' in globals():
             # Give user a chance to choose.
-            environments = os.listdir(self.app.secrets.secrets_basedir())
+            environments = os.listdir(self.app.secrets.get_secrets_basedir())
             choices = ['<CANCEL>'] + sorted(environments)
             cli = Bullet(prompt="\nSelect environment to delete:",
                          choices=choices,
@@ -107,7 +107,7 @@ class EnvironmentsDelete(Command):
             sys.exit('[-] no environment specified to delete')
         # Environment chosen. Now do we need to confirm?
         e = SecretsEnvironment(choice)
-        env_path = e.environment_path()
+        env_path = e.get_environment_path()
         if not parsed_args.force:
             if not stdin.isatty():
                 output = atree(

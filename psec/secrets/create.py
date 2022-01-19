@@ -186,7 +186,7 @@ class SecretsCreate(Command):
             self.logger.info(
                 "[+] environment '%s' (%s) created",
                 env,
-                se.environment_path()
+                se.get_environment_path()
             )
         if parsed_args.update and len(parsed_args.arg) > 1:
             # TODO(dittrich): Refactor to loop over parsed_arg.arg

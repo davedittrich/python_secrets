@@ -155,6 +155,21 @@ def get_files_from_path(path=None):
     return files
 
 
+def get_environment_paths(basedir=None):
+    """
+    Return sorted list of valid environment paths found in `basedir`.
+    """
+    basedir = (
+        get_default_secrets_basedir() if basedir is None
+        else Path(basedir)
+    )
+    results = list()
+    for item in sorted(basedir.iterdir()):
+        if is_valid_environment(item):
+            results.append(item)
+    return results
+
+
 def get_netblock(ip=None):
     """
     Derives the CIDR netblocks for an IP via WHOIS lookup.

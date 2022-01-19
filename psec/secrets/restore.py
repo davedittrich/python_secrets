@@ -42,7 +42,7 @@ class SecretsRestore(Command):
         secrets = self.app.secrets
         secrets.requires_environment()
         backups_dir = os.path.join(
-            secrets.environment_path(),
+            secrets.get_environment_path(),
             "backups")
         backups = [fn for fn in
                    os.listdir(backups_dir)
@@ -77,7 +77,7 @@ class SecretsRestore(Command):
                             for prefix in allowed_prefixes
                             if '../' not in fn)
                      ]
-            env_path = secrets.environment_path()
+            env_path = secrets.get_environment_path()
             for name in names:
                 tf.extract(name, path=env_path)
         self.logger.info('[+] restored backup %s to %s', backup_path, env_path)

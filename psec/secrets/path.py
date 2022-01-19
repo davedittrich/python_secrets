@@ -37,7 +37,7 @@ class SecretsPath(Command):
     def take_action(self, parsed_args):
         self.logger.debug('[*] returning secrets path')
         e = SecretsEnvironment(environment=parsed_args.environment)
-        print(e.secrets_file_path())
+        print(e.get_secrets_file_path())
 
 
 # vim: set fileencoding=utf-8 ts=4 sw=4 tw=0 et :

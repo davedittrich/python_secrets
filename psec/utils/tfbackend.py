@@ -36,7 +36,7 @@ class TfBackend(Command):
         )
         # tfstate = None
         # try:
-        #     tfstate = os.path.join(self.app.secrets.environment_path(),
+        #     tfstate = os.path.join(self.app.secrets.get_environment_path(),
         #                            "terraform.tfstate")
         # except AttributeError:
         #     pass
@@ -44,7 +44,7 @@ class TfBackend(Command):
 
     def take_action(self, parsed_args):
         e = SecretsEnvironment(environment=self.app.options.environment)
-        tmpdir = e.tmpdir_path()
+        tmpdir = e.get_tmpdir_path()
         backend_file = os.path.join(os.getcwd(), 'tfbackend.tf')
         tfstate_file = os.path.join(tmpdir, 'terraform.tfstate')
         backend_text = textwrap.dedent("""\

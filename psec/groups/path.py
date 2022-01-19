@@ -31,7 +31,7 @@ class GroupsPath(Command):
     def take_action(self, parsed_args):
         self.logger.debug('[*] returning groups path')
         e = SecretsEnvironment(environment=parsed_args.environment)
-        print(e.descriptions_path())
+        print(e.get_descriptions_path())
 
 
 # vim: set fileencoding=utf-8 ts=4 sw=4 tw=0 et :
