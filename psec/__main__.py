@@ -7,8 +7,7 @@ Generic modular configuration file manager.
 
 """
 
-# Standard library modules.
-import argparse
+# Standard imports
 import os
 import sys
 import textwrap
@@ -30,31 +29,31 @@ _argparse.SmartHelpFormatter = CustomFormatter
 # External dependencies.
 from cliff.app import App  # noqa
 from cliff.commandmanager import CommandManager  # noqa
+
+# Local imports
 from psec import __version__  # noqa
-from psec.secrets_environment import (  # noqa
-    get_default_environment,
-    SecretsEnvironment,
-)
-from psec.utils import (  # pylint: disable=unused-import  # noqa
+from psec.secrets_environment import SecretsEnvironment  # noqa
+from psec.utils import (  # noqa
     bell,
-    show_current_value,  # noqa
+    get_default_environment,
+    get_default_secrets_basedir,
+    permissions_check,
+    show_current_value,
     umask,
     DEFAULT_UMASK,
     Timer,
 )
+
 # pylint: enable=wrong-import-position
 
-if sys.version_info < (3, 6, 0):
-    print((f"[-] The {os.path.basename(sys.argv[0])} "
-           "requires Python 3.6.0 or newer\n"
-           f"[-] Found Python {sys.version}"),
-          file=sys.stderr)
-    sys.exit(1)
-
-
+# Commands that do not need secrets environments.
+DOES_NOT_NEED_SECRETS = ['complete', 'help', 'init']
 # Use syslog for logging?
 # TODO(dittrich) Make this configurable, since it can fail on Mac OS X
 SYSLOG = False
+
+DEFAULT_ENVIRONMENT = get_default_environment()
+DEFAULT_BASEDIR = get_default_secrets_basedir()
 
 
 class PythonSecretsApp(App):
@@ -96,27 +95,25 @@ class PythonSecretsApp(App):
             default=False,
             help='Print elapsed time on exit'
         )
-        _env = SecretsEnvironment()
         parser.add_argument(
             '-d', '--secrets-basedir',
             metavar='<secrets-basedir>',
             dest='secrets_basedir',
-            default=_env.secrets_basedir(),
+            default=DEFAULT_BASEDIR,
             help='Root directory for holding secrets (Env: D2_SECRETS_BASEDIR)'
         )
-        default_env = get_default_environment()
         parser.add_argument(
             '-e', '--environment',
             metavar='<environment>',
             dest='environment',
-            default=default_env,
+            default=DEFAULT_ENVIRONMENT,
             help='Deployment environment selector (Env: D2_ENVIRONMENT)'
         )
         parser.add_argument(
             '-s', '--secrets-file',
             metavar='<secrets-file>',
             dest='secrets_file',
-            default=_env.secrets_basename(),
+            default=None,
             help='Secrets file'
         )
         parser.add_argument(
@@ -182,6 +179,7 @@ class PythonSecretsApp(App):
 
             Current working dir: {os.getcwd()}
             Python interpreter:  {sys.executable} (v{sys.version.split()[0]})
+
             Environment variables consumed:
               BROWSER             Default browser for use by webbrowser.open().{show_current_value('BROWSER')}
               D2_ENVIRONMENT      Default environment identifier.{show_current_value('D2_ENVIRONMENT')}
@@ -192,10 +190,13 @@ class PythonSecretsApp(App):
         return parser
 
     def initialize_app(self, argv):
-        self.logger.debug('[*] initialize_app(%s)', str(self.__class__))
+        self.logger.debug('[*] initialize_app(%s)', self.__class__.NAME)
         if sys.version_info <= (3, 6):
-            raise RuntimeError('This program uses the Python "secrets" ' +
-                               'module, which requires Python 3.6 or higher')
+            raise RuntimeError(
+                'This program requires Python 3.6 or higher'
+            )
+        os.umask(self.options.umask)
+        self.timer.start()
 
     def prepare_to_run_command(self, cmd):
         self.logger.debug("[*] prepare_to_run_command('%s')", cmd.cmd_name)
@@ -221,33 +222,33 @@ class PythonSecretsApp(App):
             # TODO(dittrich): Add more specificity
             # FYI, new= is ignored on Windows per:
             # https://stackoverflow.com/questions/1997327/python-webbrowser-open-setting-new-0-to-open-in-the-same-browser-window-does  # noqa
-
             webbrowser.open(rtd_url, new=0, autoraise=True)
-        self.timer.start()
-        os.umask(self.options.umask)
-        self.logger.debug("[+] using environment '%s'",
-                          self.options.environment)
+        self.logger.debug(
+            "[+] using environment '%s'", self.options.environment
+        )
         self.environment = self.options.environment
         self.secrets_basedir = self.options.secrets_basedir
         if os.environ.get('D2_SECRETS_BASEDIR') is None:
             # Make sure environment variable is set to match option flag.
             os.environ['D2_SECRETS_BASEDIR'] = self.secrets_basedir
-        # Don't output error messages when "complete" command used
-        if cmd.cmd_name != 'complete':
-            SecretsEnvironment.permissions_check(
-                self.secrets_basedir,
-                verbose_level=self.options.verbose_level,
-                )
-            self.secrets_file = self.options.secrets_file
+        self.secrets_file = self.options.secrets_file
+
+        self.secrets_file = self.options.secrets_file
+        if cmd.cmd_name not in DOES_NOT_NEED_SECRETS:
             self.secrets = SecretsEnvironment(
                 environment=self.environment,
+                create_root=False,
                 secrets_basedir=self.secrets_basedir,
                 secrets_file=self.secrets_file,
                 export_env_vars=self.options.export_env_vars,
                 preserve_existing=self.options.preserve_existing,
                 verbose_level=self.options.verbose_level,
                 env_var_prefix=self.options.env_var_prefix,
-                )
+            )
+            permissions_check(
+                self.secrets_basedir,
+                verbose_level=self.options.verbose_level,
+            )
 
     def clean_up(self, cmd, result, err):
         self.logger.debug("[-] clean_up command '%s'", cmd.cmd_name)
@@ -271,7 +272,6 @@ def main(argv=sys.argv[1:]):
     """
     Command line interface for the ``psec`` program.
     """
-
     myapp = PythonSecretsApp()
     return myapp.run(argv)
 

@@ -3,7 +3,9 @@
 import logging
 
 from cliff.command import Command
+
 from psec.secrets_environment import SecretsEnvironment
+from psec.utils import get_default_environment
 
 
 class GroupsPath(Command):
@@ -20,7 +22,7 @@ class GroupsPath(Command):
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
-        default_environment = str(SecretsEnvironment())
+        default_environment = get_default_environment()
         parser.add_argument(
             'environment',
             nargs='?',

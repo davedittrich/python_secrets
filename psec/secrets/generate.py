@@ -11,13 +11,13 @@ from xkcdpass.xkcd_password import CASE_METHODS
 
 from psec.secrets_environment import (
     generate_secret,
-    natural_number,
     DELIMITER,
     MAX_WORDS_LENGTH,
     MIN_WORDS_LENGTH,
     MAX_ACROSTIC_LENGTH,
     MIN_ACROSTIC_LENGTH,
 )
+from psec.utils import natural_number
 
 
 class SecretsGenerate(Command):

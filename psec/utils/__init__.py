@@ -8,6 +8,7 @@ Utility functions.
   URL: https://python_secrets.readthedocs.org.
 """
 
+# Standard imports
 import argparse
 import logging
 import os
@@ -15,37 +16,345 @@ import tempfile
 import time
 import psutil
 import subprocess  # nosec
+import stat
 import sys
 
-from anytree import Node
-from anytree import RenderTree
-# TODO(dittrich): https://github.com/Mckinsey666/bullet/issues/2
+
+# External imports
+from anytree import (
+    Node,
+    RenderTree,
+)
 # Workaround until bullet has Windows missing 'termios' fix.
+# TODO(dittrich): https://github.com/Mckinsey666/bullet/issues/2
 try:
-    from bullet import Bullet
+    from bullet import (
+        Bullet,
+        YesNo,
+    )
 except ModuleNotFoundError:
     pass
 from collections import OrderedDict
 from ipwhois import IPWhois
+from pathlib import Path
+from shutil import (
+    copy,
+    copytree,
+    Error,
+)
 
-
-# NOTE: While calling subprocess.call() with shell=True can have security
-# implications, the person running this command already has control of her
-# account.
+# Local imports
+from psec.exceptions import (
+    BasedirNotFoundError,
+    InvalidBasedirError,
+    InvalidDescriptionsError,
+    # SecretNotFoundError,
+)
 
 
 logger = logging.getLogger(__name__)
 
 DEFAULT_UMASK = 0o077
 MAX_UMASK = 0o777
+DEFAULT_MODE = 0o710
+MARKER = '.psec'
+BASEDIR_BASENAME = '.secrets' if os.sep == '/' else 'secrets'
+SECRETS_FILE = 'secrets.json'
+SECRETS_DESCRIPTIONS_DIR = f'{os.path.splitext(SECRETS_FILE)[0]}.d'
 
 
 class CustomFormatter(
     argparse.RawDescriptionHelpFormatter,
     argparse.ArgumentDefaultsHelpFormatter,
 ):
-    """Custom class to control arparse help output formatting."""
-    pass  # noqa
+    """
+    Custom class to control arparse help output formatting.
+    """
+
+
+class Memoize:
+    """Memoize(fn) - an instance which acts like fn but memoizes its arguments.
+
+       Will only work on functions with non-mutable arguments. Hacked to assume
+       that argument to function is whether to cache or not, allowing all
+       secrets of a given type to be set to the same value.
+    """
+
+    def __init__(self, fn):
+        self.fn = fn
+        self.memo = {}
+
+    def __call__(self, *args):
+        if args[0] is True:
+            return self.fn(*args)
+        if args not in self.memo:
+            self.memo[args] = self.fn(*args)
+        return self.memo[args]
+
+
+def natural_number(value):
+    """
+    Tests for a natural number.
+
+    Args:
+      value: The value to test
+
+    Returns:
+      A boolean indicating whether the value is a natural number or not.
+    """
+
+    ivalue = int(value)
+    if ivalue <= 0:
+        raise argparse.ArgumentTypeError(
+            f"[-] '{value}' is not a positive integer")
+    return ivalue
+
+
+# TODO(dittrich): Improve this?
+def _is_default(a, b):
+    """
+    Return "Yes" or "No" depending on whether e is the default
+    environment or not.
+    """
+    return "Yes" if a == b else "No"
+
+
+def get_local_default_file(cwd=None):
+    """Returns the path to the local identifier file."""
+    # TODO(dittrich): May need to do this differently to support
+    # Windows file systems.
+    if cwd is None:
+        cwd = os.getcwd()
+    return Path(cwd) / '.python_secrets_environment'
+
+
+def save_default_environment(
+    environment=None,
+    cwd=None
+):
+    """Save environment identifier to local file for defaulting."""
+    env_file = get_local_default_file(cwd=cwd)
+    with open(env_file, 'w') as f_out:
+        f_out.write('{0}\n'.format(str(environment)))
+    return True
+
+
+def clear_saved_default_environment(cwd=None):
+    """Remove saved default environment file."""
+    env_file = get_local_default_file(cwd=cwd)
+    if os.path.exists(env_file):
+        os.remove(env_file)
+        return True
+    else:
+        return False
+
+
+def get_saved_default_environment(cwd=None):
+    """Return environment ID value saved in local file or None."""
+    env_file = get_local_default_file(cwd=cwd)
+    saved_default = None
+    if os.path.exists(env_file):
+        with open(env_file, 'r') as f:
+            saved_default = f.read().replace('\n', '')
+    return saved_default
+
+
+def is_secrets_basedir(basedir=None, raise_exception=True):
+    """
+    Validate secrets base directory by presense of a marker file.
+
+    Returns False if the directory either does not exist or does not
+    contain the expected marker file, or True otherwise.
+    """
+    result = False
+    if basedir is None:
+        if raise_exception:
+            raise RuntimeError("[-] no basedir was specified")
+    basedir_path = Path(basedir)
+    marker_path = Path(basedir) / MARKER
+    if not basedir_path.exists():
+        if raise_exception:
+            raise BasedirNotFoundError(
+                f"[-] directory '{basedir}' does not exist"
+            )
+    elif not marker_path.exists():
+        if raise_exception:
+            raise InvalidBasedirError(
+                f"[-] '{basedir}' is not a valid psec base directory"
+            )
+    else:
+        result = True
+    return result
+
+
+def get_default_secrets_basedir():
+    """
+    Return the default secrets base directory path.
+    """
+    default_basedir = Path.home() / BASEDIR_BASENAME
+    return Path(
+        os.getenv('D2_SECRETS_BASEDIR', default_basedir)
+    )
+
+
+def secrets_basedir_create(
+    basedir=None,
+    mode=DEFAULT_MODE,
+):
+    """Create secrets root directory"""
+    if basedir is None:
+        raise RuntimeError("[-] a base directory is required")
+    secrets_basedir = Path(basedir)
+    secrets_basedir.mkdir(
+        parents=True,
+        mode=mode,
+        exist_ok=True
+    )
+    marker = secrets_basedir / MARKER
+    marker.touch(mode=mode, exist_ok=True)
+    return secrets_basedir
+
+
+def ensure_secrets_basedir(
+    secrets_basedir=None,
+    allow_create=False,
+    allow_prompt=False,
+    verbose_level=1,
+):
+    """
+    Ensure that the secrets basedir exists.
+
+    If the path is within the user's home directory, it is OK to
+    create the directory automatically if it does not exist. This was
+    the original behavior. If the path does exist and contains file,
+    but does not have the special marker, that will be considered
+    an error the user needs to resolve.
+
+    For paths that lie outside the user's home directory, the user
+    must explicitly confirm that it is OK to create the directory
+    by responding to prompts (when possible) or by using the
+    `--init` option flag or `psec init` command.
+    """
+    if secrets_basedir is None:
+        secrets_basedir = get_default_secrets_basedir()
+    homedir = str(Path.home())
+    allow_create = (
+        allow_create
+        or str(secrets_basedir).startswith(homedir)
+    )
+    try:
+        is_secrets_basedir(basedir=secrets_basedir, raise_exception=True)
+    except BasedirNotFoundError as err:
+        if verbose_level > 0:
+            logger.info(str(err))
+        if not allow_create:
+            if allow_prompt:
+                client = YesNo(
+                    f"create directory '{secrets_basedir}'? ",
+                    default='n'
+                )
+                result = client.launch()
+                if not result:
+                    sys.exit("[!] cancelled creating '%s'", secrets_basedir)
+            else:
+                sys.exit(
+                    "[-] add the '--init' flag or use 'psec init' "
+                    "to initialize secrets storage"
+                )
+        secrets_basedir_create(basedir=secrets_basedir)
+        if verbose_level >= 1:
+            logger.info(
+                "[+] initialized secrets storage in '%s'",
+                secrets_basedir
+            )
+    except InvalidBasedirError as err:
+        sys.exit(str(err))
+    # else:
+    #     if verbose_level >= 1:
+    #         logger.info(
+    #             "[+] secrets storage already initialized in '%s'",
+    #             secrets_basedir
+    #         )
+    return Path(secrets_basedir)
+
+
+def get_default_environment(cwd=None):
+    """
+    Return the default environment identifier.
+
+    There are multiple ways for a user to specify the environment
+    to use for python_secrets commands. Some of these involve
+    explicit settings (e.g., via command line option, a
+    saved value in the current working directory, or an
+    environment variable) or implicitly from the name of the
+    current working directory.
+    """
+
+    #  NOTE(dittrich): I know this code has multiple return points
+    #  but it is simpler and easier to understand this way.
+    #
+    # Highest priority is inhereted environment variable.
+    environment = os.getenv('D2_ENVIRONMENT', None)
+    if environment is not None:
+        return environment
+    #
+    # Next is saved file in current working directory.
+    if cwd is None:
+        cwd = os.getcwd()
+    local_default = get_saved_default_environment(cwd=cwd)
+    if local_default not in ['', None]:
+        return local_default
+    #
+    # Lowest priority is the directory path basename.
+    return os.path.basename(cwd)
+
+
+def copyanything(src, dst):
+    """Copy anything from src to dst."""
+    try:
+        copytree(src, dst, dirs_exist_ok=True)
+    except FileExistsError as e:  # noqa
+        pass
+    except OSError as err:
+        # TODO(dittrich): This causes a pylint error
+        # Not sure what test cases would trigger this, or best fix.
+        if err.errno == os.errno.ENOTDIR:
+            copy(src, dst)
+        else:
+            raise
+    finally:
+        remove_other_perms(dst)
+
+
+def copydescriptions(src, dst):
+    """
+    Just copy the descriptions portion of an environment
+    directory from src to dst.
+    """
+
+    if not dst.endswith('.d'):
+        raise InvalidDescriptionsError(
+            f"[-] destination '{dst}' is not a descriptions "
+            "('.d') directory")
+    # Ensure destination directory exists.
+    os.makedirs(dst, exist_ok=True)
+    errors = []
+    try:
+        if src.endswith('.d') and os.path.isdir(src):
+            copytree(src, dst)
+        else:
+            raise InvalidDescriptionsError(
+                f"[-] source '{src}' is not a descriptions "
+                "('.d') directory")
+    # catch the Error from the recursive copytree so that we can
+    # continue with other files
+    except Error as err:
+        errors.extend(err.args[0])
+    except OSError as err:
+        errors.append((src, dst, str(err)))
+    if errors:
+        raise Error(errors)
+    remove_other_perms(dst)
 
 
 def umask(value):
@@ -170,6 +479,56 @@ def get_environment_paths(basedir=None):
     return results
 
 
+def is_valid_environment(env_path, verbose_level=1):
+    """
+    Check to see if this looks like a valid environment directory.
+
+    Args:
+      env_path: Path to candidate directory to test.
+      verbose_level: Verbosity level (pass from app args)
+
+    Returns:
+      A boolean indicating whether the directory appears to be a valid
+      environment directory or not based on contents including a
+      'secrets.json' file or a 'secrets.d' directory.
+    """
+    environment = os.path.split(env_path)[1]
+    contains_expected = False
+    YAML_SECRETS_FILE = str(SECRETS_FILE).replace('json', 'yml')
+    yaml_files = []
+    for root, directories, filenames in os.walk(env_path):
+        if (
+            SECRETS_FILE in filenames
+            or SECRETS_DESCRIPTIONS_DIR in directories
+        ):
+            contains_expected = True
+        if YAML_SECRETS_FILE in filenames:
+            yaml_files.append(Path(root) / YAML_SECRETS_FILE)
+        if root.endswith(SECRETS_DESCRIPTIONS_DIR):
+            yaml_files.extend([
+                os.path.join(root, filename)
+                for filename in filenames
+                if filename.endswith('.yml')
+            ])
+    for filename in yaml_files:
+        if verbose_level > 1:
+            logger.warning("[!] found '%s'", filename)
+    is_valid = (
+        os.path.exists(env_path)
+        and contains_expected
+        and len(yaml_files) == 0
+    )
+    if len(yaml_files) > 0 and verbose_level > 0:
+        logger.warning(
+            "[!] environment '%s' needs conversion (see 'psec utils yaml-to-json --help')",  # noqa
+            environment)
+    if not is_valid and verbose_level > 1:
+        logger.warning(
+            "[!] environment directory '%s' exists but looks incomplete",
+            env_path)
+    return is_valid
+
+
 def get_netblock(ip=None):
     """
     Derives the CIDR netblocks for an IP via WHOIS lookup.
@@ -185,6 +544,55 @@ def get_netblock(ip=None):
     obj = IPWhois(ip)
     results = obj.lookup_whois()
     return results['asn_cidr']
+
+
+def permissions_check(
+    basedir='.',
+    verbose_level=0,
+):
+    """Check for presense of pernicious overly-permissive permissions."""
+    # File permissions on Cygwin/Windows filesystems don't work the
+    # same way as Linux. Don't try to change them.
+    # TODO(dittrich): Is there a Better way to handle perms on Windows?
+    fs_type = get_fs_type(basedir)
+    if fs_type in ['NTFS', 'FAT', 'FAT32']:
+        msg = (
+            f"[-] {basedir} has file system type '{fs_type}': "
+            "skipping permissions check"
+        )
+        logger.info(msg)
+        return
+    any_other_perms = stat.S_IROTH | stat.S_IWOTH | stat.S_IXOTH
+    for root, dirs, files in os.walk(basedir, topdown=True):
+        for name in files:
+            path = os.path.join(root, name)
+            try:
+                st = os.stat(path)
+                perms = st.st_mode & 0o777
+                open_perms = (perms & any_other_perms) != 0
+                if (open_perms and verbose_level >= 1):
+                    print(
+                        f"[!] file '{path}' is mode {oct(perms)}",
+                        file=sys.stderr
+                    )
+            except OSError:
+                pass
+            for name in dirs:
+                path = os.path.join(root, name)
+                try:
+                    st = os.stat(path)
+                    perms = st.st_mode & 0o777
+                    open_perms = (perms & any_other_perms) != 0
+                    if (open_perms and verbose_level >= 1):
+                        print(
+                            (
+                                f"[!] directory '{path}' is mode "
+                                f"{oct(perms)}"
+                            ),
+                            file=sys.stderr
+                        )
+                except OSError:
+                    pass
 
 
 def remove_other_perms(dst):

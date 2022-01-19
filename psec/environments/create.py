@@ -5,19 +5,10 @@ Create environment(s).
 """
 
 import logging
-from pathlib import Path
 
-# TODO(dittrich): https://github.com/Mckinsey666/bullet/issues/2
-# Workaround until bullet has Windows missing 'termios' fix.
-try:
-    from bullet import YesNo
-except ModuleNotFoundError:
-    pass
 from cliff.command import Command
-from psec.secrets_environment import (
-    get_default_environment,
-    SecretsEnvironment,
-)
+from psec.secrets_environment import SecretsEnvironment
+from psec.utils import get_default_environment
 
 
 class EnvironmentsCreate(Command):
@@ -73,11 +64,7 @@ class EnvironmentsCreate(Command):
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
         how = parser.add_mutually_exclusive_group(required=False)
-        try:
-            default_environment = self.app.environment
-        except AttributeError:
-            # Make sphinx cliff extension happy.
-            default_environment = get_default_environment()
+        default_environment = get_default_environment()
         how.add_argument(
             '-A', '--alias',
             action='store',

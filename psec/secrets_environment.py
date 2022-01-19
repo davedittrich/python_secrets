@@ -4,7 +4,6 @@
 Secrets environment class and related variables, functions.
 """
 
-import argparse
 import base64
 import binascii
 import hashlib
@@ -20,29 +19,30 @@ import re
 # directly here (rather than using 'from ... import') to avoid the conflict.
 import secrets
 #
-import stat
-import sys
 import uuid
 
 from collections import OrderedDict
 from pathlib import Path
 from shutil import copy
-from shutil import copytree
-from shutil import Error
 from stat import S_IMODE
 from xkcdpass import xkcd_password as xp
 
 from psec.exceptions import (
     BasedirNotFoundError,
-    InvalidBasedirError,
-    InvalidDescriptionsError,
     SecretNotFoundError,
 )
 from psec.utils import (
+    copydescriptions,
     find,
+    get_default_environment,
+    get_default_secrets_basedir,
     get_files_from_path,
-    get_fs_type,
+    is_secrets_basedir,
     remove_other_perms,
+    DEFAULT_MODE,
+    Memoize,
+    SECRETS_DESCRIPTIONS_DIR,
+    SECRETS_FILE,
 )
 
 
@@ -122,9 +122,7 @@ SECRET_ATTRIBUTES = [
     'Prompt',
     'Options'
 ]
-DEFAULT_MODE = 0o710
-DELIMITER = '.'
-MARKER = '.psec'
+
 # XKCD password defaults
 # See: https://www.unix-ninja.com/p/your_xkcd_passwords_are_pwned
 WORDS = 4
@@ -132,215 +130,7 @@ MIN_WORDS_LENGTH = 3
 MAX_WORDS_LENGTH = 6
 MIN_ACROSTIC_LENGTH = 6
 MAX_ACROSTIC_LENGTH = 6
-SECRETS_FILE = 'secrets.json'
-SECRETS_DESCRIPTIONS_DIR = f'{os.path.splitext(SECRETS_FILE)[0]}.d'
-
-
-def natural_number(value):
-    """
-    Tests for a natural number.
-
-    Args:
-      value: The value to test
-
-    Returns:
-      A boolean indicating whether the value is a natural number or not.
-    """
-
-    ivalue = int(value)
-    if ivalue <= 0:
-        raise argparse.ArgumentTypeError(
-            f"[-] '{value}' is not a positive integer")
-    return ivalue
-
-
-# TODO(dittrich): Improve this?
-def _is_default(a, b):
-    """
-    Return "Yes" or "No" depending on whether e is the default
-    environment or not.
-    """
-    return "Yes" if a == b else "No"
-
-
-def get_local_default_file(cwd=None):
-    """Returns the path to the local identifier file."""
-    # TODO(dittrich): May need to do this differently to support
-    # Windows file systems.
-    if cwd is None:
-        cwd = os.getcwd()
-    return Path(cwd) / '.python_secrets_environment'
-
-
-def save_default_environment(
-    environment=None,
-    cwd=None
-):
-    """Save environment identifier to local file for defaulting."""
-    env_file = get_local_default_file(cwd=cwd)
-    with open(env_file, 'w') as f_out:
-        f_out.write('{0}\n'.format(str(environment)))
-    return True
-
-
-def clear_saved_default_environment(cwd=None):
-    """Remove saved default environment file."""
-    env_file = get_local_default_file(cwd=cwd)
-    if os.path.exists(env_file):
-        os.remove(env_file)
-        return True
-    else:
-        return False
-
-
-def get_saved_default_environment(cwd=None):
-    """Return environment ID value saved in local file or None."""
-    env_file = get_local_default_file(cwd=cwd)
-    saved_default = None
-    if os.path.exists(env_file):
-        with open(env_file, 'r') as f:
-            saved_default = f.read().replace('\n', '')
-    return saved_default
-
-
-def get_default_secrets_basedir():
-    """
-    Return the default secrets base directory path.
-    """
-    dirname = '.secrets' if os.sep == '/' else 'secrets'
-    default_basedir = Path.home() / dirname
-    return Path(
-        os.getenv('D2_SECRETS_BASEDIR', default_basedir)
-    )
-
-
-def get_default_environment(cwd=None):
-    """
-    Return the default environment identifier.
-
-    There are multiple ways for a user to specify the environment
-    to use for python_secrets commands. Some of these involve
-    explicit settings (e.g., via command line option, a
-    saved value in the current working directory, or an
-    environment variable) or implicitly from the name of the
-    current working directory.
-    """
-
-    #  NOTE(dittrich): I know this code has multiple return points
-    #  but it is simpler and easier to understand this way.
-    #
-    # Highest priority is inhereted environment variable.
-    environment = os.getenv('D2_ENVIRONMENT', None)
-    if environment is not None:
-        return environment
-    #
-    # Next is saved file in current working directory.
-    if cwd is None:
-        cwd = os.getcwd()
-    local_default = get_saved_default_environment(cwd=cwd)
-    if local_default not in ['', None]:
-        return local_default
-    #
-    # Lowest priority is the directory path basename.
-    return os.path.basename(cwd)
-
-
-def copyanything(src, dst):
-    """Copy anything from src to dst."""
-    try:
-        copytree(src, dst, dirs_exist_ok=True)
-    except FileExistsError as e:  # noqa
-        pass
-    except OSError as err:
-        # TODO(dittrich): This causes a pylint error
-        # Not sure what test cases would trigger this, or best fix.
-        if err.errno == os.errno.ENOTDIR:
-            copy(src, dst)
-        else:
-            raise
-    finally:
-        remove_other_perms(dst)
-
-
-def copydescriptions(src, dst):
-    """
-    Just copy the descriptions portion of an environment
-    directory from src to dst.
-    """
-
-    if not dst.endswith('.d'):
-        raise InvalidDescriptionsError(
-            f"[-] destination '{dst}' is not a descriptions "
-            "('.d') directory")
-    # Ensure destination directory exists.
-    os.makedirs(dst, exist_ok=True)
-    errors = []
-    try:
-        if src.endswith('.d') and os.path.isdir(src):
-            copytree(src, dst)
-        else:
-            raise InvalidDescriptionsError(
-                f"[-] source '{src}' is not a descriptions "
-                "('.d') directory")
-    # catch the Error from the recursive copytree so that we can
-    # continue with other files
-    except Error as err:
-        errors.extend(err.args[0])
-    except OSError as err:
-        errors.append((src, dst, str(err)))
-    if errors:
-        raise Error(errors)
-    remove_other_perms(dst)
-
-
-def is_valid_environment(env_path, verbose_level=1):
-    """
-    Check to see if this looks like a valid environment directory.
-
-    Args:
-      env_path: Path to candidate directory to test.
-      verbose_level: Verbosity level (pass from app args)
-
-    Returns:
-      A boolean indicating whether the directory appears to be a valid
-      environment directory or not based on contents including a
-      'secrets.json' file or a 'secrets.d' directory.
-    """
-    environment = os.path.split(env_path)[1]
-    contains_expected = False
-    YAML_SECRETS_FILE = str(SECRETS_FILE).replace('json', 'yml')
-    yaml_files = []
-    for root, directories, filenames in os.walk(env_path):
-        if (
-            SECRETS_FILE in filenames
-            or SECRETS_DESCRIPTIONS_DIR in directories
-        ):
-            contains_expected = True
-        if YAML_SECRETS_FILE in filenames:
-            yaml_files.append(Path(root) / YAML_SECRETS_FILE)
-        if root.endswith(SECRETS_DESCRIPTIONS_DIR):
-            yaml_files.extend([
-                os.path.join(root, filename)
-                for filename in filenames
-                if filename.endswith('.yml')
-            ])
-    for filename in yaml_files:
-        if verbose_level > 1:
-            logger.warning("[!] found '%s'", filename)
-    is_valid = (
-        os.path.exists(env_path)
-        and contains_expected
-        and len(yaml_files) == 0
-    )
-    if len(yaml_files) > 0 and verbose_level > 0:
-        logger.warning(
-            "[!] environment '%s' needs conversion (see 'psec utils yaml-to-json --help')",  # noqa
-            environment)
-    if not is_valid and verbose_level > 1:
-        logger.warning(
-            "[!] environment directory '%s' exists but looks incomplete",
-            env_path)
-    return is_valid
+DELIMITER = '.'
 
 
 def is_generable(secret_type=None):
@@ -375,16 +165,18 @@ def generate_secret(secret_type=None, *arguments, **kwargs):
     if secret_type == "boolean":  # nosec
         return None
     if secret_type == 'password':  # nosec
-        return generate_password(unique,
-                                 acrostic,
-                                 numwords,
-                                 case,
-                                 delimiter,
-                                 min_words_length,
-                                 max_words_length,
-                                 min_acrostic_length,
-                                 max_acrostic_length,
-                                 wordfile)
+        return generate_password(
+            unique,
+            acrostic,
+            numwords,
+            case,
+            delimiter,
+            min_words_length,
+            max_words_length,
+            min_acrostic_length,
+            max_acrostic_length,
+            wordfile,
+        )
     if secret_type == 'crypt_6':  # nosec
         return generate_crypt6(unique)
     if secret_type == 'token_hex':  # nosec
@@ -402,37 +194,19 @@ def generate_secret(secret_type=None, *arguments, **kwargs):
     raise TypeError(f"Secret type '{secret_type}' is not supported")
 
 
-class Memoize:
-    """Memoize(fn) - an instance which acts like fn but memoizes its arguments.
-
-       Will only work on functions with non-mutable arguments. Hacked to assume
-       that argument to function is whether to cache or not, allowing all
-       secrets of a given type to be set to the same value.
-    """
-
-    def __init__(self, fn):
-        self.fn = fn
-        self.memo = {}
-
-    def __call__(self, *args):
-        if args[0] is True:
-            return self.fn(*args)
-        if args not in self.memo:
-            self.memo[args] = self.fn(*args)
-        return self.memo[args]
-
-
 @Memoize
-def generate_password(unique,
-                      acrostic,
-                      numwords,
-                      case,
-                      delimiter,
-                      min_words_length,
-                      max_words_length,
-                      min_acrostic_length,
-                      max_acrostic_length,
-                      wordfile):
+def generate_password(
+    unique,
+    acrostic,
+    numwords,
+    case,
+    delimiter,
+    min_words_length,
+    max_words_length,
+    min_acrostic_length,
+    max_acrostic_length,
+    wordfile,
+):
     """Generate an XKCD style password"""
 
     # Create a wordlist from the default wordfile.
@@ -536,34 +310,6 @@ def generate_uuid4(unique=False):
 def generate_random_base64(unique=False, size=DEFAULT_SIZE):
     """Generate random base64 encoded string of 'size' bytes"""
     return base64.b64encode(os.urandom(size)).decode('UTF-8')
-
-
-def is_secrets_basedir(basedir=None, raise_exception=True):
-    """
-    Validate secrets base directory by presense of a marker file.
-
-    Returns False if the directory either does not exist or does not
-    contain the expected marker file, or True otherwise.
-    """
-    result = False
-    if basedir is None:
-        if raise_exception:
-            raise RuntimeError("[-] no basedir was specified")
-    basedir_path = Path(basedir)
-    marker_path = Path(basedir) / MARKER
-    if not basedir_path.exists():
-        if raise_exception:
-            raise BasedirNotFoundError(
-                f"[-] directory '{basedir}' does not exist"
-            )
-    elif not marker_path.exists():
-        if raise_exception:
-            raise InvalidBasedirError(
-                f"[-] '{basedir}' is not a valid psec base directory"
-            )
-    else:
-        result = True
-    return result
 
 
 class SecretsEnvironment(object):
@@ -700,51 +446,6 @@ class SecretsEnvironment(object):
         """Return boolean reflecting changed secrets."""
         return self._changed
 
-    @classmethod
-    def permissions_check(
-        cls,
-        basedir='.',
-        verbose_level=0,
-    ):
-        """Check for presense of pernicious overly-permissive permissions."""
-        # File permissions on Cygwin/Windows filesystems don't work the
-        # same way as Linux. Don't try to change them.
-        # TODO(dittrich): Is there a Better way to handle perms on Windows?
-        is_secrets_basedir(basedir)
-        fs_type = get_fs_type(basedir)
-        if fs_type in ['NTFS', 'FAT', 'FAT32']:
-            msg = (f"[-] {basedir} has file system type '{fs_type}': "
-                   "skipping permissions check")
-            cls.logger.info(msg)
-            return False
-        any_other_perms = stat.S_IROTH | stat.S_IWOTH | stat.S_IXOTH
-        for root, dirs, files in os.walk(basedir, topdown=True):
-            for name in files:
-                path = os.path.join(root, name)
-                try:
-                    st = os.stat(path)
-                    perms = st.st_mode & 0o777
-                    open_perms = (perms & any_other_perms) != 0
-                    if (open_perms and verbose_level >= 1):
-                        print(f"[!] file '{path}' is mode {oct(perms)}",
-                              file=sys.stderr)
-                except OSError:
-                    pass
-                for name in dirs:
-                    path = os.path.join(root, name)
-                    try:
-                        st = os.stat(path)
-                        perms = st.st_mode & 0o777
-                        open_perms = (perms & any_other_perms) != 0
-                        if (open_perms and verbose_level >= 1):
-                            print((
-                                    f"[!] directory '{path}' is mode "
-                                    f"{oct(perms)}"
-                                  ),
-                                  file=sys.stderr)
-                    except OSError:
-                        pass
-
     # TODO(dittrich): FIX Cere call
     def get_secrets_descriptions_dir(self):
         """Return the path to the drop-in secrets description directory"""
@@ -758,8 +459,7 @@ class SecretsEnvironment(object):
         """Return the basename of the current secrets file"""
         return os.path.basename(self._secrets_file)
 
-    # def get_secrets_basedir(self, init=False, mode=DEFAULT_MODE):
-    def get_secrets_basedir(self):
+    def get_secrets_basedir(self, init=False, mode=DEFAULT_MODE):
         """
         Returns the directory path root for secrets storage and definitions.
 
@@ -787,24 +487,6 @@ class SecretsEnvironment(object):
     def secrets_basedir_exists(self):
         """Return whether secrets root directory exists"""
         return self._secrets_basedir.exists()
-
-    def secrets_basedir_create(
-        self,
-        basedir=None,
-        mode=DEFAULT_MODE,
-    ):
-        """Create secrets root directory"""
-        if basedir is None:
-            raise RuntimeError("[-] a base directory is required")
-        _secrets_basedir = Path(basedir)
-        _secrets_basedir.mkdir(
-            parents=True,
-            mode=mode,
-            exist_ok=True
-        )
-        marker = _secrets_basedir / MARKER
-        marker.touch(mode=mode, exist_ok=True)
-        return _secrets_basedir
 
     def get_environment_path(self, env=None, subdir=None, host=None):
         """Returns the absolute path to secrets environment directory
