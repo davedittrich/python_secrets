@@ -120,6 +120,7 @@ class SecretsSet(Command):
         ):
             raise RuntimeError('[-] no secrets specified to be set')
         se = self.app.secrets
+        se.requires_environment()
         se.read_secrets_and_descriptions()
         # TODO(dittrich): Use Variable map like this elsewhere
         variables = dict(se.Variable)

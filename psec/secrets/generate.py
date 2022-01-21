@@ -122,6 +122,7 @@ class SecretsGenerate(Command):
 
     def take_action(self, parsed_args):
         self.logger.debug('[*] generating secrets')
+        self.app.secrets.requires_environment()
         self.app.secrets.read_secrets_and_descriptions()
         # If no secrets specified, default to all secrets
         to_change = parsed_args.arg \
