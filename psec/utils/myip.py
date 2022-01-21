@@ -4,7 +4,6 @@
 import textwrap
 
 # External imports
-import argparse
 import ipaddress
 import logging
 import random
@@ -22,9 +21,10 @@ logger = logging.getLogger(__name__)
 # to ensure cliff formatting is not messed up, we need to append this
 # text to the epilog with the string '+' operator.
 QUOTA_WARNING = textwrap.dedent("""
-    WARNING: Any of these sites may limit the number of queries allowed
-    from a given source in a given period of time and may temporarily
-    block or reject attempts to use their service beyond the quota limit.
+    WARNING: Any of the sites used by this command may limit the number
+    of queries allowed from a given source in a given period of time and
+    may temporarily block or reject attempts to use their service beyond
+    the quota limit.
 """)
 
 
@@ -105,6 +105,7 @@ def get_myip_methods(include_random=False):
 
 
 def get_myip(method='random'):
+    """Return current routable source IP address."""
     methods = get_myip_methods()
     if method == 'random':
         method = random.choice(methods)  # nosec
