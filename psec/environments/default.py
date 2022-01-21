@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import logging
-import os
 
 # TODO(dittrich): https://github.com/Mckinsey666/bullet/issues/2
 # Workaround until bullet has Windows missing 'termios' fix.
