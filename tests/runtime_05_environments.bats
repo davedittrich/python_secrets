@@ -1,7 +1,6 @@
 load test_helper
 
 setup_file() {
-    remove_basedir
     clean_environments alias clone testenv ${D2_ENVIRONMENT}renamed
 }
 
@@ -11,9 +10,6 @@ setup() {
 
 teardown() {
     clean_environments alias clone testenv ${D2_ENVIRONMENT}renamed
-}
-
-teardown_file() {
     remove_basedir
 }
 

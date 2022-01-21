@@ -21,11 +21,6 @@ export DONOTKEEP_DIR="${BATS_TMPDIR}/bats_donotkeep"
 # Ensure cleanup on interrupt
 trap "rm -rf ${KEEP_DIR} ${DONOTKEEP_DIR}" EXIT INT TERM QUIT
 
-setup_file() {
-    remove_basedir
-    ensure_basedir
-}
-
 setup() {
     for DIR in ${KEEP_DIR} ${DONOTKEEP_DIR}; do
         rm -rf ${DIR}
@@ -37,9 +32,6 @@ setup() {
 
 teardown() {
     rm -rf ${KEEP_DIR} ${DONOTKEEP_DIR}
-}
-
-teardown_file() {
     remove_basedir
 }
 

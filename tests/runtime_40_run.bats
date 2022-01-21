@@ -1,19 +1,11 @@
 load test_helper
 
-setup_file() {
-    remove_basedir
-    ensure_basedir
-}
-
 setup() {
+    ensure_basedir
     run $PSEC --init environments create $D2_ENVIRONMENT --clone-from tests/secrets.d 1>&2
 }
 
 teardown() {
-    run $PSEC environments delete $D2_ENVIRONMENT --force 1>&2
-}
-
-teardown_file() {
     remove_basedir
 }
 
@@ -33,17 +25,11 @@ teardown_file() {
 }
 
 @test "'psec --umask 0o007 succeeds'" {
-    # Needs an environment to work properly.
-    run $PSEC init
-    run $PSEC -vvv environments create testenv --clone-from tests/secrets.d 1>&2
     run $PSEC -e testenv --umask 0o007 run umask 1>&2
     assert_output "0007"
 }
 
 @test "'psec --umask 0o777 succeeds'" {
-    # Needs an environment to work properly.
-    run $PSEC init
-    run $PSEC -vvv environments create testenv --clone-from tests/secrets.d 1>&2
     run $PSEC -e testenv --umask 0o777 run umask 1>&2
     assert_output "0777"
 }

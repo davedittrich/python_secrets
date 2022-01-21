@@ -2,20 +2,12 @@ load test_helper
 
 export TEST_PASSWORD="mummy_unbaked_tabby_thespian"
 
-setup_file() {
-    remove_basedir
-    ensure_basedir
-}
-
 setup() {
     run $PSEC --init environments create $D2_ENVIRONMENT --clone-from tests/secrets.d 1>&2
 }
 
 teardown() {
     clean_environments
-}
-
-teardown_file() {
     remove_basedir
 }
 

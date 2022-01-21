@@ -1,18 +1,10 @@
 load test_helper
 
-setup_file() {
-    remove_basedir
-}
-
 setup() {
     remove_basedir
 }
 
 teardown() {
-    remove_basedir
-}
-
-teardown_file() {
     remove_basedir
 }
 
