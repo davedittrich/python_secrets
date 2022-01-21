@@ -2,12 +2,21 @@ load test_helper
 
 export TEST_PASSWORD="mummy_unbaked_tabby_thespian"
 
+setup_file() {
+    remove_basedir
+    ensure_basedir
+}
+
 setup() {
-    run $PSEC environments create $D2_ENVIRONMENT --clone-from tests/secrets.d 1>&2
+    run $PSEC --init environments create $D2_ENVIRONMENT --clone-from tests/secrets.d 1>&2
 }
 
 teardown() {
-    run $PSEC environments delete $D2_ENVIRONMENT --force 1>&2
+    clean_environments
+}
+
+teardown_file() {
+    remove_basedir
 }
 
 @test "'psec secrets set' without arguments fails" {
@@ -22,36 +31,32 @@ teardown() {
     assert_output --partial "$TEST_PASSWORD"
 }
 
-@test "'psec secrets generate' sets variables properly" {
-    run $PSEC secrets show --no-redact consul_key hypriot_password myapp_client_psk -f value
-    assert_output 'hypriot_password None hypriot_password
+@test "'psec secrets set --from-options' sets variables properly" {
+    run $PSEC secrets set --from-options
+    run $PSEC secrets show --no-redact -f value hypriot_user hypriot_password hypriot_hostname hypriot_wifi_country consul_key myapp_ondemand_wifi myapp_optional_setting
+    assert_output 'hypriot_user pirate hypriot_user
+hypriot_password None hypriot_password
+hypriot_hostname hypriot hypriot_hostname
+hypriot_wifi_country US hypriot_wifi_country
 consul_key None consul_key
-myapp_client_psk None DEMO_client_psk'
+myapp_ondemand_wifi true DEMO_ondemand_wifi
+myapp_optional_setting false DEMO_options_setting'
+}
+
+@test "'psec secrets generate' sets variables properly" {
+    run $PSEC secrets show --no-redact consul_key hypriot_password myapp_client_psk -f csv
+    assert_output '"Variable","Value","Export"
+"hypriot_password","","hypriot_password"
+"consul_key","","consul_key"
+"myapp_client_psk","","DEMO_client_psk"'
     run $PSEC secrets generate consul_key hypriot_password myapp_client_psk
     run $PSEC secrets get consul_key
+    refute_output 'None'
     assert_output --partial "="
     run $PSEC secrets show --no-redact hypriot_password
     refute_output 'None'
     run $PSEC secrets get myapp_client_psk
     assert_output 'None'
-}
-
-@test "'psec secrets set --from-options' sets variables properly" {
-    run $PSEC secrets set --from-options
-    run $PSEC secrets get hypriot_hostname
-    assert_output "hypriot"
-    run $PSEC secrets get hypriot_user
-    assert_output "pirate"
-    run $PSEC secrets get hypriot_password
-    assert_output "None"
-    run $PSEC secrets get hypriot_wifi_country
-    assert_output "US"
-    run $PSEC secrets get myapp_ondemand_wifi
-    assert_output "true"
-    run $PSEC secrets get myapp_optional_setting
-    assert_output "false"
-    run $PSEC secrets get consul_key
-    assert_output "None"
 }
 
 @test "'psec secrets generate --from-options' sets variables properly" {
@@ -67,7 +72,7 @@ myapp_client_psk None DEMO_client_psk'
     run $PSEC secrets get myapp_optional_setting
     assert_output "false"
     run $PSEC secrets get consul_key
-    refute_output ""
+    refute_output "None"
 }
 
 @test "'psec secrets show' table header is correct" {

@@ -1,21 +1,20 @@
 load test_helper
 
 setup_file() {
+    remove_basedir
     clean_environments alias clone testenv ${D2_ENVIRONMENT}renamed
 }
 
 setup() {
-    run $PSEC environments create --clone-from tests/secrets.d 1>&2
+    run $PSEC --init environments create --clone-from tests/secrets.d 1>&2
 }
 
 teardown() {
     clean_environments alias clone testenv ${D2_ENVIRONMENT}renamed
 }
 
-@test "'psec environments delete ${D2_ENVIRONMENT}' without TTY and '--force' fails" {
-    run $PSEC -vvv environments delete ${D2_ENVIRONMENT} 1>&2 </dev/null
-    assert_failure
-    assert_output --partial "must use '--force' flag to delete an environment"
+teardown_file() {
+    remove_basedir
 }
 
 @test "'psec environments delete ${D2_ENVIRONMENT} --force' deletes environment" {
@@ -205,20 +204,12 @@ teardown() {
 }
 
 @test "'psec environments list' works" {
-    run $PSEC environments list
-    assert_output '+-------------+---------+
-| Environment | Default |
-+-------------+---------+
-| psectest    | Yes     |
-+-------------+---------+'
+    run $PSEC environments list -f value
+    assert_output "${D2_ENVIRONMENT} Yes"
     run $PSEC -vvv environments create clone --clone-from tests/secrets.d 1>&2
-    run $PSEC environments list
-    assert_output '+-------------+---------+
-| Environment | Default |
-+-------------+---------+
-| clone       | No      |
-| psectest    | Yes     |
-+-------------+---------+'
+    run $PSEC environments list -f value
+    assert_output "${D2_ENVIRONMENT} Yes
+clone No"
 }
 
 @test "'psec -d $D2_SECRETS_BASEDIR environments list' works" {
@@ -227,12 +218,8 @@ teardown() {
     # for command line argument) for this specific test.
     #
     BASEDIR=$D2_SECRETS_BASEDIR
-    run bash -c "unset D2_SECRETS_BASEDIR; $PSEC -d $BASEDIR environments list"
-    assert_output '+-------------+---------+
-| Environment | Default |
-+-------------+---------+
-| psectest    | Yes     |
-+-------------+---------+'
+    run bash -c "unset D2_SECRETS_BASEDIR; $PSEC -d $BASEDIR environments list -f value"
+    assert_output "${D2_ENVIRONMENT} Yes"
 }
 
 @test "'psec environments list' does not show aliases" {
