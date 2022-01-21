@@ -67,7 +67,7 @@ class Test_SecretsEnvironment_general(unittest.TestCase):
                     del os.environ[v]
                 except KeyError as e:  # noqa
                     pass
-        self.secrets_env = SecretsEnvironment()
+        self.secrets_env = SecretsEnvironment(allow_create=True)
 
     def tearDown(self):
         self.secrets_env = None
@@ -126,7 +126,7 @@ class Test_SecretsEnvironment_no_env_vars(unittest.TestCase):
                     del os.environ[v]
                 except KeyError as e:  # noqa
                     pass
-            self.secrets_env = SecretsEnvironment()
+            self.secrets_env = SecretsEnvironment(allow_create=True)
 
     def tearDown(self):
         pass
@@ -180,7 +180,10 @@ class Test_SecretsEnvironment_with_env_vars(unittest.TestCase):
                 keys_dir=self.keys_dir,
                 host=self.host
             )
-            self.secrets_env = SecretsEnvironment(environment=self.envname)  # noqa
+            self.secrets_env = SecretsEnvironment(
+                environment=self.envname,
+                allow_create=True
+            )  # noqa
 
     def tearDown(self):
         pass
@@ -240,7 +243,8 @@ class Test_SecretsEnvironment_args(unittest.TestCase):
             )
             self.secrets_env = SecretsEnvironment(
                 environment=self.envname,
-                secrets_basedir=self.basedir
+                secrets_basedir=self.basedir,
+                allow_create=True,
             )
 
     def tearDown(self):
