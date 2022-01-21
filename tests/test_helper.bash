@@ -13,7 +13,9 @@ export PSEC="python -m psec.__main__ --debug"
 function ensure_basedir() {
     if [ ! -f "${D2_SECRETS_BASEDIR}" ]; then
         mkdir -p "${D2_SECRETS_BASEDIR}"
+        chmod 700 "${D2_SECRETS_BASEDIR}"
         touch "${D2_SECRETS_BASEDIR}/.psec"
+        chmod 600 "${D2_SECRETS_BASEDIR}/.psec"
     fi
 }
 
