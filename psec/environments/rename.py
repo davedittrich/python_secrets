@@ -51,7 +51,6 @@ class EnvironmentsRename(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.logger.debug('[*] renaming environment')
         basedir = self.app.secrets.get_secrets_basedir()
         source = parsed_args.source[0]
         source_path = os.path.join(basedir, source)

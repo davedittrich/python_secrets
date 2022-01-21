@@ -68,7 +68,6 @@ class SecretsDescribe(Lister):
         return parser
 
     def take_action(self, parsed_args):
-        self.logger.debug('[*] describing secrets')
         se = self.app.secrets
         if parsed_args.types:
             columns = [k.title() for k in SECRET_TYPES[0].keys()]

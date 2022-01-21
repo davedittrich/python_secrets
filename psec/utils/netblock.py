@@ -36,7 +36,6 @@ class Netblock(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.logger.debug('[*] getting netblock CIDR(s) for IP')
         if len(parsed_args.ip) == 0:
             # TODO(dittrich): Just use random for now
             # until refactoring out the choice method.

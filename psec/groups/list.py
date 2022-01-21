@@ -29,7 +29,6 @@ class GroupsList(Lister):
     #     return parser
 
     def take_action(self, parsed_args):
-        self.logger.debug('[*] listing secret groups')
         se = self.app.secrets
         se.requires_environment(path_only=True)
         se.read_secrets_descriptions()

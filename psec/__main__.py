@@ -266,6 +266,7 @@ class PythonSecretsApp(App):
                 self.secrets_basedir,
                 verbose_level=self.options.verbose_level,
             )
+        self.logger.debug("[*] running command '%s'", cmd.cmd_name)
 
     def clean_up(self, cmd, result, err):
         self.logger.debug("[-] clean_up command '%s'", cmd.cmd_name)

@@ -165,7 +165,6 @@ class SecretsCreate(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.logger.debug('[*] creating secrets')
         # Does an environment already exist?
         if not stdin.isatty():
             raise RuntimeError(

@@ -94,7 +94,6 @@ class EnvironmentsCreate(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.logger.debug('[*] creating environment(s)')
         secrets_basedir = self.app.secrets_basedir
         if parsed_args.alias is not None:
             if len(parsed_args.env) != 1:

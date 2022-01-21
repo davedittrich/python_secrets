@@ -189,7 +189,6 @@ class MyIP(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.logger.debug('[*] getting source IP address')
         interface = ipaddress.ip_interface(
             get_myip(method=parsed_args.method))
         if parsed_args.cidr:
@@ -250,7 +249,6 @@ class MyIPMethods(Lister):
         return parser
 
     def take_action(self, parsed_args):
-        self.logger.debug('[*] listing IP address discovery methods')
         columns = ('Method', 'Type', 'Source')
         data = []
         methods = (parsed_args.method

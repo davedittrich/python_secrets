@@ -81,7 +81,6 @@ class SecretsDelete(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.logger.debug('[*] deleting secrets')
         se = self.app.secrets
         se.requires_environment()
         se.read_secrets_and_descriptions()

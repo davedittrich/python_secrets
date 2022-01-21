@@ -58,7 +58,6 @@ class GroupsCreate(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.logger.debug('[*] creating group')
         se = self.app.secrets
         # Creating a new group in an empty environment that exists is OK.
         se.requires_environment(path_only=True)

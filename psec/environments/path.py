@@ -90,7 +90,6 @@ class EnvironmentsPath(Command):
             print(item)
 
     def take_action(self, parsed_args):
-        self.logger.debug('[*] returning environment path')
         environment = self.app.options.environment
         e = SecretsEnvironment(environment)
         if parsed_args.tmpdir:

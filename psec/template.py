@@ -52,7 +52,6 @@ class Template(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.logger.debug('[*] templating file(s)')
         se = self.app.secrets
         if parsed_args.no_env:
             template_vars = dict()

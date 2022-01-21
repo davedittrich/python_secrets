@@ -82,7 +82,6 @@ class EnvironmentsDelete(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.logger.debug('[*] deleting environment')
         se = self.app.secrets
         choice = None
         if parsed_args.environment is not None:

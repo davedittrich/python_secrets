@@ -35,7 +35,6 @@ class SecretsPath(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.logger.debug('[*] returning secrets path')
         e = SecretsEnvironment(environment=parsed_args.environment)
         print(e.get_secrets_file_path())
 

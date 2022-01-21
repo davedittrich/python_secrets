@@ -31,7 +31,6 @@ class GroupsPath(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.logger.debug('[*] returning groups path')
         e = SecretsEnvironment(environment=parsed_args.environment)
         print(e.get_descriptions_path())
 

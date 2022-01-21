@@ -50,7 +50,6 @@ class SetAWSCredentials(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.logger.debug('[*] setting AWS CLI IAM user credentials')
         se = self.app.secrets
         se.requires_environment()
         se.read_secrets_and_descriptions()

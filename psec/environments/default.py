@@ -89,7 +89,6 @@ class EnvironmentsDefault(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.logger.debug('[*] managing localized environment default')
         if parsed_args.unset:
             if parsed_args.environment is not None:
                 raise RuntimeError("[-] '--unset' does not take an argument")

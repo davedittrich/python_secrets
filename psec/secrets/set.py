@@ -112,7 +112,6 @@ class SecretsSet(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.logger.debug('[*] setting secrets')
         if (
             len(parsed_args.arg) == 0
             and not parsed_args.undefined

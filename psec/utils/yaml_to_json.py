@@ -144,7 +144,6 @@ class YAMLToJSON(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.logger.debug('[*] converting from YAML to JSON file format')
         if '-' in parsed_args.arg and parsed_args.convert:
             raise RuntimeError('[-] stdin cannot be used with ``--convert``')
         for arg in parsed_args.arg:

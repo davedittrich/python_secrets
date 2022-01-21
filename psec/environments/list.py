@@ -76,7 +76,6 @@ class EnvironmentsList(Lister):
         return parser
 
     def take_action(self, parsed_args):
-        self.logger.debug('[*] listing environment(s)')
         default_env = get_default_environment()
         columns = (['Environment', 'Default'])
         if parsed_args.aliasing:

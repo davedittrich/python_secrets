@@ -94,7 +94,6 @@ class TfOutput(Lister):
         return parser
 
     def take_action(self, parsed_args):
-        self.logger.debug('[*] getting terraform output')
         se = self.app.secrets
         columns = ('Variable', 'Value')
         data = list()

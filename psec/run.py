@@ -93,7 +93,6 @@ class Run(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.logger.debug('[*] running command')
         se = self.app.secrets
         cmd = " ".join(
             [

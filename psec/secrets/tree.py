@@ -46,7 +46,6 @@ class SecretsTree(Command):
         return parser
 
     def take_action(self, parsed_args):
-        self.logger.debug('[*] outputting secrets tree')
         environment = parsed_args.environment
         if environment is None:
             environment = self.app.options.environment

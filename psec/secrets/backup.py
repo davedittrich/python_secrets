@@ -39,7 +39,6 @@ class SecretsBackup(Command):
     #     return parser
 
     def take_action(self, parsed_args):
-        self.logger.debug('[*] backup secrets')
         secrets = self.app.secrets
         secrets.requires_environment()
         backups_dir = os.path.join(
