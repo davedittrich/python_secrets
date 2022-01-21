@@ -996,7 +996,7 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "psec utils yaml-to-json --convert tests/secrets.d",
+            "name": "psec utils yaml-to-json --convert /tmp/yamlsecrets",
             "type": "python",
             "request": "launch",
             "module": "psec.__main__",
@@ -1005,7 +1005,7 @@
                 "utils",
                 "yaml-to-json",
                 "--convert",
-                "tests/secrets.d"
+                "/tmp/yamlsecrets"
             ],
             "stopOnEntry": false,
             "console": "integratedTerminal"

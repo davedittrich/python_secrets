@@ -150,9 +150,11 @@ class YAMLToJSON(Command):
         for arg in parsed_args.arg:
             path = os.path.abspath(arg) if arg != '-' else arg
             if parsed_args.convert:
-                update_from_yaml(path=path,
-                                 keep_original=parsed_args.keep_original,
-                                 verbose=(self.app_args.verbose_level >= 1))
+                update_from_yaml(
+                    path=path,
+                    keep_original=parsed_args.keep_original,
+                    verbose=(self.app_args.verbose_level >= 1)
+                )
             elif path == '-':
                 yaml_to_json(yaml_file=path)
             else:
