@@ -56,7 +56,8 @@ logger = logging.getLogger(__name__)
 
 DEFAULT_UMASK = 0o077
 MAX_UMASK = 0o777
-DEFAULT_MODE = 0o710
+DEFAULT_MODE = 0o700
+DEFAULT_FILE_MODE = 0o600
 MARKER = '.psec'
 BASEDIR_BASENAME = '.secrets' if os.sep == '/' else 'secrets'
 SECRETS_FILE = 'secrets.json'
@@ -211,7 +212,8 @@ def secrets_basedir_create(
         exist_ok=True
     )
     marker = secrets_basedir / MARKER
-    marker.touch(mode=mode, exist_ok=True)
+    marker.touch(exist_ok=True)
+    marker.chmod(mode=DEFAULT_FILE_MODE)
     return secrets_basedir
 
 
