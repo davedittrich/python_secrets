@@ -14,25 +14,13 @@ import textwrap
 import time
 import webbrowser
 
-# pylint: disable=wrong-import-position
-
-# pylint: disable=wrong-import-order
-#
-# Replace the cliff SmartHelpFormatter class before first use.
-from psec.utils import CustomFormatter
-from cliff import _argparse
-_argparse.SmartHelpFormatter = CustomFormatter
-#
-# pylint: enable=wrong-import-order
-
-
-# External dependencies.
-from cliff.app import App  # noqa
-from cliff.commandmanager import CommandManager  # noqa
+# External imports
+from cliff.app import App
+from cliff.commandmanager import CommandManager
 
 # Local imports
-from psec import __version__  # noqa
-from psec.secrets_environment import SecretsEnvironment  # noqa
+from psec import __version__
+from psec.secrets_environment import SecretsEnvironment
 from psec.utils import (  # noqa
     bell,
     ensure_secrets_basedir,
@@ -45,10 +33,9 @@ from psec.utils import (  # noqa
     Timer,
 )
 
-# pylint: enable=wrong-import-position
 
 # Commands that do not need secrets environments.
-DOES_NOT_NEED_SECRETS = ['complete', 'help', 'init']
+DOES_NOT_NEED_SECRETS = ['complete', 'help', 'init', 'utils']
 # Use syslog for logging?
 # TODO(dittrich) Make this configurable, since it can fail on Mac OS X
 SYSLOG = False
@@ -87,6 +74,14 @@ class PythonSecretsApp(App):
         # even if run as ``python -m psec.main`` or such.
         if parser.prog.endswith('.py'):
             parser.prog = self.command_manager.namespace
+        # Replace the cliff SmartHelpFormatter class before first use
+        # by subcommand `--help`.
+        # pylint: disable=wrong-import-order
+        from psec.utils import CustomFormatter
+        from cliff import _argparse
+        _argparse.SmartHelpFormatter = CustomFormatter
+        # pylint: enable=wrong-import-order
+        # We also need to change app parser, which is separate.
         parser.formatter_class = CustomFormatter
         # Global options
         parser.add_argument(
