@@ -39,6 +39,7 @@ from psec.utils import (
     get_files_from_path,
     is_secrets_basedir,
     remove_other_perms,
+    secrets_basedir_create,
     DEFAULT_MODE,
     Memoize,
     SECRETS_DESCRIPTIONS_DIR,
@@ -374,7 +375,7 @@ class SecretsEnvironment(object):
             self._secrets_basedir = Path(secrets_basedir)
         except BasedirNotFoundError:
             if create_root:
-                self._secrets_basedir = self.secrets_basedir_create(
+                self._secrets_basedir = secrets_basedir_create(
                     basedir=secrets_basedir
                 )
             else:
@@ -476,7 +477,7 @@ class SecretsEnvironment(object):
         except AttributeError:
             secrets_basedir = get_default_secrets_basedir()
         if init:
-            self.secrets_basedir_create(
+            secrets_basedir_create(
                 basedir=secrets_basedir,
                 mode=mode,
             )
