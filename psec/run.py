@@ -94,6 +94,7 @@ class Run(Command):
 
     def take_action(self, parsed_args):
         self.logger.debug('[*] running command')
+        se = self.app.secrets
         cmd = " ".join(
             [
                 shlex.quote(a.encode('unicode-escape').decode())
@@ -101,8 +102,8 @@ class Run(Command):
             ]
         )
         if self.app_args.export_env_vars:
-            self.app.secrets.requires_environment()
-            self.app.secrets.read_secrets_and_descriptions()
+            se.requires_environment()
+            se.read_secrets_and_descriptions()
         return call(cmd, shell=True)  # nosec
 
 

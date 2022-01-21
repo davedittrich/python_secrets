@@ -38,10 +38,11 @@ class SecretsGet(Command):
 
     def take_action(self, parsed_args):
         self.logger.debug('[*] get secret')
-        self.app.secrets.requires_environment()
-        self.app.secrets.read_secrets_and_descriptions()
+        se = self.app.secrets
+        se.requires_environment()
+        se.read_secrets_and_descriptions()
         if parsed_args.secret is not None:
-            value = self.app.secrets.get_secret(
+            value = se.get_secret(
                 parsed_args.secret, allow_none=True)
             if not parsed_args.content:
                 print(value)

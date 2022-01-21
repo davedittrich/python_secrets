@@ -122,14 +122,15 @@ class SecretsGenerate(Command):
 
     def take_action(self, parsed_args):
         self.logger.debug('[*] generating secrets')
-        self.app.secrets.requires_environment()
-        self.app.secrets.read_secrets_and_descriptions()
+        se = self.app.secrets
+        se.requires_environment()
+        se.read_secrets_and_descriptions()
         # If no secrets specified, default to all secrets
         to_change = parsed_args.arg \
             if len(parsed_args.arg) > 0 \
-            else [k for k, v in self.app.secrets.items()]
+            else [k for k, v in se.items()]
         for secret in to_change:
-            secret_type = self.app.secrets.get_secret_type(secret)
+            secret_type = se.get_secret_type(secret)
             # >> Issue: [B105:hardcoded_password_string] Possible hardcoded password: 'string'  # noqa
             # Severity: Low   Confidence: Medium
             # Location: psec/secrets/generate.py:142
@@ -139,8 +140,8 @@ class SecretsGenerate(Command):
                 raise TypeError(
                     f"[-] secret '{secret}' "
                     "has no type definition")
-            arguments = self.app.secrets.get_secret_arguments(secret)
-            default_value = self.app.secrets.get_default_value(secret)
+            arguments = se.get_secret_arguments(secret)
+            default_value = se.get_default_value(secret)
             if parsed_args.from_options and default_value:
                 value = default_value
             else:
@@ -152,7 +153,7 @@ class SecretsGenerate(Command):
             if value is not None:
                 self.logger.debug(
                     "[+] generated %s for %s", secret_type, secret)
-                self.app.secrets.set_secret(secret, value)
+                se.set_secret(secret, value)
 
 
 # vim: set fileencoding=utf-8 ts=4 sw=4 tw=0 et :

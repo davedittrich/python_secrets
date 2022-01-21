@@ -143,7 +143,7 @@ class SecretsDelete(Command):
                 data=descriptions,
                 group=group,
                 mirror_to=os.getcwd() if parsed_args.mirror_locally else None)
-            self.app.secrets.write_secrets()
+            se.write_secrets()
 
 
 # vim: set fileencoding=utf-8 ts=4 sw=4 tw=0 et :

@@ -51,13 +51,14 @@ class SetAWSCredentials(Command):
 
     def take_action(self, parsed_args):
         self.logger.debug('[*] setting AWS CLI IAM user credentials')
-        self.app.secrets.requires_environment()
-        self.app.secrets.read_secrets_and_descriptions()
+        se = self.app.secrets
+        se.requires_environment()
+        se.read_secrets_and_descriptions()
         required_vars = ['aws_access_key_id', 'aws_secret_access_key']
         config = ConfigObj(AWS_CONFIG_FILE)
         for v in required_vars:
             try:
-                cred = self.app.secrets.get_secret(v)
+                cred = se.get_secret(v)
             except Exception as err:  # noqa
                 raise
             config[parsed_args.user][v] = cred

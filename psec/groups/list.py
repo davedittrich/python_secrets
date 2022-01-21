@@ -30,12 +30,13 @@ class GroupsList(Lister):
 
     def take_action(self, parsed_args):
         self.logger.debug('[*] listing secret groups')
-        self.app.secrets.requires_environment(path_only=True)
-        self.app.secrets.read_secrets_descriptions()
+        se = self.app.secrets
+        se.requires_environment(path_only=True)
+        se.read_secrets_descriptions()
         columns = ('Group', 'Items')
         items = {}
-        for g in self.app.secrets.get_groups():
-            items[g] = self.app.secrets.get_items_from_group(g)
+        for g in se.get_groups():
+            items[g] = se.get_items_from_group(g)
         data = [(k, len(v)) for k, v in items.items()]
         if len(data) == 0:
             sys.exit(1)

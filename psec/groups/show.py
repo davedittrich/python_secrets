@@ -39,12 +39,13 @@ class GroupsShow(Lister):
 
     def take_action(self, parsed_args):
         self.logger.debug('[*] showing secrets in group')
-        self.app.secrets.requires_environment()
-        self.app.secrets.read_secrets_descriptions()
+        se = self.app.secrets
+        se.requires_environment()
+        se.read_secrets_descriptions()
         columns = ('Group', 'Variable')
         data = []
         for group in parsed_args.group:
-            for item in self.app.secrets.get_items_from_group(group):
+            for item in se.get_items_from_group(group):
                 data.append((group, item))
         if len(data) == 0:
             sys.exit(1)

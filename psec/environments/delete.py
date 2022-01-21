@@ -83,12 +83,13 @@ class EnvironmentsDelete(Command):
 
     def take_action(self, parsed_args):
         self.logger.debug('[*] deleting environment')
+        se = self.app.secrets
         choice = None
         if parsed_args.environment is not None:
             choice = parsed_args.environment
         elif stdin.isatty() and 'Bullet' in globals():
             # Give user a chance to choose.
-            environments = os.listdir(self.app.secrets.get_secrets_basedir())
+            environments = os.listdir(se.get_secrets_basedir())
             choices = ['<CANCEL>'] + sorted(environments)
             cli = Bullet(prompt="\nSelect environment to delete:",
                          choices=choices,

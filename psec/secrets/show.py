@@ -100,10 +100,11 @@ class SecretsShow(Lister):
 
     def take_action(self, parsed_args):
         self.logger.debug('[*] showing secrets')
-        self.app.secrets.requires_environment()
-        self.app.secrets.read_secrets_and_descriptions()
+        se = self.app.secrets
+        se.requires_environment()
+        se.read_secrets_and_descriptions()
         variables = []
-        all_items = [k for k, v in self.app.secrets.items()]
+        all_items = [k for k, v in se.items()]
         if parsed_args.args_group:
             if len(parsed_args.arg) == 0:
                 raise RuntimeError('[-] no group(s) specified')
@@ -112,7 +113,7 @@ class SecretsShow(Lister):
                     variables.extend(
                         [
                             v for v
-                            in self.app.secrets.get_items_from_group(g)
+                            in se.get_items_from_group(g)
                         ]
                     )
                 except KeyError as e:
@@ -123,7 +124,7 @@ class SecretsShow(Lister):
                 raise RuntimeError('[-] no type(s) specified')
             variables = [
                 k for k, v
-                in self.app.secrets.Type.items()
+                in se.Type.items()
                 if v in parsed_args.arg
             ]
         else:
@@ -134,12 +135,12 @@ class SecretsShow(Lister):
                         f"[-] '{v}' is not defined in this environment")
             variables = parsed_args.arg \
                 if len(parsed_args.arg) > 0 \
-                else [k for k, v in self.app.secrets.items()]
+                else [k for k, v in se.items()]
         columns = ('Variable', 'Value', 'Export')
         data = ([(k,
                   redact(v, parsed_args.redact),
-                  self.app.secrets.get_secret_export(k))
-                for k, v in self.app.secrets.items()
+                  se.get_secret_export(k))
+                for k, v in se.items()
                 if (k in variables and
                     (not parsed_args.undefined or
                      (parsed_args.undefined and v in [None, ''])))])

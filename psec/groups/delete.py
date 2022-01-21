@@ -47,10 +47,11 @@ class GroupsDelete(Command):
 
     def take_action(self, parsed_args):
         self.logger.debug('[*] deleting group')
-        self.app.secrets.requires_environment()
-        self.app.secrets.read_secrets_descriptions()
+        se = self.app.secrets
+        se.requires_environment()
+        se.read_secrets_descriptions()
         group = parsed_args.group
-        groups = self.app.secrets.get_groups()
+        groups = se.get_groups()
         choice = None
 
         if parsed_args.group is not None:
@@ -89,14 +90,14 @@ class GroupsDelete(Command):
                     self.logger.info('[-] cancelled deleting group')
                     return
 
-        group_file = self.app.secrets.get_descriptions_path(group=group)
+        group_file = se.get_descriptions_path(group=group)
         if not os.path.exists(group_file):
             raise RuntimeError(
                 f"[-] group file '{group_file}' does not exist")
         # Delete secrets from group.
-        secrets = self.app.secrets.get_items_from_group(choice)
+        secrets = se.get_items_from_group(choice)
         for secret in secrets:
-            self.app.secrets.delete_secret(secret)
+            se.delete_secret(secret)
         # Delete group descriptions.
         safe_delete_file(group_file)
         self.logger.info(

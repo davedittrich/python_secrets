@@ -95,12 +95,13 @@ class TfOutput(Lister):
 
     def take_action(self, parsed_args):
         self.logger.debug('[*] getting terraform output')
+        se = self.app.secrets
         columns = ('Variable', 'Value')
         data = list()
         tfstate = parsed_args.tfstate
         if tfstate is None:
             base = 'terraform.tfstate'
-            tfstate = self.app.secrets.get_environment_path() / base
+            tfstate = se.get_environment_path() / base
             if not os.path.exists(tfstate):
                 tfstate = Path(os.getcwd()) / base
             if not os.path.exists(tfstate):

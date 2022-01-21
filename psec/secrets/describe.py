@@ -69,12 +69,13 @@ class SecretsDescribe(Lister):
 
     def take_action(self, parsed_args):
         self.logger.debug('[*] describing secrets')
+        se = self.app.secrets
         if parsed_args.types:
             columns = [k.title() for k in SECRET_TYPES[0].keys()]
             data = [[v for k, v in i.items()] for i in SECRET_TYPES]
         else:
-            self.app.secrets.requires_environment()
-            self.app.secrets.read_secrets_and_descriptions()
+            se.requires_environment()
+            se.read_secrets_and_descriptions()
             variables = []
             if parsed_args.args_group:
                 if len(parsed_args.arg) == 0:
@@ -83,7 +84,7 @@ class SecretsDescribe(Lister):
                     try:
                         variables.extend([
                             v for v
-                            in self.app.secrets.get_items_from_group(g)
+                            in se.get_items_from_group(g)
                         ])
                     except KeyError as e:
                         raise RuntimeError(
@@ -92,7 +93,7 @@ class SecretsDescribe(Lister):
             else:
                 variables = parsed_args.arg \
                     if len(parsed_args.arg) > 0 \
-                    else [k for k, v in self.app.secrets.items()]
+                    else [k for k, v in se.items()]
             columns = (
                 'Variable', 'Group', 'Type', 'Prompt', 'Options', 'Help'
             )
@@ -100,13 +101,13 @@ class SecretsDescribe(Lister):
                 [
                     (
                         k,
-                        self.app.secrets.get_group(k),
-                        self.app.secrets.get_secret_type(k),
-                        self.app.secrets.get_prompt(k),
-                        self.app.secrets.get_options(k),
-                        self.app.secrets.get_help(k)
+                        se.get_group(k),
+                        se.get_secret_type(k),
+                        se.get_prompt(k),
+                        se.get_options(k),
+                        se.get_help(k)
                     )
-                    for k, v in self.app.secrets.items()
+                    for k, v in se.items()
                     if (k in variables and
                         (not parsed_args.undefined or
                          (parsed_args.undefined and v in [None, ''])))

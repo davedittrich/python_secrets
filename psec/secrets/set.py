@@ -147,7 +147,7 @@ class SecretsSet(Command):
             if parsed_args.from_options:
                 k, v, k_type = (
                     arg,
-                    self.app.secrets.get_default_value(arg),
+                    se.get_default_value(arg),
                     types.get(arg)
                 )
                 # Don't set from options if the type is generable
@@ -156,7 +156,7 @@ class SecretsSet(Command):
             elif '=' not in arg:
                 # No value was specified with the argument
                 k = arg
-                k_type = self.app.secrets.get_type(k)
+                k_type = se.secrets.get_type(k)
                 if k_type is None:
                     self.logger.info("[-] no description for '%s'", k)
                     raise RuntimeError(
@@ -168,22 +168,22 @@ class SecretsSet(Command):
                     # Try to prompt user for value
                     if (
                         k_type == 'boolean'
-                        and k not in self.app.secrets.Options
+                        and k not in se.Options
                     ):
                         # Default options for boolean type
-                        self.app.secrets.Options[k] = BOOLEAN_OPTIONS
-                    k_options = self.app.secrets.get_options(k)
+                        se.Options[k] = BOOLEAN_OPTIONS
+                    k_options = se.get_options(k)
                     if (
                         k_options != '*'
-                        and k in self.app.secrets.Options
+                        and k in se.Options
                     ):
                         # Attempt to select from list. Options will look like
                         # 'a,b' or 'a,b,*', or 'a,*'.
-                        old_v = self.app.secrets.get_secret(k, allow_none=True)
+                        old_v = se.get_secret(k, allow_none=True)
                         v = prompt_options_list(
                             options=k_options.split(','),
                             default=(None if old_v in ['', None] else old_v),
-                            prompt=self.app.secrets.get_prompt(k)
+                            prompt=se.get_prompt(k)
                         )
                         if v is None:
                             # User cancelled selection.
@@ -192,14 +192,14 @@ class SecretsSet(Command):
                     # Ask user for value
                     if v is None:
                         v = prompt_string(
-                            prompt=self.app.secrets.get_prompt(k),
+                            prompt=se.get_prompt(k),
                             default=""
                         )
                     v = v if v != '' else None
             else:  # ('=' in arg)
                 # Assignment syntax found (a=b)
                 lhs, rhs = arg.split('=')
-                k_type = self.app.secrets.get_type(lhs)
+                k_type = se.get_type(lhs)
                 if k_type is None:
                     self.logger.info("[-] no description for '%s'", lhs)
                     raise RuntimeError(
@@ -239,7 +239,7 @@ class SecretsSet(Command):
                 self.logger.info("[-] could not obtain value for '%s'", k)
             else:
                 self.logger.debug("[+] setting variable '%s'", k)
-                self.app.secrets.set_secret(k, v)
+                se.set_secret(k, v)
 
 
 # vim: set fileencoding=utf-8 ts=4 sw=4 tw=0 et :

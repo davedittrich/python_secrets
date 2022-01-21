@@ -53,12 +53,13 @@ class Template(Command):
 
     def take_action(self, parsed_args):
         self.logger.debug('[*] templating file(s)')
+        se = self.app.secrets
         if parsed_args.no_env:
             template_vars = dict()
         else:
-            self.app.secrets.requires_environment()
-            self.app.secrets.read_secrets_and_descriptions()
-            template_vars = self.app.secrets.items()
+            se.requires_environment()
+            se.read_secrets_and_descriptions()
+            template_vars = se.items()
         template_loader = FileSystemLoader('.')
         base = Undefined if parsed_args.check_defined is True \
             else StrictUndefined

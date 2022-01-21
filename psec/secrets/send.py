@@ -77,13 +77,16 @@ class SecretsSend(Command):
 
     def take_action(self, parsed_args):
         self.logger.debug('[*] send secret(s)')
-        self.app.secrets.requires_environment()
-        self.app.secrets.read_secrets_and_descriptions()
+        se = self.app.secrets
+        se.requires_environment()
+        se.read_secrets_and_descriptions()
         # Attempt to get refresh token first
         orig_refresh_token = None
         self.refresh_token =\
-            self.app.secrets.get_secret('google_oauth_refresh_token',
-                                        allow_none=True)
+            se.get_secret(
+                'google_oauth_refresh_token',
+                allow_none=True
+            )
         if parsed_args.refresh_token:
             orig_refresh_token = self.refresh_token
             self.logger.debug('[+] refreshing Google Oauth2 token')
@@ -92,21 +95,23 @@ class SecretsSend(Command):
         if parsed_args.smtp_username is not None:
             username = parsed_args.smtp_username
         else:
-            username = self.app.secrets.get_secret(
+            username = se.get_secret(
                 'google_oauth_username')
         googlesmtp = GoogleSMTP(
             username=username,
-            client_id=self.app.secrets.get_secret(
+            client_id=se.get_secret(
                 'google_oauth_client_id'),
-            client_secret=self.app.secrets.get_secret(
+            client_secret=se.get_secret(
                 'google_oauth_client_secret'),
             refresh_token=self.refresh_token
         )
         if parsed_args.refresh_token:
             new_refresh_token = googlesmtp.get_authorization()[0]
             if new_refresh_token != orig_refresh_token:
-                self.app.secrets.set_secret('google_oauth_refresh_token',
-                                            new_refresh_token)
+                se.set_secret(
+                    'google_oauth_refresh_token',
+                    new_refresh_token
+                )
             return None
         elif parsed_args.test_smtp:
             auth_string, expires_in = googlesmtp.refresh_authorization()
@@ -120,14 +125,14 @@ class SecretsSend(Command):
             if "@" in arg:
                 recipients.append(arg)
             else:
-                if self.app.secrets.get_secret(arg):
+                if se.get_secret(arg):
                     variables.append(arg)
         message = "The following secret{} {} ".format(
             "" if len(variables) == 1 else "s",
             "is" if len(variables) == 1 else "are"
             ) + "being shared with you:\n\n" + \
             "\n".join(
-                ["{}='{}'".format(v, self.app.secrets.get_secret(v))
+                ["{}='{}'".format(v, se.get_secret(v))
                  for v in variables]
             )
         # https://stackoverflow.com/questions/33170016/how-to-use-django-1-8-5-orm-without-creating-a-django-project/46050808#46050808  # noqa
