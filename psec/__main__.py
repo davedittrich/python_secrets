@@ -35,6 +35,7 @@ from psec import __version__  # noqa
 from psec.secrets_environment import SecretsEnvironment  # noqa
 from psec.utils import (  # noqa
     bell,
+    ensure_secrets_basedir,
     get_default_environment,
     get_default_secrets_basedir,
     permissions_check,
@@ -142,7 +143,7 @@ class PythonSecretsApp(App):
             action='store_true',
             dest='init',
             default=False,
-            help='Initialize directory for holding secrets'
+            help='Ensure the directory for holding secrets is initialized'
         )
         parser.add_argument(
             '--umask',
@@ -204,9 +205,9 @@ class PythonSecretsApp(App):
         # Process ReadTheDocs web browser request here and then
         # fall through, which also produces help output on the
         # command line. The webbrowser module doesn't seem to work
-        # consistently on Ubuntu Linux, so this helps a little
-        # though may be confusing when you don't get a browser opening
-        # up like you expect.
+        # consistently on Ubuntu Linux and some versions of Mac OS X (Darwin),
+        # so this helps a little though may be confusing when you don't
+        # get a browser opening up like you expect.
         rtd_url = 'https://python-secrets.readthedocs.io/en/latest/usage.html'
         if cmd.cmd_name == 'help' and self.options.rtd:
             for line in [
@@ -226,15 +227,36 @@ class PythonSecretsApp(App):
         self.logger.debug(
             "[+] using environment '%s'", self.options.environment
         )
+        # Set up an environment for the app, making sure to export runtime
+        # options matching those from the command line and environment
+        # variables for subprocesses to inherit. It's OK to warn here about
+        # missing base directory (which will happen on first use), but don't
+        # force the program to exit when not necessary.
+        #
+        env_environment = os.environ.get('D2_ENVIRONMENT')
         self.environment = self.options.environment
-        self.secrets_basedir = self.options.secrets_basedir
-        if os.environ.get('D2_SECRETS_BASEDIR') is None:
-            # Make sure environment variable is set to match option flag.
-            os.environ['D2_SECRETS_BASEDIR'] = self.secrets_basedir
+        if (
+            env_environment is None
+            or env_environment != self.environment
+        ):
+            os.environ['D2_ENVIRONMENT'] = str(self.environment)
+        env_secrets_basedir = os.environ.get('D2_SECRETS_BASEDIR')
+        self.secrets_basedir = ensure_secrets_basedir(
+            secrets_basedir=self.options.secrets_basedir,
+            allow_create=(
+                self.options.init
+                or cmd.cmd_name.startswith('init')
+            ),
+            verbose_level=self.options.verbose_level,
+        )
+        if (
+            env_secrets_basedir is None
+            or env_secrets_basedir != str(self.secrets_basedir)
+        ):
+            os.environ['D2_SECRETS_BASEDIR'] = str(self.secrets_basedir)
         self.secrets_file = self.options.secrets_file
-
-        self.secrets_file = self.options.secrets_file
-        if cmd.cmd_name not in DOES_NOT_NEED_SECRETS:
+        cmd_base = cmd.cmd_name.split(' ')[0]
+        if cmd_base not in DOES_NOT_NEED_SECRETS:
             self.secrets = SecretsEnvironment(
                 environment=self.environment,
                 create_root=False,
@@ -255,17 +277,23 @@ class PythonSecretsApp(App):
         if err:
             self.logger.debug("[-] got an error: %s", str(err))
             if self.secrets is not None and self.secrets.changed():
-                self.logger.info('[-] not writing secrets out due to error')
-        elif cmd.cmd_name not in ['help', 'complete']:
-            if self.secrets.changed():
-                self.secrets.write_secrets()
-            if (self.options.elapsed or
-                    (self.options.verbose_level > 1
-                     and cmd.cmd_name != "complete")):
-                self.timer.stop()
-                elapsed = self.timer.elapsed()
-                self.stderr.write('[+] elapsed time {}\n'.format(elapsed))
-                bell()
+                self.logger.info(
+                    '[-] not writing changed secrets out due to error'
+                )
+            sys.exit(result)
+        if self.secrets is not None and self.secrets.changed():
+            self.secrets.write_secrets()
+        if (
+            self.options.elapsed
+            or (
+                self.options.verbose_level > 1
+                and cmd.cmd_name != "complete"
+            )
+        ):
+            self.timer.stop()
+            elapsed = self.timer.elapsed()
+            self.stderr.write('[+] elapsed time {}\n'.format(elapsed))
+            bell()
 
 
 def main(argv=sys.argv[1:]):

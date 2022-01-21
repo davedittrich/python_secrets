@@ -96,16 +96,6 @@ class EnvironmentsCreate(Command):
     def take_action(self, parsed_args):
         self.logger.debug('[*] creating environment(s)')
         secrets_basedir = self.app.secrets_basedir
-        if not Path(secrets_basedir).exists():
-            if not parsed_args.force:
-                client = YesNo(
-                    f"create directory '{secrets_basedir}'? ",
-                    default='n'
-                )
-                res = client.launch()
-                if not res:
-                    self.logger.info('[!] cancelled creating environment')
-                    return 1
         if parsed_args.alias is not None:
             if len(parsed_args.env) != 1:
                 raise RuntimeError(
@@ -113,7 +103,7 @@ class EnvironmentsCreate(Command):
             se = SecretsEnvironment(
                 environment=parsed_args.alias,
                 secrets_basedir=secrets_basedir,
-                create_root=True,
+                create_root=parsed_args.force,
             )
             se.environment_create(
                 source=parsed_args.env[0],
