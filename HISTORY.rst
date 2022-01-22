@@ -176,8 +176,8 @@ Changed
 - General CI/CD workflow updates
 - Improve directory handling in `environments path`
 
-20.2.15
-~~~~~~~
+20.2.15 (2012-02-15)
+~~~~~~~~~~~~~~~~~~~~
 
 Added
 ^^^^^
