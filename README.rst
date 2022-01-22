@@ -176,8 +176,8 @@ directory:
 .. note::
 
    The secrets base directory may be created automatically for you the
-   first time you create an environment. See documentation for the
-   :ref:`usage:init` command for more information.
+   first time you create an environment.  For more information, see
+   ``psec init --help``.
 
 ..
 
