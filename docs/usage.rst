@@ -286,6 +286,13 @@ Groups
     :command: groups *
     :ignored: -f,-c,--quote,--noindent,--max-width,--fit-width,--print-empty,--sort-column
 
+Init
+~~~~
+
+.. autoprogram-cliff:: psec
+    :command: init
+    :ignored: -f,-c,--quote,--noindent,--max-width,--fit-width,--print-empty,--sort-column
+
 Run
 ~~~
 

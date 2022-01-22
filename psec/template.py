@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import logging
-import textwrap
 
 from cliff.command import Command
 from jinja2 import (Environment, FileSystemLoader,
@@ -10,49 +9,56 @@ from jinja2 import (Environment, FileSystemLoader,
 
 
 class Template(Command):
-    """Template file(s)."""
+    """
+    Template file(s).
+
+    For information on the Jinja2 template engine and how to
+    use it, see http://jinja.pocoo.org
+
+    To assist debugging, use ``--check-defined`` to check that
+    all required variables are defined.
+    """
 
     logger = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
-        parser.add_argument('--check-defined',
-                            action='store_true',
-                            dest='check_defined',
-                            default=False,
-                            help="Just check for undefined variables")
-        parser.add_argument('--no-env',
-                            action='store_true',
-                            dest='no_env',
-                            default=False,
-                            help="Do not require and load an " +
-                                 "environment (default: False)")
-        parser.add_argument('source',
-                            nargs="?",
-                            help="input Jinja2 template source",
-                            default=None)
-        parser.add_argument('dest',
-                            nargs="?",
-                            help="templated output destination " +
-                                 "('-' for stdout)",
-                            default=None)
-        parser.epilog = textwrap.dedent("""
-            For information on the Jinja2 template engine and how to
-            use it, see http://jinja.pocoo.org
-
-            To assist debugging, use ``--check-defined`` to check that
-            all required variables are defined.
-            """)
+        parser.add_argument(
+            '--check-defined',
+            action='store_true',
+            dest='check_defined',
+            default=False,
+            help="Just check for undefined variables"
+        )
+        parser.add_argument(
+            '--no-env',
+            action='store_true',
+            dest='no_env',
+            default=False,
+            help="Do not require and load an environment"
+        )
+        parser.add_argument(
+            'source',
+            nargs="?",
+            help="input Jinja2 template source",
+            default=None
+        )
+        parser.add_argument(
+            'dest',
+            nargs="?",
+            help="templated output destination ('-' for stdout)",
+            default=None
+        )
         return parser
 
     def take_action(self, parsed_args):
-        self.logger.debug('[*] templating file(s)')
+        se = self.app.secrets
         if parsed_args.no_env:
             template_vars = dict()
         else:
-            self.app.secrets.requires_environment()
-            self.app.secrets.read_secrets_and_descriptions()
-            template_vars = self.app.secrets.items()
+            se.requires_environment()
+            se.read_secrets_and_descriptions()
+            template_vars = se.items()
         template_loader = FileSystemLoader('.')
         base = Undefined if parsed_args.check_defined is True \
             else StrictUndefined

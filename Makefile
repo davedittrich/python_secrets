@@ -44,14 +44,14 @@ help:
 #HELP test - run 'tox' for testing
 .PHONY: test
 test: test-tox
-	@echo '[+] All tests succeeded'
+	@echo '[+] test: All tests passed'
 
 .PHONY: test-tox
 test-tox:
 	@if [ -f .python_secrets_environment ]; then (echo '[!] Remove .python_secrets_environment prior to testing'; exit 1); fi
 	touch docs/psec_help.txt
 	@# See comment in tox.ini file.
-	tox -e pep8,bandit,docs,bats && tox -e py37,py38,py39,pypi
+	tox -e pep8,bandit,docs,bats && tox -e py37,py38,py39,pypi && echo '[+] test-tox: All tests passed'
 
 .PHONY: test-bats
 test-bats: bats-libraries
@@ -59,15 +59,19 @@ test-bats: bats-libraries
 		if ! type bats 2>/dev/null >/dev/null; then \
 			echo "[-] Skipping bats tests"; \
 		else \
+			source test-environment.bash; \
 			echo "[+] Running bats tests: $(shell cd tests && echo [0-9][0-9]*.bats)"; \
-			PYTHONWARNINGS="ignore" bats --tap tests/[0-9][0-9]*.bats; \
+			PYTHONWARNINGS="ignore" bats --tap tests/[0-9][0-9]*.bats && \
+			echo '[+] test-bats: All tests passed'; \
 		fi \
 	 fi
 
 .PHONY: test-bats-runtime
 test-bats-runtime: bats-libraries
 	@echo "[+] Running bats runtime tests: $(shell cd tests && echo runtime_[0-9][0-9]*.bats)"; \
-	PYTHONWARNINGS="ignore" bats --tap tests/runtime_[0-9][0-9]*.bats
+	(source test-environment.bash; \
+	 PYTHONWARNINGS="ignore" bats --tap tests/runtime_[0-9][0-9]*.bats && \
+	 echo '[+] test-bats-runtime: All tests passed')
 
 .PHONY: no-diffs
 no-diffs:

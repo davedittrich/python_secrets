@@ -24,6 +24,29 @@ History
 .. Fixed for any bug fixes.
 .. Security in case of vulnerabilities.
 
+22.1.0 (2022-01-22)
+~~~~~~~~~~~~~~~~~~~
+
+Added
+^^^^^
+
+- Add `init` command and `--init` flag to initialize secrets base directory.
+- Ensure overridden values via flags are exported to process environment
+  for subprocesses to use.
+- Add missing tests for features added in a previous release.
+- Add and start using application-specific exception classes.
+
+Changed
+^^^^^^^
+
+- Move functions and variables to `utils` to improve reuse ability.
+- Use `get_` prefix more consistently for getter method/function names.
+- Over-ride cliff formatter class globally in app parser setup.
+- Use `pathlib.Path` for paths for cleaner code.
+- Fix bugs in `environments delete` command.
+- Fix bugs in `--from-options` feature of `secrets get` and `secrets set`.
+- Improvements to source code, test, and vscode launch configuration quality.
+
 21.11.0 (2021-11-22)
 ~~~~~~~~~~~~~~~~~~~~
 
@@ -176,8 +199,8 @@ Changed
 - General CI/CD workflow updates
 - Improve directory handling in `environments path`
 
-20.2.15
-~~~~~~~
+20.2.15 (2012-02-15)
+~~~~~~~~~~~~~~~~~~~~
 
 Added
 ^^^^^

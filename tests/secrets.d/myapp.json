@@ -15,18 +15,28 @@
     "Variable": "myapp_client_psk",
     "Type": "string",
     "Prompt": "Pre-shared key for myapp client WiFi AP",
+    "Options": "*",
     "Export": "DEMO_client_psk"
   },
   {
     "Variable": "myapp_client_ssid",
     "Type": "string",
     "Prompt": "SSID for myapp client WiFi AP",
+    "Options": "myapp_ssid,*",
     "Export": "DEMO_client_ssid"
   },
   {
     "Variable": "myapp_ondemand_wifi",
     "Type": "boolean",
     "Prompt": "'Connect on demand' when connected to wifi",
+    "Options": "true,false",
     "Export": "DEMO_ondemand_wifi"
+  },
+  {
+    "Variable": "myapp_optional_setting",
+    "Type": "boolean",
+    "Prompt": "Optionally do something",
+    "Options": "false,true",
+    "Export": "DEMO_options_setting"
   }
 ]

@@ -1,18 +1,21 @@
 # -*- coding: utf-8 -*-
 
-import argparse
+"""
+Back up just secrets and descriptions.
+"""
+
 import contextlib
 import datetime
 import logging
 import os
 import tarfile
-import textwrap
 
 from cliff.command import Command
 
 
 @contextlib.contextmanager
 def cd(path):
+    """Change directory."""
     old_path = os.getcwd()
     os.chdir(path)
     try:
@@ -22,25 +25,24 @@ def cd(path):
 
 
 class SecretsBackup(Command):
-    """Back up just secrets and descriptions."""
+    """
+    Back up just secrets and descriptions.
+
+    Creates a backup (``tar`` format) of the secrets.json file
+    and all description files.
+    """
 
     logger = logging.getLogger(__name__)
 
-    def get_parser(self, prog_name):
-        parser = super().get_parser(prog_name)
-        parser.formatter_class = argparse.RawDescriptionHelpFormatter
-        parser.epilog = textwrap.dedent("""
-            Creates a backup (``tar`` format) of the secrets.json file
-            and all description files.
-            """)
-        return parser
+    # def get_parser(self, prog_name):
+    #     parser = super().get_parser(prog_name)
+    #     return parser
 
     def take_action(self, parsed_args):
-        self.logger.debug('[*] backup secrets')
         secrets = self.app.secrets
         secrets.requires_environment()
         backups_dir = os.path.join(
-            secrets.environment_path(),
+            secrets.get_environment_path(),
             "backups")
         if not os.path.exists(backups_dir):
             os.mkdir(backups_dir, mode=0o700)
@@ -56,13 +58,13 @@ class SecretsBackup(Command):
         # Change directory to allow relative paths in tar file,
         # then force relative paths (there has to be a better way...
         # just not right now.)
-        env_path = secrets.environment_path() + os.path.sep
+        env_path = secrets.get_environment_path() + os.path.sep
         with cd(env_path):
             with tarfile.open(backup_path, "w:gz") as tf:
                 tf.add(
-                    secrets.secrets_file_path().replace(env_path, "", 1))
+                    secrets.get_secrets_file_path().replace(env_path, "", 1))
                 tf.add(
-                    secrets.descriptions_path().replace(env_path, "", 1))
+                    secrets.get_descriptions_path().replace(env_path, "", 1))
 
         self.logger.info("[+] created backup '%s'", backup_path)
 

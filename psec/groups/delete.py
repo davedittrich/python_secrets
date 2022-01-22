@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 
-import argparse
 import logging
 import os
-import textwrap
 
 # TODO(dittrich): https://github.com/Mckinsey666/bullet/issues/2
 # Workaround until bullet has Windows missing 'termios' fix.
@@ -19,38 +17,40 @@ from sys import stdin
 
 
 class GroupsDelete(Command):
-    """Delete a secrets descriptions group."""
+    """
+    Delete a secrets descriptions group.
+
+    Deletes a group of secrets and variables by removing them from
+    the secrets environment and deleting their descriptions file.
+
+    If the ``--force`` option is not specified, you will be prompted
+    to confirm the group name before it is deleted.
+    """
 
     logger = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
-        parser.formatter_class = argparse.RawDescriptionHelpFormatter
         parser.add_argument(
             '--force',
             action='store_true',
             dest='force',
             default=False,
-            help="Mandatory confirmation (default: False)"
+            help='Mandatory confirmation'
         )
-        parser.add_argument('group',
-                            nargs='?',
-                            default=None)
-        parser.epilog = textwrap.dedent("""
-            Deletes a group of secrets and variables by removing them from
-            the secrets environment and deleting their descriptions file.
-
-            If the ``--force`` ption is not specified, you will be prompted
-            to confirm the group name before it is deleted.
-            """)  # noqa
+        parser.add_argument(
+            'group',
+            nargs='?',
+            default=None
+        )
         return parser
 
     def take_action(self, parsed_args):
-        self.logger.debug('[*] deleting group')
-        self.app.secrets.requires_environment()
-        self.app.secrets.read_secrets_descriptions()
+        se = self.app.secrets
+        se.requires_environment()
+        se.read_secrets_descriptions()
         group = parsed_args.group
-        groups = self.app.secrets.get_groups()
+        groups = se.get_groups()
         choice = None
 
         if parsed_args.group is not None:
@@ -89,14 +89,14 @@ class GroupsDelete(Command):
                     self.logger.info('[-] cancelled deleting group')
                     return
 
-        group_file = self.app.secrets.descriptions_path(group=group)
+        group_file = se.get_descriptions_path(group=group)
         if not os.path.exists(group_file):
             raise RuntimeError(
                 f"[-] group file '{group_file}' does not exist")
         # Delete secrets from group.
-        secrets = self.app.secrets.get_items_from_group(choice)
+        secrets = se.get_items_from_group(choice)
         for secret in secrets:
-            self.app.secrets.delete_secret(secret)
+            se.delete_secret(secret)
         # Delete group descriptions.
         safe_delete_file(group_file)
         self.logger.info(

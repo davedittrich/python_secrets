@@ -1,10 +1,14 @@
 # -*- coding: utf-8 -*-
 
-import argparse
+"""
+Restore secrets and descriptions from a backup file.
+"""
+
 import logging
 import os
 import tarfile
-import textwrap
+
+from sys import stdin
 
 from cliff.command import Command
 # TODO(dittrich): https://github.com/Mckinsey666/bullet/issues/2
@@ -13,29 +17,31 @@ try:
     from bullet import Bullet
 except ModuleNotFoundError:
     pass
-from sys import stdin
 
 
 class SecretsRestore(Command):
-    """Restore secrets and descriptions from a backup file."""
+    """
+    Restore secrets and descriptions from a backup file.
+    """
+
+    # TODO(dittrich): Finish documenting command.
 
     logger = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
-        parser.formatter_class = argparse.RawDescriptionHelpFormatter
-        parser.add_argument('backup', nargs='?', default=None)
-        parser.epilog = textwrap.dedent("""
-            TODO(dittrich): Finish documenting command.
-            """)
+        parser.add_argument(
+            'backup',
+            nargs='?',
+            default=None
+        )
         return parser
 
     def take_action(self, parsed_args):
-        self.logger.debug('[*] restore secrets')
         secrets = self.app.secrets
         secrets.requires_environment()
         backups_dir = os.path.join(
-            secrets.environment_path(),
+            secrets.get_environment_path(),
             "backups")
         backups = [fn for fn in
                    os.listdir(backups_dir)
@@ -70,7 +76,7 @@ class SecretsRestore(Command):
                             for prefix in allowed_prefixes
                             if '../' not in fn)
                      ]
-            env_path = secrets.environment_path()
+            env_path = secrets.get_environment_path()
             for name in names:
                 tf.extract(name, path=env_path)
         self.logger.info('[+] restored backup %s to %s', backup_path, env_path)

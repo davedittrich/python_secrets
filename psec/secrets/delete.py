@@ -1,13 +1,16 @@
 # -*- coding: utf-8 -*-
 
-import argparse
+"""
+Delete secrets and their definitions.
+"""
+
 import logging
 import os
-import textwrap
+
+from sys import stdin
 
 from cliff.command import Command
 from psec.utils import safe_delete_file
-from sys import stdin
 
 # TODO(dittrich): https://github.com/Mckinsey666/bullet/issues/2
 # Workaround until bullet has Windows missing 'termios' fix.
@@ -19,66 +22,65 @@ except ModuleNotFoundError:
 
 
 class SecretsDelete(Command):
-    """Delete secrets and their definitions."""
+    """
+    Delete secrets and their definitions.
+
+    Deletes one or more secrets and their definitions from an environment.
+    Unless the ``--force`` flag is specified, you will be prompted to type in
+    the variable name again to ensure you really want to remove all trace of it
+    from the environment::
+
+        $ psec secrets delete --group myapp myapp_client_psk myapp_client_ssid
+        Type the name 'myapp_client_psk' to confirm: myapp_client_psk
+        Type the name 'myapp_client_ssid' to confirm: myapp_client_ssid
+
+    If you delete all of the variable descriptions remaining in a group, the
+    group file will be deleted.
+
+    The ``--mirror-locally`` option will manage a local copy of the
+    descriptions file. Use this if you are eliminating a variable from a
+    project while editing files in the root of the source repository.
+
+    KNOWN LIMITATION: You must specify the group with the ``--group`` option
+    currently and are restricted to deleting variables from one group at a
+    time.
+    """  # noqa
+
+    # TODO(dittrich): address the known limitation
 
     logger = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
-        parser.formatter_class = argparse.RawDescriptionHelpFormatter
         parser.add_argument(
             '-g', '--group',
             action='store',
             dest='group',
             default=None,
-            help="Group from which to delete the secret(s) (default: None)"
+            help='Group from which to delete the secret(s)'
         )
         parser.add_argument(
             '--force',
             action='store_true',
             dest='force',
             default=False,
-            help="Mandatory confirmation (default: False)"
+            help='Mandatory confirmation'
         )
         parser.add_argument(
             '--mirror-locally',
             action='store_true',
             dest='mirror_locally',
             default=False,
-            help="Mirror definitions locally (default: False)"
+            help='Mirror definitions locally'
         )
-        parser.add_argument('arg', nargs='*', default=None)
-        parser.epilog = textwrap.dedent("""
-            Deletes one or more secrets and their definitions from an
-            environment. Unless the ``--force`` flag is specified, you will
-            be prompted to type in the variable name again to ensure you
-            really want to remove all trace of it from the environment.
-
-            .. code-block:: console
-
-                $ psec secrets delete --group myapp myapp_client_psk myapp_client_ssid
-                Type the name 'myapp_client_psk' to confirm: myapp_client_psk
-                Type the name 'myapp_client_ssid' to confirm: myapp_client_ssid
-
-            ..
-
-            If you delete all of the variable descriptions remaining in a group,
-            the group file will be deleted.
-
-            The ``--mirror-locally`` option will manage a local copy of the
-            descriptions file. Use this if you are eliminating a variable
-            from a project while editing files in the root of the source
-            repository.
-
-            KNOWN LIMITATION: You must specify the group with the ``--group``
-            option currently and are restricted to deleting variables from
-            one group at a time.
-            """)  # noqa
-        # TODO(dittrich): address the known limitation
+        parser.add_argument(
+            'arg',
+            nargs='*',
+            default=None
+        )
         return parser
 
     def take_action(self, parsed_args):
-        self.logger.debug('[*] deleting secrets')
         se = self.app.secrets
         se.requires_environment()
         se.read_secrets_and_descriptions()
@@ -123,10 +125,14 @@ class SecretsDelete(Command):
             ]
             se.delete_secret(arg)
         if len(descriptions) == 0:
-            paths = [se.descriptions_path(group=group)]
+            paths = [se.get_descriptions_path(group=group)]
             if parsed_args.mirror_locally:
-                paths.append(se.descriptions_path(root=os.getcwd(),
-                                                  group=group))
+                paths.append(
+                    se.get_descriptions_path(
+                        root=os.getcwd(),
+                        group=group,
+                    )
+                )
             for path in paths:
                 safe_delete_file(path)
                 self.logger.info(
@@ -136,7 +142,7 @@ class SecretsDelete(Command):
                 data=descriptions,
                 group=group,
                 mirror_to=os.getcwd() if parsed_args.mirror_locally else None)
-            self.app.secrets.write_secrets()
+            se.write_secrets()
 
 
 # vim: set fileencoding=utf-8 ts=4 sw=4 tw=0 et :

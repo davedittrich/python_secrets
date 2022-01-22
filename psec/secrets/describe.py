@@ -1,15 +1,36 @@
 # -*- coding: utf-8 -*-
 
-import argparse
+"""
+Describe supported secret types.
+"""
+
 import logging
-import textwrap
 
 from cliff.lister import Lister
 from psec.secrets_environment import SECRET_TYPES
 
 
 class SecretsDescribe(Lister):
-    """Describe supported secret types."""
+    """
+    Describe supported secret types.
+
+    To get descriptions for a subset of secrets, specify their names as the
+    arguments::
+
+        $ psec secrets describe jenkins_admin_password
+        +------------------------+---------+----------+--------------------------------------+---------+
+        | Variable               | Group   | Type     | Prompt                               | Options |
+        +------------------------+---------+----------+--------------------------------------+---------+
+        | jenkins_admin_password | jenkins | password | Password for Jenkins 'admin' account | *       |
+        +------------------------+---------+----------+--------------------------------------+---------+
+
+    If you instead want to get descriptions of all secrets in one or more
+    groups, use the ``--group`` option and specify the group names as the
+    arguments.
+
+    To instead see the values and exported environment variables associated
+    with secrets, use the ``secrets show`` command instead.
+    """  # noqa
 
     logger = logging.getLogger(__name__)
 
@@ -17,14 +38,12 @@ class SecretsDescribe(Lister):
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
-        parser.formatter_class = argparse.RawDescriptionHelpFormatter
         parser.add_argument(
             '--undefined',
             action='store_true',
             dest='undefined',
             default=False,
-            help="Only show variables that are not yet " +
-                 "defined (default: False)"
+            help='Only show variables that are not yet defined'
         )
         what = parser.add_mutually_exclusive_group(required=False)
         what.add_argument(
@@ -32,48 +51,30 @@ class SecretsDescribe(Lister):
             dest='args_group',
             action="store_true",
             default=False,
-            help="Arguments are groups to list (default: False)"
+            help='Arguments are groups to list'
         )
         what.add_argument(
             '-t', '--types',
             dest='types',
             action="store_true",
             default=False,
-            help="Describe types (default: False)"
+            help='Describe types'
         )
-        parser.add_argument('arg', nargs='*', default=None)
-        parser.epilog = textwrap.dedent("""
-            To get descriptions for a subset of secrets, specify their
-            names as the arguments.
-
-            .. code-block:: console
-
-                $ psec secrets describe jenkins_admin_password
-                +------------------------+---------+----------+--------------------------------------+---------+
-                | Variable               | Group   | Type     | Prompt                               | Options |
-                +------------------------+---------+----------+--------------------------------------+---------+
-                | jenkins_admin_password | jenkins | password | Password for Jenkins 'admin' account | *       |
-                +------------------------+---------+----------+--------------------------------------+---------+
-
-            ..
-
-            If you instead want to get descriptions of all secrets in
-            one or more groups, use the ``--group`` option and specify
-            the group names as the arguments.
-
-            To instead see the values and exported environment variables
-            associated with secrets, use the ``secrets show`` command instead.
-            """)  # noqa
+        parser.add_argument(
+            'arg',
+            nargs='*',
+            default=None
+        )
         return parser
 
     def take_action(self, parsed_args):
-        self.logger.debug('[*] describing secrets')
+        se = self.app.secrets
         if parsed_args.types:
             columns = [k.title() for k in SECRET_TYPES[0].keys()]
             data = [[v for k, v in i.items()] for i in SECRET_TYPES]
         else:
-            self.app.secrets.requires_environment()
-            self.app.secrets.read_secrets_and_descriptions()
+            se.requires_environment()
+            se.read_secrets_and_descriptions()
             variables = []
             if parsed_args.args_group:
                 if len(parsed_args.arg) == 0:
@@ -82,7 +83,7 @@ class SecretsDescribe(Lister):
                     try:
                         variables.extend([
                             v for v
-                            in self.app.secrets.get_items_from_group(g)
+                            in se.get_items_from_group(g)
                         ])
                     except KeyError as e:
                         raise RuntimeError(
@@ -91,7 +92,7 @@ class SecretsDescribe(Lister):
             else:
                 variables = parsed_args.arg \
                     if len(parsed_args.arg) > 0 \
-                    else [k for k, v in self.app.secrets.items()]
+                    else [k for k, v in se.items()]
             columns = (
                 'Variable', 'Group', 'Type', 'Prompt', 'Options', 'Help'
             )
@@ -99,13 +100,13 @@ class SecretsDescribe(Lister):
                 [
                     (
                         k,
-                        self.app.secrets.get_group(k),
-                        self.app.secrets.get_secret_type(k),
-                        self.app.secrets.get_prompt(k),
-                        self.app.secrets.get_options(k),
-                        self.app.secrets.get_help(k)
+                        se.get_group(k),
+                        se.get_secret_type(k),
+                        se.get_prompt(k),
+                        se.get_options(k),
+                        se.get_help(k)
                     )
-                    for k, v in self.app.secrets.items()
+                    for k, v in se.items()
                     if (k in variables and
                         (not parsed_args.undefined or
                          (parsed_args.undefined and v in [None, ''])))

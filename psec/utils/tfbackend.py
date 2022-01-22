@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
+"""
+Enable Terraform backend support.
+"""
 
-import argparse
 import logging
 import os
 import textwrap
@@ -12,36 +14,37 @@ from psec.secrets_environment import SecretsEnvironment
 
 class TfBackend(Command):
     """
-    Enable Terraform backend support to move terraform.tfstate file
-    out of current working directory into environment path.
-    """
+    Enable Terraform backend support.
+
+    Enables the Terraform "backend support" option to move the file ``terraform.tfstate``
+    (which can contain many secrets) out of the current working directory and into the
+    current environment directory path.
+    """  # noqa
+
+    # TODO(dittrich): Finish documenting this
 
     logger = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
-        parser.formatter_class = argparse.RawDescriptionHelpFormatter
         parser.add_argument(
             '--path',
             action='store_true',
             dest='path',
             default=False,
-            help="Print path and exit (default: False)"
+            help='Print path and exit'
         )
         # tfstate = None
         # try:
-        #     tfstate = os.path.join(self.app.secrets.environment_path(),
+        #     tfstate = os.path.join(self.app.secrets.get_environment_path(),
         #                            "terraform.tfstate")
         # except AttributeError:
         #     pass
-        parser.epilog = textwrap.dedent("""
-            TBD(dittrich): Write this...
-            """)  # noqa
         return parser
 
     def take_action(self, parsed_args):
         e = SecretsEnvironment(environment=self.app.options.environment)
-        tmpdir = e.tmpdir_path()
+        tmpdir = e.get_tmpdir_path()
         backend_file = os.path.join(os.getcwd(), 'tfbackend.tf')
         tfstate_file = os.path.join(tmpdir, 'terraform.tfstate')
         backend_text = textwrap.dedent("""\

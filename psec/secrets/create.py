@@ -1,10 +1,14 @@
 # -*- coding: utf-8 -*-
 
+"""
+Create a new secret definition.
+"""
+
 # External imports
-import argparse
 import logging
 import os
-import textwrap
+
+from sys import stdin
 
 # TODO(dittrich): https://github.com/Mckinsey666/bullet/issues/2
 # Workaround until bullet has Windows missing 'termios' fix.
@@ -16,7 +20,6 @@ except ModuleNotFoundError:
     pass
 from cliff.command import Command
 from prettytable import PrettyTable
-from sys import stdin
 
 # Local imports
 from psec.secrets_environment import SECRET_TYPES
@@ -87,86 +90,81 @@ def get_description(name=None, defaults=None):
 
 
 class SecretsCreate(Command):
-    """Create a new secret definition."""
+    """
+    Create a new secret definition.
+
+    Defines one or more secrets in a specified group based on input from the
+    user. Secret definitions are created in the user's environments storage
+    directory and a new variable with no value is created there, too.
+
+    If the environment and/or the group does not exist, you will be prompted to
+    create them. Use the ``--force`` option to create them without asking.
+
+    To maintain a copy of the secrets descriptions in the source repository so
+    they can be used to quickly configure a new deployment after cloning, use
+    the ``--mirror-locally`` option when creating secrets from the root of the
+    repository directory. A copy of each modified group description file will
+    be mirrored into a subdirectory tree in the current working directory where
+    you can commit it to the repository.
+
+    If no group is specified with the ``--group`` option, the environment
+    identifier will be used as a default. This simplifies things for small
+    projects that don't need the drop-in style group partitioning that is more
+    appropriate for multi-tool open source system integration where a single
+    monolithic configuration file becomes unwieldy and inflexible. This feature
+    can also be used for "global" variables that could apply across
+    sub-components::
+
+        $ psec secrets create newsecret --force
+
+    KNOWN LIMITATION: This subcommand currently only works interactively
+    and you will be prompted for all attributes. In future, this may be
+    handled using ``key=value`` pairs for attributes, similar to the way
+    the ``secrets set`` command works.
+    """  # noqa
+
+    # TODO(dittrich): address the known limitation
 
     logger = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
-        parser.formatter_class = argparse.RawDescriptionHelpFormatter
         parser.add_argument(
             '--group',
             action='store',
             dest='group',
             default=None,
-            help="Group in which to define the secret(s) (default: None)"
+            help='Group in which to define the secret(s)'
         )
         parser.add_argument(
             '--force',
             action='store_true',
             dest='force',
             default=False,
-            help="Create missing environment and/or group (default: False)"
+            help='Create missing environment and/or group'
         )
         parser.add_argument(
             '--update',
             action='store_true',
             dest='update',
             default=False,
-            help=("Update the fields in an existing description "
-                  "(default: False)")
+            help='Update the fields in an existing description'
         )
         parser.add_argument(
             '--mirror-locally',
             action='store_true',
             dest='mirror_locally',
             default=False,
-            help="Mirror definitions locally (default: False)"
+            help='Mirror definitions locally'
         )
-        parser.add_argument('arg', nargs='*', default=None)
-        parser.epilog = textwrap.dedent("""
-            Defines one or more secrets in a specified group based on
-            input from the user. Secret definitions are created in the
-            user's environments storage directory and a new variable with
-            no value is created there, too.
-
-            If the environment and/or the group does not exist, you will be
-            prompted to create them. Use the ``--force`` option to create them
-            without asking.
-
-            To maintain a copy of the secrets descriptions in the source
-            repository so they can be used to quickly configure a new
-            deployment after cloning, use the ``--mirror-locally`` option when
-            creating secrets from the root of the repository directory. A
-            copy of each modified group description file will be mirrored
-            into a subdirectory tree in the current working directory where
-            you can commit it to the repository.
-
-            If no group is specified with the ``--group`` option, the
-            environment identifier will be used as a default. This simplifies
-            things for small projects that don't need the drop-in style group
-            partitioning that is more appropriate for multi-tool open source
-            system integration where a single monolithic configuration file
-            becomes unwieldy and inflexible. This feature can also be used
-            for "global" variables that could apply across sub-components.
-
-            .. code-block:: console
-
-                $ psec secrets create newsecret --force
-
-            ..
-
-            KNOWN LIMITATION: This subcommand currently only works interactively
-            and you will be prompted for all attributes. In future, this may be
-            handled using ``key=value`` pairs for attributes, similar to the way
-            the ``secrets set`` command works.
-
-            """)  # noqa
-        # TODO(dittrich): address the known limitation
+        parser.add_argument(
+            'arg',
+            nargs='*',
+            default=None
+        )
         return parser
 
     def take_action(self, parsed_args):
-        self.logger.debug('[*] creating secrets')
         # Does an environment already exist?
         if not stdin.isatty():
             raise RuntimeError(
@@ -187,7 +185,7 @@ class SecretsCreate(Command):
             self.logger.info(
                 "[+] environment '%s' (%s) created",
                 env,
-                se.environment_path()
+                se.get_environment_path()
             )
         if parsed_args.update and len(parsed_args.arg) > 1:
             # TODO(dittrich): Refactor to loop over parsed_arg.arg

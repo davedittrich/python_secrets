@@ -4,11 +4,12 @@ export OAUTH_COUNT=$(grep -c Variable tests/secrets.d/oauth.json)
 export JENKINS_COUNT=$(grep -c Variable tests/secrets.d/jenkins.json)
 
 setup() {
-    run $PSEC environments create --clone-from tests/secrets.d 1>&2
+    run $PSEC --init environments create --clone-from tests/secrets.d 1>&2
 }
 
 teardown() {
     run $PSEC environments delete ${D2_ENVIRONMENT} --force 1>&2
+    remove_basedir
 }
 
 @test "'psec groups path' returns ${D2_SECRETS_BASEDIR}/${D2_ENVIRONMENT}/secrets.d" {

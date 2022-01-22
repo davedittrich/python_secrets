@@ -1,11 +1,37 @@
 load test_helper
 
 setup() {
-    run $PSEC environments create $D2_ENVIRONMENT --clone-from tests/secrets.d 1>&2
+    ensure_basedir
+    run $PSEC --init environments create $D2_ENVIRONMENT --clone-from tests/secrets.d 1>&2
 }
 
 teardown() {
-    run $PSEC environments delete $D2_ENVIRONMENT --force 1>&2
+    remove_basedir
+}
+
+@test "'psec --umask -1 run ...' fails" {
+    run $PSEC --umask -1 run umask 1>&2
+    assert_failure
+}
+
+@test "'psec --umask 007 run ...' fails" {
+    run $PSEC --umask 077 run umask 1>&2
+    assert_failure
+}
+
+@test "'psec --umask 0o7777 run ...' fails" {
+    run $PSEC --umask 0o7777 run umask 1>&2
+    assert_failure
+}
+
+@test "'psec --umask 0o007 succeeds'" {
+    run $PSEC -e testenv --umask 0o007 run umask 1>&2
+    assert_output "0007"
+}
+
+@test "'psec --umask 0o777 succeeds'" {
+    run $PSEC -e testenv --umask 0o777 run umask 1>&2
+    assert_output "0777"
 }
 
 @test "'psec -E run -- bash -c env' exports PYTHON_SECRETS_ENVIRONMENT" {

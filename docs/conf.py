@@ -44,10 +44,13 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.napoleon',
     'sphinx.ext.viewcode',
+    'sphinx.ext.autosectionlabel',
     'cliff.sphinxext'
 ]
 
+autosectionlabel_prefix_document = True
 autoprogram_cliff_application = 'psec'
+suppress_warnings = ['autosectionlabel.*']
 
 #  Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -63,7 +66,7 @@ master_doc = 'index'
 
 #  General information about the project.
 project = u'python_secrets'
-copyright = u'2018, Dave Dittrich'
+copyright = u'2018--2021, Dave Dittrich'
 
 #  The version info for the project you're documenting, acts as replacement
 #  for |version| and |release|, also used in various other places throughout

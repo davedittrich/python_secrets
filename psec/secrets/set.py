@@ -1,12 +1,15 @@
 # -*- coding: utf-8 -*-
 
-import argparse
+"""
+Set values manually for secrets.
+"""
+
 import logging
 import os
-import textwrap
 
 from subprocess import run, PIPE  # nosec
 from cliff.command import Command
+
 from psec.secrets_environment import (
     BOOLEAN_OPTIONS,
     SecretsEnvironment,
@@ -19,19 +22,72 @@ from psec.utils import (
 
 
 class SecretsSet(Command):
-    """Set values manually for secrets."""
+    """
+    Set values manually for secrets.
+
+    One or more secrets can be set directly by specifying them as
+    ``variable=value`` pairs as the arguments to this command::
+
+        $ psec secrets set trident_db_pass="rural coffee purple sedan"
+
+    Adding the ``--undefined`` flag will limit the secrets being set to only
+    those that are currently not set.  If values are not set, you are prompted
+    for the value.
+
+    When cloning an environment from definitions in a source repository or an
+    existing environment, you can set secrets by copying them from another
+    existing environment using the ``--from-environment`` option::
+
+        $ psec secrets set gosecure_pi_password --from-environment goSecure
+
+    When you are doing this immediately after cloning (when all variables
+    are undefined) you can set all undefined variables at once from
+    another environment this way::
+
+        $ psec environments create --clone-from goSecure
+        $ psec secrets set --undefined --from-environment goSecure
+
+    To facilitate setting variables from another environment where the variable
+    names may differ, use the assignment style syntax for arguments along with
+    the ``--from-environment`` option, like this::
+
+        $ psec secrets set hypriot_client_psk=gosecure_client_psk \\
+        > hypriot_client_ssid=gosecure_client_ssid \\
+        > --from-environment goSecure
+
+    If you do not provide values for variables using assignment syntax and you
+    are not copying values from another environment, you will be prompted for
+    values according to how the options field is defined.
+
+    * If the *only* option is ``*`` (meaning "any string"), you will be
+      prompted to enter a value. When prompted this way, you can cancel setting
+      the variable by entering an empty string. If you really want the value to
+      be an empty string, you *must* use the assignment syntax with an empty
+      string like this: ``variable=''``
+
+    * An options list that *does not contain* a ``*`` defines a finite set of
+      options. This means you are resticted to *only* choosing from the list.
+      This is similar to the ``Boolean`` type, which can only have a value of
+      ``true`` or ``false``.
+
+    * If one or more options are listed *along with* ``*``, you can either
+      choose from one of the listed values or select ``*`` to manually enter a
+      value not in the list.
+
+    * You can back out of making a change by selecting ``<CANCEL>`` from
+      the list.
+    """  # noqa
 
     logger = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
-        parser.formatter_class = argparse.RawDescriptionHelpFormatter
         parser.add_argument(
             '--undefined',
             action='store_true',
             dest='undefined',
             default=False,
-            help="Set values for undefined variables (default: False)"
+            help='Set values for undefined variables'
         )
         how = parser.add_mutually_exclusive_group(required=False)
         how.add_argument(
@@ -39,92 +95,23 @@ class SecretsSet(Command):
             metavar='<environment>',
             dest='from_environment',
             default=None,
-            help="Environment from which to copy " +
-                 "secret value(s) (default: None)"
+            help='Environment from which to copy secret value(s)'
         )
         how.add_argument(
             '--from-options',
             action='store_true',
             dest='from_options',
             default=False,
-            help="Set from first available option (default: False)"
+            help='Set from first available option'
         )
-        parser.add_argument('arg', nargs='*', default=None)
-        parser.epilog = textwrap.dedent("""
-            One or more secrets can be set directly by specifying them
-            as ``variable=value`` pairs as the arguments to this command.
-
-            .. code-block:: console
-
-                $ psec secrets set trident_db_pass="rural coffee purple sedan"
-
-            ..
-
-            Adding the ``--undefined`` flag will limit the secrets being set
-            to only those that are currently not set.  If values are not set,
-            you are prompted for the value.
-
-            When cloning an environment from definitions in a source repository
-            or an existing environment, you can set secrets by copying them
-            from another existing environment using the ``--from-environment``
-            option.
-
-            .. code-block:: console
-
-                $ psec secrets set gosecure_pi_password --from-environment goSecure
-
-            ..
-
-            When you are doing this immediately after cloning (when all variables
-            are undefined) you can set all undefined variables at once from
-            another environment this way:
-
-            .. code-block:: console
-
-                $ psec environments create --clone-from goSecure
-                $ psec secrets set --undefined --from-environment goSecure
-
-            ..
-
-            To facilitate setting variables from another environment where the
-            variable names may differ, use the assignment style syntax for
-            arguments along with the ``--from-environment`` option, like this:
-
-            .. code-block:: console
-
-                $ psec secrets set hypriot_client_psk=gosecure_client_psk \\
-                > hypriot_client_ssid=gosecure_client_ssid \\
-                > --from-environment goSecure
-
-            ..
-
-            If you do not provide values for variables using assignment syntax
-            and you are not copying values from another environment, you will be
-            prompted for values according to how the options field is defined.
-
-            * If the *only* option is ``*`` (meaning "any string"), you will be
-              prompted to enter a value. When prompted this way, you can cancel
-              setting the variable by entering an empty string. If you really
-              want the value to be an empty string, you *must* use the
-              assignment syntax with an empty string like this: ``variable=''``
-
-            * An options list that *does not contain* a ``*`` defines a finite
-              set of options. This means you are resticted to *only* choosing
-              from the list. This is similar to the ``Boolean`` type, which can
-              only have a value of ``true`` or ``false``.
-
-            * If one or more options are listed *along with* ``*``, you can either
-              choose from one of the listed values or select ``*`` to manually
-              enter a value not in the list.
-
-            * You can back out of making a change by selecting ``<CANCEL>`` from
-              the list.
-
-            """)  # noqa
+        parser.add_argument(
+            'arg',
+            nargs='*',
+            default=None
+        )
         return parser
 
     def take_action(self, parsed_args):
-        self.logger.debug('[*] setting secrets')
         if (
             len(parsed_args.arg) == 0
             and not parsed_args.undefined
@@ -132,8 +119,8 @@ class SecretsSet(Command):
         ):
             raise RuntimeError('[-] no secrets specified to be set')
         se = self.app.secrets
+        se.requires_environment()
         se.read_secrets_and_descriptions()
-        options = dict(se.Options)
         # TODO(dittrich): Use Variable map like this elsewhere
         variables = dict(se.Variable)
         types = dict(se.Type)
@@ -142,7 +129,6 @@ class SecretsSet(Command):
             from_env = SecretsEnvironment(
                 environment=parsed_args.from_environment)
             from_env.read_secrets()
-            options = dict(from_env._secrets.Options)
             variables = dict(from_env._secrets.Variable)
             types = dict(from_env._secrets.Type)
         args = (
@@ -160,17 +146,16 @@ class SecretsSet(Command):
             if parsed_args.from_options:
                 k, v, k_type = (
                     arg,
-                    options.get(arg, '').split(',')[0],
+                    se.get_default_value(arg),
                     types.get(arg)
                 )
                 # Don't set from options if the type is generable
                 if is_generable(k_type):
                     continue
-                v = None if v == '*' else v
             elif '=' not in arg:
                 # No value was specified with the argument
                 k = arg
-                k_type = self.app.secrets.get_type(k)
+                k_type = se.secrets.get_type(k)
                 if k_type is None:
                     self.logger.info("[-] no description for '%s'", k)
                     raise RuntimeError(
@@ -182,23 +167,22 @@ class SecretsSet(Command):
                     # Try to prompt user for value
                     if (
                         k_type == 'boolean'
-                        and k not in self.app.secrets.Options
+                        and k not in se.Options
                     ):
                         # Default options for boolean type
-                        self.app.secrets.Options[k] = BOOLEAN_OPTIONS
-                    k_options = self.app.secrets.get_options(k)
+                        se.Options[k] = BOOLEAN_OPTIONS
+                    k_options = se.get_options(k)
                     if (
                         k_options != '*'
-                        and k in self.app.secrets.Options
+                        and k in se.Options
                     ):
                         # Attempt to select from list. Options will look like
                         # 'a,b' or 'a,b,*', or 'a,*'.
-                        old_v = self.app.secrets.get_secret(k, allow_none=True)
-
+                        old_v = se.get_secret(k, allow_none=True)
                         v = prompt_options_list(
                             options=k_options.split(','),
                             default=(None if old_v in ['', None] else old_v),
-                            prompt=self.app.secrets.get_prompt(k)
+                            prompt=se.get_prompt(k)
                         )
                         if v is None:
                             # User cancelled selection.
@@ -207,14 +191,14 @@ class SecretsSet(Command):
                     # Ask user for value
                     if v is None:
                         v = prompt_string(
-                            prompt=self.app.secrets.get_prompt(k),
+                            prompt=se.get_prompt(k),
                             default=""
                         )
                     v = v if v != '' else None
             else:  # ('=' in arg)
                 # Assignment syntax found (a=b)
                 lhs, rhs = arg.split('=')
-                k_type = self.app.secrets.get_type(lhs)
+                k_type = se.get_type(lhs)
                 if k_type is None:
                     self.logger.info("[-] no description for '%s'", lhs)
                     raise RuntimeError(
@@ -254,7 +238,7 @@ class SecretsSet(Command):
                 self.logger.info("[-] could not obtain value for '%s'", k)
             else:
                 self.logger.debug("[+] setting variable '%s'", k)
-                self.app.secrets.set_secret(k, v)
+                se.set_secret(k, v)
 
 
 # vim: set fileencoding=utf-8 ts=4 sw=4 tw=0 et :

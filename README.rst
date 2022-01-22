@@ -17,7 +17,7 @@ Python command line app for managing groups of secrets (passwords, API keys, etc
 other project variables. Reduces security risks from things like weak default passwords,
 secrets stored in files in the source code repository directory.
 
-Version: 21.11.0
+Version: 22.1.0
 
 * Free software: `Apache 2.0 License <https://www.apache.org/licenses/LICENSE-2.0>`_
 * Documentation: https://python_secrets.readthedocs.org.
@@ -132,7 +132,7 @@ Directories and files
 There are three file system concepts that are important to understand
 regarding secrets storage:
 
-#. The *root directory for secrets storage*;
+#. The root *secrets base directory* for secrets storage;
 #. The *environment* for organizing a set of secrets and
    secret group descriptions;
 #. The *secrets* file and *group descriptions*.
@@ -147,17 +147,21 @@ regarding secrets storage:
 ..
 
 
-Root directory
-^^^^^^^^^^^^^^
+Secrets Base Directory
+^^^^^^^^^^^^^^^^^^^^^^
 
-By default, ``psec`` expects a root directory in the current user's
-home directory. Unless you over-ride the name of this directory, it defaults to
-``.secrets`` on Linux and ``secrets`` on Windows. The ability to change the
-location is supported to allow this directory to be placed on an exported
-file share, in a common location for use by a group on a workstation, or
-to move the contents to a different partition with more disk space.
+``psec`` expects to store all of files in a directory tree known as a
+*secrets base directory*. Originally, this was intended to be located in the
+current user's home directory. Unless you over-ride the name of this directory,
+it defaults to ``.secrets`` on Linux and ``secrets`` on Windows.
 
-The first time you use ``psec``, there will likely be no
+The ability to locate this directory in a different file system path is
+supported by command line options and an environment variable so you can store
+files on an exported file share, in a common location for use by a group on a
+workstation, or to move the contents to an encrypted disk or a different
+partition with more disk space.
+
+The first time you use ever use ``psec``, there will likely be no
 directory:
 
 .. code-block:: console
@@ -171,8 +175,9 @@ directory:
 
 .. note::
 
-   The root directory will be created automatically for you the first time
-   you create an environment.
+   The secrets base directory may be created automatically for you the
+   first time you create an environment.  For more information, see
+   ``psec init --help``.
 
 ..
 
@@ -405,7 +410,7 @@ etc.)
 The default secrets file name is ``secrets.json``, which means the default
 descriptions directory would be named ``secrets.d``.
 
-You can define environment variables to point to the root directory
+You can define environment variables to point to the secrets base directory
 in which a set of different environments can be configured at one
 time, to define the current environment, and to change the name
 of the secrets file to something else.
@@ -455,36 +460,50 @@ file.
 You can see one of the descriptions files from the template
 in this repository using ``cat tests/secrets.d/myapp.json``:
 
-.. code-block:: yaml
+.. code-block:: json
 
-    ---
-
-    - Variable: myapp_pi_password
-      Type: password
-      Prompt: 'Password for myapp "pi" user account'
-      Export: DEMO_pi_password
-
-    - Variable: myapp_app_password
-      Type: password
-      Prompt: 'Password for myapp web app'
-      Export: DEMO_app_password
-
-    - Variable: myapp_client_psk
-      Type: string
-      Prompt: 'Pre-shared key for myapp client WiFi AP'
-      Export: DEMO_client_ssid
-
-    - Variable: myapp_client_ssid
-      Type: string
-      Prompt: 'SSID for myapp client WiFi AP'
-      Export: DEMO_client_ssid
-
-    - Variable: myapp_ondemand_wifi
-      Type: boolean
-      Prompt: '"Connect on demand" when connected to wifi'
-      Export: DEMO_ondemand_wifi
-
-    # vim: ft=ansible :
+    [
+      {
+        "Variable": "myapp_pi_password",
+        "Type": "password",
+        "Prompt": "Password for myapp 'pi' user account",
+        "Export": "DEMO_pi_password"
+      },
+      {
+        "Variable": "myapp_app_password",
+        "Type": "password",
+        "Prompt": "Password for myapp web app",
+        "Export": "DEMO_app_password"
+      },
+      {
+        "Variable": "myapp_client_psk",
+        "Type": "string",
+        "Prompt": "Pre-shared key for myapp client WiFi AP",
+        "Options": "*",
+        "Export": "DEMO_client_psk"
+      },
+      {
+        "Variable": "myapp_client_ssid",
+        "Type": "string",
+        "Prompt": "SSID for myapp client WiFi AP",
+        "Options": "myapp_ssid,*",
+        "Export": "DEMO_client_ssid"
+      },
+      {
+        "Variable": "myapp_ondemand_wifi",
+        "Type": "boolean",
+        "Prompt": "'Connect on demand' when connected to wifi",
+        "Options": "true,false",
+        "Export": "DEMO_ondemand_wifi"
+      },
+      {
+        "Variable": "myapp_optional_setting",
+        "Type": "boolean",
+        "Prompt": "Optionally do something",
+        "Options": "false,true",
+        "Export": "DEMO_options_setting"
+      }
+    ]
 
 ..
 
@@ -1199,7 +1218,7 @@ Decrypted, it looks like this:
     myapp_app_password=brunt.outclass.alike.turbine
 
     --
-    Sent using psec version 21.11.0
+    Sent using psec version 22.1.0
     https://pypi.org/project/python-secrets/
     https://github.com/davedittrich/python_secrets
 
