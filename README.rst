@@ -132,7 +132,7 @@ Directories and files
 There are three file system concepts that are important to understand
 regarding secrets storage:
 
-#. The *root directory for secrets storage*;
+#. The root *secrets base directory* for secrets storage;
 #. The *environment* for organizing a set of secrets and
    secret group descriptions;
 #. The *secrets* file and *group descriptions*.
@@ -147,17 +147,21 @@ regarding secrets storage:
 ..
 
 
-Root directory
-^^^^^^^^^^^^^^
+Secrets Base Directory
+^^^^^^^^^^^^^^^^^^^^^^
 
-By default, ``psec`` expects a root directory in the current user's
-home directory. Unless you over-ride the name of this directory, it defaults to
-``.secrets`` on Linux and ``secrets`` on Windows. The ability to change the
-location is supported to allow this directory to be placed on an exported
-file share, in a common location for use by a group on a workstation, or
-to move the contents to a different partition with more disk space.
+``psec`` expects to store all of files in a directory tree known as a
+*secrets base directory*. Originally, this was intended to be located in the
+current user's home directory. Unless you over-ride the name of this directory,
+it defaults to ``.secrets`` on Linux and ``secrets`` on Windows.
 
-The first time you use ``psec``, there will likely be no
+The ability to locate this directory in a different file system path is
+supported by command line options and an environment variable so you can store
+files on an exported file share, in a common location for use by a group on a
+workstation, or to move the contents to an encrypted disk or a different
+partition with more disk space.
+
+The first time you use ever use ``psec``, there will likely be no
 directory:
 
 .. code-block:: console
@@ -171,8 +175,9 @@ directory:
 
 .. note::
 
-   The root directory will be created automatically for you the first time
-   you create an environment.
+   The secrets base directory may be created automatically for you the
+   first time you create an environment. See documentation for the
+   :ref:`usage:init` command for more information.
 
 ..
 
@@ -405,7 +410,7 @@ etc.)
 The default secrets file name is ``secrets.json``, which means the default
 descriptions directory would be named ``secrets.d``.
 
-You can define environment variables to point to the root directory
+You can define environment variables to point to the secrets base directory
 in which a set of different environments can be configured at one
 time, to define the current environment, and to change the name
 of the secrets file to something else.
