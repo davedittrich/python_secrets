@@ -17,7 +17,7 @@ Python command line app for managing groups of secrets (passwords, API keys, etc
 other project variables. Reduces security risks from things like weak default passwords,
 secrets stored in files in the source code repository directory.
 
-Version: 21.11.0
+Version: 22.1.0
 
 * Free software: `Apache 2.0 License <https://www.apache.org/licenses/LICENSE-2.0>`_
 * Documentation: https://python_secrets.readthedocs.org.
@@ -460,36 +460,50 @@ file.
 You can see one of the descriptions files from the template
 in this repository using ``cat tests/secrets.d/myapp.json``:
 
-.. code-block:: yaml
+.. code-block:: json
 
-    ---
-
-    - Variable: myapp_pi_password
-      Type: password
-      Prompt: 'Password for myapp "pi" user account'
-      Export: DEMO_pi_password
-
-    - Variable: myapp_app_password
-      Type: password
-      Prompt: 'Password for myapp web app'
-      Export: DEMO_app_password
-
-    - Variable: myapp_client_psk
-      Type: string
-      Prompt: 'Pre-shared key for myapp client WiFi AP'
-      Export: DEMO_client_ssid
-
-    - Variable: myapp_client_ssid
-      Type: string
-      Prompt: 'SSID for myapp client WiFi AP'
-      Export: DEMO_client_ssid
-
-    - Variable: myapp_ondemand_wifi
-      Type: boolean
-      Prompt: '"Connect on demand" when connected to wifi'
-      Export: DEMO_ondemand_wifi
-
-    # vim: ft=ansible :
+    [
+      {
+        "Variable": "myapp_pi_password",
+        "Type": "password",
+        "Prompt": "Password for myapp 'pi' user account",
+        "Export": "DEMO_pi_password"
+      },
+      {
+        "Variable": "myapp_app_password",
+        "Type": "password",
+        "Prompt": "Password for myapp web app",
+        "Export": "DEMO_app_password"
+      },
+      {
+        "Variable": "myapp_client_psk",
+        "Type": "string",
+        "Prompt": "Pre-shared key for myapp client WiFi AP",
+        "Options": "*",
+        "Export": "DEMO_client_psk"
+      },
+      {
+        "Variable": "myapp_client_ssid",
+        "Type": "string",
+        "Prompt": "SSID for myapp client WiFi AP",
+        "Options": "myapp_ssid,*",
+        "Export": "DEMO_client_ssid"
+      },
+      {
+        "Variable": "myapp_ondemand_wifi",
+        "Type": "boolean",
+        "Prompt": "'Connect on demand' when connected to wifi",
+        "Options": "true,false",
+        "Export": "DEMO_ondemand_wifi"
+      },
+      {
+        "Variable": "myapp_optional_setting",
+        "Type": "boolean",
+        "Prompt": "Optionally do something",
+        "Options": "false,true",
+        "Export": "DEMO_options_setting"
+      }
+    ]
 
 ..
 
@@ -1204,7 +1218,7 @@ Decrypted, it looks like this:
     myapp_app_password=brunt.outclass.alike.turbine
 
     --
-    Sent using psec version 21.11.0
+    Sent using psec version 22.1.0
     https://pypi.org/project/python-secrets/
     https://github.com/davedittrich/python_secrets
 
