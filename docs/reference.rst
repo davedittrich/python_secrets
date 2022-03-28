@@ -10,6 +10,16 @@ Version
 
    Current python_secrets version.
 
+psec.google_oauth2
+------------------
+
+.. automodule:: psec.google_oauth2
+   :members:
+   :undoc-members:
+   :special-members:
+   :noindex:
+
+
 psec.secrets_environment
 ------------------------
 
