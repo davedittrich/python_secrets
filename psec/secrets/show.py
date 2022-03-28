@@ -8,6 +8,8 @@ import logging
 import os
 
 from cliff.lister import Lister
+
+from psec.exceptions import SecretNotFoundError
 from psec.utils import redact
 
 
@@ -130,8 +132,7 @@ class SecretsShow(Lister):
             for v in parsed_args.arg:
                 if v not in all_items:
                     # Validate requested variables exist.
-                    raise RuntimeError(
-                        f"[-] '{v}' is not defined in this environment")
+                    raise SecretNotFoundError(secret=v)
             variables = parsed_args.arg \
                 if len(parsed_args.arg) > 0 \
                 else [k for k, v in se.items()]

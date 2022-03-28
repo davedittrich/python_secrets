@@ -175,14 +175,10 @@ def is_secrets_basedir(basedir=None, raise_exception=True):
     marker_path = Path(basedir) / MARKER
     if not basedir_path.exists():
         if raise_exception:
-            raise BasedirNotFoundError(
-                f"[-] directory '{basedir}' does not exist"
-            )
+            raise BasedirNotFoundError(basedir=basedir)
     elif not marker_path.exists():
         if raise_exception:
-            raise InvalidBasedirError(
-                f"[-] '{basedir}' is not a valid psec base directory"
-            )
+            raise InvalidBasedirError(basedir=basedir)
     else:
         result = True
     return result
@@ -336,8 +332,8 @@ def copydescriptions(src, dst):
 
     if not dst.endswith('.d'):
         raise InvalidDescriptionsError(
-            f"[-] destination '{dst}' is not a descriptions "
-            "('.d') directory")
+            msg=f"[-] destination '{dst}' is not a descriptions ('.d') directory"  # noqa
+        )
     # Ensure destination directory exists.
     os.makedirs(dst, exist_ok=True)
     errors = []
@@ -346,8 +342,8 @@ def copydescriptions(src, dst):
             copytree(src, dst)
         else:
             raise InvalidDescriptionsError(
-                f"[-] source '{src}' is not a descriptions "
-                "('.d') directory")
+                msg=f"[-] source '{src}' is not a descriptions ('.d') directory"  # noqa
+            )
     # catch the Error from the recursive copytree so that we can
     # continue with other files
     except Error as err:
