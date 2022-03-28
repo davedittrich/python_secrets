@@ -884,12 +884,12 @@ following steps:
    .. code-block:: console
 
        $ psec environments create test --clone-from ~/git/goSecure/secrets
-       new password variable "gosecure_app_password" is not defined
-       new string variable "gosecure_client_ssid" is not defined
-       new string variable "gosecure_client_ssid" is not defined
-       new string variable "gosecure_client_psk" is not defined
-       new password variable "gosecure_pi_password" is not defined
-       new string variable "gosecure_pi_pubkey" is not defined
+       new password variable "gosecure_app_password" is unset
+       new string variable "gosecure_client_ssid" is unset
+       new string variable "gosecure_client_ssid" is unset
+       new string variable "gosecure_client_psk" is unset
+       new password variable "gosecure_pi_password" is unset
+       new string variable "gosecure_pi_pubkey" is unset
        environment directory /Users/dittrich/.secrets/test created
 
    ..
@@ -927,12 +927,12 @@ following steps:
    .. code-block:: console
 
        $ psec -e test secrets generate
-       new password variable "gosecure_app_password" is not defined
-       new string variable "gosecure_client_ssid" is not defined
-       new string variable "gosecure_client_ssid" is not defined
-       new string variable "gosecure_client_psk" is not defined
-       new password variable "gosecure_pi_password" is not defined
-       new string variable "gosecure_pi_pubkey" is not defined
+       new password variable "gosecure_app_password" is unset
+       new string variable "gosecure_client_ssid" is unset
+       new string variable "gosecure_client_ssid" is unset
+       new string variable "gosecure_client_psk" is unset
+       new password variable "gosecure_pi_password" is unset
+       new string variable "gosecure_pi_pubkey" is unset
 
        $ psec -e test secrets show --no-redact --fit-width
        +-----------------------+----------+------------------------------+
@@ -952,9 +952,9 @@ following steps:
    .. code-block:: console
 
        $ psec -e test secrets set --undefined
-       new string variable "gosecure_client_psk" is not defined
-       new string variable "gosecure_client_ssid" is not defined
-       new string variable "gosecure_pi_pubkey" is not defined
+       new string variable "gosecure_client_psk" is unset
+       new string variable "gosecure_client_ssid" is unset
+       new string variable "gosecure_pi_pubkey" is unset
        Pre-shared key for goSecure client WiFi AP? [None]: atjhK5AlsQMw3Zh
        SSID for goSecure client WiFi AP? [None]: YourWiFiSSID
        SSH public key for accessing "pi" account? [None]: @~/.ssh/new_rsa.pub

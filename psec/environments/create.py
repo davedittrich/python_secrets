@@ -44,12 +44,12 @@ class EnvironmentsCreate(Command):
        initially be empty::
 
            $ psec environments create test --clone-from ~/git/goSecure/secrets
-           [+] new password variable "gosecure_app_password" is not defined
-           [+] new string variable "gosecure_client_ssid" is not defined
-           [+] new string variable "gosecure_client_ssid" is not defined
-           [+] new string variable "gosecure_client_psk" is not defined
-           [+] new password variable "gosecure_pi_password" is not defined
-           [+] new string variable "gosecure_pi_pubkey" is not defined
+           [+] new password variable "gosecure_app_password" is unset
+           [+] new string variable "gosecure_client_ssid" is unset
+           [+] new string variable "gosecure_client_ssid" is unset
+           [+] new string variable "gosecure_client_psk" is unset
+           [+] new password variable "gosecure_pi_password" is unset
+           [+] new string variable "gosecure_pi_pubkey" is unset
            [+] environment directory /Users/dittrich/.secrets/test created
 
     .. _davedittrich/goSecure: https://github.com/davedittrich/goSecure

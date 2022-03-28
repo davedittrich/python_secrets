@@ -629,7 +629,8 @@ class SecretsEnvironment(object):
         if not self.environment_exists(path_only=path_only):
             raise RuntimeError(
                 f"[-] environment '{self._environment}' "
-                "does not exist or is empty")
+                f"does not exist in {self._secrets_basedir} "
+                "or is empty")
 
     def keys(self):
         """Return the keys to the secrets dictionary"""
@@ -763,7 +764,7 @@ class SecretsEnvironment(object):
                 if self.get_secret(s, allow_none=True) is None:
                     if self.verbose_level > 1:
                         self.logger.warning(
-                            "[!] new %s variable '%s' is not defined",
+                            "[!] new %s variable '%s' is unset",
                             t,
                             s
                         )
