@@ -24,6 +24,21 @@ History
 .. Fixed for any bug fixes.
 .. Security in case of vulnerabilities.
 
+22.5.0 (2022-05-11)
+~~~~~~~~~~~~~~~~~~~
+
+Added
+^^^^^
+
+- Test support for Python 3.10.
+- Add better logging controls.
+
+Changed
+^^^^^^^
+
+- Generalize Google OAuth2 email functionality.
+- Improve use and testing of exceptions.
+
 22.1.0 (2022-01-22)
 ~~~~~~~~~~~~~~~~~~~
 
