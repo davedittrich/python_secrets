@@ -12,6 +12,22 @@
             "console": "integratedTerminal"
         },
         {
+            "name": "Debug Tests (async)",
+            "type": "python",
+            "request": "launch",
+            "console": "integratedTerminal",
+            "module": "pytest",
+            "cwd": "${workspaceFolder}",
+            // "args": [
+            //     "${workspaceFolder}/tests"
+            // ],
+            // "env": {
+            //     "D2_ENVIRONMENT": "tztoxtest",
+            //     "D2_SECRETS_BASEDIR": "/tmp/.tzsecrets"
+            // },
+            "stopOnEntry": false
+        },
+        {
             "name": "psec -v init",
             "type": "python",
             "request": "launch",
@@ -602,15 +618,19 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "psec secrets path",
+            "name": "psec secrets send dittrich@speakeasy.net google_oauth_username",
             "type": "python",
             "request": "launch",
             "module": "psec.__main__",
             "args": [
                 "--debug",
                 "secrets",
-                "path"
+                "send",
+                "--from", "dave.dittrich@gmail.com",
+                "dittrich@speakeasy.net",
+                "google_oauth_username"
             ],
+            "justMyCode": false,
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -624,6 +644,7 @@
                 "secrets",
                 "tree"
             ],
+            "justMyCode": false,
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },
@@ -662,10 +683,14 @@
             "module": "psec.__main__",
             "args": [
                 "--debug",
+                "-vvv",
                 "-E",
                 "run",
                 "printenv"
             ],
+            "env": {
+                "D2_LOGFILE": "psec.log"
+            },
             "stopOnEntry": false,
             "console": "integratedTerminal"
         },

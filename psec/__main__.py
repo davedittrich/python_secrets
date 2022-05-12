@@ -8,6 +8,7 @@ Generic modular configuration file manager.
 """
 
 # Standard imports
+import logging
 import os
 import sys
 import textwrap
@@ -39,6 +40,7 @@ DOES_NOT_NEED_SECRETS = ['complete', 'help', 'init', 'utils']
 # Use syslog for logging?
 # TODO(dittrich) Make this configurable, since it can fail on Mac OS X
 SYSLOG = False
+D2_LOGFILE = os.getenv('D2_LOGFILE', None)
 
 DEFAULT_ENVIRONMENT = get_default_environment()
 DEFAULT_BASEDIR = get_default_secrets_basedir()
@@ -179,6 +181,7 @@ class PythonSecretsApp(App):
             Environment variables consumed:
               BROWSER             Default browser for use by webbrowser.open().{show_current_value('BROWSER')}
               D2_ENVIRONMENT      Default environment identifier.{show_current_value('D2_ENVIRONMENT')}
+              D2_LOGFILE          Path to file for receiving log messages.{show_current_value('D2_LOGFILE')}
               D2_SECRETS_BASEDIR  Default base directory for storing secrets.{show_current_value('D2_SECRETS_BASEDIR')}
               D2_SECRETS_BASENAME Default base name for secrets storage files.{show_current_value('D2_SECRETS_BASENAME')}
               D2_NO_REDACT        Default redaction setting for ``secrets show`` command.{show_current_value('D2_NO_REDACT')}
@@ -296,6 +299,13 @@ def main(argv=sys.argv[1:]):
     """
     Command line interface for the ``psec`` program.
     """
+    if D2_LOGFILE is not None:
+        logging.basicConfig(
+            level=logging.INFO,
+            filename=D2_LOGFILE,
+            format="%(asctime)s.%(msecs).6d %(levelname)s: %(message)s",
+            datefmt="%Y-%m-%dT%H:%M:%S",
+        )
     myapp = PythonSecretsApp()
     return myapp.run(argv)
 

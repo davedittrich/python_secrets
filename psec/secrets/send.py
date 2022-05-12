@@ -4,9 +4,15 @@
 Send secrets using GPG encrypted email.
 """
 
+# Standard imports
 import logging
+import textwrap
 
+# External imports
 from cliff.command import Command
+
+# Local imports
+from psec import __version__
 from psec.google_oauth2 import GoogleSMTP
 
 
@@ -19,10 +25,7 @@ class SecretsSend(Command):
     """
 
     logger = logging.getLogger(__name__)
-
-    def __init__(self, app, app_args, cmd_name=None):
-        super().__init__(app, app_args, cmd_name=None)
-        self.refresh_token = None
+    refresh_token = None
 
     def get_parser(self, prog_name):
         parser = super().get_parser(prog_name)
@@ -79,30 +82,30 @@ class SecretsSend(Command):
         se = self.app.secrets
         se.requires_environment()
         se.read_secrets_and_descriptions()
-        # Attempt to get refresh token first
+        username = (
+            parsed_args.smtp_username
+            if parsed_args.smtp_username is not None
+            else se.get_secret('google_oauth_username')
+        )
         orig_refresh_token = None
-        self.refresh_token =\
-            se.get_secret(
-                'google_oauth_refresh_token',
-                allow_none=True
-            )
+        self.refresh_token = se.get_secret(
+            'google_oauth_refresh_token',
+            allow_none=True
+        )
         if parsed_args.refresh_token:
             orig_refresh_token = self.refresh_token
             self.logger.debug('[+] refreshing Google Oauth2 token')
         else:
             self.logger.debug('[+] sending secrets')
-        if parsed_args.smtp_username is not None:
-            username = parsed_args.smtp_username
-        else:
-            username = se.get_secret(
-                'google_oauth_username')
         googlesmtp = GoogleSMTP(
             username=username,
             client_id=se.get_secret(
                 'google_oauth_client_id'),
             client_secret=se.get_secret(
                 'google_oauth_client_secret'),
-            refresh_token=self.refresh_token
+            refresh_token=self.refresh_token,
+            gpg_encrypt=True,
+            verbose=self.app_args.verbose_level > 1
         )
         if parsed_args.refresh_token:
             new_refresh_token = googlesmtp.get_authorization()[0]
@@ -112,35 +115,56 @@ class SecretsSend(Command):
                     new_refresh_token
                 )
             return None
-        elif parsed_args.test_smtp:
-            auth_string, expires_in = googlesmtp.refresh_authorization()
+        if parsed_args.test_smtp:
+            auth_string, expires_in = googlesmtp.refresh_authorization()  # pylint: disable=unused-variable  # noqa
             googlesmtp.test_smtp(
                 googlesmtp.generate_oauth2_string(
-                    base64_encode=True))
-
-        recipients = list()
-        variables = list()
+                    base64_encode=True
+                )
+            )
+            return None
+        recipients = []
+        variables = []
         for arg in parsed_args.arg:
             if "@" in arg:
                 recipients.append(arg)
             else:
                 if se.get_secret(arg):
                     variables.append(arg)
-        message = "The following secret{} {} ".format(
-            "" if len(variables) == 1 else "s",
-            "is" if len(variables) == 1 else "are"
-            ) + "being shared with you:\n\n" + \
-            "\n".join(
-                ["{}='{}'".format(v, se.get_secret(v))
-                 for v in variables]
-            )
+        secrets_sent = "\n".join(
+            [
+                f"{v}='{se.get_secret(v)}'"
+                for v in variables
+            ]
+        )
+        message = (
+            f"The following secret{'' if len(variables) == 1 else 's'} "
+            f"{'is' if len(variables) == 1 else 'are'} "
+            "being shared with you:\n\n"
+            f"{secrets_sent}\n\n"
+        )
         # https://stackoverflow.com/questions/33170016/how-to-use-django-1-8-5-orm-without-creating-a-django-project/46050808#46050808  # noqa
+        addendum = textwrap.dedent(
+            f"""\
+            Sent using psec version {__version__}
+            https://pypi.org/project/python-secrets/
+            https://github.com/davedittrich/python_secrets
+            """
+        )
         for recipient in recipients:
-            googlesmtp.send_mail(parsed_args.smtp_sender,
-                                 recipient,
-                                 parsed_args.smtp_subject,
-                                 message)
-            self.logger.info("[+] sent encrypted secrets to %s", recipient)
+            msg = googlesmtp.create_msg(
+                parsed_args.smtp_sender,
+                recipient,
+                parsed_args.smtp_subject,
+                text_message=message,
+                addendum=addendum,
+            )
+            googlesmtp.send_mail(
+                parsed_args.smtp_sender,
+                recipient,
+                msg,
+            )
+            self.logger.info("[+] sent secrets to %s", recipient)
 
 
 # vim: set fileencoding=utf-8 ts=4 sw=4 tw=0 et :

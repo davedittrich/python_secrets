@@ -29,6 +29,8 @@ from xkcdpass import xkcd_password as xp
 
 from psec.exceptions import (
     BasedirNotFoundError,
+    PsecEnvironmentAlreadyExistsError,
+    # PsecEnvironmentNotFoundError,
     SecretNotFoundError,
 )
 from psec.utils import (
@@ -551,9 +553,9 @@ class SecretsEnvironment(object):
             # Create a new environment (optionally from an
             # existing environment)
             if self.environment_exists():
-                raise RuntimeError(
-                    f"[-] environment '{self._environment}' "
-                    "already exists")
+                raise PsecEnvironmentAlreadyExistsError(
+                    environment=self._environment
+                )
             os.makedirs(env_path,
                         exist_ok=True,
                         mode=mode)
@@ -627,7 +629,8 @@ class SecretsEnvironment(object):
         if not self.environment_exists(path_only=path_only):
             raise RuntimeError(
                 f"[-] environment '{self._environment}' "
-                "does not exist or is empty")
+                f"does not exist in {self._secrets_basedir} "
+                "or is empty")
 
     def keys(self):
         """Return the keys to the secrets dictionary"""
@@ -656,7 +659,7 @@ class SecretsEnvironment(object):
             raise RuntimeError('[-] must specify secret to get')
         v = self._secrets.get(secret, None)
         if v is None and not allow_none:
-            raise SecretNotFoundError(f"[-] '{secret}' is not defined")
+            raise SecretNotFoundError(secret=secret)
         return v
 
     def get_secret_export(self, secret):
@@ -761,7 +764,7 @@ class SecretsEnvironment(object):
                 if self.get_secret(s, allow_none=True) is None:
                     if self.verbose_level > 1:
                         self.logger.warning(
-                            "[!] new %s variable '%s' is not defined",
+                            "[!] new %s variable '%s' is unset",
                             t,
                             s
                         )

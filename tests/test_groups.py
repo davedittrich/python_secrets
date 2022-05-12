@@ -43,6 +43,12 @@ def groups_dir(env=None, basedir=None):
 
 # TODO(dittrich): Finish tests for groups
 
+class Test_Groups(unittest.TestCase):
+    @unittest.skip("Finish tests for groups")
+    def test_skip_groups(self):
+        pass
+
+
 if __name__ == '__main__':
     sys.exit(unittest.main())
 
