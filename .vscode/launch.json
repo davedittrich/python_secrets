@@ -79,7 +79,7 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "psec environments create --clone-from secrets.d",
+            "name": "psec environments create --init --clone-from secrets.d",
             "type": "python",
             "request": "launch",
             "module": "psec.__main__",
@@ -87,6 +87,7 @@
                 "--debug",
                 "environments",
                 "create",
+                "--init",
                 "--clone-from",
                 "secrets.d"
             ],
