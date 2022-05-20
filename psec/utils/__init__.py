@@ -253,7 +253,7 @@ def ensure_secrets_basedir(
                 )
                 result = client.launch()
                 if not result:
-                    sys.exit("[!] cancelled creating '%s'", secrets_basedir)
+                    sys.exit("[!] cancelled creating '%s'" % secrets_basedir)
             else:
                 sys.exit(
                     "[-] add the '--init' flag or use 'psec init' "
@@ -316,7 +316,7 @@ def copyanything(src, dst):
     except OSError as err:
         # TODO(dittrich): This causes a pylint error
         # Not sure what test cases would trigger this, or best fix.
-        if err.errno == os.errno.ENOTDIR:
+        if err.errno == os.errno.ENOTDIR:  # type: ignore
             copy(src, dst)
         else:
             raise

@@ -22,6 +22,7 @@ from cliff.commandmanager import CommandManager
 # Local imports
 from psec import __version__
 from psec.secrets_environment import SecretsEnvironment
+from psec.secrets_environment.factory import SecretFactory
 from psec.utils import (  # noqa
     bell,
     ensure_secrets_basedir,
@@ -33,6 +34,9 @@ from psec.utils import (  # noqa
     DEFAULT_UMASK,
     Timer,
 )
+
+# Register handlers to ensure parser arguments are available.
+from psec.secrets_environment.handlers import *  # noqa
 
 
 # Commands that do not need secrets environments.
@@ -66,6 +70,7 @@ class PythonSecretsApp(App):
         # Alias the following variable for consistency using code
         # using "logger" instead of "LOG".
         self.logger = self.LOG
+        self.secret_factory = SecretFactory()
 
     def build_option_parser(self, description, version):
         parser = super().build_option_parser(

@@ -7,17 +7,11 @@ Generate values for secrets.
 import logging
 
 from cliff.command import Command
-from xkcdpass.xkcd_password import CASE_METHODS
 
-from psec.secrets_environment import (
-    generate_secret,
-    DELIMITER,
-    MAX_WORDS_LENGTH,
-    MIN_WORDS_LENGTH,
-    MAX_ACROSTIC_LENGTH,
-    MIN_ACROSTIC_LENGTH,
-)
-from psec.utils import natural_number
+# Register handlers to ensure parser arguments are available.
+# FIXME: Doing this to enable 'make docs' to work properly.
+from psec.secrets_environment.factory import SecretFactory
+from psec.secrets_environment.handlers import *  # noqa
 
 
 class SecretsGenerate(Command):
@@ -49,70 +43,18 @@ class SecretsGenerate(Command):
             help='Set variables from first available option'
         )
         parser.add_argument(
-            '--min-words-length',
-            action='store',
-            type=natural_number,
-            dest='min_words_length',
-            default=MIN_WORDS_LENGTH,
-            help='Minimum word length for XKCD words list'
-        )
-        parser.add_argument(
-            '--max-words-length',
-            action='store',
-            type=natural_number,
-            dest='max_words_length',
-            default=MAX_WORDS_LENGTH,
-            help='Maximum word length for XKCD words list'
-        )
-        parser.add_argument(
-            '--min-acrostic-length',
-            action='store',
-            type=natural_number,
-            dest='min_acrostic_length',
-            default=MIN_ACROSTIC_LENGTH,
-            help='Minimum length of acrostic word for XKCD password'
-        )
-        parser.add_argument(
-            '--max-acrostic-length',
-            action='store',
-            type=natural_number,
-            dest='max_acrostic_length',
-            default=MAX_ACROSTIC_LENGTH,
-            help='Maximum length of acrostic word for XKCD password'
-        )
-        parser.add_argument(
-            '--acrostic',
-            action='store',
-            dest='acrostic',
-            default=None,
-            help='Acrostic word for XKCD password'
-        )
-        parser.add_argument(
-            '--delimiter',
-            action='store',
-            dest='delimiter',
-            default=DELIMITER,
-            help='Delimiter for XKCD password'
-        )
-        parser.add_argument(
-            "-C", "--case",
-            dest="case",
-            type=str,
-            metavar="CASE",
-            choices=list(CASE_METHODS.keys()), default="alternating",
-            help=(
-                'Choose the method for setting the case of each '
-                'word in the passphrase. '
-                f"Choices: {list(CASE_METHODS.keys())}"
-            )
-        )
-        parser.add_argument(
             '-U', '--unique',
             action='store_true',
             dest='unique',
             default=False,
             help='Generate unique values for each type of secret'
         )
+        try:
+            secret_factory = self.app.secret_factory
+        except AttributeError:
+            secret_factory = SecretFactory()
+        # FIXME: Cliff automatic document generation fails here.
+        parser = secret_factory.add_parser_arguments(parser)
         parser.add_argument(
             'arg',
             nargs='*',
@@ -139,14 +81,12 @@ class SecretsGenerate(Command):
                 raise TypeError(
                     f"[-] secret '{secret}' "
                     "has no type definition")
-            arguments = se.get_secret_arguments(secret)
             default_value = se.get_default_value(secret)
             if parsed_args.from_options and default_value:
                 value = default_value
             else:
-                value = generate_secret(
-                    secret_type=secret_type,
-                    *arguments,
+                handler = self.app.secret_factory.get_handler(secret_type)
+                value = handler.generate_secret(
                     **dict(parsed_args._get_kwargs())
                 )
             if value is not None:
