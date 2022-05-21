@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-UUID4 secret class.
+Boolean class.
 """
 
 # Standard imports
-import uuid
 
 # Local imports
 from ..factory import (
@@ -14,16 +13,16 @@ from ..factory import (
 
 
 @SecretFactory.register_handler(__name__.split('.')[-1])
-class UUID4_c(SecretHandler):
+class Boolean_c(SecretHandler):
     """
-    UUID4 token
+    Boolean string (`true` or `false`)
     """
 
-    def generate_secret(self, ) -> str:
+    def generate_secret(self) -> str:
         """
-        Generate a UUID4 string.
+        Cannot generate boolean strings.
         """
-        return str(uuid.uuid4())
+        return None
 
 
 # vim: set ts=4 sw=4 tw=0 et :

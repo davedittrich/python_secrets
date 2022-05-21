@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-UUID4 secret class.
+Hex token secret class.
 """
 
 # Standard imports
-import uuid
+import secrets
 
 # Local imports
 from ..factory import (
@@ -14,16 +14,16 @@ from ..factory import (
 
 
 @SecretFactory.register_handler(__name__.split('.')[-1])
-class UUID4_c(SecretHandler):
+class Token_Hex32_c(SecretHandler):
     """
-    UUID4 token
+    32-bit hexadecimal token
     """
 
-    def generate_secret(self, ) -> str:
+    def generate_secret(self, nbytes=32) -> str:
         """
-        Generate a UUID4 string.
+        Generate a 32-bit hexadecimal token.
         """
-        return str(uuid.uuid4())
+        return secrets.token_hex(nbytes=nbytes)
 
 
 # vim: set ts=4 sw=4 tw=0 et :

@@ -4,7 +4,7 @@ XKCD password class.
 """
 
 # Standard imports
-import secrets
+from secrets import choice
 
 # External imports
 from xkcdpass import xkcd_password as xp
@@ -28,11 +28,11 @@ MAX_ACROSTIC_LENGTH = 6
 DELIMITER = '.'
 
 
-@SecretFactory.register_handler('password')
+@SecretFactory.register_handler(__name__.split('.')[-1])
 class XKCD_Password_c(SecretHandler):
     """Simple (xkcd) password string"""
 
-    def __init__(self, ):
+    def __init__(self):
         self.last_result = None
 
     def add_parser_arguments(self, parser):
@@ -138,7 +138,7 @@ class XKCD_Password_c(SecretHandler):
         if acrostic is None:
             # Chose a random word for acrostic with length
             # equal to desired number of words.
-            acrostic = secrets.choice(
+            acrostic = choice(
                 xp.generate_wordlist(
                     wordfile=wordfile,
                     min_length=numwords,

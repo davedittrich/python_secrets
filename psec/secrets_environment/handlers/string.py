@@ -8,13 +8,13 @@ from ..factory import (
 )
 
 
-@SecretFactory.register_handler('string')
+@SecretFactory.register_handler(__name__.split('.')[-1])
 class String_c(SecretHandler):
+    """Arbitrary string"""
 
     def generate_secret(self, **kwargs) -> str:
         """
         Strings are not generated.
-        #FIXME: But I could use Bullet! ;)
         """
         return ''
 

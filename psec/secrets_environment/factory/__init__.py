@@ -47,10 +47,24 @@ class SecretFactory:
         return cls.class_map[secret_type]()
 
     @classmethod
+    def get_handler_classes(cls):
+        return [
+            secret_class for secret_class
+            in cls.class_map.values()
+        ]
+
+    @classmethod
     def add_parser_arguments(cls, parser):
-        for secret_class in cls.class_map.values():
+        for secret_class in cls.get_handler_classes():
             secret_class().add_parser_arguments(parser)
         return parser
+
+    @classmethod
+    def describe_secret_classes(cls):
+        return [
+            secret_class().describe()
+            for secret_class in cls.get_handler_classes()
+        ]
 
 
 class SecretHandler(ABC):
@@ -69,20 +83,21 @@ class SecretHandler(ABC):
         return parser
 
     def is_generable(self):
+        result = None
         try:
-            self.generate_secret(None)
+            result = self.generate_secret()
         except NotImplementedError:
             return False
-        else:
-            pass
-        return True
+        except RuntimeError:
+            return True
+        return result not in ['', None]
 
     def describe(self):
         return OrderedDict(
             {
-                'type': getattr(self, 'type'),
-                'description': getdoc(self),
-                'generable': self.is_generable()
+                'Type': self.__module__.split('.')[-1],
+                'Description': getdoc(self),
+                'Generable': self.is_generable()
             }
         )
 
