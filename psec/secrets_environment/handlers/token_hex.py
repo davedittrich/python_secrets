@@ -19,7 +19,7 @@ class Token_Hex32_c(SecretHandler):
     32-bit hexadecimal token
     """
 
-    def generate_secret(self, nbytes=32) -> str:
+    def generate_secret(self, nbytes=32, **kwargs) -> str:
         """
         Generate a 32-bit hexadecimal token.
         """

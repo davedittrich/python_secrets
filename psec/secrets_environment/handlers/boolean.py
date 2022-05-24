@@ -18,7 +18,7 @@ class Boolean_c(SecretHandler):
     Boolean string (`true` or `false`)
     """
 
-    def generate_secret(self) -> str:
+    def generate_secret(self, **kwargs) -> str:
         """
         Cannot generate boolean strings.
         """

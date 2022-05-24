@@ -20,7 +20,7 @@ class DIGEST_SHA256_c(SecretHandler):
     DIGEST-SHA256 (user:pass) digest
     """
 
-    def generate_secret(self, user=None, credential=None) -> str:
+    def generate_secret(self, user=None, credential=None, **kwargs) -> str:
         """
         Generate a DIGEST-SHA256 (user:pass) digest
         """

@@ -19,7 +19,7 @@ class UUID4_c(SecretHandler):
     UUID4 token
     """
 
-    def generate_secret(self, ) -> str:
+    def generate_secret(self, **kwargs) -> str:
         """
         Generate a UUID4 string.
         """

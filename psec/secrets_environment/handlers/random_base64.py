@@ -22,7 +22,7 @@ class Random_Bytes_c(SecretHandler):
     Random byte string
     """
 
-    def generate_secret(self, unique=False, size=DEFAULT_SIZE) -> str:
+    def generate_secret(self, unique=False, size=DEFAULT_SIZE, **kwargs) -> str:
         """
         Generate random byte string of 'size' bytes
         """

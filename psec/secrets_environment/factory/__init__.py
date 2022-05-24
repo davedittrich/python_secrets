@@ -72,7 +72,7 @@ class SecretHandler(ABC):
     Abstract secrets class.
     """
     @abstractmethod
-    def generate_secret(self, secret_type, **kwargs):
+    def generate_secret(self, **kwargs):
         raise NotImplementedError
 
     def add_parser_arguments(self, parser):
