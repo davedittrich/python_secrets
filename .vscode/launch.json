@@ -1022,6 +1022,22 @@
             "console": "integratedTerminal"
         },
         {
+            "name": "psec utils yaml-to-json - < /tmp/yamlsecrets/jenkins.yml",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.__main__",
+            "args": [
+                "--debug",
+                "utils",
+                "yaml-to-json",
+                "-",
+                "<",
+                "/tmp/yamlsecrets/jenkins.yml"
+            ],
+            "stopOnEntry": false,
+            "console": "integratedTerminal"
+        },
+        {
             "name": "psec utils yaml-to-json --convert /tmp/yamlsecrets",
             "type": "python",
             "request": "launch",

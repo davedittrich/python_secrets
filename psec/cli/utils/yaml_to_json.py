@@ -2,30 +2,40 @@
 
 import json
 import logging
-import os
 import sys
 import yaml
 
+from pathlib import Path
+from typing import Union
 from cliff.command import Command
 from psec.utils import safe_delete_file
-from psec.utils import get_files_from_path
+
 
 logger = logging.getLogger(__name__)
 
 
+def get_yaml_files_from_path(path: Path) -> list:
+    """
+    Return all YAML files from directory.
+    """
+    return [
+        fname for fname in path.iterdir()
+        if fname.suffix.lower() in ['.yml', '.yaml']
+    ]
+
+
 def update_from_yaml(
-    path='secrets/secrets.d',
+    path: Union[Path, None] = Path('secrets/secrets.d'),
     keep_original=False,
     verbose=False
 ):
-    """Helper function to convert old YAML style directories."""
-    yaml_files = [
-        fn for fn in get_files_from_path(path)
-        if fn.endswith('.yml')
-    ]
+    """
+    Helper function to convert old YAML style directories.
+    """
+    yaml_files = get_yaml_files_from_path(path)
     for yaml_file in yaml_files:
         # json_file = f"{os.path.splitext(yaml_file)[0]}.json"
-        json_file = yaml_file.replace('.yml', '.json')
+        json_file = yaml_file.with_suffix('.json')
         if verbose:
             logger.info("[+] converting '%s' to JSON", yaml_file)
         yaml_to_json(yaml_file=yaml_file, json_file=json_file)
@@ -36,24 +46,31 @@ def update_from_yaml(
 
 
 def yaml_to_json(
-    yaml_file=None,
-    json_file=None
+    yaml_file: Union[Path, str, None] = None,
+    json_file: Union[Path, None] = None,
 ):
-    """Translate a YAML file (or stdin) to a JSON file (or stdout)."""
+    """
+    Translate a YAML file (or stdin) to a JSON file (or stdout).
+    """
     if yaml_file in ['-', None]:
-        yml = yaml.safe_load(sys.stdin.read())
+        content = yaml.safe_load(sys.stdin.read())
+        if not content:
+            raise RuntimeError(
+                '[-] failed to read YAML content from stdin'
+            )
     else:
-        with open(yaml_file, 'r') as yf:
-            yml = yaml.safe_load(yf)
+        content = yaml.safe_load(yaml_file.read_text())
+        if not content:
+            raise RuntimeError(
+                '[-] failed to read YAML content from '
+                f"'{str(yaml_file)}'"
+            )
     if json_file in ['-', None]:
-        json.dump(yml, sys.stdout, indent=2)
+        json.dump(content, sys.stdout, indent=2)
         sys.stdout.write('\n')
         sys.stdout.flush()
     else:
-        with open(json_file, 'w') as jf:
-            json.dump(yml, jf, indent=2)
-            jf.write('\n')
-            jf.flush()
+        json_file.write_text(json.dumps(content, indent=2))
 
 
 class YAMLToJSON(Command):
@@ -61,16 +78,17 @@ class YAMLToJSON(Command):
     Convert YAML file(s) to JSON file(s).
 
     You can specify one or more files or directories to convert (including '-'
-    for standard input). By default the JSON format data will be written to
-    standard output.  This is useful for one-off conversion of YAML content to
-    see the resulting JSON, or to produce a file with a different name by
-    redirecting into a new file.
+    for standard input).
+
+    By default the JSON format data will be written to standard output.  This
+    is useful for one-off conversion of YAML content to see the resulting JSON,
+    or to produce a file with a different name by redirecting into a new file.
 
     The ``--convert`` option writes the JSON to a file with the same base name,
-    but with the ``.json`` extension, then deletes the original YAML file. If
-    you need to keep the original YAML file, add the ``--keep-original``
-    option.  If a directory is passed as an argument with the ``--convert``
-    option, *all* files ending in ``.yml`` in the directory will be processed.
+    but with a ``.json`` extension, then deletes the original YAML file unless
+    the ``--keep-original`` option is specified.  When a directory is passed as
+    an argument with the ``--convert`` option, *all* files ending in ``.yml``
+    in the directory will be processed.
 
     .. note::
 
@@ -126,7 +144,7 @@ class YAMLToJSON(Command):
             action='store_true',
             dest='convert',
             default=False,
-            help='Convert YAML to JSON format'
+            help='Convert file(s) in place'
         )
         parser.add_argument(
             '--keep-original',
@@ -147,23 +165,45 @@ class YAMLToJSON(Command):
         if '-' in parsed_args.arg and parsed_args.convert:
             raise RuntimeError('[-] stdin cannot be used with ``--convert``')
         for arg in parsed_args.arg:
-            path = os.path.abspath(arg) if arg != '-' else arg
-            if parsed_args.convert:
-                update_from_yaml(
-                    path=path,
-                    keep_original=parsed_args.keep_original,
-                    verbose=(self.app_args.verbose_level >= 1)
+            json_file = '-'
+            if arg == '-':
+                self.logger.info('[+] reading YAML from stdin')
+                yaml_to_json(
+                    yaml_file=arg,
+                    json_file=json_file,
                 )
-            elif path == '-':
-                yaml_to_json(yaml_file=path)
             else:
-                yaml_files = [
-                    fn for fn in get_files_from_path(path)
-                    if fn.endswith('.yml')
-                ]
-                for yaml_file in yaml_files:
-                    self.logger.info("[+] converting '%s'", yaml_file)
-                    yaml_to_json(yaml_file=yaml_file)
+                path = Path(arg).absolute()
+                if not path.exists():
+                    raise RuntimeError(
+                        f"[-] path does not exist: '{str(path)}'"
+                    )
+                if path.is_file():
+                    if parsed_args.convert:
+                        json_file = path.with_suffix('.json')
+                        self.logger.info("[+] converting '%s'", path)
+                    yaml_to_json(
+                        yaml_file=path,
+                        json_file=json_file,
+                    )
+                    if (
+                        parsed_args.convert
+                        and not parsed_args.keep_original
+                    ):
+                        if self.app_args.verbose_level >= 1:
+                            self.logger.info("[+] removing '%s'", str(path))
+                        safe_delete_file(str(path))
+                elif path.is_dir():
+                    if not parsed_args.convert:
+                        raise RuntimeError(
+                            "[-] must use '--convert' with directory "
+                            f"'{str(path)}'"
+                        )
+                    update_from_yaml(
+                        path=path,
+                        keep_original=parsed_args.keep_original,
+                        verbose=(self.app_args.verbose_level >= 1)
+                    )
 
 
 # vim: set fileencoding=utf-8 ts=4 sw=4 tw=0 et :
