@@ -94,7 +94,7 @@ CSV output (with header) can be produced like this:
     "Variable","Value"
     "trident_db_pass","gargle earlobe eggplant kissable"
     "ca_rootca_password","gargle earlobe eggplant kissable"
-    "consul_key","zQvSe0kdf0Xarbhb80XULQ=="
+    "consul_key","HEvUAItLFZ0+GjxfwTxLDKq5Fbt86UtXrInzpf71GGY="
     "jenkins_admin_password","gargle earlobe eggplant kissable"
     "rabbitmq_default_user_pass","gargle earlobe eggplant kissable"
     "rabbitmq_admin_user_pass","gargle earlobe eggplant kissable"
@@ -121,7 +121,7 @@ other programs.
       },
       {
         "Variable": "consul_key",
-        "Value": "zQvSe0kdf0Xarbhb80XULQ=="
+        "Value": "HEvUAItLFZ0+GjxfwTxLDKq5Fbt86UtXrInzpf71GGY="
       },
       {
         "Variable": "jenkins_admin_password",
@@ -165,7 +165,7 @@ like ``jq``, for example:
       "ca_rootca_password": "gargle earlobe eggplant kissable"
     }
     {
-      "consul_key": "zQvSe0kdf0Xarbhb80XULQ=="
+      "consul_key": "HEvUAItLFZ0+GjxfwTxLDKq5Fbt86UtXrInzpf71GGY="
     }
     {
       "jenkins_admin_password": "gargle earlobe eggplant kissable"
@@ -202,7 +202,7 @@ like ``jq``, for example:
     ]
     [
       "consul_key",
-      "zQvSe0kdf0Xarbhb80XULQ=="
+      "HEvUAItLFZ0+GjxfwTxLDKq5Fbt86UtXrInzpf71GGY="
     ]
     [
       "jenkins_admin_password",
@@ -237,7 +237,7 @@ like ``jq``, for example:
     > jq -r '.[] | [ (.Variable), .Value ] |@sh'
     'trident_db_pass' 'gargle earlobe eggplant kissable'
     'ca_rootca_password' 'gargle earlobe eggplant kissable'
-    'consul_key' 'zQvSe0kdf0Xarbhb80XULQ=='
+    'consul_key' 'HEvUAItLFZ0+GjxfwTxLDKq5Fbt86UtXrInzpf71GGY='
     'jenkins_admin_password' 'gargle earlobe eggplant kissable'
     'rabbitmq_default_user_pass' 'gargle earlobe eggplant kissable'
     'rabbitmq_admin_user_pass' 'gargle earlobe eggplant kissable'
@@ -253,7 +253,7 @@ like ``jq``, for example:
     > jq -r '.[] | [ (.Variable), .Value ] |@csv'
     "trident_db_pass","gargle earlobe eggplant kissable"
     "ca_rootca_password","gargle earlobe eggplant kissable"
-    "consul_key","zQvSe0kdf0Xarbhb80XULQ=="
+    "consul_key","HEvUAItLFZ0+GjxfwTxLDKq5Fbt86UtXrInzpf71GGY="
     "jenkins_admin_password","gargle earlobe eggplant kissable"
     "rabbitmq_default_user_pass","gargle earlobe eggplant kissable"
     "rabbitmq_admin_user_pass","gargle earlobe eggplant kissable"

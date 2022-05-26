@@ -1,7 +1,7 @@
 [
   {
     "Variable": "consul_key",
-    "Type": "consul_key",
+    "Type": "token_base64",
     "Prompt": "Key for Consul cluster"
   }
 ]

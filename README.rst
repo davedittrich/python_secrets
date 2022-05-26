@@ -708,10 +708,7 @@ To get a description of the available secret types, add the ``--types`` flag.
     | crypt_6          | crypt() SHA512 ("$6$")           |
     | token_hex        | Hexadecimal token                |
     | token_urlsafe    | URL-safe token                   |
-    | consul_key       | 16-byte BASE64 token             |
-    | sha1_digest      | DIGEST-SHA1 (user:pass) digest   |
     | sha256_digest    | DIGEST-SHA256 (user:pass) digest |
-    | zookeeper_digest | DIGEST-SHA1 (user:pass) digest   |
     | uuid4            | UUID4 token                      |
     | random_base64    | Random BASE64 token              |
     +------------------+----------------------------------+
@@ -774,18 +771,19 @@ each type of secret to simplify things, use the ``secrets generate`` command:
 
     $ psec secrets generate
     $ psec secrets show --column Variable --column Value
-    +----------------------------+--------------------------------------+
-    | Variable                   | Value                                |
-    +----------------------------+--------------------------------------+
-    | trident_db_pass            | gargle.earlobe.eggplant.kissable     |
-    | consul_key                 | zQvSe0kdf0Xarbhb80XULQ==             |
-    | jenkins_admin_password     | gargle.earlobe.eggplant.kissable     |
-    | rabbitmq_default_user_pass | gargle.earlobe.eggplant.kissable     |
-    | rabbitmq_admin_user_pass   | gargle.earlobe.eggplant.kissable     |
-    | trident_sysadmin_pass      | gargle.earlobe.eggplant.kissable     |
-    | vncserver_password         | gargle.earlobe.eggplant.kissable     |
-    | zookeeper_uuid4            | 769a77ad-b06f-4018-857e-23f970c777c2 |
-    +----------------------------+--------------------------------------+
+    +----------------------------+----------------------------------------------+
+    | Variable                   | Value                                        |
+    +----------------------------+----------------------------------------------+
+    | trident_db_pass            | gargle.earlobe.eggplant.kissable             |
+    | ca_rootca_password         | gargle.earlobe.eggplant.kissable             |
+    | consul_key                 | HEvUAItLFZ0+GjxfwTxLDKq5Fbt86UtXrInzpf71GGY= |
+    | jenkins_admin_password     | gargle.earlobe.eggplant.kissable             |
+    | rabbitmq_default_user_pass | gargle.earlobe.eggplant.kissable             |
+    | rabbitmq_admin_user_pass   | gargle.earlobe.eggplant.kissable             |
+    | trident_sysadmin_pass      | gargle.earlobe.eggplant.kissable             |
+    | vncserver_password         | gargle.earlobe.eggplant.kissable             |
+    | zookeeper_uuid4            | 769a77ad-b06f-4018-857e-23f970c777c2         |
+    +----------------------------+----------------------------------------------+
 
 ..
 
@@ -796,19 +794,19 @@ specifying the variable and value in the form ``variable=value``:
 
     $ psec secrets set trident_db_pass="rural coffee purple sedan"
     $ psec secrets show --column Variable --column Value
-    +----------------------------+--------------------------------------+
-    | Variable                   | Value                                |
-    +----------------------------+--------------------------------------+
-    | trident_db_pass            | rural coffee purple sedan            |
-    | ca_rootca_password         | gargle.earlobe.eggplant.kissable     |
-    | consul_key                 | zQvSe0kdf0Xarbhb80XULQ==             |
-    | jenkins_admin_password     | gargle.earlobe.eggplant.kissable     |
-    | rabbitmq_default_user_pass | gargle.earlobe.eggplant.kissable     |
-    | rabbitmq_admin_user_pass   | gargle.earlobe.eggplant.kissable     |
-    | trident_sysadmin_pass      | gargle.earlobe.eggplant.kissable     |
-    | vncserver_password         | gargle.earlobe.eggplant.kissable     |
-    | zookeeper_uuid4            | 769a77ad-b06f-4018-857e-23f970c777c2 |
-    +----------------------------+--------------------------------------+
+    +----------------------------+----------------------------------------------+
+    | Variable                   | Value                                        |
+    +----------------------------+----------------------------------------------+
+    | trident_db_pass            | rural coffee purple sedan                    |
+    | ca_rootca_password         | gargle.earlobe.eggplant.kissable             |
+    | consul_key                 | HEvUAItLFZ0+GjxfwTxLDKq5Fbt86UtXrInzpf71GGY= |
+    | jenkins_admin_password     | gargle.earlobe.eggplant.kissable             |
+    | rabbitmq_default_user_pass | gargle.earlobe.eggplant.kissable             |
+    | rabbitmq_admin_user_pass   | gargle.earlobe.eggplant.kissable             |
+    | trident_sysadmin_pass      | gargle.earlobe.eggplant.kissable             |
+    | vncserver_password         | gargle.earlobe.eggplant.kissable             |
+    | zookeeper_uuid4            | 769a77ad-b06f-4018-857e-23f970c777c2         |
+    +----------------------------+----------------------------------------------+
 
 ..
 
@@ -853,19 +851,19 @@ them to the command line as arguments to ``secrets generate``:
 
     $ psec secrets generate rabbitmq_default_user_pass rabbitmq_admin_user_pass
     $ psec secrets show --column Variable --column Value
-    +----------------------------+--------------------------------------+
-    | Variable                   | Value                                |
-    +----------------------------+--------------------------------------+
-    | trident_db_pass            | rural.coffee.purple.sedan            |
-    | ca_rootca_password         | gargle.earlobe.eggplant.kissable     |
-    | consul_key                 | zQvSe0kdf0Xarbhb80XULQ==             |
-    | jenkins_admin_password     | gargle.earlobe.eggplant.kissable     |
-    | rabbitmq_default_user_pass | embezzle.xerox.excess.skydiver       |
-    | rabbitmq_admin_user_pass   | embezzle.xerox.excess.skydiver       |
-    | trident_sysadmin_pass      | gargle.earlobe.eggplant.kissable     |
-    | vncserver_password         | gargle.earlobe.eggplant.kissable     |
-    | zookeeper_uuid4            | 769a77ad-b06f-4018-857e-23f970c777c2 |
-    +----------------------------+--------------------------------------+
+    +----------------------------+----------------------------------------------+
+    | Variable                   | Value                                        |
+    +----------------------------+----------------------------------------------+
+    | trident_db_pass            | rural.coffee.purple.sedan                    |
+    | ca_rootca_password         | gargle.earlobe.eggplant.kissable             |
+    | consul_key                 | HEvUAItLFZ0+GjxfwTxLDKq5Fbt86UtXrInzpf71GGY= |
+    | jenkins_admin_password     | gargle.earlobe.eggplant.kissable             |
+    | rabbitmq_default_user_pass | embezzle.xerox.excess.skydiver               |
+    | rabbitmq_admin_user_pass   | embezzle.xerox.excess.skydiver               |
+    | trident_sysadmin_pass      | gargle.earlobe.eggplant.kissable             |
+    | vncserver_password         | gargle.earlobe.eggplant.kissable             |
+    | zookeeper_uuid4            | 769a77ad-b06f-4018-857e-23f970c777c2         |
+    +----------------------------+----------------------------------------------+
 
 ..
 
@@ -1286,11 +1284,11 @@ using Ansible. Here is the variable as stored:
 .. code-block:: console
 
     $ psec secrets show consul_key
-    +------------+------------+--------------------------+
-    | Variable   | Type       | Value                    |
-    +------------+------------+--------------------------+
-    | consul_key | consul_key | GVLKCRqXqm0rxo0b4/ligQ== |
-    +------------+------------+--------------------------+
+    +------------+-----------+----------------------------------------------+
+    | Variable   | Type      | Value                                        |
+    +------------+-----------+----------------------------------------------+
+    | consul_key | token_hex | HEvUAItLFZ0+GjxfwTxLDKq5Fbt86UtXrInzpf71GGY= |
+    +------------+-----------+----------------------------------------------+
 
 ..
 
@@ -1326,7 +1324,7 @@ Bash. Ansible expects the file path passed to ``-extra-vars`` to start with an
 
     $ ansible -i localhost, -e @"$(psec secrets path)" -m debug -a 'var=consul_key' localhost
     localhost | SUCCESS => {
-        "consul_key": "GVLKCRqXqm0rxo0b4/ligQ=="
+        "consul_key": "HEvUAItLFZ0+GjxfwTxLDKq5Fbt86UtXrInzpf71GGY="
     }
 
 ..
