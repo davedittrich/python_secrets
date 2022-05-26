@@ -19,7 +19,13 @@ class Crypt_6_c(SecretHandler):
         crypt() style SHA512 ("$6$") digest
     """
 
-    def generate_secret(self, unique=False, password=None, salt=None, **kwargs):
+    def generate_secret(
+        self,
+        unique=False,
+        password=None,
+        salt=None,
+        **kwargs,
+    ):
         """
         Generate a crypt() style SHA512 ("$6$") digest
         """
