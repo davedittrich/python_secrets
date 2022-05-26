@@ -25,7 +25,7 @@ def get_yaml_files_from_path(path: Path) -> list:
 
 
 def update_from_yaml(
-    path: Union[Path, None] = Path('secrets/secrets.d'),
+    path: Path = Path('secrets/secrets.d'),
     keep_original=False,
     verbose=False
 ):
@@ -47,7 +47,7 @@ def update_from_yaml(
 
 def yaml_to_json(
     yaml_file: Union[Path, str, None] = None,
-    json_file: Union[Path, None] = None,
+    json_file: Union[Path, str, None] = None,
 ):
     """
     Translate a YAML file (or stdin) to a JSON file (or stdout).
@@ -59,6 +59,10 @@ def yaml_to_json(
                 '[-] failed to read YAML content from stdin'
             )
     else:
+        if not isinstance(yaml_file, Path):
+            raise TypeError(
+                f"[-] 'yaml_file' must be '-' or Path: {str(yaml_file)}"
+            )
         content = yaml.safe_load(yaml_file.read_text())
         if not content:
             raise RuntimeError(
@@ -167,7 +171,6 @@ class YAMLToJSON(Command):
         for arg in parsed_args.arg:
             json_file = '-'
             if arg == '-':
-                self.logger.info('[+] reading YAML from stdin')
                 yaml_to_json(
                     yaml_file=arg,
                     json_file=json_file,

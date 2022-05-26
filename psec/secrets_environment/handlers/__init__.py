@@ -9,7 +9,7 @@ from pathlib import Path
 
 handlers_dir = Path(__file__).parent
 # Derive list of supported secret types from files in this directory.
-__all__ = sorted(
+handlers = sorted(
     [
         str(item.stem)
         for item in handlers_dir.iterdir()
@@ -17,5 +17,6 @@ __all__ = sorted(
     ]  # noqa
 )
 
+__all__ = handlers
 
 # vim: set ts=4 sw=4 tw=0 et :
