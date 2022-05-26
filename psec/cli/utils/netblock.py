@@ -3,8 +3,10 @@
 import logging
 
 from cliff.command import Command
-from psec.utils import get_netblock
-from psec.utils.myip import get_myip
+from psec.utils import (
+    get_myip,
+    get_netblock,
+)
 
 
 class Netblock(Command):
