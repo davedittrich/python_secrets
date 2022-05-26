@@ -48,7 +48,7 @@ consul_key None consul_key'
     run $PSEC secrets show --no-redact hypriot_password
     refute_output 'None'
     run $PSEC secrets get myapp_client_psk
-    assert_output 'None'
+    assert_output ''
 }
 
 @test "'psec secrets generate --from-options' sets variables properly" {
