@@ -36,7 +36,7 @@ teardown() {
 }
 
 @test "Setting up ${KEEP_DIR} worked" {
-    assert_equal "$(files_count ${DONOTKEEP_DIR} '*.yml')" "0"
+    assert_equal "$(files_count ${DONOTKEEP_DIR} '*.yml')" "${TEST_FILES_COUNT}"
 }
 
 @test "'psec utils yaml-to-json ${KEEP_DIR}/jenkins.yml' works" {
@@ -68,7 +68,6 @@ teardown() {
 }
 
 @test "'psec utils yaml-to-json' from stdin works" {
-    skip 'reading from stdin not working for some reason...'
     run bash -c "cat ${KEEP_DIR}/oauth.yml | $PSEC utils yaml-to-json -"
     assert_output --partial '
   {
