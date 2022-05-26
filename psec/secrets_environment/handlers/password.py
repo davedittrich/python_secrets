@@ -4,7 +4,7 @@ XKCD password class.
 """
 
 # Standard imports
-from secrets import choice
+import secrets
 
 # External imports
 from xkcdpass import xkcd_password as xp
@@ -138,7 +138,7 @@ class XKCD_Password_c(SecretHandler):
         if acrostic is None:
             # Chose a random word for acrostic with length
             # equal to desired number of words.
-            acrostic = choice(
+            acrostic = secrets.choice(
                 xp.generate_wordlist(
                     wordfile=wordfile,
                     min_length=numwords,
