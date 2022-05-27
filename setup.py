@@ -58,6 +58,17 @@ setup(
     namespace_packages=[],
     # Alias the package name ("python_secrets") to the source directory
     # ("psec").
+    packages=[
+        'psec',
+        'psec/cli',
+        'psec/cli/environments',
+        'psec/cli/groups',
+        'psec/cli/secrets',
+        'psec/cli/utils',
+        'psec/secrets_environment/handlers',
+        'psec/secrets_environment/factory',
+        'psec/secrets_environment',
+    ],
     package_dir={'python_secrets': 'psec'},
     test_suite='tests',
 )

@@ -79,7 +79,7 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "psec environments create --clone-from secrets.d",
+            "name": "psec environments create --init --clone-from tests/secrets.d",
             "type": "python",
             "request": "launch",
             "module": "psec.__main__",
@@ -87,8 +87,9 @@
                 "--debug",
                 "environments",
                 "create",
+                "--init",
                 "--clone-from",
-                "secrets.d"
+                "tests/secrets.d"
             ],
             "stopOnEntry": false,
             "console": "integratedTerminal"
@@ -1016,6 +1017,22 @@
                 "utils",
                 "netblock",
                 "8.8.8.8"
+            ],
+            "stopOnEntry": false,
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "psec utils yaml-to-json - < /tmp/yamlsecrets/jenkins.yml",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.__main__",
+            "args": [
+                "--debug",
+                "utils",
+                "yaml-to-json",
+                "-",
+                "<",
+                "/tmp/yamlsecrets/jenkins.yml"
             ],
             "stopOnEntry": false,
             "console": "integratedTerminal"

@@ -25,7 +25,7 @@ teardown() {
 
 @test "'psec secrets set --from-options' sets variables properly" {
     run $PSEC secrets set --from-options
-    run $PSEC secrets show --no-redact -f value hypriot_user hypriot_password hypriot_hostname hypriot_wifi_country consul_key myapp_ondemand_wifi myapp_optional_setting
+    run $PSEC secrets show --no-redact -f value hypriot_user hypriot_password hypriot_hostname hypriot_wifi_country myapp_ondemand_wifi myapp_optional_setting consul_key
     assert_output 'hypriot_user pirate hypriot_user
 hypriot_password None hypriot_password
 hypriot_hostname hypriot hypriot_hostname
@@ -36,7 +36,7 @@ myapp_optional_setting false DEMO_options_setting'
 }
 
 @test "'psec secrets generate' sets variables properly" {
-    run $PSEC secrets show --no-redact consul_key hypriot_password myapp_client_psk -f csv
+    run $PSEC secrets show --no-redact hypriot_password consul_key myapp_client_psk -f csv
     assert_output '"Variable","Value","Export"
 "hypriot_password","","hypriot_password"
 "consul_key","","consul_key"
@@ -48,7 +48,7 @@ myapp_optional_setting false DEMO_options_setting'
     run $PSEC secrets show --no-redact hypriot_password
     refute_output 'None'
     run $PSEC secrets get myapp_client_psk
-    assert_output 'None'
+    assert_output ''
 }
 
 @test "'psec secrets generate --from-options' sets variables properly" {

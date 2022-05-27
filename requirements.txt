@@ -1,7 +1,11 @@
+setuptools>=42
+setuptools_scm
+chardet
+click
+cliff
 anytree
 beautifulsoup4
 bullet
-cliff
 configobj
 configparser
 ipwhois
@@ -14,8 +18,7 @@ Pygments
 property_manager
 psutil
 requests
-setuptools>=42
-setuptools_scm
 sphinx
+tox
 yamlreader
 xkcdpass

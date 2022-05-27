@@ -98,6 +98,10 @@ class SecretNotFoundError(SecretsError):
     """Secret not found"""
 
 
+class SecretTypeNotFoundError(SecretsError):
+    """Secret type not found"""
+
+
 class DescriptionsError(PsecBaseException):
     """Secrets descriptions exception base class"""
 

@@ -196,7 +196,7 @@ teardown() {
 @test "'psec -d /tmp environments list' fails" {
     run $PSEC -d /tmp environments list 1>&2
     assert_failure
-    assert_output --partial "is not a valid psec base directory"
+    assert_output --partial "is not valid"
 }
 
 @test "'psec environments list' works" {

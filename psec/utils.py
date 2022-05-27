@@ -15,12 +15,15 @@ import os
 import tempfile
 import time
 import psutil
+import random
 import subprocess  # nosec
 import stat
 import sys
 
 
 # External imports
+import ipaddress
+import requests
 from anytree import (
     Node,
     RenderTree,
@@ -34,6 +37,7 @@ try:
     )
 except ModuleNotFoundError:
     pass
+from bs4 import BeautifulSoup
 from collections import OrderedDict
 from ipwhois import IPWhois
 from pathlib import Path
@@ -253,7 +257,7 @@ def ensure_secrets_basedir(
                 )
                 result = client.launch()
                 if not result:
-                    sys.exit("[!] cancelled creating '%s'", secrets_basedir)
+                    sys.exit("[!] cancelled creating '%s'" % secrets_basedir)
             else:
                 sys.exit(
                     "[-] add the '--init' flag or use 'psec init' "
@@ -316,7 +320,7 @@ def copyanything(src, dst):
     except OSError as err:
         # TODO(dittrich): This causes a pylint error
         # Not sure what test cases would trigger this, or best fix.
-        if err.errno == os.errno.ENOTDIR:
+        if err.errno == os.errno.ENOTDIR:  # type: ignore
             copy(src, dst)
         else:
             raise
@@ -981,6 +985,101 @@ class Timer(object):
         minutes, seconds = divmod(rem, 60)
         return "{:0>2}:{:0>2}:{:05.2f}".format(
             int(hours), int(minutes), seconds)
+
+
+def myip_http(arg=None):
+    """Use an HTTP service that only returns IP address."""
+    # Return type if no argument for use in Lister.
+    if arg is None:
+        return 'https'
+    page = requests.get(arg, stream=True)
+    soup = BeautifulSoup(page.text, 'html.parser')
+    if page.status_code != 200:
+        raise RuntimeError(
+            f"[-] error: {page.reason}\n{soup.body.text}")
+    logger.debug('[-] got page: "%s"', page.text)
+    interface = ipaddress.ip_interface(str(soup).strip())
+    return interface
+
+
+def myip_resolver(arg=None):
+    """Use DNS resolver to get IP address."""
+    # Return type if no argument for use in Lister.
+    if arg is None:
+        return 'dns'
+    output = get_output(cmd=arg.split(" "))
+    # Clean up output
+    result = str(output[0]).replace('"', '')
+    try:
+        interface = ipaddress.ip_interface(result)
+    except TypeError:
+        interface = None
+    return interface
+
+
+# Function map. (See epilog help text for MyIP.)
+myip_methods = {
+    'akamai': {
+        'arg': 'dig +short @ns1-1.akamaitech.net ANY whoami.akamai.net',
+        'func': myip_resolver
+    },
+    'amazon': {
+        'arg': 'https://checkip.amazonaws.com',
+        'func': myip_http,
+    },
+    'google': {
+        'arg': 'dig +short @ns1.google.com TXT o-o.myaddr.l.google.com',
+        'func': myip_resolver,
+    },
+    'opendns_h': {
+        'arg': 'https://diagnostic.opendns.com/myip',
+        'func': myip_http,
+    },
+    'opendns_r': {
+        'arg': 'dig +short @resolver1.opendns.com myip.opendns.com -4',
+        'func': myip_resolver,
+    },
+    'icanhazip': {
+        'arg': 'https://icanhazip.com/',
+        'func': myip_http,
+    },
+    'infoip': {
+        'arg': 'https://api.infoip.io/ip',
+        'func': myip_http,
+    },
+    'tnx': {
+        'arg': 'https://tnx.nl/ip',
+        'func': myip_http,
+    }
+}
+
+
+def get_myip_methods(include_random=False):
+    """Return list of available method ids for getting IP address."""
+    methods = list(myip_methods.keys())
+    # For argparse choices, set True
+    if include_random:
+        methods.append('random')
+    return methods
+
+
+def get_myip(method='random'):
+    """Return current routable source IP address."""
+    methods = get_myip_methods()
+    if method == 'random':
+        method = random.choice(methods)  # nosec
+    elif method not in methods:
+        raise RuntimeError(
+            f"[-] method '{method}' for obtaining IP address is "
+            "not implemented")
+    func = myip_methods[method].get('func')
+    logger.debug("[+] determining IP address using '%s'", method)
+    arg = myip_methods[method].get('arg')
+    ip = str(func(arg=arg))
+    if len(ip) == 0 or ip is None:
+        raise RuntimeError(
+            f"[-] method '{method}' failed to get an IP address")
+    return ip
 
 
 # vim: set fileencoding=utf-8 ts=4 sw=4 tw=0 et :

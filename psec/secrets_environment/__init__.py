@@ -4,33 +4,20 @@
 Secrets environment class and related variables, functions.
 """
 
-import base64
-import binascii
-import hashlib
 import json
 import logging
 import os
 import re
-#
-# WARNING: When commands in a cliff app are implemented as Python modules,
-# there is a risk of shadowing Python internal modules. In this case,
-# the command group 'secrets' may cause import conflicts with the Python
-# 'secrets' module. Keep that in mind when making changes. It is imported
-# directly here (rather than using 'from ... import') to avoid the conflict.
-import secrets
-#
-import uuid
+import secrets  # noqa
 
 from collections import OrderedDict
 from pathlib import Path
 from shutil import copy
 from stat import S_IMODE
-from xkcdpass import xkcd_password as xp
 
 from psec.exceptions import (
     BasedirNotFoundError,
     PsecEnvironmentAlreadyExistsError,
-    # PsecEnvironmentNotFoundError,
     SecretNotFoundError,
 )
 from psec.utils import (
@@ -43,10 +30,11 @@ from psec.utils import (
     remove_other_perms,
     secrets_basedir_create,
     DEFAULT_MODE,
-    Memoize,
     SECRETS_DESCRIPTIONS_DIR,
     SECRETS_FILE,
 )
+from .factory import SecretFactory
+from .handlers import *  # noqa: F401,F403
 
 
 logger = logging.getLogger(__name__)
@@ -64,58 +52,8 @@ BOOLEAN_OPTIONS = [
     {'descr': 'False', 'ident': 'false'},
 ]
 
-DEFAULT_SIZE = 18
-# TODO(dittrich): Replace this with pydantic classes at some point.
-SECRET_TYPES = [
-        OrderedDict({
-            'Type': 'password',
-            'Description': 'Simple (xkcd) password string',
-            'Generable': True}),
-        OrderedDict({
-            'Type': 'string',
-            'Description': 'Simple string',
-            'Generable': False}),
-        OrderedDict({
-            'Type': 'boolean',
-            'Description': 'Boolean (\'true\'/\'false\')',
-            'Generable': False}),
-        OrderedDict({
-            'Type': 'crypt_6',
-            'Description': 'crypt() SHA512 (\'$6$\')',
-            'Generable': True}),
-        OrderedDict({
-            'Type': 'token_hex',
-            'Description': '32-bit hexadecimal token',
-            'Generable': True}),
-        OrderedDict({
-            'Type': 'token_urlsafe',
-            'Description': '32-bit URL-safe token',
-            'Generable': True}),
-        OrderedDict({
-            'Type': 'consul_key',
-            'Description': '32-byte BASE64 token',
-            'Generable': True}),
-        OrderedDict({
-            'Type': 'sha1_digest',
-            'Description': 'DIGEST-SHA1 (user:pass) digest',
-            'Generable': True}),
-        OrderedDict({
-            'Type': 'sha256_digest',
-            'Description': 'DIGEST-SHA256 (user:pass) digest',
-            'Generable': True}),
-        OrderedDict({
-            'Type': 'zookeeper_digest',
-            'Description': 'DIGEST-SHA1 (user:pass) digest',
-            'Generable': True}),
-        OrderedDict({
-            'Type': 'uuid4',
-            'Description': 'UUID4 token',
-            'Generable': True}),
-        OrderedDict({
-            'Type': 'random_base64',
-            'Description': 'Random BASE64 token',
-            'Generable': True})
-        ]
+secret_factory = SecretFactory()
+SECRET_TYPES = secret_factory.describe_secret_classes()
 SECRET_ATTRIBUTES = [
     'Variable',
     'Group',
@@ -126,193 +64,21 @@ SECRET_ATTRIBUTES = [
     'Options'
 ]
 
-# XKCD password defaults
-# See: https://www.unix-ninja.com/p/your_xkcd_passwords_are_pwned
-WORDS = 4
-MIN_WORDS_LENGTH = 3
-MAX_WORDS_LENGTH = 6
-MIN_ACROSTIC_LENGTH = 6
-MAX_ACROSTIC_LENGTH = 6
-DELIMITER = '.'
 
-
+# FIXME: Left for backwards compatibility.
 def is_generable(secret_type=None):
-    """Return boolean for generability of this secret type."""
-    generability = {i['Type']: i['Generable'] for i in SECRET_TYPES}
-    return generability.get(secret_type, False)
-
-
-def generate_secret(secret_type=None, *arguments, **kwargs):
-    """Generate secret for the type of key"""
-    _secret_types = [i['Type'] for i in SECRET_TYPES]
-    unique = kwargs.get('unique', False)
-    case = kwargs.get('case', 'lower')
-    acrostic = kwargs.get('acrostic', None)
-    numwords = kwargs.get('numwords', WORDS)
-    delimiter = kwargs.get('delimiter', DELIMITER)
-    min_words_length = kwargs.get('min_words_length', MIN_WORDS_LENGTH)
-    max_words_length = kwargs.get('max_words_length', MAX_WORDS_LENGTH)
-    min_acrostic_length = kwargs.get('min_acrostic_length',
-                                     MIN_ACROSTIC_LENGTH)
-    max_acrostic_length = kwargs.get('max_acrostic_length',
-                                     MAX_ACROSTIC_LENGTH)
-    wordfile = kwargs.get('wordfile', None)
-
-    if secret_type not in _secret_types:
-        raise TypeError(
-            f"[-] secret type '{secret_type}' is not supported")
-    # The generation functions are memoized, so they can't take keyword
-    # arguments. They are instead turned into positional arguments.
-    if secret_type == "string":  # nosec
-        return None
-    if secret_type == "boolean":  # nosec
-        return None
-    if secret_type == 'password':  # nosec
-        return generate_password(
-            unique,
-            acrostic,
-            numwords,
-            case,
-            delimiter,
-            min_words_length,
-            max_words_length,
-            min_acrostic_length,
-            max_acrostic_length,
-            wordfile,
-        )
-    if secret_type == 'crypt_6':  # nosec
-        return generate_crypt6(unique)
-    if secret_type == 'token_hex':  # nosec
-        return generate_token_hex(unique)
-    if secret_type == 'token_urlsafe':  # nosec
-        return generate_token_urlsafe(unique)
-    if secret_type == 'consul_key':  # nosec
-        return generate_consul_key(unique)
-    if secret_type == 'zookeeper_digest':  # nosec
-        return generate_zookeeper_digest(unique)
-    if secret_type == 'uuid4':  # nosec
-        return generate_uuid4(unique)
-    if secret_type == 'random_base64':  # nosec
-        return generate_random_base64(unique)
-    raise TypeError(f"Secret type '{secret_type}' is not supported")
-
-
-@Memoize
-def generate_password(
-    unique,
-    acrostic,
-    numwords,
-    case,
-    delimiter,
-    min_words_length,
-    max_words_length,
-    min_acrostic_length,
-    max_acrostic_length,
-    wordfile,
-):
-    """Generate an XKCD style password"""
-
-    # Create a wordlist from the default wordfile.
-    if wordfile is None:
-        wordfile = xp.locate_wordfile()
-    mywords = xp.generate_wordlist(
-        wordfile=wordfile,
-        min_length=min_words_length,
-        max_length=max_words_length)
-    if acrostic is None:
-        # Chose a random word for acrostic with length
-        # equal to desired number of words.
-        acrostic = secrets.choice(
-            xp.generate_wordlist(
-                wordfile=wordfile,
-                min_length=numwords,
-                max_length=numwords)
-        )
-    # Create a password with acrostic word
-    # See: https://www.unix-ninja.com/p/your_xkcd_passwords_are_pwned
-    password = xp.generate_xkcdpassword(mywords,
-                                        numwords=numwords,
-                                        acrostic=acrostic,
-                                        case=case,
-                                        delimiter=delimiter)
-    return password
-
-
-@Memoize
-def generate_crypt6(unique=False, password=None, salt=None):
-    """Generate a crypt() style SHA512 ("$6$") digest"""
-    try:  # Python 3
-        import crypt  # pylint: disable=import-outside-toplevel
-    except ModuleNotFoundError as e:  # noqa
-        raise
-    if password is None:
-        raise RuntimeError('generate_crypt6(): "password" is not defined')
-    if salt is None:
-        salt = crypt.mksalt(crypt.METHOD_SHA512)
-    pword = crypt.crypt(password, salt)
-    return pword
-
-
-@Memoize
-def generate_token_hex(unique=False, nbytes=32):
-    """Generate an random hexadecimal token."""
-    return secrets.token_hex(nbytes=nbytes)
-
-
-@Memoize
-def generate_token_urlsafe(unique=False, nbytes=32):
-    """Generate an URL-safe random token."""
-    return secrets.token_urlsafe(nbytes=nbytes)
-
-
-@Memoize
-def generate_consul_key(unique=False):
     """
-    Generate a consul key.
-    https://www.consul.io/docs/security/encryption
-
-    Key generated per the following description:
-    https://github.com/hashicorp/consul/blob/b3292d13fb8bbc8b14b2a1e2bbae29c6e105b8f4/command/keygen/keygen.go
-    """  # noqa
-    keybytes = secrets.token_bytes(32)
-    ckey = binascii.b2a_base64(keybytes)
-    return ckey.decode("utf-8").strip()
+    Return boolean for generability of this secret type.
+    """
+    return SecretFactory.get_handler(secret_type).is_generable()
 
 
-@Memoize
-def generate_zookeeper_digest(unique=False, user=None, credential=None):
-    """Generate a zookeeper-compatible digest from username and password"""
-    if user is None:
-        raise RuntimeError('zk_digest(): user is not defined')
-    if credential is None:
-        raise RuntimeError('zk_digest(): credential is not defined')
-    return base64.b64encode(
-        hashlib.sha1(user + ":" + credential).digest()  # nosec
-                            ).strip()
-
-
-@Memoize
-def generate_digest_sha1(unique=False, user=None, credential=None):
-    """Generate a SHA256 digest from username and password"""
-    if user is None:
-        raise RuntimeError('generate_digest_sha1(): user is not defined')
-    if credential is None:
-        raise RuntimeError('generate_digest_sha1(): credential is not defined')
-    return base64.b64encode(
-        hashlib.sha256(user + ":" + credential).digest()
-                            ).strip()
-
-
-@Memoize
-def generate_uuid4(unique=False):
-    """Generate a UUID4 string"""
-    return str(uuid.uuid4())
-
-
-@Memoize
-def generate_random_base64(unique=False, size=DEFAULT_SIZE):
-    """Generate random base64 encoded string of 'size' bytes"""
-    return base64.b64encode(os.urandom(size)).decode('UTF-8')
+# FIXME: Left for backwards compatibility.
+def generate_secret(secret_type, **kwargs):
+    """
+    Generate secret of the specified type.
+    """
+    return SecretFactory.get_handler(secret_type).generate_secret(**kwargs)
 
 
 class SecretsEnvironment(object):
@@ -409,7 +175,7 @@ class SecretsEnvironment(object):
                 )
             self.secrets_basedir = self._secrets_file.parents[1]
         else:
-            self._secrets_file = self._secrets_basedir / self._environment / SECRETS_FILE  # noqa
+            self._secrets_file = Path(self._secrets_basedir) / str(self._environment) / SECRETS_FILE  # noqa
         self._secrets_descriptions = self._secrets_file.parent / SECRETS_DESCRIPTIONS_DIR # noqa
         self._verbose_level = verbose_level
         self.export_env_vars = export_env_vars
@@ -435,6 +201,8 @@ class SecretsEnvironment(object):
         self._secrets = OrderedDict()
         self._descriptions = OrderedDict()
         self._changed = False
+        for attribute in SECRET_ATTRIBUTES:
+            self.__dict__[attribute] = {}
 
     def __str__(self):
         """Produce string representation of environment identifier"""
@@ -496,7 +264,7 @@ class SecretsEnvironment(object):
         or subdirectories within it"""
         if env is None:
             env = self._environment
-        _path = self.get_secrets_basedir() / env
+        _path = self.get_secrets_basedir() / str(env)
         if not (subdir is None and host is None):
             valid_subdir = r'a-zA-Z0-9_/'
             invalid_subdir = re.compile('[^{}]'.format(valid_subdir))
@@ -576,7 +344,7 @@ class SecretsEnvironment(object):
         """Returns the absolute path to secrets file"""
         if env is None:
             env = self._environment
-        return self.get_secrets_basedir() / env / self._secrets_file
+        return self.get_secrets_basedir() / str(env) / self._secrets_file
 
     def secrets_file_path_exists(self):
         """Return whether secrets file exists"""
@@ -668,7 +436,7 @@ class SecretsEnvironment(object):
         :param secret: :type: string
         :return: environment variable for exporting secret
         """
-        return self.Export.get(secret, secret)
+        return self.Export.get(secret, secret)  # type: ignore
 
     def _set_secret(self, secret, value):
         """Set secret to value and export environment variable
@@ -719,7 +487,7 @@ class SecretsEnvironment(object):
         :return:
         """
         try:
-            del self.Variable[secret]
+            del self.Variable[secret]  # type: ignore
         except KeyError:
             pass
         else:
@@ -727,12 +495,12 @@ class SecretsEnvironment(object):
 
     def get_type(self, variable):
         """Return type for variable or None if no description"""
-        return self.Type.get(variable, None)
+        return self.Type.get(variable, None)  # type: ignore
 
     def get_default_value(self, variable):
         """Return the default value from the Options attribute"""
         try:
-            values = self.Options.get(variable).split(',')
+            values = self.Options.get(variable).split(',')  # type: ignore
         except AttributeError:
             values = []
         return (
@@ -812,7 +580,7 @@ class SecretsEnvironment(object):
             _fname = self.get_secrets_file_path()
             self.logger.debug("[+] writing secrets to '%s'", _fname)
             with open(_fname, 'w') as f:
-                json.dump(self.Variable, f, indent=2)
+                json.dump(self.Variable, f, indent=2)  # type: ignore
                 f.write('\n')
             self._changed = False
             remove_other_perms(_fname)
@@ -957,7 +725,7 @@ class SecretsEnvironment(object):
                     # {'Prompt': 'Google OAuth2 username', 'Type': 'string', 'Variable': 'google_oauth_username'}  # noqa
                     for d in descriptions:
                         # TODO(dittrich): https://github.com/davedittrich/python_secrets/projects/1#card-49358317  # noqa
-                        self.Group[d['Variable']] = group
+                        self.Group[d['Variable']] = group  # type: ignore pylint: disable=no-member  # noqa
                         for k, v in d.items():
                             try:
                                 # Add to existing map
@@ -989,15 +757,15 @@ class SecretsEnvironment(object):
 
     def get_options(self, secret):
         """Get the options for setting the secret"""
-        return self.Options.get(secret, '*')
+        return self.Options.get(secret, '*')  # type: ignore
 
     def get_help(self, secret):
         """Get the help documentation URL for the secret"""
-        return self.Help.get(secret, '*')
+        return self.Help.get(secret, '*')  # type: ignore
 
     def get_prompt(self, secret):
         """Get the prompt for the secret"""
-        return self.Prompt.get(secret, secret)
+        return self.Prompt.get(secret, secret)  # type: ignore
 
     # TODO(dittrich): Not very DRY (but no time now)
     def get_secret_arguments(self, variable):
@@ -1032,7 +800,7 @@ class SecretsEnvironment(object):
     def get_group(self, item):
         """Return the group to which an item belongs."""
         try:
-            return self.Group[item]
+            return self.Group[item]  # type: ignore
         except (KeyError, AttributeError):
             return None
 
@@ -1041,4 +809,4 @@ class SecretsEnvironment(object):
         return [g for g in self._descriptions]
 
 
-# vim: set fileencoding=utf-8 ts=4 sw=4 tw=0 et :
+# vim: set ts=4 sw=4 tw=0 et :

@@ -35,9 +35,12 @@ teardown() {
     remove_basedir
 }
 
-@test "'psec utils yaml-to-json' from stdin works" {
-    run $PSEC utils yaml-to-json < tests/yamlsecrets/secrets.d/jenkins.yml
-    assert_success
+@test "Setting up ${KEEP_DIR} worked" {
+    assert_equal "$(files_count ${DONOTKEEP_DIR} '*.yml')" "${TEST_FILES_COUNT}"
+}
+
+@test "'psec utils yaml-to-json ${KEEP_DIR}/jenkins.yml' works" {
+    run $PSEC utils yaml-to-json ${KEEP_DIR}/jenkins.yml
     assert_output '[
   {
     "Variable": "jenkins_admin_password",
@@ -45,23 +48,51 @@ teardown() {
     "Prompt": "Password for Jenkins \"admin\" account"
   }
 ]'
+    assert_success
 }
 
-@test "'psec utils yaml-to-json' converts all YAML files in directory" {
-    run bash -c "$PSEC utils yaml-to-json ${KEEP_DIR} 2>&1 | grep -c converting"
-    assert_output "${TEST_FILES_COUNT}"
+@test "'psec utils yaml-to-json --convert ${DONOTKEEP_DIR}/jenkins.yml' works" {
+    run $PSEC utils yaml-to-json --convert ${DONOTKEEP_DIR}/jenkins.yml
+    assert_output --partial '[+] converting'
+    assert_success
+    [ -f ${DONOTKEEP_DIR}/jenkins.json ]
+    [ ! -f ${DONOTKEEP_DIR}/jenkins.yml ]
 }
 
-@test "'psec utils yaml-to-json --convert --keep-original' works" {
+@test "'psec utils yaml-to-json --convert --keep-original ${KEEP_DIR}/jenkins.yml' works" {
+    run $PSEC utils yaml-to-json --convert --keep-original ${KEEP_DIR}/jenkins.yml
+    assert_output --partial '[+] converting'
+    assert_success
+    [ -f ${KEEP_DIR}/jenkins.json ]
+    [ -f ${KEEP_DIR}/jenkins.yml ]
+}
+
+@test "'psec utils yaml-to-json' from stdin works" {
+    run bash -c "cat ${KEEP_DIR}/oauth.yml | $PSEC utils yaml-to-json -"
+    assert_output --partial '
+  {
+    "Variable": "google_oauth_username",
+    "Type": "string",
+    "Prompt": "Google OAuth2 username"
+  }'
+    assert_success
+    [ ! -f ${KEEP_DIR}/oauth.json ]
+    [ -f ${KEEP_DIR}/oauth.yml ]
+}
+
+@test "'psec utils yaml-to-json --convert ${DONOTKEEP_DIR}' works" {
+    run $PSEC utils yaml-to-json --convert ${DONOTKEEP_DIR}
+    assert_success
+    assert_equal "$(files_count ${DONOTKEEP_DIR} '*.json')" "${TEST_FILES_COUNT}"
+    assert_equal "$(files_count ${DONOTKEEP_DIR} '*.yml')" "0"
+}
+
+@test "'psec utils yaml-to-json --convert --keep-original ${KEEP_DIR}' works" {
     run $PSEC utils yaml-to-json --convert --keep-original ${KEEP_DIR}
+    assert_success
     assert_equal "$(files_count ${KEEP_DIR} '*.json')" "${TEST_FILES_COUNT}"
     assert_equal "$(files_count ${KEEP_DIR} '*.yml')" "${TEST_FILES_COUNT}"
 }
 
-@test "'psec utils yaml-to-json --convert' works" {
-    run $PSEC utils yaml-to-json --convert ${DONOTKEEP_DIR}
-    assert_equal "$(files_count ${DONOTKEEP_DIR} '*.json')" "${TEST_FILES_COUNT}"
-    assert_equal "$(files_count ${DONOTKEEP_DIR} '*.yml')" "0"
-}
 
 # vim: set ts=4 sw=4 tw=0 et :

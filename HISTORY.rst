@@ -24,6 +24,25 @@ History
 .. Fixed for any bug fixes.
 .. Security in case of vulnerabilities.
 
+22.5.1 (2022-05-25)
+~~~~~~~~~~~~~~~~~~~
+
+Changed
+^^^^^^^
+
+- Switch to using factory pattern for secrets generation
+- General code quality and test improvements
+- Improve `secrets get` command logic and help
+- Fix `utils yaml-to-json` subcommand and tests
+- Resolve setuptools warnings
+- Separate utility functions from `utils` subcommands
+
+Removed
+^^^^^^^
+
+- Retire `consul_key` secret type in favor of `token_base64`
+- Retire insecure secrets types (e.g., use of SHA1)
+
 22.5.0 (2022-05-11)
 ~~~~~~~~~~~~~~~~~~~
 
