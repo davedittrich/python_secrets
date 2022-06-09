@@ -488,6 +488,8 @@ class SecretsEnvironment(object):
         """
         try:
             del self.Variable[secret]  # type: ignore
+            del self.Type[secret]
+            del self._secrets[secret]
         except KeyError:
             pass
         else:
@@ -580,7 +582,7 @@ class SecretsEnvironment(object):
             _fname = self.get_secrets_file_path()
             self.logger.debug("[+] writing secrets to '%s'", _fname)
             with open(_fname, 'w') as f:
-                json.dump(self.Variable, f, indent=2)  # type: ignore
+                json.dump(self._secrets, f, indent=2)  # type: ignore
                 f.write('\n')
             self._changed = False
             remove_other_perms(_fname)
