@@ -183,7 +183,7 @@ class SecretsCreate(Command):
                 return 1
             se.environment_create()
             self.logger.info(
-                "[+] environment '%s' (%s) created",
+                "[+] environment '%s' created (%s)",
                 env,
                 se.get_environment_path()
             )

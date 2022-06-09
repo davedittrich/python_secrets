@@ -18,13 +18,13 @@ teardown() {
 @test "'psec -v init' creates secrets basedir" {
     run $PSEC init 2>&1
     assert_success
-    assert_output --partial "initialized secrets storage in"
+    assert_output --partial "is enabled for secrets storage"
     [ -f ${D2_SECRETS_BASEDIR}/.psec ]
 }
 
 @test "'psec init' twice does not cause errors" {
-    run $PSEC init 2>&1
-    run $PSEC init 2>&1
+    run $PSEC -q init
+    run $PSEC init -v 2>&1
     assert_success
     assert_output --partial "is enabled for secrets storage"
 }
@@ -33,8 +33,7 @@ teardown() {
     run $PSEC --init environments create testenv --clone-from tests/secrets.d 1>&2
     assert_success
     assert_output --partial "does not exist"
-    assert_output --partial "initialized secrets storage"
-    assert_output --partial "created"
+    assert_output --partial "environment 'testenv' created"
     [ -f ${D2_SECRETS_BASEDIR}/.psec ]
 }
 

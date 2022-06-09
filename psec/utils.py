@@ -166,7 +166,7 @@ def get_saved_default_environment(cwd=None):
 
 def is_secrets_basedir(basedir=None, raise_exception=True):
     """
-    Validate secrets base directory by presense of a marker file.
+    Validate secrets base directory by presence of a marker file.
 
     Returns False if the directory either does not exist or does not
     contain the expected marker file, or True otherwise.
@@ -240,12 +240,14 @@ def ensure_secrets_basedir(
     if secrets_basedir is None:
         secrets_basedir = get_default_secrets_basedir()
     homedir = str(Path.home())
-    allow_create = (
-        allow_create
-        or str(secrets_basedir).startswith(homedir)
-    )
+    if allow_create is None:
+        allow_create = str(secrets_basedir).startswith(homedir)
+    valid_basedir = False
     try:
-        is_secrets_basedir(basedir=secrets_basedir, raise_exception=True)
+        valid_basedir = is_secrets_basedir(
+            basedir=secrets_basedir,
+            raise_exception=True,
+        )
     except BasedirNotFoundError as err:
         if verbose_level > 0:
             logger.info(str(err))
@@ -263,14 +265,16 @@ def ensure_secrets_basedir(
                     "[-] add the '--init' flag or use 'psec init' "
                     "to initialize secrets storage"
                 )
+    except InvalidBasedirError as err:
+        if not allow_create:
+            sys.exit(str(err))
+    if not valid_basedir:
         secrets_basedir_create(basedir=secrets_basedir)
         if verbose_level >= 1:
             logger.info(
                 "[+] initialized secrets storage in '%s'",
                 secrets_basedir
             )
-    except InvalidBasedirError as err:
-        sys.exit(str(err))
     # else:
     #     if verbose_level >= 1:
     #         logger.info(
