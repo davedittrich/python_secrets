@@ -332,34 +332,26 @@ def copyanything(src, dst):
         remove_other_perms(dst)
 
 
-def copydescriptions(src, dst):
+def copydescriptions(src: Path, dst: Path):
     """
     Just copy the descriptions portion of an environment
     directory from src to dst.
     """
 
-    if not dst.endswith('.d'):
+    if not dst.suffix == '.d':
         raise InvalidDescriptionsError(
             msg=f"[-] destination '{dst}' is not a descriptions ('.d') directory"  # noqa
         )
     # Ensure destination directory exists.
-    os.makedirs(dst, exist_ok=True)
-    errors = []
-    try:
-        if src.endswith('.d') and os.path.isdir(src):
-            copytree(src, dst)
-        else:
-            raise InvalidDescriptionsError(
-                msg=f"[-] source '{src}' is not a descriptions ('.d') directory"  # noqa
-            )
-    # catch the Error from the recursive copytree so that we can
-    # continue with other files
-    except Error as err:
-        errors.extend(err.args[0])
-    except OSError as err:
-        errors.append((src, dst, str(err)))
-    if errors:
-        raise Error(errors)
+    dst.mkdir(exist_ok=True)
+    if src.suffix == '.d' and not src.is_dir():
+        raise InvalidDescriptionsError(
+            msg=f"[-] source '{src}' is not a descriptions ('.d') directory"  # noqa
+        )
+    for descr_file in [f for f in src.iterdir() if f.suffix == '.json']:
+        src_text = descr_file.read_text(encoding='utf-8')
+        dst_file = dst / descr_file.name
+        dst_file.write_text(src_text, encoding='utf-8')
     remove_other_perms(dst)
 
 

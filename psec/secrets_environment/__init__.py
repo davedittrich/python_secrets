@@ -14,6 +14,7 @@ from collections import OrderedDict
 from pathlib import Path
 from shutil import copy
 from stat import S_IMODE
+from typing import Union
 
 from psec.exceptions import (
     BasedirNotFoundError,
@@ -25,7 +26,6 @@ from psec.utils import (
     find,
     get_default_environment,
     get_default_secrets_basedir,
-    get_files_from_path,
     is_secrets_basedir,
     remove_other_perms,
     secrets_basedir_create,
@@ -298,8 +298,8 @@ class SecretsEnvironment(object):
         """Return whether secrets environment directory exists
         and contains files other than 'tmp' directory."""
         _ep = self.get_environment_path(env=env)
-        result = os.path.isdir(self.get_descriptions_path())
-        if not result and os.path.exists(_ep):
+        result = self.get_descriptions_path().is_dir()
+        if not result and _ep.exists():
             if path_only:
                 result = True
             else:
@@ -311,10 +311,12 @@ class SecretsEnvironment(object):
                 result = len(_files) > 0
         return result
 
-    def environment_create(self,
-                           source=None,
-                           alias=False,
-                           mode=DEFAULT_MODE):
+    def environment_create(
+        self,
+        source=None,
+        alias=False,
+        mode=DEFAULT_MODE,
+    ):
         """Create secrets environment directory"""
         env_path = self.get_environment_path()
         if not alias:
@@ -348,7 +350,7 @@ class SecretsEnvironment(object):
 
     def secrets_file_path_exists(self):
         """Return whether secrets file exists"""
-        return os.path.exists(self.get_secrets_file_path())
+        return self.get_secrets_file_path().exists()
 
     def get_descriptions_path(
         self,
@@ -550,19 +552,21 @@ class SecretsEnvironment(object):
         to ensure these are written out.
         """
         _fname = self.get_secrets_file_path()
-        yaml_fname = f"{os.path.splitext(_fname)[0]}.yml"
+        yaml_fname = _fname.parent / f"{_fname.stem}.yml"
         # TODO(dittrich): Add upgrade feature... some day.
         # Until then, reference a way for anyone affected to manually
         # convert files.
-        if os.path.exists(yaml_fname):
+        if yaml_fname.exists():
             raise RuntimeError(
                 f"[-] old YAML style file '{yaml_fname}' found:\n"
                 f"[-] see ``psec utils yaml-to-json --help`` for "
                 "information about converting to JSON")
-        self.logger.debug("[+] reading secrets from '%s'", _fname)
+        self.logger.debug("[+] reading secrets from '%s'", str(_fname))
         try:
-            with open(_fname, 'r') as f:
-                _secrets = json.load(f, object_pairs_hook=OrderedDict)
+            _secrets = json.loads(
+                _fname.read_text(),
+                object_pairs_hook=OrderedDict,
+            )
             for k, v in _secrets.items():
                 self._set_secret(k, v)
         except FileNotFoundError as err:
@@ -581,7 +585,7 @@ class SecretsEnvironment(object):
         if self._changed:
             _fname = self.get_secrets_file_path()
             self.logger.debug("[+] writing secrets to '%s'", _fname)
-            with open(_fname, 'w') as f:
+            with _fname.open('w', encoding='utf-8') as f:
                 json.dump(self._secrets, f, indent=2)  # type: ignore
                 f.write('\n')
             self._changed = False
@@ -589,7 +593,7 @@ class SecretsEnvironment(object):
         else:
             self.logger.debug('[-] not writing secrets (unchanged)')
 
-    def clone_from(self, src=None):
+    def clone_from(self, src: Union[Path, str]):
         """
         Clone from existing definition file(s)
 
@@ -597,37 +601,32 @@ class SecretsEnvironment(object):
         group descriptions, (b) a single group descriptions file,
         or (c) an existing environment's descriptions file(s).
         """
-        src = src.strip('/')
-        if src in ['', None]:
-            raise RuntimeError('[-] no source provided')
-        if os.path.isdir(src):
-            if not src.endswith('.d'):
+        if isinstance(src, Path):
+            if src.is_dir() and src.suffix != '.d':
                 raise RuntimeError(
                     "[-] refusing to process a directory without "
-                    f"a '.d' extension ('{src}')")
-        elif os.path.isfile(src) and not src.endswith('.json'):
-            raise RuntimeError(
-                "[-] refusing to process a file without "
-                f"a '.json' extension ('{src}')")
-        if not (os.path.exists(src) or self.environment_exists(env=src)):
+                    f"a '.d' extension ('{str(src)}')")
+            elif src.is_file() and src.suffix != '.json':
+                raise RuntimeError(
+                    "[-] refusing to process a file without "
+                    f"a '.json' extension ('{str(src)}')")
+        else:
+            if self.environment_exists(env=src):
+                # Only copy descriptions when cloning from environment.
+                src_env = SecretsEnvironment(environment=src)
+                src = src_env.get_descriptions_path()
+            else:
+                src = Path(src)
+        if not src.exists():
             raise RuntimeError(
                 f"[-] directory or environment '{src}' does not exist")
         dest = self.get_descriptions_path(create=True)
-        if src.endswith('.d'):
-            # Copy anything when cloning from directory.
-            src_files = get_files_from_path(src)
-            for src_file in src_files:
-                copy(src_file, dest)
-        elif src.endswith('.json'):
+        if src.suffix == '.d':
+            # Only copy descriptions when cloning from environment.
+            copydescriptions(src, dest)
+        else:
             # Copy just the one file when cloning from a file.
             copy(src, dest)
-        else:
-            # Only copy descriptions when cloning from environment.
-            src_env = SecretsEnvironment(environment=src)
-            copydescriptions(
-                src_env.get_descriptions_path(),
-                dest
-            )
         remove_other_perms(dest)
         self.read_secrets_descriptions()
         self.find_new_secrets()
@@ -700,13 +699,15 @@ class SecretsEnvironment(object):
     def read_secrets_descriptions(self):
         """Load the descriptions of groups of secrets from a .d directory"""
         groups_dir = self.get_descriptions_path()
-        if not os.path.exists(groups_dir):
+        if not groups_dir.exists():
             self.logger.info('[-] secrets descriptions directory not found')
         else:
             # Ignore .order file and any other file extensions
-            extensions = ['json']
-            file_names = [fn for fn in os.listdir(groups_dir)
-                          if any(fn.endswith(ext) for ext in extensions)]
+            extensions = ['.json']
+            file_names = [
+                fn for fn in groups_dir.iterdir()
+                if fn.suffix in extensions
+            ]
             self.logger.debug(
                 "[+] reading secrets descriptions from '%s'", groups_dir)
             # Iterate over files in directory, loading them into
@@ -714,8 +715,8 @@ class SecretsEnvironment(object):
             if len(file_names) == 0:
                 self.logger.info('[-] no secrets descriptions files found')
             for fname in file_names:
-                group = os.path.splitext(fname)[0]
-                if os.path.splitext(group)[1] != "":
+                group = fname.stem
+                if '.' in group:
                     raise RuntimeError(
                         f"[-] group name cannot include '.': '{group}'")
                 descriptions = self.read_descriptions(group=group)
