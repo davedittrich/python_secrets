@@ -70,6 +70,7 @@ class SecretsGenerate(Command):
         to_change = parsed_args.arg \
             if len(parsed_args.arg) > 0 \
             else [k for k, v in se.items()]
+        cached_result = {}
         for secret in to_change:
             secret_type = se.get_secret_type(secret)
             # >> Issue: [B105:hardcoded_password_string] Possible hardcoded password: 'string'  # noqa
@@ -86,9 +87,14 @@ class SecretsGenerate(Command):
                 value = default_value
             else:
                 handler = self.app.secret_factory.get_handler(secret_type)
-                value = handler.generate_secret(
-                    **dict(parsed_args._get_kwargs())
+                value = cached_result.get(
+                    secret_type,
+                    handler.generate_secret(
+                        **dict(parsed_args._get_kwargs())
+                    )
                 )
+                if not parsed_args.unique and handler.is_generable():
+                    cached_result[secret_type] = value
             if value is not None:
                 self.logger.debug(
                     "[+] generated %s for %s", secret_type, secret)

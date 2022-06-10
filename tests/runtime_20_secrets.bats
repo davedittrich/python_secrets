@@ -51,6 +51,15 @@ myapp_optional_setting false DEMO_options_setting'
     assert_output ''
 }
 
+@test "'psec secrets generate --unique' works properly" {
+    run $PSEC secrets generate
+    run bash -c "$PSEC secrets show --no-redact -t password -c Value -f value | sort | uniq | wc -l"
+    assert_output '1'
+    run $PSEC secrets generate --unique
+    run bash -c "$PSEC secrets show --no-redact -t password -c Value -f value | sort | uniq | wc -l"
+    refute_output '1'
+}
+
 @test "'psec secrets generate --from-options' sets variables properly" {
     run $PSEC secrets generate --from-options
     run $PSEC secrets get hypriot_hostname
