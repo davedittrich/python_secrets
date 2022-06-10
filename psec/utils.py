@@ -12,18 +12,19 @@ Utility functions.
 import argparse
 import logging
 import os
-import tempfile
-import time
-import psutil
 import random
 import subprocess  # nosec
 import stat
 import sys
+import tempfile
+import time
 
 
 # External imports
 import ipaddress
 import requests
+import psutil
+
 from anytree import (
     Node,
     RenderTree,
@@ -44,7 +45,6 @@ from pathlib import Path
 from shutil import (
     copy,
     copytree,
-    Error,
 )
 
 # Local imports
