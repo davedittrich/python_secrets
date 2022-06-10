@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import logging
-import os
 import shutil
 import sys
+from sys import stdin
 
 # TODO(dittrich): https://github.com/Mckinsey666/bullet/issues/2
 # Workaround until bullet has Windows missing 'termios' fix.
@@ -16,8 +16,10 @@ except ModuleNotFoundError:
 
 from cliff.command import Command
 from psec.secrets_environment import SecretsEnvironment
-from psec.utils import atree
-from sys import stdin
+from psec.utils import (
+    get_environment_paths,
+    atree,
+)
 
 
 class EnvironmentsDelete(Command):
@@ -82,13 +84,16 @@ class EnvironmentsDelete(Command):
         return parser
 
     def take_action(self, parsed_args):
-        se = self.app.secrets
         choice = None
         if parsed_args.environment is not None:
             choice = parsed_args.environment
         elif stdin.isatty() and 'Bullet' in globals():
             # Give user a chance to choose.
-            environments = os.listdir(se.get_secrets_basedir())
+            environments = [
+                fpath.name for fpath in get_environment_paths(
+                    basedir=self.app.secrets_basedir
+                )
+            ]
             choices = ['<CANCEL>'] + sorted(environments)
             cli = Bullet(prompt="\nSelect environment to delete:",
                          choices=choices,
