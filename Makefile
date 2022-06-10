@@ -51,7 +51,7 @@ test-tox:
 	@if [ -f .python_secrets_environment ]; then (echo '[!] Remove .python_secrets_environment prior to testing'; exit 1); fi
 	touch docs/psec_help.txt
 	@# See comment in tox.ini file.
-	tox -e pep8 && tox -e bandit,docs,bats && tox -e py37,py38,py39,py310,pypi && echo '[+] test-tox: All tests passed'
+	tox -e pep8 && tox -e bandit,docs,bats && tox -e clean,py37,py38,py39,py310,pypi,report && echo '[+] test-tox: All tests passed'
 
 .PHONY: test-bats
 test-bats: bats-libraries
@@ -133,6 +133,10 @@ clean: clean-docs
 .PHONY: clean-docs
 clean-docs:
 	cd docs && make clean
+
+.PHONY: spotless
+spotless: clean
+	rm -rf htmlcov
 
 #HELP install - install in required Python virtual environment (default $(REQUIRED_VENV))
 .PHONY: install
