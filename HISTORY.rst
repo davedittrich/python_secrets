@@ -24,24 +24,44 @@ History
 .. Fixed for any bug fixes.
 .. Security in case of vulnerabilities.
 
+22.6.0 (2022-06-10)
+~~~~~~~~~~~~~~~~~~~
+
+Added
+^^^^^
+
+- Add `about` command to expose selected settings for situational awareness.
+- Add `pytest` code coverage reporting.
+- Add BATS runtime tests related to changes.
+
+Changed
+^^^^^^^
+
+- Fix caching bug with non-unique secret generation.
+- Fix bugs with setting/deleting secrets.
+- Improve secrets basedir initialization logic.
+- Expand use of `pathlib.Path`.
+- Improvements to source code, test, and vscode launch configuration quality.
+
+
 22.5.1 (2022-05-25)
 ~~~~~~~~~~~~~~~~~~~
 
 Changed
 ^^^^^^^
 
-- Switch to using factory pattern for secrets generation
-- General code quality and test improvements
-- Improve `secrets get` command logic and help
-- Fix `utils yaml-to-json` subcommand and tests
-- Resolve setuptools warnings
-- Separate utility functions from `utils` subcommands
+- Switch to using factory pattern for secrets generation.
+- General code quality and test improvements.
+- Improve `secrets get` command logic and help.
+- Fix `utils yaml-to-json` subcommand and tests.
+- Resolve setuptools warnings.
+- Separate utility functions from `utils` subcommands.
 
 Removed
 ^^^^^^^
 
-- Retire `consul_key` secret type in favor of `token_base64`
-- Retire insecure secrets types (e.g., use of SHA1)
+- Retire `consul_key` secret type in favor of `token_base64`.
+- Retire insecure secrets types (e.g., use of SHA1).
 
 22.5.0 (2022-05-11)
 ~~~~~~~~~~~~~~~~~~~
