@@ -12,18 +12,19 @@ Utility functions.
 import argparse
 import logging
 import os
-import tempfile
-import time
-import psutil
 import random
 import subprocess  # nosec
 import stat
 import sys
+import tempfile
+import time
 
 
 # External imports
 import ipaddress
 import requests
+import psutil
+
 from anytree import (
     Node,
     RenderTree,
@@ -44,7 +45,6 @@ from pathlib import Path
 from shutil import (
     copy,
     copytree,
-    Error,
 )
 
 # Local imports
@@ -166,7 +166,7 @@ def get_saved_default_environment(cwd=None):
 
 def is_secrets_basedir(basedir=None, raise_exception=True):
     """
-    Validate secrets base directory by presense of a marker file.
+    Validate secrets base directory by presence of a marker file.
 
     Returns False if the directory either does not exist or does not
     contain the expected marker file, or True otherwise.
@@ -240,12 +240,14 @@ def ensure_secrets_basedir(
     if secrets_basedir is None:
         secrets_basedir = get_default_secrets_basedir()
     homedir = str(Path.home())
-    allow_create = (
-        allow_create
-        or str(secrets_basedir).startswith(homedir)
-    )
+    if allow_create is None:
+        allow_create = str(secrets_basedir).startswith(homedir)
+    valid_basedir = False
     try:
-        is_secrets_basedir(basedir=secrets_basedir, raise_exception=True)
+        valid_basedir = is_secrets_basedir(
+            basedir=secrets_basedir,
+            raise_exception=True,
+        )
     except BasedirNotFoundError as err:
         if verbose_level > 0:
             logger.info(str(err))
@@ -263,14 +265,16 @@ def ensure_secrets_basedir(
                     "[-] add the '--init' flag or use 'psec init' "
                     "to initialize secrets storage"
                 )
+    except InvalidBasedirError as err:
+        if not allow_create:
+            sys.exit(str(err))
+    if not valid_basedir:
         secrets_basedir_create(basedir=secrets_basedir)
         if verbose_level >= 1:
             logger.info(
                 "[+] initialized secrets storage in '%s'",
                 secrets_basedir
             )
-    except InvalidBasedirError as err:
-        sys.exit(str(err))
     # else:
     #     if verbose_level >= 1:
     #         logger.info(
@@ -328,34 +332,26 @@ def copyanything(src, dst):
         remove_other_perms(dst)
 
 
-def copydescriptions(src, dst):
+def copydescriptions(src: Path, dst: Path):
     """
     Just copy the descriptions portion of an environment
     directory from src to dst.
     """
 
-    if not dst.endswith('.d'):
+    if not dst.suffix == '.d':
         raise InvalidDescriptionsError(
             msg=f"[-] destination '{dst}' is not a descriptions ('.d') directory"  # noqa
         )
     # Ensure destination directory exists.
-    os.makedirs(dst, exist_ok=True)
-    errors = []
-    try:
-        if src.endswith('.d') and os.path.isdir(src):
-            copytree(src, dst)
-        else:
-            raise InvalidDescriptionsError(
-                msg=f"[-] source '{src}' is not a descriptions ('.d') directory"  # noqa
-            )
-    # catch the Error from the recursive copytree so that we can
-    # continue with other files
-    except Error as err:
-        errors.extend(err.args[0])
-    except OSError as err:
-        errors.append((src, dst, str(err)))
-    if errors:
-        raise Error(errors)
+    dst.mkdir(exist_ok=True)
+    if src.suffix == '.d' and not src.is_dir():
+        raise InvalidDescriptionsError(
+            msg=f"[-] source '{src}' is not a descriptions ('.d') directory"  # noqa
+        )
+    for descr_file in [f for f in src.iterdir() if f.suffix == '.json']:
+        src_text = descr_file.read_text(encoding='utf-8')
+        dst_file = dst / descr_file.name
+        dst_file.write_text(src_text, encoding='utf-8')
     remove_other_perms(dst)
 
 

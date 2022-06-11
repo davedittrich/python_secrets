@@ -128,7 +128,7 @@ class EnvironmentsCreate(Command):
                 )
                 se.environment_create(source=parsed_args.clone_from)
                 self.logger.info(
-                    "[+] environment '%s' (%s) created",
+                    "[+] environment '%s' created (%s)",
                     environment,
                     se.get_environment_path()
                 )

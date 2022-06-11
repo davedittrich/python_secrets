@@ -67,6 +67,17 @@
             "console": "integratedTerminal"
         },
         {
+            "name": "psec about",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.__main__",
+            "args": [
+                "about"
+            ],
+            "stopOnEntry": false,
+            "console": "integratedTerminal"
+        },
+        {
             "name": "psec --version",
             "type": "python",
             "request": "launch",
@@ -415,7 +426,7 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "psec secrets delete --group notanalias newsecret",
+            "name": "psec secrets delete --group consul consul_key",
             "type": "python",
             "request": "launch",
             "module": "psec.__main__",
@@ -424,9 +435,8 @@
                 "secrets",
                 "delete",
                 "--group",
-                "notanalias",
-                "newsecret",
-                "--mirror-locally"
+                "consul",
+                "consul_key"
             ],
             "stopOnEntry": false,
             "console": "integratedTerminal"

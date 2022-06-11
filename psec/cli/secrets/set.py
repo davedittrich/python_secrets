@@ -129,16 +129,18 @@ class SecretsSet(Command):
             from_env = SecretsEnvironment(
                 environment=parsed_args.from_environment)
             from_env.read_secrets()
-            variables = dict(from_env._secrets.Variable)
-            types = dict(from_env._secrets.Type)
+            variables = dict(from_env.Variable)
+            types = dict(from_env.Type)
         args = (
             list(variables.keys()) if len(parsed_args.arg) == 0
             else parsed_args.arg
         )
         if parsed_args.undefined and len(variables) > 0:
             # Downselect to just those currently undefined
-            args = [k for k, v in variables.items()
-                    if v in [None, '']]
+            args = [
+                k for k, v in variables.items()
+                if v in [None, '']
+            ]
         if len(args) == 0:
             raise RuntimeError('[-] no secrets identified to be set')
         for arg in args:
@@ -155,7 +157,7 @@ class SecretsSet(Command):
             elif '=' not in arg:
                 # No value was specified with the argument
                 k = arg
-                k_type = se.secrets.get_type(k)
+                k_type = se.get_type(k)
                 if k_type is None:
                     self.logger.info("[-] no description for '%s'", k)
                     raise RuntimeError(

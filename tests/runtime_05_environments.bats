@@ -98,6 +98,13 @@ teardown() {
 0 directories, 6 files"
 }
 
+@test "'psec environments create testenv2 --clone-from testenv' works" {
+    run $PSEC -q environments create testenv --clone-from tests/secrets.d 1>&2
+    run $PSEC -vvv environments create testenv2 --clone-from testenv 1>&2
+    assert_success
+    [ -d $D2_SECRETS_BASEDIR/testenv2/secrets.d ]
+}
+
 @test "'psec environments create --clone-from tests/secrets.d/jenkins.json' works" {
     run $PSEC environments delete ${D2_ENVIRONMENT} --force 1>&2
     run $PSEC -vvv environments create --clone-from tests/secrets.d/jenkins.json 1>&2

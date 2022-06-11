@@ -8,6 +8,11 @@ import logging
 
 from cliff.command import Command
 
+from psec.utils import (
+    get_default_secrets_basedir,
+    secrets_basedir_create,
+)
+
 
 class Init(Command):
     """
@@ -40,13 +45,27 @@ class Init(Command):
 
     logger = logging.getLogger(__name__)
 
+    def get_parser(self, prog_name):
+        try:
+            basedir = self.app.secrets_basedir
+        except AttributeError:
+            # For cliff
+            basedir = get_default_secrets_basedir()
+        parser = super().get_parser(prog_name)
+        parser.add_argument(
+            'basedir',
+            nargs='?',
+            default=basedir
+        )
+        return parser
+
     def take_action(self, parsed_args):
-        # Initialization is handled in psec.__main__, so no need to do
-        # anything here. This is just a placeholder so a command exists.
+        secrets_basedir = parsed_args.basedir
+        secrets_basedir_create(basedir=secrets_basedir)
         if self.app_args.verbose_level > 0:
             self.logger.info(
                 "[+] directory '%s' is enabled for secrets storage",
-                self.app.secrets_basedir
+                secrets_basedir
             )
 
 

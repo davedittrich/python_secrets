@@ -77,6 +77,10 @@ class EnvironmentsList(Lister):
 
     def take_action(self, parsed_args):
         default_env = get_default_environment()
+        self.logger.debug(
+            "[+] using secrets basedir '%s'",
+            self.app.secrets_basedir,
+        )
         columns = (['Environment', 'Default'])
         if parsed_args.aliasing:
             columns.append('AliasFor')

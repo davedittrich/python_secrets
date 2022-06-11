@@ -51,6 +51,15 @@ myapp_optional_setting false DEMO_options_setting'
     assert_output ''
 }
 
+@test "'psec secrets generate --unique' works properly" {
+    run $PSEC secrets generate
+    run bash -c "$PSEC secrets show --no-redact -t password -c Value -f value | sort | uniq | wc -l"
+    assert_output '1'
+    run $PSEC secrets generate --unique
+    run bash -c "$PSEC secrets show --no-redact -t password -c Value -f value | sort | uniq | wc -l"
+    refute_output '1'
+}
+
 @test "'psec secrets generate --from-options' sets variables properly" {
     run $PSEC secrets generate --from-options
     run $PSEC secrets get hypriot_hostname
@@ -120,34 +129,34 @@ myapp_optional_setting false DEMO_options_setting'
 }
 
 @test "'psec secrets delete --group oauth google_oauth_refresh_token' shrinks file" {
-    run grep -q google_oauth_refresh_token $D2_SECRETS_BASEDIR/$D2_ENVIRONMENT/secrets.json
+    run grep -q google_oauth_refresh_token ${D2_SECRETS_BASEDIR}/${D2_ENVIRONMENT}/secrets.json
     assert_success
     run $PSEC secrets show google_oauth_refresh_token -f value
     assert_success
     run bash -c "$PSEC -q groups show oauth -f csv | grep -c oauth"
     assert_output "4"
     run $PSEC secrets delete --group oauth google_oauth_refresh_token --force
-    [ -f $D2_SECRETS_BASEDIR/$D2_ENVIRONMENT/secrets.d/oauth.json ]
+    [ -f ${D2_SECRETS_BASEDIR}/${D2_ENVIRONMENT}/secrets.d/oauth.json ]
     run bash -c "$PSEC -q groups show oauth -f csv | grep -c oauth"
     assert_output "3"
-    run grep -q google_oauth_refresh_token $D2_SECRETS_BASEDIR/$D2_ENVIRONMENT/secrets.json
+    run grep -q google_oauth_refresh_token ${D2_SECRETS_BASEDIR}/${D2_ENVIRONMENT}/secrets.json
     assert_failure
     run $PSEC secrets show google_oauth_refresh_token -f value
     assert_failure
 }
 
-@test "'psec secrets delete --group jenkins jenkins_admin_password' removes group" {
-    run $PSEC secrets show jenkins_admin_password -f value
+@test "'psec secrets delete --group consul consul_key' removes group" {
+    run $PSEC secrets show consul_key -f value
     assert_success
-    run $PSEC secrets delete --force --group jenkins jenkins_admin_password 1>&2
+    run $PSEC secrets delete --force --group consul consul_key 1>&2
     assert_output --partial "deleted empty group"
-    run $PSEC secrets show jenkins_admin_password -f value
+    run $PSEC secrets show consul_key -f value
     assert_failure
-    [ ! -f $D2_SECRETS_BASEDIR/$D2_ENVIRONMENT/secrets.d/jenkins.json ]
+    [ ! -f ${D2_SECRETS_BASEDIR}/${D2_ENVIRONMENT}/secrets.d/consul.json ]
 }
 
 @test "'psec secrets tree $D2_SECRETS_ENVIRONMENT' succeeds" {
-    run $PSEC secrets tree $D2_SECRETS_ENVIRONMENT
+    run $PSEC secrets tree ${D2_SECRETS_ENVIRONMENT}
     assert_output --partial '└'
     assert_success
 }
