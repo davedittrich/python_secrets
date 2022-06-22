@@ -24,6 +24,15 @@ History
 .. Fixed for any bug fixes.
 .. Security in case of vulnerabilities.
 
+22.6.1 (2022-06-21)
+~~~~~~~~~~~~~~~~~~~
+
+Added
+^^^^^
+
+- Added `--ignore-missing` option to continue when settings variables.
+- Added 'Operational Security' section to README.
+
 22.6.0 (2022-06-10)
 ~~~~~~~~~~~~~~~~~~~
 
