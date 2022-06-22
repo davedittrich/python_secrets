@@ -89,6 +89,13 @@ class SecretsSet(Command):
             default=False,
             help='Set values for undefined variables'
         )
+        parser.add_argument(
+            '--ignore-missing',
+            action='store_true',
+            dest='ignore_missing',
+            default=False,
+            help='Skip setting variables that are not defined'
+        )
         how = parser.add_mutually_exclusive_group(required=False)
         how.add_argument(
             '--from-environment',
@@ -159,7 +166,8 @@ class SecretsSet(Command):
                 k = arg
                 k_type = se.get_type(k)
                 if k_type is None:
-                    self.logger.info("[-] no description for '%s'", k)
+                    if parsed_args.ignore_missing:
+                        continue
                     raise RuntimeError(
                         f"[-] variable '{k}' has no description")
                 if from_env is not None:
@@ -202,7 +210,8 @@ class SecretsSet(Command):
                 lhs, rhs = arg.split('=')
                 k_type = se.get_type(lhs)
                 if k_type is None:
-                    self.logger.info("[-] no description for '%s'", lhs)
+                    if parsed_args.ignore_missing:
+                        continue
                     raise RuntimeError(
                         f"[-] variable '{lhs}' has no description")
                 k = lhs

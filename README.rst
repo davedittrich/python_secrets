@@ -17,7 +17,7 @@ Python command line app for managing groups of secrets (passwords, API keys, etc
 other project variables. Reduces security risks from things like weak default passwords,
 secrets stored in files in the source code repository directory.
 
-Version: 22.6.0
+Version: 22.6.1
 
 * Free software: `Apache 2.0 License <https://www.apache.org/licenses/LICENSE-2.0>`_
 * Documentation: https://python_secrets.readthedocs.org.
@@ -95,6 +95,8 @@ Features
    in Python 3.6, only Python versions >= 3.6 can be used.
 
 ..
+
+.. _limitations:
 
 Limitations
 -----------
@@ -1216,7 +1218,7 @@ Decrypted, it looks like this:
     myapp_app_password=brunt.outclass.alike.turbine
 
     --
-    Sent using psec version 22.6.0
+    Sent using psec version 22.6.1
     https://pypi.org/project/python-secrets/
     https://github.com/davedittrich/python_secrets
 
@@ -1359,6 +1361,56 @@ shell prompt.
    :width: 835px
 
 ..
+
+
+
+Operational Security
+----------------------
+
+As noted in the Limitations section above, secrets are stored in plaintext
+plaintext form (i.e., they are *not* encrypted) in files. Those files are in
+turn stored in a directory in the file system, subject to Linux file
+ownership and permission access controls.
+
+The default location for storing these files is in an *environment directory*
+in a subdirectory of the user's home directory whose name starts with a period
+character (a.k.a., a *dot*).  Files (or directories) whose name starts with a
+period are known as *dot files*, or *hidden files* because the `ls` command
+does not show it unless you use the `-a` flag.
+
+The secrets environment directories can also be used to store other files
+besides secrets. One such use case is storing JSON Web Tokens (JWTs) used as
+bearer tokens by protocols like Google's `OAuth 2.0 Mechanism`_ for securing
+access to web services and APIs. While this improves security in terms of
+remote access, is not not without its own risks (including the JWT file being
+stored in the file system for an indefinite period of time).
+
+* `JSON Web Tokens (JWT) are Dangerous for User Sessions—Here’s a
+  Solution`_, by Raja Rao, June 24, 2021
+
+* `Stop Using JSON Web Tokens For Authentication. Use Stateful Sessions
+  Instead`_, by Francisco Sainz, April 4, 2022
+
+* `What’s the Secure Way to Store JWT?`_, by Yang Liu, July 23, 2020
+
+Besides JWTs, other use cases for storing sensitive files within `psec`
+environments include backups of database contents, Let's Encrypt certificates,
+SSH keys, or other secrets necessary for ensuring cloud instances can be
+destroyed and recreated without losing state or requiring regeneration
+(and redistribution or revalidation) of secrets.
+
+The output of `init --help` mentions this risk and offers a way to mitigate
+some of the risk by locating the secrets storage base directory within a
+directory that is stored on an encrypted USB-connected disk device or encrypted
+disk image, or a removable device or remote file system, that is only mounted
+when needed and unmounted as soon as possible. This ensures sensitive data that
+are not being actively used are left encrypted in storage.  The
+`D2_SECRETS_BASEDIR` environment variable or `-d` option allow you to specify
+the directory to use.
+
+The `psec` CLI has a secure deletion mechanism that over-writes file contents
+prior to deletion, helping to reduce leaving remnants of secrets in unallocated
+file system storage, similar to the way the Linux `shred` command works.
 
 
 
@@ -1621,3 +1673,6 @@ Development Grant from the Comcast Innovation Fund.
 .. _Projects: https://github.com/davedittrich/python_secrets/projects/1
 .. _How to Use PGP for Linux: https://ssd.eff.org/en/module/how-use-pgp-linux
 .. _Python Security: https://python-security.readthedocs.io/index.html
+.. _JSON Web Tokens (JWT) are Dangerous for User Sessions—Here’s a Solution: https://redis.com/blog/json-web-tokens-jwt-are-dangerous-for-user-sessions/
+.. _Stop Using JSON Web Tokens For Authentication. Use Stateful Sessions Instead: https://betterprogramming.pub/stop-using-json-web-tokens-for-authentication-use-stateful-sessions-instead-c0a803931a5d
+.. _What’s the Secure Way to Store JWT?: https://medium.com/swlh/whats-the-secure-way-to-store-jwt-dd362f5b7914

@@ -34,7 +34,7 @@ class Init(Command):
     To attempt to prevent accidentally storing secrets in directories that
     are already storing normal files or directories, a special marker file must
     be present.  The `init` command ensures that this secrets base directory is
-    created and marked by the presense of that special file. Until this is done,
+    created and marked by the presence of that special file. Until this is done,
     some `psec` commands may report the base directory is not found (if it
     does not exist) or is not valid (if it does exist, but does not contain
     the special marker file)::
