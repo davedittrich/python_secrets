@@ -23,6 +23,18 @@ teardown() {
     assert_output --partial "$TEST_PASSWORD"
 }
 
+@test "'psec secrets set variable_that_does_not_exist=something' fails" {
+    run $PSEC secrets set variable_that_does_not_exist=something
+    assert_failure
+    assert_output --partial "no description"
+}
+
+@test "'psec secrets set --ignore-missing variable_that_does_not_exist=something' succeeds" {
+    run $PSEC secrets set --ignore-missing variable_that_does_not_exist=something
+    assert_success
+    refute_output --partial "no description"
+}
+
 @test "'psec secrets set --from-options' sets variables properly" {
     run $PSEC secrets set --from-options
     run $PSEC secrets show --no-redact -f value hypriot_user hypriot_password hypriot_hostname hypriot_wifi_country myapp_ondemand_wifi myapp_optional_setting consul_key
