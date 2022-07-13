@@ -469,6 +469,20 @@
             "console": "integratedTerminal"
         },
         {
+            "name": "psec secrets find jenkins_admin_password",
+            "type": "python",
+            "request": "launch",
+            "module": "psec.__main__",
+            "args": [
+                "--debug",
+                "secrets",
+                "find",
+                "jenkins_admin_password"
+            ],
+            "stopOnEntry": false,
+            "console": "integratedTerminal"
+        },
+        {
             "name": "psec secrets get jenkins_admin_password",
             "type": "python",
             "request": "launch",
