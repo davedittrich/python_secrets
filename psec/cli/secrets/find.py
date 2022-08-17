@@ -69,7 +69,10 @@ class SecretsFind(Lister):
     def take_action(self, parsed_args):
         data = list()
         columns = ['Environment', 'Group', 'Variable']
-        self.logger.info('[+] searching secrets base directory %s', self.app.secrets_basedir)
+        self.logger.info(
+            '[+] searching secrets base directory %s',
+            self.app.secrets_basedir
+        )
         for env_path in get_environment_paths(
             basedir=self.app.secrets_basedir,
         ):
