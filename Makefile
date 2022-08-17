@@ -46,12 +46,21 @@ help:
 test: test-tox
 	@echo '[+] test: All tests passed'
 
+# [Makefile-test-tox]
+# The following target rules are optimized by splitting up `tox` tests so they
+# fail early on syntax and security checks before running more lengthy unit
+# tests against Python versions (with coverage reporting).  This is designed to
+# more easily focus on code quality first and foremost.
 .PHONY: test-tox
 test-tox:
 	@if [ -f .python_secrets_environment ]; then (echo '[!] Remove .python_secrets_environment prior to testing'; exit 1); fi
 	touch docs/psec_help.txt
-	@# See comment in tox.ini file.
-	tox -e pep8 && tox -e bandit,docs,bats && tox -e clean,py37,py38,py39,py310,pypi,report && echo '[+] test-tox: All tests passed'
+	@# See also comment in tox.ini file.
+	tox -e pep8
+	tox -e bandit,docs,bats
+	tox -e clean,py37,py38,py39,py310,pypi,report
+	echo '[+] test-tox: All tests passed'
+# ![Makefile-test-tox]
 
 .PHONY: test-bats
 test-bats: bats-libraries
