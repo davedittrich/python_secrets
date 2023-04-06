@@ -58,7 +58,7 @@ test-tox:
 	@# See also comment in tox.ini file.
 	tox -e pep8
 	tox -e bandit,docs,bats
-	tox -e clean,py37,py38,py39,py310,pypi,report
+	tox -e clean,py39,py310,py311,pypi,report
 	echo '[+] test-tox: All tests passed'
 # ![Makefile-test-tox]
 
