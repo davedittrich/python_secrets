@@ -988,7 +988,7 @@ def myip_http(arg=None):
     # Return type if no argument for use in Lister.
     if arg is None:
         return 'https'
-    page = requests.get(arg, stream=True)
+    page = requests.get(arg, stream=True, timeout=3.05)
     soup = BeautifulSoup(page.text, 'html.parser')
     if page.status_code != 200:
         raise RuntimeError(
