@@ -5,6 +5,7 @@ Create a new secret definition.
 """
 
 # External imports
+# from ctypes.wintypes import BOOL
 import logging
 import os
 
@@ -13,20 +14,34 @@ from sys import stdin
 # TODO(dittrich): https://github.com/Mckinsey666/bullet/issues/2
 # Workaround until bullet has Windows missing 'termios' fix.
 try:
-    from bullet import colors
-    from bullet import Input
-    from bullet import YesNo
+    from bullet import (
+        colors,
+        Input,
+        YesNo,
+    )
 except ModuleNotFoundError:
     pass
 from cliff.command import Command
 from prettytable import PrettyTable
 
 # Local imports
-from psec.secrets_environment import SECRET_TYPES
+from psec.secrets_environment import (
+    BOOLEAN_OPTIONS,
+    SECRET_TYPES,
+)
 from psec.utils import (
     find,
+    prompt_options_dict,
     prompt_options_list,
 )
+
+
+def ordered_boolean_options(result):
+    """Return a string with boolean options ordered based on result"""
+    boolean_idents = [i.get('ident') for i in BOOLEAN_OPTIONS]
+    first = boolean_idents.pop(boolean_idents.index(result))
+    second = boolean_idents.pop()
+    return ",".join([first, second])
 
 
 def get_description(name=None, defaults=None):
@@ -50,7 +65,14 @@ def get_description(name=None, defaults=None):
                 word_color=colors.foreground["yellow"])
     result = cli.launch()
     new_description['Prompt'] = result
-    # Alternative option set is (no pun intended) optional
+    if new_description['Type'] == 'boolean':
+        # This is going to go one of two ways!
+        result = prompt_options_dict(
+            prompt="Choose default state: ",
+            options=BOOLEAN_OPTIONS,
+        )
+        new_description['Options'] = ordered_boolean_options(result)
+    # Alternative option set is (no pun intended) optional.
     if new_description['Type'] in ['string']:
         prompt = "Acceptable options from which to chose: "
         cli = Input(prompt,
@@ -60,7 +82,7 @@ def get_description(name=None, defaults=None):
         # TODO(dittrich): BUG or ISSUE in waiting.
         # Items in an Options list can't end in '.*' without
         # causing confusion with ',*' wildcard feature.
-        # Maybe switch to using '|' for alternaives instead?
+        # Maybe switch to using '|' for alternatives instead?
         if '.*' in result:
             if result == '.*':
                 msg = "[-] '.*' is not valid: did you mean '*'?"
