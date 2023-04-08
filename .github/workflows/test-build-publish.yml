@@ -42,24 +42,19 @@ jobs:
       id: get_vars
       run: |
         REPO=$(basename ${{ github.repository }})
-        echo "REPO=${REPO}"
-        echo ::set-output name=REPO::${REPO}
+        echo "REPO=${REPO}" >> $GITHUB_OUTPUT
 
         BRANCH=${GITHUB_REF##*/}
-        echo "BRANCH=${BRANCH}"
-        echo ::set-output name=BRANCH::${BRANCH}
+        echo "BRANCH=${BRANCH}" >> $GITHUB_OUTPUT
 
         VERSION=$(python3 setup.py --version 2>/dev/null)
-        echo "VERSION=${VERSION}"
-        echo ::set-output name=VERSION::${VERSION}
+        echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
 
         TAG_VERSION=$(git describe --abbrev=0 --tags 2>/dev/null || true)
-        echo "TAG_VERSION=${TAG_VERSION}"
-        echo ::set-output name=TAG_VERSION::${TAG_VERSION}
+        echo "TAG_VERSION=${TAG_VERSION}" >> $GITHUB_OUTPUT
 
         ARTIFACT="${REPO}-${BRANCH}"
-        echo "ARTIFACT=${ARTIFACT}"
-        echo ::set-output name=ARTIFACT::${REPO}-${BRANCH}
+        echo "ARTIFACT=${ARTIFACT}" >> $GITHUB_OUTPUT
     # [1-test-build-publish]
     - name: Run tests
       run: make test
@@ -101,16 +96,13 @@ jobs:
       id: get_vars
       run: |
         REPO=$(basename ${{ github.repository }})
-        echo "REPO=${REPO}"
-        echo ::set-output name=REPO::${REPO}
+        echo "REPO=${REPO}" >> $GITHUB_OUTPUT
 
         BRANCH=${GITHUB_REF##*/}
-        echo "BRANCH=${BRANCH}"
-        echo ::set-output name=BRANCH::${BRANCH}
+        echo "BRANCH=${BRANCH}" >> $GITHUB_OUTPUT
 
         ARTIFACT="${REPO}-${BRANCH}"
-        echo "ARTIFACT=${ARTIFACT}"
-        echo ::set-output name=ARTIFACT::${REPO}-${BRANCH}
+        echo "ARTIFACT=${ARTIFACT}" >> $GITHUB_OUTPUT
     - name: Display artifacts
       run: |
         ls -lR
