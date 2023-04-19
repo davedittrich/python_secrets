@@ -12,6 +12,7 @@ ipwhois
 jinja2
 lxml
 gnupg
+mccabe
 pyflakes
 pexpect
 Pygments
@@ -21,4 +22,4 @@ requests
 sphinx
 tox
 yamlreader
-xkcdpass
+xkcdpass>=1.19.3

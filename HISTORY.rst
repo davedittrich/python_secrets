@@ -24,6 +24,23 @@ History
 .. Fixed for any bug fixes.
 .. Security in case of vulnerabilities.
 
+23.4.1 (2023-04-19)
+~~~~~~~~~~~~~~~~~~~
+
+Added
+^^^^^
+
+- Added `secrets find` command.
+- Added support for new variable type `boolean`.
+
+Changed
+^^^^^^^
+
+- Updated GitHub Actions workflows (default to Python 3.9.16).
+- Drop Python 3.7, 3.8, add Python 3.11 (default to 3.10) for `tox`.
+- Fixed downstream dependency and `pip` installation problems.
+- Resolved new `pep8` and `bandit` findings.
+
 22.6.1 (2022-06-21)
 ~~~~~~~~~~~~~~~~~~~
 

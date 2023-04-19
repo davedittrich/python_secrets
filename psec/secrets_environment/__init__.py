@@ -513,9 +513,9 @@ class SecretsEnvironment(object):
             else ''
         )
 
-    def read_secrets_and_descriptions(self):
+    def read_secrets_and_descriptions(self, ignore_errors=False):
         """Read secrets descriptions and secrets."""
-        self.read_secrets_descriptions()
+        self.read_secrets_descriptions(ignore_errors=ignore_errors)
         self.read_secrets(from_descriptions=True)
         self.find_new_secrets()
 
@@ -696,11 +696,17 @@ class SecretsEnvironment(object):
                         f"[-] variable '{v}' duplicates an existing variable"
                     )
 
-    def read_secrets_descriptions(self):
+    def read_secrets_descriptions(
+        self,
+        ignore_errors=False,
+    ):
         """Load the descriptions of groups of secrets from a .d directory"""
         groups_dir = self.get_descriptions_path()
         if not groups_dir.exists():
-            self.logger.info('[-] secrets descriptions directory not found')
+            if not ignore_errors:
+                self.logger.info(
+                    '[-] secrets descriptions directory not found'
+                )
         else:
             # Ignore .order file and any other file extensions
             extensions = ['.json']
@@ -712,7 +718,7 @@ class SecretsEnvironment(object):
                 "[+] reading secrets descriptions from '%s'", groups_dir)
             # Iterate over files in directory, loading them into
             # dictionaries as dictionary keyed on group name.
-            if len(file_names) == 0:
+            if len(file_names) == 0 and not ignore_errors:
                 self.logger.info('[-] no secrets descriptions files found')
             for fname in file_names:
                 group = fname.stem

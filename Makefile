@@ -5,7 +5,6 @@ VERSION=$(shell cat VERSION)
 REQUIRED_VENV:=python_secrets
 VENV_DIR=$(HOME)/.virtualenvs/$(REQUIRED_VENV)
 PROJECT:=$(shell basename `pwd`)
-PYTHON=python3
 
 .PHONY: default
 default: all
@@ -24,7 +23,7 @@ help:
 	@echo 'release - produce a pypi production release'
 	@echo 'release-test - produce a pypi test release'
 	@echo 'release-prep - final documentation preparations for release'
-	@echo 'sdist - run "$(PYTHON) setup.py sdist"'
+	@echo 'sdist - run "python3 setup.py sdist"'
 	@echo 'bdist_wheel - build a universal binary wheel'
 	@echo 'twine-check - run "twine check"'
 	@echo 'clean - remove build artifacts'
@@ -35,7 +34,7 @@ help:
 	@echo 'clean-packet-cafe - remove packet_cafe contents'
 	@echo 'spotless-packet-cafe - Remove all packet_cafe files and containers'
 	@echo 'install - install pip package'
-	@echo 'install-active - run "$(PYTHON) -m pip install -U ."'
+	@echo 'install-active - run "python3 -m pip install -U ."'
 	@echo 'docs-tests - generate bats test output for documentation'
 	@echo 'docs-help - generate "lim help" output for documentation'
 	@echo 'docs - build Sphinx docs'
@@ -46,12 +45,21 @@ help:
 test: test-tox
 	@echo '[+] test: All tests passed'
 
+# [Makefile-test-tox]
+# The following target rules are optimized by splitting up `tox` tests so they
+# fail early on syntax and security checks before running more lengthy unit
+# tests against Python versions (with coverage reporting).  This is designed to
+# more easily focus on code quality first and foremost.
 .PHONY: test-tox
 test-tox:
 	@if [ -f .python_secrets_environment ]; then (echo '[!] Remove .python_secrets_environment prior to testing'; exit 1); fi
 	touch docs/psec_help.txt
-	@# See comment in tox.ini file.
-	tox -e pep8 && tox -e bandit,docs,bats && tox -e clean,py37,py38,py39,py310,pypi,report && echo '[+] test-tox: All tests passed'
+	@# See also comment in tox.ini file.
+	tox -e pep8
+	tox -e bandit,docs,bats
+	tox -e clean,py39,py310,py311,pypi,report
+	echo '[+] test-tox: All tests passed'
+# ![Makefile-test-tox]
 
 .PHONY: test-bats
 test-bats: bats-libraries
@@ -98,7 +106,7 @@ release-test: clean test docs-tests docs twine-check
 .PHONY: sdist
 sdist: clean-docs docs
 	rm -f dist/.LATEST_SDIST
-	$(PYTHON) setup.py sdist
+	python3 setup.py sdist
 	ls -t dist/*.tar.gz 2>/dev/null | head -n 1 > dist/.LATEST_SDIST
 	ls -l dist/*.tar.gz
 
@@ -106,7 +114,7 @@ sdist: clean-docs docs
 .PHONY: bdist_egg
 bdist_egg:
 	rm -f dist/.LATEST_EGG
-	$(PYTHON) setup.py bdist_egg
+	python3 setup.py bdist_egg
 	ls -t dist/*.egg 2>/dev/null | head -n 1 > dist/.LATEST_EGG
 	ls -lt dist/*.egg
 
@@ -114,7 +122,7 @@ bdist_egg:
 .PHONY: bdist_wheel
 bdist_wheel:
 	rm -f dist/.LATEST_WHEEL
-	$(PYTHON) setup.py bdist_wheel
+	python3 setup.py bdist_wheel
 	ls -t dist/*.whl 2>/dev/null | head -n 1 > dist/.LATEST_WHEEL
 	ls -lt dist/*.whl
 
@@ -126,7 +134,7 @@ twine-check: sdist bdist_egg bdist_wheel
 #HELP clean - remove build artifacts
 .PHONY: clean
 clean: clean-docs
-	$(PYTHON) setup.py clean
+	python3 setup.py clean
 	rm -rf dist build *.egg-info
 	find . -name '*.pyc' -delete
 
@@ -145,21 +153,22 @@ install:
 		echo "Required virtual environment '$(REQUIRED_VENV)' not found."; \
 		exit 1; \
 	fi
-	@if [ ! -e "$(VENV_DIR)/bin/python" ]; then \
-		echo "Cannot find $(VENV_DIR)/bin/python"; \
+	@if [ ! -e "$(VENV_DIR)/bin/python3" ]; then \
+		echo "Cannot find $(VENV_DIR)/bin/python3"; \
 		exit 1; \
 	else \
 		echo "Installing into $(REQUIRED_VENV) virtual environment"; \
-		$(VENV_DIR)/bin/$(PYTHON) -m pip uninstall -y $(PROJECT); \
-		$(VENV_DIR)/bin/$(PYTHON) setup.py install; \
+		$(VENV_DIR)/bin/python3 -m pip uninstall -y $(PROJECT); \
+		$(VENV_DIR)/bin/python3 setup.py install; \
 	fi
 
 #HELP install-active - install in the active Python virtual environment
 .PHONY: i
 .PHONY: install-active
 i install-active: bdist_wheel
-	$(PYTHON) -m pip uninstall -y $(PROJECT)
-	$(PYTHON) -m pip install -U "$(shell cat dist/.LATEST_WHEEL)" | grep -v ' already '
+	python3 -m pip uninstall -y $(PROJECT)
+	@# python3 -m pip install -U "$(shell cat dist/.LATEST_WHEEL)" | grep -v ' already '
+	python3 setup.py install
 
 #HELP docs-tests - generate bats test output for documentation
 .PHONY: docs-tests
@@ -186,12 +195,12 @@ docs: docs/psec_help.txt
 	cd docs && make html
 
 docs/psec_help.txt: install-active
-	PYTHONPATH=$(shell pwd) python -m psec help | tee docs/psec_help.txt
+	PYTHONPATH=$(shell pwd) python3 -m psec help | tee docs/psec_help.txt
 
 #HELP examples - produce some example output for docs
 .PHONY: examples
 examples:
-	@PYTHONPATH=$(shell pwd) python -m psec --help
+	@PYTHONPATH=$(shell pwd) python3 -m psec --help
 
 # Git submodules and subtrees are both a huge PITA. This is way simpler.
 

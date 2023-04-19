@@ -6,6 +6,7 @@ Set values manually for secrets.
 
 import logging
 import os
+import shlex
 
 from subprocess import run, PIPE  # nosec
 from cliff.command import Command
@@ -233,16 +234,22 @@ class SecretsSet(Command):
                             _path = os.path.expanduser(v[1:])
                         else:
                             _path = v[1:]
-                        with open(_path, 'r') as f:
+                        with open(_path, 'r', encoding='utf-8') as f:
                             v = f.read().strip()
                     elif v.startswith('!'):
                         # >> Issue: [B603:subprocess_without_shell_equals_true] subprocess call - check for execution of untrusted input.  # noqa
                         #    Severity: Low   Confidence: High
-                        #    Location: psec/secrets.py:641
-                        p = run(v[1:].split(),
-                                stdout=PIPE,
-                                stderr=PIPE,
-                                shell=False)
+                        #    Location: psec/cli/set.py:246
+                        # >>> v = "!echo this is a $SHELL `command`"
+                        # >>> shlex.split(v[1:])
+                        # ['echo', 'this', 'is', 'a', '$SHELL', '`command`']
+                        p = run(
+                            shlex.split(v[1:]),  # nosec
+                            stdout=PIPE,
+                            stderr=PIPE,
+                            shell=False,
+                            check=True,
+                        )
                         v = p.stdout.decode('UTF-8').strip()
             # After all that, did we get a value?
             if v is None:
