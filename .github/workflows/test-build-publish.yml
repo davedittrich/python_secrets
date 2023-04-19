@@ -117,8 +117,8 @@ jobs:
         repository_url: https://test.pypi.org/legacy/
         user: __token__
         password: ${{ secrets.PSEC_TEST_PYPI_PASSWORD }}
-        packages_dir: ${{ steps.get_vars.outputs.ARTIFACT }}
-        verify_metadata: false
+        packages-dir: ${{ steps.get_vars.outputs.ARTIFACT }}
+        verify-metadata: false
     - name: Publish tagged artifacts to PyPI
       if: >-
         github.event_name == 'push' &&
@@ -128,7 +128,7 @@ jobs:
       with:
         user: __token__
         password: ${{ secrets.PSEC_PYPI_PASSWORD }}
-        packages_dir: ${{ steps.get_vars.outputs.ARTIFACT }}
-        verify_metadata: false
+        packages-dir: ${{ steps.get_vars.outputs.ARTIFACT }}
+        verify-metadata: false
     # ![2-test-build-publish]
 
