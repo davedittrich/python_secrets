@@ -296,7 +296,7 @@ class PythonSecretsApp(App):
         ):
             self.timer.stop()
             elapsed = self.timer.elapsed()
-            self.stderr.write('[+] elapsed time {}\n'.format(elapsed))
+            self.stderr.write(f'[+] elapsed time {elapsed}\n')
             bell()
 
 

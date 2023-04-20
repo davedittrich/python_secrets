@@ -140,7 +140,7 @@ def save_default_environment(
     """Save environment identifier to local file for defaulting."""
     env_file = get_local_default_file(cwd=cwd)
     with open(env_file, 'w') as f_out:
-        f_out.write('{0}\n'.format(str(environment)))
+        f_out.write(f'{str(environment)}\n')
     return True
 
 
@@ -605,9 +605,10 @@ def remove_other_perms(dst):
     # TODO(dittrich): Is there a Better way to handle perms on Windows?
     fs_type = get_fs_type(dst)
     if fs_type in ['NTFS', 'FAT', 'FAT32']:
-        msg = ('[-] {0} has file system type "{1}": '
-               'skipping setting permissions').format(
-                   dst, fs_type)
+        msg = (
+            f"[-] {dst} has file system type '{fs_type}': "
+            'skipping setting permissions'
+        )
         logger.info(msg)
     else:
         get_output(['chmod', '-R', 'o-rwx', dst])
@@ -700,7 +701,7 @@ def prompt_options_list(options=None,
         # be added back as the first item.
         options = [i for i in options if i != default]
     choices = [default] + options
-    cli = Bullet(prompt='\n{0}'.format(prompt),
+    cli = Bullet(prompt=f'\n{prompt}',
                  choices=choices,
                  indent=0,
                  align=2,
@@ -739,7 +740,7 @@ def prompt_options_dict(options=None,
                                 else opt['ident']
                                 for opt in options
                              ]
-    cli = Bullet(prompt='\n{0}'.format(prompt),
+    cli = Bullet(prompt=f'\n{prompt}',
                  choices=choices,
                  indent=0,
                  align=2,
@@ -921,7 +922,7 @@ class Timer(object):
         """Record initial time."""
         self.start(lap="__enter__")
         if self.verbose:
-            sys.stdout.write('{}...'.format(self.task_description))
+            sys.stdout.write(f'{self.task_description}...')
             sys.stdout.flush()
         return self
 
@@ -932,11 +933,13 @@ class Timer(object):
         if self.verbose:
             sys.stdout.flush()
             if self.elapsed_raw() < 1.0:
-                sys.stdout.write(backspace + ':' + '{:.2f}ms\n'.format(
-                    self.elapsed_raw() * 1000))
+                sys.stdout.write(
+                    f"{backspace}: {self.elapsed_raw() * 1000:.2f}ms\n"
+                )
             else:
-                sys.stdout.write(backspace + ': ' + '{}\n'.format(
-                    self.elapsed()))
+                sys.stdout.write(
+                    f"{backspace}: {self.elapsed()}\n"
+                )
             sys.stdout.flush()
 
     def start(self, lap=None):
@@ -979,8 +982,7 @@ class Timer(object):
         """
         hours, rem = divmod(self.elapsed_raw(start, end), 3600)
         minutes, seconds = divmod(rem, 60)
-        return "{:0>2}:{:0>2}:{:05.2f}".format(
-            int(hours), int(minutes), seconds)
+        return f"{int(hours):0>2}:{int(minutes):0>2}:{seconds:05.2f}"
 
 
 def myip_http(arg=None):

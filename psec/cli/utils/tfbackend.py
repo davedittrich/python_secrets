@@ -47,13 +47,14 @@ class TfBackend(Command):
         tmpdir = e.get_tmpdir_path()
         backend_file = os.path.join(os.getcwd(), 'tfbackend.tf')
         tfstate_file = os.path.join(tmpdir, 'terraform.tfstate')
-        backend_text = textwrap.dedent("""\
-            terraform {{
+        backend_text = textwrap.dedent(
+            f"""terraform {{
               backend "local" {{
               path = "{tfstate_file}"
               }}
             }}
-            """.format(tfstate_file=tfstate_file))
+            """
+        )
 
         if parsed_args.path:
             self.logger.debug('[+] showing terraform state file path')

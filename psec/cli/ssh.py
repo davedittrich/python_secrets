@@ -7,6 +7,7 @@ import logging
 import os
 import pexpect
 import re
+import shlex
 import socket
 import sys
 import tempfile
@@ -174,18 +175,18 @@ def _write_fingerprints_pubkeys_to_files(hostdict=None,
             dir = os.path.join(known_hosts_root, 'fingerprints', host)
             os.makedirs(dir, exist_ok=True)
             ktype = _get_type(fingerprint)
-            fp_file = os.path.join(dir, '{}.fingerprint'.format(ktype))
+            fp_file = os.path.join(dir, f'{ktype}.fingerprint')
             with open(fp_file, 'w') as f:
-                f.write('{}\n'.format(fingerprint))
+                f.write(f'{fingerprint}\n')
                 logger.debug("[+] wrote fingerprint to '%s'", fp_file)
 
         for hostkey in v['hostkey']:
             dir = os.path.join(known_hosts_root, 'known_hosts', host)
             os.makedirs(dir, exist_ok=True)
             ktype = _get_type(hostkey)
-            hk_file = os.path.join(dir, '{}.known_hosts'.format(ktype))
+            hk_file = os.path.join(dir, f'{ktype}.known_hosts')
             with open(hk_file, 'w') as f:
-                f.write('{}\n'.format(hostkey))
+                f.write(f'{hostkey}\n')
                 logger.debug("[+] wrote hostkey to '%s'", hk_file)
     pass
 
@@ -197,7 +198,7 @@ def _ansible_verbose(verbose_level=1):
     """
     flag = ''
     if verbose_level > 1:
-        flag = '-{}'.format("v" * (verbose_level - 1))
+        flag = f'-{"v" * (verbose_level - 1)}'
     return flag
 
 
@@ -216,7 +217,7 @@ def _ansible_set_hostkeys(hostkeys,  # nosec
         cmd = ['ansible-playbook',
                ask_become_pass,
                _ansible_verbose(verbose_level),
-               '-e', "'{}'".format(hostkeys),
+               '-e', f"'{hostkeys}'",
                playbook.name
                ]
         ansible = pexpect.spawnu(
@@ -244,7 +245,7 @@ def _ansible_remove_hostkeys(hostkeys,  # nosec
         cmd = ['ansible-playbook',
                ask_become_pass,
                _ansible_verbose(verbose_level),
-               '-e', "'{}'".format(ssh_hosts),
+               '-e', f"'{ssh_hosts}'",
                '-e', 'remove_keys=true',
                playbook.name,
                ]
@@ -261,7 +262,7 @@ def _ansible_remove_hostkeys(hostkeys,  # nosec
 def _ansible_debug(hostkeys):
     """Debug Ansible"""
     cmd = ['ansible',
-           '-e', "'{}'".format(hostkeys),
+           '-e', f"'{hostkeys}'",
            '-m', 'debug',
            '-a', 'var=vars',
            'all'
@@ -434,7 +435,7 @@ class PublicKeys(object):
             for host, info in self.host_info.items():
                 for item in ['public_dns', 'public_ip']:
                     for key in info['full_hostkey']:
-                        pubkey = "{} {}".format(info[item], key)
+                        pubkey = f"{info[item]} {key}"
                         if host not in self.hostdict:
                             self.hostdict[host] = dict()
                         try:
@@ -610,8 +611,7 @@ class PublicKeys(object):
                 _host = line.split(' Host: ')[1]
                 if _host != "":
                     public_ip = _host
-                    public_dns = '{}.{}'.format(short_name,
-                                                self.domain)
+                    public_dns = f'{short_name}.{self.domain}'
                     if short_name not in self.hostdict:
                         self.hostdict[short_name] = dict()
                     self.hostdict[short_name]['public_ip'] = public_ip  # noqa
@@ -654,11 +654,11 @@ class PublicKeys(object):
                 # TODO(dittrich): Should use regex instead.
                 fields = line.split(' ')
                 # 'digitalocean_droplet.red (remote-exec): ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIA69uuX+ItFoAAe+xE9c+XggGw7Z2Z7t3YVRJxSHMupv root@debian.example.com'  # noqa
-                hostid = "{},{}".format(public_dns, public_ip)
+                hostid = f"{public_dns},{public_ip}"
                 if fields[1] == '(remote-exec):':
-                    pubkey = "{} {} {}".format(hostid, fields[2], fields[3])
+                    pubkey = f"{hostid} {fields[2]} {fields[3]}"
                 else:
-                    pubkey = "{} {} {}".format(hostid, fields[0], fields[1])
+                    pubkey = f"{hostid} {fields[0]} {fields[1]}"
                 try:
                     self.hostdict[short_name]['hostkey'].extend([pubkey])
                 except KeyError:
@@ -686,9 +686,9 @@ class PublicKeys(object):
                 raise RuntimeError('[-] no host IP or name found or specified')
             for key in self.hostkey:
                 if self.public_ip is not None:
-                    keylist.append("{} {}".format(self.public_ip, key))
+                    keylist.append(f"{self.public_ip} {key}")
                 if self.public_dns is not None:
-                    keylist.append("{} {}".format(self.public_dns, key))
+                    keylist.append(f"{self.public_dns} {key}")
         return json.dumps({'ssh_host_public_keys': keylist})
 
     def get_hostkey_list(self):
@@ -778,7 +778,7 @@ class SSHConfig(Command):
         #     se.get_secret('aws_privatekey_path')
         home = os.path.expanduser('~')
         ssh_config = os.path.join(home, '.ssh', 'config')
-        snippet_prefix = 'psec.{}'.format(se._environment)
+        snippet_prefix = f'psec.{se._environment}'
         if parsed_args.clean:
             files = glob.glob(os.path.join(ssh_config + '.d',
                                            snippet_prefix + ".*"))
@@ -791,7 +791,7 @@ class SSHConfig(Command):
         if private_key_file is None:
             raise RuntimeError('[-] no SSH private key specified')
         for host, info in host_info.items():
-            snippet = 'psec.{}.{}'.format(se._environment, host)
+            snippet = f'psec.{se._environment}.{host}'
             if parsed_args.show_config:
                 # TODO(dittrich): finish this...
                 print()
@@ -806,7 +806,7 @@ class SSHConfig(Command):
             )
 
         output, exitstatus = pexpect.runu(
-            'update-dotdee {}'.format(ssh_config),
+            f"update-dotdee {shlex.quote(ssh_config)}",
             withexitstatus=1)
         if exitstatus == 0:
             if self.app_args.verbose_level >= 1:
