@@ -24,6 +24,21 @@ History
 .. Fixed for any bug fixes.
 .. Security in case of vulnerabilities.
 
+23.4.2 (2023-04-20)
+~~~~~~~~~~~~~~~~~~~
+
+Added
+^^^^^
+
+- Added bats test for `secrets find` command.
+
+Changed
+^^^^^^^
+
+- Switched to using f-strings for formatting.
+- Fixed broken bats tests.
+- Update GitHub Actions workflows.
+
 23.4.1 (2023-04-19)
 ~~~~~~~~~~~~~~~~~~~
 
