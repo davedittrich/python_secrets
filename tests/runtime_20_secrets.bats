@@ -65,10 +65,10 @@ myapp_optional_setting false DEMO_options_setting'
 
 @test "'psec secrets generate --unique' works properly" {
     run $PSEC secrets generate
-    run bash -c "$PSEC secrets show --no-redact -t password -c Value -f value | sort | uniq | wc -l"
+    run bash -c "$PSEC secrets show --no-redact -t password -c Value -f value | sort | uniq | wc -l | sed 's/ *//g'"
     assert_output '1'
     run $PSEC secrets generate --unique
-    run bash -c "$PSEC secrets show --no-redact -t password -c Value -f value | sort | uniq | wc -l"
+    run bash -c "$PSEC secrets show --no-redact -t password -c Value -f value | sort | uniq | wc -l | sed 's/ *//g'"
     refute_output '1'
 }
 
@@ -117,6 +117,11 @@ myapp_optional_setting false DEMO_options_setting'
     [ ! -f .python_secrets_environment ]
     run $PSEC secrets path
     assert_output "${D2_SECRETS_BASEDIR}/${D2_ENVIRONMENT}/secrets.json"
+}
+
+@test "'psec secrets find jenkins_admin_password' works" {
+    run $PSEC secrets find jenkins_admin_password -c Group -c Variable
+    assert_output --partial "| jenkins | jenkins_admin_password |"
 }
 
 @test "'psec secrets describe --group jenkins' works properly" {

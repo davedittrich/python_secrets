@@ -267,9 +267,9 @@ class SecretsEnvironment(object):
         _path = self.get_secrets_basedir() / str(env)
         if not (subdir is None and host is None):
             valid_subdir = r'a-zA-Z0-9_/'
-            invalid_subdir = re.compile('[^{}]'.format(valid_subdir))
+            invalid_subdir = re.compile(f'[^{valid_subdir}]')
             valid_host = r'a-zA-Z0-9_\./'  # noqa
-            invalid_host = re.compile('[^{}]'.format(valid_host))
+            invalid_host = re.compile(f'[^{valid_host}]')
             if subdir is None and host is not None:
                 raise RuntimeError(
                     '[-] Must specify subdir when specifying host')
@@ -462,7 +462,7 @@ class SecretsEnvironment(object):
             _env_var = self.get_secret_export(secret)
             if _env_var is None:
                 if self.env_var_prefix is not None:
-                    _env_var = '{}{}'.format(self.env_var_prefix, secret)
+                    _env_var = f'{self.env_var_prefix}{secret}'
                 else:
                     _env_var = secret
             if self.preserve_existing and bool(os.getenv(_env_var)):

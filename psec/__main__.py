@@ -72,10 +72,11 @@ class PythonSecretsApp(App):
         self.logger = self.LOG
         self.secret_factory = SecretFactory()
 
-    def build_option_parser(self, description, version):
+    def build_option_parser(self, description, version, argparse_kwargs=None):
         parser = super().build_option_parser(
             description,
-            version
+            version,
+            argparse_kwargs,
         )
         # OCD hack: Make ``help`` output report main program name,
         # even if run as ``python -m psec.main`` or such.
@@ -296,7 +297,7 @@ class PythonSecretsApp(App):
         ):
             self.timer.stop()
             elapsed = self.timer.elapsed()
-            self.stderr.write('[+] elapsed time {}\n'.format(elapsed))
+            self.stderr.write(f'[+] elapsed time {elapsed}\n')
             bell()
 
 

@@ -112,14 +112,14 @@ class TfOutput(Lister):
             self.logger.info(
                 ' '.join(['/usr/local/bin/terraform',
                           'output',
-                          '-state={}'.format(tfstate),
+                          f'-state={tfstate}',
                           '-json'])
             )
         p = subprocess.Popen(
             [
                 '/usr/local/bin/terraform',
                 'output',
-                '-state={}'.format(shlex.quote(tfstate)),
+                f'-state={shlex.quote(tfstate)}',
                 '-json'
             ],
             env=dict(os.environ),
@@ -131,7 +131,7 @@ class TfOutput(Lister):
         dout = json.loads(jout.decode('UTF-8'))
         for prefix in dout.keys():
             for k, v in dout[prefix]['value'].items():
-                data.append(["{}_{}".format(prefix, k), v])
+                data.append([f"{prefix}_{k}", v])
         return columns, data
 
 

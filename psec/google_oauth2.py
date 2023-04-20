@@ -145,7 +145,7 @@ class GoogleSMTP(object):
         """
         Produce an URL for a given command.
         """
-        return '{}/{}'.format(self.GOOGLE_ACCOUNTS_BASE_URL, command)
+        return f'{self.GOOGLE_ACCOUNTS_BASE_URL}/{command}'
 
     def url_escape(self, text):
         """
@@ -165,9 +165,9 @@ class GoogleSMTP(object):
         """
         param_fragments = []
         for param in sorted(params.items(), key=lambda x: x[0]):
-            param_fragments.append('{}={}'.format(
-                param[0], self.url_escape(param[1])
-            ))
+            param_fragments.append(
+                f'{param[0]}={self.url_escape(param[1])}'
+            )
         return '&'.join(param_fragments)
 
     def generate_permission_url(

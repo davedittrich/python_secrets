@@ -65,7 +65,7 @@ teardown() {
 ├── oauth.json
 └── trident.json
 
-0 directories, 6 files"
+1 directory, 6 files"
 }
 
 @test "'psec environments create testenv --clone-from tests/secrets.d' works" {
@@ -80,7 +80,7 @@ teardown() {
 ├── oauth.json
 └── trident.json
 
-0 directories, 6 files"
+1 directory, 6 files"
 }
 
 @test "'psec -e testenv environments create --clone-from tests/secrets.d' works" {
@@ -95,7 +95,7 @@ teardown() {
 ├── oauth.json
 └── trident.json
 
-0 directories, 6 files"
+1 directory, 6 files"
 }
 
 @test "'psec environments create testenv2 --clone-from testenv' works" {
@@ -113,7 +113,7 @@ teardown() {
     assert_output "secrets.d
 └── jenkins.json
 
-0 directories, 1 file"
+1 directory, 1 file"
 }
 
 @test "'psec environments create --clone-from /tmp' fails" {
