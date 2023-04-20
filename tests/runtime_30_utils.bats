@@ -2,7 +2,7 @@ load test_helper
 
 # Use: files_count /path/to/dir "*.type"
 files_count() {
-    find "$1" -depth 1 -type f -name "${2:-*}" 2>/dev/null | wc -l
+    find "$1" -depth 1 -type f -name "${2:-*}" 2>/dev/null | wc -l | sed 's/ *//g'
 }
 
 export TEST_FILES_COUNT="$(files_count tests/yamlsecrets/secrets.d '*.yml')"
