@@ -119,6 +119,11 @@ myapp_optional_setting false DEMO_options_setting'
     assert_output "${D2_SECRETS_BASEDIR}/${D2_ENVIRONMENT}/secrets.json"
 }
 
+@test "'psec secrets find jenkins_admin_password' works" {
+    run $PSEC secrets find jenkins_admin_password -c Group -c Variable
+    assert_output --partial "| jenkins | jenkins_admin_password |"
+}
+
 @test "'psec secrets describe --group jenkins' works properly" {
     run $PSEC secrets describe --group jenkins
     assert_output "+------------------------+---------+----------+--------------------------------------+---------+------+
