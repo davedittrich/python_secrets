@@ -84,11 +84,11 @@ class PythonSecretsApp(App):
             parser.prog = self.command_manager.namespace
         # Replace the cliff SmartHelpFormatter class before first use
         # by subcommand `--help`.
-        # pylint: disable=wrong-import-order
+        # pylint: disable=import-outside-toplevel
         from psec.utils import CustomFormatter
         from cliff import _argparse
         _argparse.SmartHelpFormatter = CustomFormatter
-        # pylint: enable=wrong-import-order
+        # pylint: enable=import-outside-toplevel
         # We also need to change app parser, which is separate.
         parser.formatter_class = CustomFormatter
         # Global options
