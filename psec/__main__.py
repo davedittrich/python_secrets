@@ -228,39 +228,39 @@ class PythonSecretsApp(App):
             # FYI, new= is ignored on Windows per:
             # https://stackoverflow.com/questions/1997327/python-webbrowser-open-setting-new-0-to-open-in-the-same-browser-window-does  # noqa
             webbrowser.open(rtd_url, new=0, autoraise=True)
-        self.logger.debug(
-            "[+] using environment '%s'", self.options.environment
-        )
-        # Set up an environment for the app, making sure to export runtime
-        # options matching those from the command line and environment
-        # variables for subprocesses to inherit. It's OK to warn here about
-        # missing base directory (which will happen on first use), but don't
-        # force the program to exit when not necessary.
-        #
-        env_environment = os.environ.get('D2_ENVIRONMENT')
-        self.environment = self.options.environment
-        if (
-            env_environment is None
-            or env_environment != self.environment
-        ):
-            os.environ['D2_ENVIRONMENT'] = str(self.environment)
-        env_secrets_basedir = os.environ.get('D2_SECRETS_BASEDIR')
-        self.secrets_basedir = ensure_secrets_basedir(
-            secrets_basedir=self.options.secrets_basedir,
-            allow_create=(
-                self.options.init
-                or cmd.cmd_name.startswith('init')
-            ),
-            verbose_level=self.options.verbose_level,
-        )
-        if (
-            env_secrets_basedir is None
-            or env_secrets_basedir != str(self.secrets_basedir)
-        ):
-            os.environ['D2_SECRETS_BASEDIR'] = str(self.secrets_basedir)
-        self.secrets_file = self.options.secrets_file
         cmd_base = cmd.cmd_name.split(' ')[0]
         if cmd_base not in DOES_NOT_NEED_SECRETS:
+            self.logger.debug(
+                "[+] using environment '%s'", self.options.environment
+            )
+            # Set up an environment for the app, making sure to export runtime
+            # options matching those from the command line and environment
+            # variables for subprocesses to inherit. It's OK to warn here about
+            # missing base directory (which will happen on first use), but
+            # don't force the program to exit when not necessary.
+            #
+            env_environment = os.environ.get('D2_ENVIRONMENT')
+            self.environment = self.options.environment
+            if (
+                env_environment is None
+                or env_environment != self.environment
+            ):
+                os.environ['D2_ENVIRONMENT'] = str(self.environment)
+            env_secrets_basedir = os.environ.get('D2_SECRETS_BASEDIR')
+            self.secrets_basedir = ensure_secrets_basedir(
+                secrets_basedir=self.options.secrets_basedir,
+                allow_create=(
+                    self.options.init
+                    or cmd.cmd_name.startswith('init')
+                ),
+                verbose_level=self.options.verbose_level,
+            )
+            if (
+                env_secrets_basedir is None
+                or env_secrets_basedir != str(self.secrets_basedir)
+            ):
+                os.environ['D2_SECRETS_BASEDIR'] = str(self.secrets_basedir)
+            self.secrets_file = self.options.secrets_file
             self.secrets = SecretsEnvironment(
                 environment=self.environment,
                 create_root=False,
