@@ -1,1080 +1,847 @@
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "name": "Python: Current File",
-            "type": "python",
-            "request": "launch",
-            "program": "${file}",
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "Debug Tests (async)",
-            "type": "python",
-            "request": "launch",
-            "console": "integratedTerminal",
-            "module": "pytest",
-            "cwd": "${workspaceFolder}",
-            // "args": [
-            //     "${workspaceFolder}/tests"
-            // ],
-            // "env": {
-            //     "D2_ENVIRONMENT": "tztoxtest",
-            //     "D2_SECRETS_BASEDIR": "/tmp/.tzsecrets"
-            // },
-            "stopOnEntry": false
-        },
-        {
-            "name": "psec -v init",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "-v",
-                "init"
-            ],
-            "stopOnEntry": true,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec secrets set --help",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "secrets",
-                "set",
-                "--help"
-            ],
-            "stopOnEntry": true,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec -q complete",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "-q",
-                "complete"
-            ],
-            "stopOnEntry": true,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec about",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "about"
-            ],
-            "stopOnEntry": false,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec --version",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "-vv",
-                "--version"
-            ],
-            "stopOnEntry": true,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec environments create --init --clone-from tests/secrets.d",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "environments",
-                "create",
-                "--init",
-                "--clone-from",
-                "tests/secrets.d"
-            ],
-            "stopOnEntry": false,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec environments create aclone --clone-from psectest",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "environments",
-                "create",
-                "aclone",
-                "--clone-from",
-                "psectest"
-            ],
-            "stopOnEntry": false,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec environments create --alias alias aclone",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "environments",
-                "create",
-                "--alias",
-                "alias",
-                "aclone"
-            ],
-            "stopOnEntry": false,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec environments default",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "environments",
-                "default"
-            ],
-            "stopOnEntry": true,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec environments default --set",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "environments",
-                "default",
-                "--set"
-            ],
-            "stopOnEntry": true,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec environments list",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "environments",
-                "list"
-            ],
-            "stopOnEntry": true,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec -d /tmp/not/a/real/path environments list",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "-d",
-                "/tmp/not/a/real/path",
-                "environments",
-                "list"
-            ],
-            "stopOnEntry": true,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec environments list --aliasing",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "environments",
-                "list",
-                "--aliasing"
-            ],
-            "stopOnEntry": true,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec environments rename alias renamed_alias",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "environments",
-                "rename",
-                "alias",
-                "renamed_alias"
-            ],
-            "stopOnEntry": false,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec environments delete",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "environments",
-                "delete"
-            ],
-            "stopOnEntry": false,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec environments delete aclone",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "environments",
-                "delete",
-                "aclone"
-            ],
-            "stopOnEntry": false,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec environments rename notanalias not_an_alias",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "environments",
-                "rename",
-                "notanalias",
-                "not_an_alias"
-            ],
-            "stopOnEntry": true,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec environments default --set",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "environments",
-                "default",
-                "--set"
-            ],
-            "stopOnEntry": true,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec environments path --tmpdir",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "environments",
-                "path",
-                "--tmpdir"
-            ],
-            "stopOnEntry": true,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec environments path doesntexist --exists",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "-v",
-                "environments",
-                "path",
-                "doesntexist",
-                "--exists"
-            ],
-            "stopOnEntry": true,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec environments tree",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "environments",
-                "tree"
-            ],
-            "stopOnEntry": true,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec groups create emptygroup",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "groups",
-                "create",
-                "emptygroup"
-            ],
-            "stopOnEntry": false,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec groups create newgroup --clone-from tests/gosecure.json",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "groups",
-                "create",
-                "newgroup",
-                "--clone-from",
-                "tests/gosecure.json"
-            ],
-            "stopOnEntry": false,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec groups create newgroup --clone-from tests/gosecure.json",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "groups",
-                "create",
-                "newgroup",
-                "--clone-from",
-                "tests/gosecure.json"
-            ],
-            "stopOnEntry": true,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec groups delete gosecure",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "groups",
-                "delete",
-                "gosecure"
-            ],
-            "stopOnEntry": true,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec secrets create newsecret",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "secrets",
-                "create",
-                "newsecret"
-            ],
-            "stopOnEntry": false,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec secrets create newsecret --mirror-locally",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "secrets",
-                "create",
-                "newsecret",
-                "--mirror-locally"
-            ],
-            "stopOnEntry": false,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec secrets create --update newsecret",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "secrets",
-                "create",
-                "--update",
-                "newsecret",
-                "--mirror-locally"
-            ],
-            "stopOnEntry": false,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec secrets delete --group consul consul_key",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "secrets",
-                "delete",
-                "--group",
-                "consul",
-                "consul_key"
-            ],
-            "stopOnEntry": false,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec secrets describe",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "secrets",
-                "describe"
-            ],
-            "stopOnEntry": false,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec secrets describe jenkins_admin_password",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "secrets",
-                "describe",
-                "jenkins_admin_password"
-            ],
-            "stopOnEntry": false,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec secrets find jenkins_admin_password",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "secrets",
-                "find",
-                "jenkins_admin_password"
-            ],
-            "stopOnEntry": false,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec secrets get jenkins_admin_password",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "secrets",
-                "get",
-                "jenkins_admin_password"
-            ],
-            "stopOnEntry": false,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec secrets set algo_store_pki",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "secrets",
-                "set",
-                "algo_store_pki"
-            ],
-            "stopOnEntry": false,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec secrets set jenkins_admin_password --from-environment python_secrets",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "secrets",
-                "set",
-                "jenkins_admin_password",
-                "--from-environment",
-                "python_secrets"
-            ],
-            "stopOnEntry": false,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec secrets set hypriot_hostname",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "secrets",
-                "set",
-                "hypriot_hostname"
-            ],
-            "stopOnEntry": false,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec secrets set jenkins_admin_password=trident_sysadmin_pass --from-environment python_secrets",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "secrets",
-                "set",
-                "jenkins_admin_password=trident_sysadmin_pass",
-                "--from-environment",
-                "python_secrets"
-            ],
-            "stopOnEntry": false,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec secrets set --from-options",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "secrets",
-                "set",
-                "--from-options"
-            ],
-            "stopOnEntry": false,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec secrets show --no-redact",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "secrets",
-                "show",
-                "--no-redact"
-            ],
-            "stopOnEntry": false,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec secrets show --type password --no-redact",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "secrets",
-                "show",
-                "--type",
-                "password",
-                "--no-redact"
-            ],
-            "stopOnEntry": false,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec secrets generate --from-options",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "secrets",
-                "generate",
-                "--from-options"
-            ],
-            "stopOnEntry": false,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec secrets generate --max-acrostic-length 3",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "secrets",
-                "generate",
-                "--max-acrostic-length",
-                "3"
-            ],
-            "stopOnEntry": false,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec secrets path",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "secrets",
-                "path"
-            ],
-            "stopOnEntry": false,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec secrets send dittrich@speakeasy.net google_oauth_username",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "secrets",
-                "send",
-                "--from", "dave.dittrich@gmail.com",
-                "dittrich@speakeasy.net",
-                "google_oauth_username"
-            ],
-            "justMyCode": false,
-            "stopOnEntry": false,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec secrets tree",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "secrets",
-                "tree"
-            ],
-            "justMyCode": false,
-            "stopOnEntry": false,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec secrets backup",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "-vvv",
-                "secrets",
-                "backup"
-            ],
-            "stopOnEntry": false,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec secrets restore",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "-vvv",
-                "secrets",
-                "restore"
-            ],
-            "stopOnEntry": false,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec -E run printenv",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "-vvv",
-                "-E",
-                "run",
-                "printenv"
-            ],
-            "env": {
-                "D2_LOGFILE": "psec.log"
-            },
-            "stopOnEntry": false,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec --elapsed run -- sleep 5",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "--elapsed",
-                "run",
-                "--",
-                "sleep",
-                "5"
-            ],
-            "stopOnEntry": false,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec ssh known-hosts add console-output.txt",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "ssh",
-                "known-hosts",
-                "add",
-                "console-output.txt"
-            ],
-            "stopOnEntry": false,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec ssh known-hosts add terraform.log",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "ssh",
-                "known-hosts",
-                "add",
-                "--ask-become-pass",
-                "terraform.log"
-            ],
-            "stopOnEntry": false,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec ssh known-hosts add --save-to-files terraform.log",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "ssh",
-                "known-hosts",
-                "add",
-                "--save-to-files",
-                "--ask-become-pass",
-                "terraform.log"
-            ],
-            "stopOnEntry": false,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec ssh known-hosts remove --ask-become-pass",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "ssh",
-                "known-hosts",
-                "remove",
-                "--ask-become-pass"
-            ],
-            "stopOnEntry": false,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec ssh known-hosts remove console-output.txt",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "ssh",
-                "known-hosts",
-                "remove",
-                "--ask-become-pass",
-                "console-output.txt"
-            ],
-            "stopOnEntry": false,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec ssh known-hosts remove --host-ip 52.34.168.102",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "ssh",
-                "known-hosts",
-                "remove",
-                "--public-ip",
-                "52.34.168.102"
-            ],
-            "stopOnEntry": false,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec ssh known-hosts add i-036b9d28241dacf68-console-output.txt",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "ssh",
-                "known-hosts",
-                "add",
-                "--ask-become-pass",
-                "i-036b9d28241dacf68-console-output.txt"
-            ],
-            "stopOnEntry": false,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec ssh known-hosts add --known-hosts-root /tmp/foo --ask-become-pass",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "ssh",
-                "known-hosts",
-                "add",
-                "--known-hosts-root",
-                "/tmp/foo",
-                "--ask-become-pass"
-            ],
-            "stopOnEntry": false,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec ssh known-hosts extract --known-hosts-root /tmp/foo terraform.log",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "ssh",
-                "known-hosts",
-                "extract",
-                "--known-hosts-root",
-                "/tmp/foo",
-                "terraform.log"
-            ],
-            "stopOnEntry": false,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec ssh known-hosts add --instance-id [LATEST]",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "ssh",
-                "known-hosts",
-                "add",
-                "--ask-become-pass",
-                "--instance-id",
-                "$(pulumi -C ../ansible-dims-playbooks/deploy/pulumi-aws stack output instance_id)"
-            ],
-            "stopOnEntry": false,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec ssh known-hosts remove --instance-id [LATEST]",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "ssh",
-                "known-hosts",
-                "remove",
-                "--ask-become-pass",
-                "--instance-id",
-                "$(pulumi -C ../ansible-dims-playbooks/deploy/pulumi-aws stack output instance_id)"
-            ],
-            "stopOnEntry": false,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec ssh config --clean",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "-v",
-                "ssh",
-                "config",
-                "--clean"
-            ],
-            "stopOnEntry": false,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec utils asciinema --rebase test.cast",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "utils",
-                "asciinema",
-                "--rebase",
-                "test.cast"
-            ],
-            "stopOnEntry": false,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec utils myip --cidr",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "utils",
-                "myip",
-                "--cidr"
-            ],
-            "stopOnEntry": false,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec utils myip --cidr --method amazon_http",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "utils",
-                "myip",
-                "--cidr",
-                "--method",
-                "amazon_http"
-            ],
-            "stopOnEntry": false,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec utils myip --cidr --method random",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "utils",
-                "myip",
-                "--cidr",
-                "--method",
-                "random"
-            ],
-            "stopOnEntry": false,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec utils myip --netblock",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "utils",
-                "myip",
-                "--netblock"
-            ],
-            "stopOnEntry": false,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec utils myip methods",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "utils",
-                "myip",
-                "methods"
-            ],
-            "stopOnEntry": false,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec utils netblock",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "utils",
-                "netblock"
-            ],
-            "stopOnEntry": false,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec utils netblock 8.8.8.8",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "utils",
-                "netblock",
-                "8.8.8.8"
-            ],
-            "stopOnEntry": false,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec utils yaml-to-json - < /tmp/yamlsecrets/jenkins.yml",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "utils",
-                "yaml-to-json",
-                "-",
-                "<",
-                "/tmp/yamlsecrets/jenkins.yml"
-            ],
-            "stopOnEntry": false,
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "psec utils yaml-to-json --convert /tmp/yamlsecrets",
-            "type": "python",
-            "request": "launch",
-            "module": "psec.__main__",
-            "args": [
-                "--debug",
-                "utils",
-                "yaml-to-json",
-                "--convert",
-                "/tmp/yamlsecrets"
-            ],
-            "stopOnEntry": false,
-            "console": "integratedTerminal"
-        }
-    ]
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Python: Current File",
+      "type": "python",
+      "request": "launch",
+      "program": "${file}",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Debug Tests (async)",
+      "type": "python",
+      "request": "launch",
+      "console": "integratedTerminal",
+      "module": "pytest",
+      "cwd": "${workspaceFolder}",
+      // "args": [
+      //     "${workspaceFolder}/tests"
+      // ],
+      // "env": {
+      //     "D2_ENVIRONMENT": "tztoxtest",
+      //     "D2_SECRETS_BASEDIR": "/tmp/.tzsecrets"
+      // },
+      "stopOnEntry": false
+    },
+    {
+      "name": "psec -v init",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": ["-v", "init"],
+      "stopOnEntry": true,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec secrets set --help",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": ["--debug", "secrets", "set", "--help"],
+      "stopOnEntry": true,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec -q complete",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": ["--debug", "-q", "complete"],
+      "stopOnEntry": true,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec about",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": ["help"],
+      "stopOnEntry": false,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec --version",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": ["-vv", "--version"],
+      "stopOnEntry": true,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec environments create --init --clone-from tests/secrets.d",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": [
+        "--debug",
+        "environments",
+        "create",
+        "--init",
+        "--clone-from",
+        "tests/secrets.d"
+      ],
+      "stopOnEntry": false,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec environments create aclone --clone-from psectest",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": [
+        "--debug",
+        "environments",
+        "create",
+        "aclone",
+        "--clone-from",
+        "psectest"
+      ],
+      "stopOnEntry": false,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec environments create --alias alias aclone",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": [
+        "--debug",
+        "environments",
+        "create",
+        "--alias",
+        "alias",
+        "aclone"
+      ],
+      "stopOnEntry": false,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec environments default",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": ["--debug", "environments", "default"],
+      "stopOnEntry": true,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec environments default --set",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": ["--debug", "environments", "default", "--set"],
+      "stopOnEntry": true,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec environments list",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": ["--debug", "environments", "list"],
+      "stopOnEntry": true,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec -d /tmp/not/a/real/path environments list",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": ["--debug", "-d", "/tmp/not/a/real/path", "environments", "list"],
+      "stopOnEntry": true,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec environments list --aliasing",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": ["--debug", "environments", "list", "--aliasing"],
+      "stopOnEntry": true,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec environments rename alias renamed_alias",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": ["--debug", "environments", "rename", "alias", "renamed_alias"],
+      "stopOnEntry": false,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec environments delete",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": ["--debug", "environments", "delete"],
+      "stopOnEntry": false,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec environments delete aclone",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": ["--debug", "environments", "delete", "aclone"],
+      "stopOnEntry": false,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec environments rename notanalias not_an_alias",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": [
+        "--debug",
+        "environments",
+        "rename",
+        "notanalias",
+        "not_an_alias"
+      ],
+      "stopOnEntry": true,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec environments default --set",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": ["--debug", "environments", "default", "--set"],
+      "stopOnEntry": true,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec environments path --tmpdir",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": ["--debug", "environments", "path", "--tmpdir"],
+      "stopOnEntry": true,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec environments path doesntexist --exists",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": [
+        "--debug",
+        "-v",
+        "environments",
+        "path",
+        "doesntexist",
+        "--exists"
+      ],
+      "stopOnEntry": true,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec environments tree",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": ["--debug", "environments", "tree"],
+      "stopOnEntry": true,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec groups create emptygroup",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": ["--debug", "groups", "create", "emptygroup"],
+      "stopOnEntry": false,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec groups create newgroup --clone-from tests/gosecure.json",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": [
+        "--debug",
+        "groups",
+        "create",
+        "newgroup",
+        "--clone-from",
+        "tests/gosecure.json"
+      ],
+      "stopOnEntry": false,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec groups create newgroup --clone-from tests/gosecure.json",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": [
+        "--debug",
+        "groups",
+        "create",
+        "newgroup",
+        "--clone-from",
+        "tests/gosecure.json"
+      ],
+      "stopOnEntry": true,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec groups delete gosecure",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": ["--debug", "groups", "delete", "gosecure"],
+      "stopOnEntry": true,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec secrets create newsecret",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": ["--debug", "secrets", "create", "newsecret"],
+      "stopOnEntry": false,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec secrets create newsecret --mirror-locally",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": ["--debug", "secrets", "create", "newsecret", "--mirror-locally"],
+      "stopOnEntry": false,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec secrets create --update newsecret",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": [
+        "--debug",
+        "secrets",
+        "create",
+        "--update",
+        "newsecret",
+        "--mirror-locally"
+      ],
+      "stopOnEntry": false,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec secrets delete --group consul consul_key",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": [
+        "--debug",
+        "secrets",
+        "delete",
+        "--group",
+        "consul",
+        "consul_key"
+      ],
+      "stopOnEntry": false,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec secrets describe",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": ["--debug", "secrets", "describe"],
+      "stopOnEntry": false,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec secrets describe jenkins_admin_password",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": ["--debug", "secrets", "describe", "jenkins_admin_password"],
+      "stopOnEntry": false,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec secrets find jenkins_admin_password",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": ["--debug", "secrets", "find", "jenkins_admin_password"],
+      "stopOnEntry": false,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec secrets get jenkins_admin_password",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": ["--debug", "secrets", "get", "jenkins_admin_password"],
+      "stopOnEntry": false,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec secrets set algo_store_pki",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": ["--debug", "secrets", "set", "algo_store_pki"],
+      "stopOnEntry": false,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec secrets set jenkins_admin_password --from-environment python_secrets",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": [
+        "--debug",
+        "secrets",
+        "set",
+        "jenkins_admin_password",
+        "--from-environment",
+        "python_secrets"
+      ],
+      "stopOnEntry": false,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec secrets set hypriot_hostname",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": ["--debug", "secrets", "set", "hypriot_hostname"],
+      "stopOnEntry": false,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec secrets set jenkins_admin_password=trident_sysadmin_pass --from-environment python_secrets",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": [
+        "--debug",
+        "secrets",
+        "set",
+        "jenkins_admin_password=trident_sysadmin_pass",
+        "--from-environment",
+        "python_secrets"
+      ],
+      "stopOnEntry": false,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec secrets set --from-options",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": ["--debug", "secrets", "set", "--from-options"],
+      "stopOnEntry": false,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec secrets show --no-redact",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": ["--debug", "secrets", "show", "--no-redact"],
+      "stopOnEntry": false,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec secrets show --type password --no-redact",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": [
+        "--debug",
+        "secrets",
+        "show",
+        "--type",
+        "password",
+        "--no-redact"
+      ],
+      "stopOnEntry": false,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec secrets generate --from-options",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": ["--debug", "secrets", "generate", "--from-options"],
+      "stopOnEntry": false,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec secrets generate --max-acrostic-length 3",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": ["--debug", "secrets", "generate", "--max-acrostic-length", "3"],
+      "stopOnEntry": false,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec secrets path",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": ["--debug", "secrets", "path"],
+      "stopOnEntry": false,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec secrets send dittrich@speakeasy.net google_oauth_username",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": [
+        "--debug",
+        "secrets",
+        "send",
+        "--from",
+        "dave.dittrich@gmail.com",
+        "dittrich@speakeasy.net",
+        "google_oauth_username"
+      ],
+      "justMyCode": false,
+      "stopOnEntry": false,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec secrets tree",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": ["--debug", "secrets", "tree"],
+      "justMyCode": false,
+      "stopOnEntry": false,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec secrets backup",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": ["--debug", "-vvv", "secrets", "backup"],
+      "stopOnEntry": false,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec secrets restore",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": ["--debug", "-vvv", "secrets", "restore"],
+      "stopOnEntry": false,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec -E run printenv",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": ["--debug", "-vvv", "-E", "run", "printenv"],
+      "env": {
+        "D2_LOGFILE": "psec.log"
+      },
+      "stopOnEntry": false,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec --elapsed run -- sleep 5",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": ["--debug", "--elapsed", "run", "--", "sleep", "5"],
+      "stopOnEntry": false,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec ssh known-hosts add console-output.txt",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": ["--debug", "ssh", "known-hosts", "add", "console-output.txt"],
+      "stopOnEntry": false,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec ssh known-hosts add terraform.log",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": [
+        "--debug",
+        "ssh",
+        "known-hosts",
+        "add",
+        "--ask-become-pass",
+        "terraform.log"
+      ],
+      "stopOnEntry": false,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec ssh known-hosts add --save-to-files terraform.log",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": [
+        "--debug",
+        "ssh",
+        "known-hosts",
+        "add",
+        "--save-to-files",
+        "--ask-become-pass",
+        "terraform.log"
+      ],
+      "stopOnEntry": false,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec ssh known-hosts remove --ask-become-pass",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": ["--debug", "ssh", "known-hosts", "remove", "--ask-become-pass"],
+      "stopOnEntry": false,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec ssh known-hosts remove console-output.txt",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": [
+        "--debug",
+        "ssh",
+        "known-hosts",
+        "remove",
+        "--ask-become-pass",
+        "console-output.txt"
+      ],
+      "stopOnEntry": false,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec ssh known-hosts remove --host-ip 52.34.168.102",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": [
+        "--debug",
+        "ssh",
+        "known-hosts",
+        "remove",
+        "--public-ip",
+        "52.34.168.102"
+      ],
+      "stopOnEntry": false,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec ssh known-hosts add i-036b9d28241dacf68-console-output.txt",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": [
+        "--debug",
+        "ssh",
+        "known-hosts",
+        "add",
+        "--ask-become-pass",
+        "i-036b9d28241dacf68-console-output.txt"
+      ],
+      "stopOnEntry": false,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec ssh known-hosts add --known-hosts-root /tmp/foo --ask-become-pass",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": [
+        "--debug",
+        "ssh",
+        "known-hosts",
+        "add",
+        "--known-hosts-root",
+        "/tmp/foo",
+        "--ask-become-pass"
+      ],
+      "stopOnEntry": false,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec ssh known-hosts extract --known-hosts-root /tmp/foo terraform.log",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": [
+        "--debug",
+        "ssh",
+        "known-hosts",
+        "extract",
+        "--known-hosts-root",
+        "/tmp/foo",
+        "terraform.log"
+      ],
+      "stopOnEntry": false,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec ssh known-hosts add --instance-id [LATEST]",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": [
+        "--debug",
+        "ssh",
+        "known-hosts",
+        "add",
+        "--ask-become-pass",
+        "--instance-id",
+        "$(pulumi -C ../ansible-dims-playbooks/deploy/pulumi-aws stack output instance_id)"
+      ],
+      "stopOnEntry": false,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec ssh known-hosts remove --instance-id [LATEST]",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": [
+        "--debug",
+        "ssh",
+        "known-hosts",
+        "remove",
+        "--ask-become-pass",
+        "--instance-id",
+        "$(pulumi -C ../ansible-dims-playbooks/deploy/pulumi-aws stack output instance_id)"
+      ],
+      "stopOnEntry": false,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec ssh config --clean",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": ["--debug", "-v", "ssh", "config", "--clean"],
+      "stopOnEntry": false,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec utils asciinema --rebase test.cast",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": ["--debug", "utils", "asciinema", "--rebase", "test.cast"],
+      "stopOnEntry": false,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec utils myip --cidr",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": ["--debug", "utils", "myip", "--cidr"],
+      "stopOnEntry": false,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec utils myip --cidr --method amazon_http",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": ["--debug", "utils", "myip", "--cidr", "--method", "amazon_http"],
+      "stopOnEntry": false,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec utils myip --cidr --method random",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": ["--debug", "utils", "myip", "--cidr", "--method", "random"],
+      "stopOnEntry": false,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec utils myip --netblock",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": ["--debug", "utils", "myip", "--netblock"],
+      "stopOnEntry": false,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec utils myip methods",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": ["--debug", "utils", "myip", "methods"],
+      "stopOnEntry": false,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec utils netblock",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": ["--debug", "utils", "netblock"],
+      "stopOnEntry": false,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec utils netblock 8.8.8.8",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": ["--debug", "utils", "netblock", "8.8.8.8"],
+      "stopOnEntry": false,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec utils yaml-to-json - < /tmp/yamlsecrets/jenkins.yml",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": [
+        "--debug",
+        "utils",
+        "yaml-to-json",
+        "-",
+        "<",
+        "/tmp/yamlsecrets/jenkins.yml"
+      ],
+      "stopOnEntry": false,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "psec utils yaml-to-json --convert /tmp/yamlsecrets",
+      "type": "python",
+      "request": "launch",
+      "module": "psec.__main__",
+      "args": [
+        "--debug",
+        "utils",
+        "yaml-to-json",
+        "--convert",
+        "/tmp/yamlsecrets"
+      ],
+      "stopOnEntry": false,
+      "console": "integratedTerminal"
+    }
+  ]
 }
