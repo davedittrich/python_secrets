@@ -95,7 +95,7 @@ class SecretHandler(ABC):
     def describe(self):
         return OrderedDict(
             {
-                'Type': self.__module__.split('.')[-1],
+                'Type': self.__module__.rsplit('.', maxsplit=1)[-1],
                 'Description': getdoc(self),
                 'Generable': self.is_generable()
             }
