@@ -2,8 +2,6 @@
 
 SHELL=bash
 VERSION=$(shell cat VERSION)
-REQUIRED_VENV:=python_secrets
-VENV_DIR=$(HOME)/.virtualenvs/$(REQUIRED_VENV)
 PROJECT:=$(shell basename `pwd`)
 
 .PHONY: default
@@ -23,7 +21,7 @@ help:
 	@echo 'release - produce a pypi production release'
 	@echo 'release-test - produce a pypi test release'
 	@echo 'release-prep - final documentation preparations for release'
-	@echo 'sdist - run "python3 setup.py sdist"'
+	@echo 'sdist - run "python setup.py sdist"'
 	@echo 'bdist_wheel - build a universal binary wheel'
 	@echo 'twine-check - run "twine check"'
 	@echo 'clean - remove build artifacts'
@@ -34,7 +32,8 @@ help:
 	@echo 'clean-packet-cafe - remove packet_cafe contents'
 	@echo 'spotless-packet-cafe - Remove all packet_cafe files and containers'
 	@echo 'install - install pip package'
-	@echo 'install-active - run "python3 -m pip install -U ."'
+	@echo 'install-active - run "python -m pip install -U ."'
+	@echo 'update-packages - update Python packages'
 	@echo 'docs-tests - generate bats test output for documentation'
 	@echo 'docs-help - generate "lim help" output for documentation'
 	@echo 'docs - build Sphinx docs'
@@ -106,7 +105,7 @@ release-test: clean test docs-tests docs twine-check
 .PHONY: sdist
 sdist: clean-docs docs
 	rm -f dist/.LATEST_SDIST
-	python3 setup.py sdist
+	python setup.py sdist
 	ls -t dist/*.tar.gz 2>/dev/null | head -n 1 > dist/.LATEST_SDIST
 	ls -l dist/*.tar.gz
 
@@ -114,7 +113,7 @@ sdist: clean-docs docs
 .PHONY: bdist_egg
 bdist_egg:
 	rm -f dist/.LATEST_EGG
-	python3 setup.py bdist_egg
+	python setup.py bdist_egg
 	ls -t dist/*.egg 2>/dev/null | head -n 1 > dist/.LATEST_EGG
 	ls -lt dist/*.egg
 
@@ -122,7 +121,7 @@ bdist_egg:
 .PHONY: bdist_wheel
 bdist_wheel:
 	rm -f dist/.LATEST_WHEEL
-	python3 setup.py bdist_wheel
+	python setup.py bdist_wheel
 	ls -t dist/*.whl 2>/dev/null | head -n 1 > dist/.LATEST_WHEEL
 	ls -lt dist/*.whl
 
@@ -134,7 +133,7 @@ twine-check: sdist bdist_egg bdist_wheel
 #HELP clean - remove build artifacts
 .PHONY: clean
 clean: clean-docs
-	python3 setup.py clean
+	python setup.py clean
 	rm -rf dist build *.egg-info
 	find . -name '*.pyc' -delete
 
@@ -146,29 +145,24 @@ clean-docs:
 spotless: clean
 	rm -rf htmlcov
 
-#HELP install - install in required Python virtual environment (default $(REQUIRED_VENV))
+#HELP install - install in current Python virtual environment
 .PHONY: install
 install:
-	@if [ ! -d $(VENV_DIR) ]; then \
-		echo "Required virtual environment '$(REQUIRED_VENV)' not found."; \
-		exit 1; \
-	fi
-	@if [ ! -e "$(VENV_DIR)/bin/python3" ]; then \
-		echo "Cannot find $(VENV_DIR)/bin/python3"; \
-		exit 1; \
-	else \
-		echo "Installing into $(REQUIRED_VENV) virtual environment"; \
-		$(VENV_DIR)/bin/python3 -m pip uninstall -y $(PROJECT); \
-		$(VENV_DIR)/bin/python3 setup.py install; \
-	fi
+	python -m pip uninstall -y $(PROJECT)
+	python setup.py install
 
 #HELP install-active - install in the active Python virtual environment
 .PHONY: i
 .PHONY: install-active
 i install-active: bdist_wheel
-	python3 -m pip uninstall -y $(PROJECT)
-	@# python3 -m pip install -U "$(shell cat dist/.LATEST_WHEEL)" | grep -v ' already '
-	python3 setup.py install
+	python -m pip uninstall -y $(PROJECT)
+	@# python -m pip install -U "$(shell cat dist/.LATEST_WHEEL)" | grep -v ' already '
+	python setup.py install
+
+#HELP update-packages - update Python packages
+.PHONY: update-packages
+update-packages:
+	python -m pip install -U -r requirements.txt
 
 #HELP docs-tests - generate bats test output for documentation
 .PHONY: docs-tests
@@ -195,12 +189,12 @@ docs: docs/psec_help.txt
 	cd docs && make html
 
 docs/psec_help.txt: install-active
-	PYTHONPATH=$(shell pwd) python3 -m psec help | tee docs/psec_help.txt
+	PYTHONPATH=$(shell pwd) python -m psec help | tee docs/psec_help.txt
 
 #HELP examples - produce some example output for docs
 .PHONY: examples
 examples:
-	@PYTHONPATH=$(shell pwd) python3 -m psec --help
+	@PYTHONPATH=$(shell pwd) python -m psec --help
 
 # Git submodules and subtrees are both a huge PITA. This is way simpler.
 
