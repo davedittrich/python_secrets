@@ -91,7 +91,7 @@ jobs:
       TOX_PARALLEL_NO_SPINNER: 1
     steps:
     - name: Download artifacts
-      uses: actions/download-artifact@v2
+      uses: actions/download-artifact@v4.1.7
     - name: Get variables
       id: get_vars
       run: |
