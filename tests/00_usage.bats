@@ -27,7 +27,7 @@ teardown() {
 @test "'psec --help' shows usage" {
     run $PSEC --help
     assert_output --partial 'usage: '
-    assert_output --partial 'optional arguments:'
+    assert_output --partial 'options:'
 }
 
 # vim: set ts=4 sw=4 tw=0 et :
