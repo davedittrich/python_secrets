@@ -1,0 +1,158 @@
+[project]
+
+[build-system]
+requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning>=1.0.0,<2.0.0"]
+build-backend = "poetry_dynamic_versioning.backend"
+
+[tool.poetry-dynamic-versioning]
+enable = true
+vcs = "git"
+style = "semver"
+latest-tag = true
+pattern = '(?P<base>\d+\.\d+\.\d+)'
+
+[tool.poetry-dynamic-versioning.files."psec/_version.py"]
+persistent-substitution = true
+initial-content = """
+  # These version placeholders will be replaced later during substitution.
+  __version__ = "0.0.0"
+  __version_tuple__ = (0, 0, 0)
+"""
+
+[tool.poetry]
+name = "python-secrets"
+version = "0.1.0"
+description = "Python CLI for decoupling secrets (passwords, API keys, etc.) from source code"
+license = "Apache-2.0"
+authors = [
+	"Dave Dittrich <dave.dittrich@gmail.com>"
+]
+maintainers = [
+	"Dave Dittrich <dave.dittrich@gmail.com>"
+]
+readme = "README.rst"
+homepage = "https://github.com/davedittrich/python_secrets"
+repository = "https://github.com/davedittrich/python_secrets"
+documentation = "https://github.com/davedittrich/python_secrets"
+keywords = [
+	"cliff",
+	"cli",
+	"secrets",
+	"environment",
+]
+classifiers = [
+	"Development Status :: 5 - Production/Stable",
+	"Intended Audience :: Developers",
+	"Intended Audience :: End Users/Desktop",
+	"Intended Audience :: Information Technology",
+	"Intended Audience :: Artifical Intelligence",
+	"Intended Audience :: Other Audience",
+	"Intended Audience :: Science/Research",
+	"Intended Audience :: System Administrators",
+	"License :: OSI Approved :: Apache 2.0 License",
+	"Natural Language :: English",
+	"Operating System :: OS Independent",
+	"Programming Language :: Python :: 3",
+	"Programming Language :: Python :: 3.10",
+	"Programming Language :: Python :: 3.11",
+	"Programming Language :: Python :: 3.12",
+	"Topic :: Security",
+	"Topic :: Software Development",
+	"Topic :: Software Development :: Build Tools",
+	"Topic :: Software Development :: Libraries :: Python Modules",
+	"Topic :: System :: Installation/Setup",
+	"Topic :: Utilities"
+]
+packages = [
+	{include = "psec", to = "python-secrets"}
+]
+
+[tool.poetry.scripts]
+psec = "psec.__main__:main"
+
+[tool.poetry.plugins.psec]
+	about = "psec.about:About"
+	environments_create = "psec.cli.environments.create:EnvironmentsCreate"
+	environments_default = "psec.cli.environments.default:EnvironmentsDefault"
+	environments_delete = "psec.cli.environments.delete:EnvironmentsDelete"
+	environments_list = "psec.cli.environments.list:EnvironmentsList"
+	environments_path = "psec.cli.environments.path:EnvironmentsPath"
+	environments_rename = "psec.cli.environments.rename:EnvironmentsRename"
+	environments_tree = "psec.cli.environments.tree:EnvironmentsTree"
+	init = "psec.cli.init:Init"
+	groups_create = "psec.cli.groups.create:GroupsCreate"
+	groups_delete = "psec.cli.groups.delete:GroupsDelete"
+	groups_list = "psec.cli.groups.list:GroupsList"
+	groups_path = "psec.cli.groups.path:GroupsPath"
+	groups_show = "psec.cli.groups.show:GroupsShow"
+	run = "psec.cli.run:Run"
+	secrets_backup = "psec.cli.secrets.backup:SecretsBackup"
+	secrets_create = "psec.cli.secrets.create:SecretsCreate"
+	secrets_delete = "psec.cli.secrets.delete:SecretsDelete"
+	secrets_describe = "psec.cli.secrets.describe:SecretsDescribe"
+	secrets_find = "psec.cli.secrets.find:SecretsFind"
+	secrets_generate = "psec.cli.secrets.generate:SecretsGenerate"
+	secrets_get = "psec.cli.secrets.get:SecretsGet"
+	secrets_path = "psec.cli.secrets.path:SecretsPath"
+	secrets_restore = "psec.cli.secrets.restore:SecretsRestore"
+	secrets_send = "psec.cli.secrets.send:SecretsSend"
+	secrets_set = "psec.cli.secrets.set:SecretsSet"
+	secrets_show = "psec.cli.secrets.show:SecretsShow"
+	secrets_tree = "psec.cli.secrets.tree:SecretsTree"
+	ssh_config = "psec.cli.ssh:SSHConfig"
+	ssh_known-hosts_add = "psec.cli.ssh:SSHKnownHostsAdd"
+	ssh_known-hosts_extract = "psec.cli.ssh:SSHKnownHostsExtract"
+	ssh_known-hosts_remove = "psec.cli.ssh:SSHKnownHostsRemove"
+	template = "psec.cli.template:Template"
+	utils_myip = "psec.cli.utils.myip:MyIP"
+	utils_myip_methods = "psec.cli.utils.myip:MyIPMethods"
+	utils_netblock = "psec.cli.utils.netblock:Netblock"
+	utils_set-aws-credentials = "psec.cli.utils.set_aws_credentials:SetAWSCredentials"
+	utils_tfstate_backend = "psec.cli.utils.tfbackend:TfBackend"
+	utils_tfstate_output = "psec.cli.utils.tfoutput:TfOutput"
+	utils_yaml-to-json = "psec.cli.utils.yaml_to_json:YAMLToJSON"
+
+[tool.poetry.dependencies]
+python = ">=3.10,<4.0"
+ansible = "^10.4.0"
+anytree = "^2.12.1"
+beautifulsoup4 = "^4.12.3"
+bullet = "^2.2.0"
+cliff = "^4.7.0"
+configobj = "^5.0.8"
+gnupg = "^2.3.1"
+ipwhois = "^1.2.0"
+jinja2 = "^3.1.4"
+lxml = "^5.3.0"
+pexpect = "^4.9.0"
+poetry = "^1.8.3"
+psutil = "^6.0.0"
+requests = "^2.32.3"
+sphinx = "^8.0.2"
+setuptools = "^74.1.2"
+xkcdpass ="^1.19.9"
+
+[tool.poetry.group.dev]
+optional = true
+
+[tool.poetry.group.dev.dependencies]
+flake8 = "^3.9.2"
+tox = "^4.8.1"
+bandit = "^1.7.9"
+
+[tool.poetry.group.test]
+optional = true
+
+[tool.poetry.group.test.dependencies]
+pytest = "^7.4.4"
+pytest-cov = "^2.12.1"
+pytest-cookies = "^0.6.1"
+twine = "^5.1.1"
+
+[tool.pytest.ini_options]
+addopts = [
+  "--import-mode=importlib",
+]
+pythonpath = "psec"
+
+# EOF

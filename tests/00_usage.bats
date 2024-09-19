@@ -22,6 +22,7 @@ teardown() {
     run $PSEC --version
     refute_output --partial "main"
     assert_output --partial "psec"
+    refute_output --partial "0.0.0"
 }
 
 @test "'psec --help' shows usage" {

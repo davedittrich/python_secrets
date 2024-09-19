@@ -22,22 +22,28 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v3
       with:
-        python-version: 3.9.16
-    - uses: conda-incubator/setup-miniconda@v2
+        python-version: 3.10.9
+    - name: Set up Conda
+      uses: conda-incubator/setup-miniconda@v2
       with:
         auto-activate-base: true
-        python-version: 3.9.16
+        python-version: 3.10.9
         auto-update-conda: true
+    - name: Install and configure Poetry
+      uses: snok/install-poetry@v1
+      with:
+        version: 1.8.3
+        # Get from poetry.toml
+        # virtualenvs-create: false
+        # prefer-active-python: true
     - name: Install dependencies
       run: |
         conda config --set always_yes yes --set changeps1 no
-        python3 -m pip install tox setuptools>=42 setuptools_scm wheel twine
-        [ -f requirements.txt ] && python3 -m pip install -Ur requirements.txt
-        [ -f test-requirements.txt ] && python3 -m pip install -Ur test-requirements.txt
-        echo "VERSION=$(python3 setup.py --version)"
+        poetry install --no-root --with=dev --with=test
         make bats-libraries
         # Useful for debugging any issues with conda
         conda info -a
+        echo "VERSION=$(poetry version --short)"
     - name: Get variables
       id: get_vars
       run: |
@@ -60,7 +66,7 @@ jobs:
       run: make test
     # ![1-test-build-publish]
     - name: Build artifacts
-      run: make bdist_wheel sdist twine-check
+      run: make twine-check
       if: >-
         github.event_name == 'push' &&
         startsWith(github.ref, 'refs/tags')

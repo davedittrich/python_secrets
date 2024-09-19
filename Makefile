@@ -8,12 +8,16 @@ PROJECT:=$(shell basename `pwd`)
 default: all
 
 .PHONY: all
-all: install-active
+all: install
 
 .PHONY: help
 help:
 	@echo 'usage: make [VARIABLE=value] [target [target..]]'
 	@echo ''
+	@echo 'build - build project packages'
+	@echo 'twine-check - run "twine check"'
+	@echo 'clean - remove build artifacts'
+	@echo 'spotless - deep clean'
 	@echo 'test - generic target for both "test-tox" and "test-bats"'
 	@echo 'test-tox - run tox tests'
 	@echo 'test-bats - run Bats unit tests'
@@ -21,23 +25,11 @@ help:
 	@echo 'release - produce a pypi production release'
 	@echo 'release-test - produce a pypi test release'
 	@echo 'release-prep - final documentation preparations for release'
-	@echo 'sdist - run "python setup.py sdist"'
-	@echo 'bdist_wheel - build a universal binary wheel'
-	@echo 'twine-check - run "twine check"'
-	@echo 'clean - remove build artifacts'
-	@echo 'spotless - deep clean'
-	@echo 'build-packet-cafe - Build and bring up packet_cafe containers'
-	@echo 'up-packet-cafe - Bring up packet_cafe containers'
-	@echo 'down-packet-cafe - Bring up packet_cafe containers'
-	@echo 'clean-packet-cafe - remove packet_cafe contents'
-	@echo 'spotless-packet-cafe - Remove all packet_cafe files and containers'
-	@echo 'install - install pip package'
-	@echo 'install-active - run "python -m pip install -U ."'
-	@echo 'update-packages - update Python packages'
+	@echo 'install - build project with Poetry and install with Pip'
+	@echo 'update-packages - update dependencies with Poetry'
 	@echo 'docs-tests - generate bats test output for documentation'
-	@echo 'docs-help - generate "lim help" output for documentation'
+	@echo 'docs-help - generate "psec help" output for documentation'
 	@echo 'docs - build Sphinx docs'
-
 
 #HELP test - run 'tox' for testing
 .PHONY: test
@@ -54,10 +46,8 @@ test-tox:
 	@if [ -f .python_secrets_environment ]; then (echo '[!] Remove .python_secrets_environment prior to testing'; exit 1); fi
 	touch docs/psec_help.txt
 	@# See also comment in tox.ini file.
-	tox -e pep8
-	tox -e bandit,docs,bats
-	tox -e clean,py39,py310,py311,pypi,report
-	echo '[+] test-tox: All tests passed'
+	tox run -m static
+	tox run -m tests
 # ![Makefile-test-tox]
 
 .PHONY: test-bats
@@ -87,55 +77,39 @@ no-diffs:
 
 #HELP release - package and upload a release to pypi
 .PHONY: release
-release: clean docs sdist bdist_wheel twine-check
-	twine upload $(shell cat dist/.LATEST_*) -r pypi
+release: clean docs build twine-check
+	(cd dist && twine upload $$(cat .LATEST_*) -r pypi)
 
 #HELP release-prep - final documentation preparations for release
 .PHONY: release-prep
-release-prep: install-active clean sdist docs-help docs-tests
+release-prep: install clean build docs-help docs-tests
 	@echo 'Check in help text docs and HISTORY.rst?'
 
 #HELP release-test - upload to "testpypi"
 .PHONY: release-test
 release-test: clean test docs-tests docs twine-check
 	$(MAKE) no-diffs
-	twine upload $(shell cat dist/.LATEST_*) -r testpypi
+	(cd dist && twine upload $$(cat .LATEST_*) -r testpypi)
 
-#HELP sdist - build a source package
-.PHONY: sdist
-sdist: clean-docs docs
-	rm -f dist/.LATEST_SDIST
-	python setup.py sdist
-	ls -t dist/*.tar.gz 2>/dev/null | head -n 1 > dist/.LATEST_SDIST
-	ls -l dist/*.tar.gz
-
-#HELP bdist_egg - build an egg package
-.PHONY: bdist_egg
-bdist_egg:
-	rm -f dist/.LATEST_EGG
-	python setup.py bdist_egg
-	ls -t dist/*.egg 2>/dev/null | head -n 1 > dist/.LATEST_EGG
-	ls -lt dist/*.egg
-
-#HELP bdist_wheel - build a wheel package
-.PHONY: bdist_wheel
-bdist_wheel:
-	rm -f dist/.LATEST_WHEEL
-	python setup.py bdist_wheel
-	ls -t dist/*.whl 2>/dev/null | head -n 1 > dist/.LATEST_WHEEL
-	ls -lt dist/*.whl
+#HELP build - build project packages
+.PHONY: build
+build:
+	@rm -f dist/.LATEST_TARGZ dist/.LATEST_WHEEL
+	poetry build
+	@(cd dist && ls -t *.tar.gz 2>/dev/null | head -n 1 > .LATEST_TARGZ)
+	@(cd dist && ls -t *.whl 2>/dev/null | head -n 1 > .LATEST_WHEEL)
 
 #HELP twine-check
 .PHONY: twine-check
-twine-check: sdist bdist_egg bdist_wheel
-	twine check $(shell cat dist/.LATEST_*)
+twine-check: build
+	(cd dist && twine check $$(cat .LATEST_*))
 
 #HELP clean - remove build artifacts
 .PHONY: clean
 clean: clean-docs
-	python setup.py clean
 	rm -rf dist build *.egg-info
 	find . -name '*.pyc' -delete
+	rm -f psec/_version.py
 
 .PHONY: clean-docs
 clean-docs:
@@ -144,25 +118,18 @@ clean-docs:
 .PHONY: spotless
 spotless: clean
 	rm -rf htmlcov
-
-#HELP install - install in current Python virtual environment
-.PHONY: install
-install:
 	python -m pip uninstall -y $(PROJECT)
-	python setup.py install
 
-#HELP install-active - install in the active Python virtual environment
+#HELP install - build project with Poetry and install with Pip'
 .PHONY: i
-.PHONY: install-active
-i install-active: bdist_wheel
-	python -m pip uninstall -y $(PROJECT)
-	@# python -m pip install -U "$(shell cat dist/.LATEST_WHEEL)" | grep -v ' already '
-	python setup.py install
+.PHONY: install
+i install: spotless build
+	(cd dist && python -m pip install $$(cat .LATEST_WHEEL))
 
-#HELP update-packages - update Python packages
+#HELP update-packages - update dependencies with Poetry
 .PHONY: update-packages
 update-packages:
-	python -m pip install -U -r requirements.txt
+	poetry update
 
 #HELP docs-tests - generate bats test output for documentation
 .PHONY: docs-tests
@@ -188,7 +155,7 @@ docs/test-bats-runtime.txt:
 docs: docs/psec_help.txt
 	cd docs && make html
 
-docs/psec_help.txt: install-active
+docs/psec_help.txt: install
 	PYTHONPATH=$(shell pwd) python -m psec help | tee docs/psec_help.txt
 
 #HELP examples - produce some example output for docs
