@@ -109,7 +109,6 @@ twine-check: build
 clean: clean-docs
 	rm -rf dist build *.egg-info
 	find . -name '*.pyc' -delete
-	rm -f psec/_version.py
 
 .PHONY: clean-docs
 clean-docs:
@@ -118,6 +117,7 @@ clean-docs:
 .PHONY: spotless
 spotless: clean
 	rm -rf htmlcov
+	rm -f psec/_version.py
 	python -m pip uninstall -y $(PROJECT)
 
 #HELP install - build project with Poetry and install with Pip'
