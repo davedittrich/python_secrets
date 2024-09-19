@@ -36,6 +36,9 @@ jobs:
         # Get from poetry.toml
         # virtualenvs-create: false
         # prefer-active-python: true
+    - name: Add Dynamic Versioning Plugin
+      run: |
+          poetry self add poetry-dynamic-versioning[plugin]
     - name: Install dependencies
       run: |
         conda config --set always_yes yes --set changeps1 no
