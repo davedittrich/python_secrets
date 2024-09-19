@@ -53,7 +53,7 @@ jobs:
         BRANCH=${GITHUB_REF##*/}
         echo "BRANCH=${BRANCH}" >> $GITHUB_OUTPUT
 
-        VERSION=$(python3 setup.py --version 2>/dev/null)
+        VERSION=$(poetry version --short 2>/dev/null)
         echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
 
         TAG_VERSION=$(git describe --abbrev=0 --tags 2>/dev/null || true)
