@@ -95,6 +95,7 @@ release-test: clean test docs-tests docs twine-check
 .PHONY: build
 build:
 	@rm -f dist/.LATEST_TARGZ dist/.LATEST_WHEEL
+	poetry dynamic-versioning -vv
 	poetry build
 	@(cd dist && ls -t *.tar.gz 2>/dev/null | head -n 1 > .LATEST_TARGZ)
 	@(cd dist && ls -t *.whl 2>/dev/null | head -n 1 > .LATEST_WHEEL)
