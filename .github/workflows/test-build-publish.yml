@@ -15,20 +15,24 @@ jobs:
         echo "github.event.head_commit=$HEAD_COMMIT"
       env:
         HEAD_COMMIT: ${{ toJson(github.event.head_commit) }}
+
     - name: Check out src from GitHub
       uses: actions/checkout@v4
       with:
         fetch-depth: 0
+
     - name: Set up Python
       uses: actions/setup-python@v3
       with:
         python-version: 3.10.9
+
     - name: Set up Conda
       uses: conda-incubator/setup-miniconda@v2
       with:
         auto-activate-base: true
         python-version: 3.10.9
         auto-update-conda: true
+
     - name: Install and configure Poetry
       uses: snok/install-poetry@v1
       with:
@@ -36,17 +40,26 @@ jobs:
         # Get from poetry.toml
         # virtualenvs-create: false
         # prefer-active-python: true
-    - name: Add Dynamic Versioning Plugin
-      run: |
-          poetry self add poetry-dynamic-versioning[plugin]
-    - name: Install dependencies
+
+    - name: Install poetry dependencies
+      run: poetry install --no-root
+
+    - name: Install remaining dependencies
       run: |
         conda config --set always_yes yes --set changeps1 no
-        poetry install --no-root --with=dev --with=test
         make bats-libraries
         # Useful for debugging any issues with conda
         conda info -a
+
+    - name: Add Dynamic Versioning Plugin
+      run: |
+        poetry self add poetry-dynamic-versioning[plugin]
+
+    - name: Update the version
+      run: |
+        poetry dynamic-versioning
         echo "VERSION=$(poetry version --short)"
+
     - name: Get variables
       id: get_vars
       run: |
@@ -64,20 +77,24 @@ jobs:
 
         ARTIFACT="${REPO}-${BRANCH}"
         echo "ARTIFACT=${ARTIFACT}" >> $GITHUB_OUTPUT
+
     # [1-test-build-publish]
     - name: Run tests
       run: make test
     # ![1-test-build-publish]
+
     - name: Build artifacts
       run: make twine-check
       if: >-
         github.event_name == 'push' &&
         startsWith(github.ref, 'refs/tags')
+
     - name: Display artifacts
       run: ls -lR dist
       if: >-
         github.event_name == 'push' &&
         startsWith(github.ref, 'refs/tags')
+
     - name: Store artifacts
       uses: actions/upload-artifact@v4
       with:
@@ -101,6 +118,7 @@ jobs:
     steps:
     - name: Download artifacts
       uses: actions/download-artifact@v4
+
     - name: Get variables
       id: get_vars
       run: |
@@ -112,9 +130,11 @@ jobs:
 
         ARTIFACT="${REPO}-${BRANCH}"
         echo "ARTIFACT=${ARTIFACT}" >> $GITHUB_OUTPUT
+
     - name: Display artifacts
       run: |
         ls -lR
+
     # [2-test-build-publish]
     - name: Publish release candidate artifacts to TestPyPI
       if: >-
@@ -128,6 +148,7 @@ jobs:
         password: ${{ secrets.PSEC_TEST_PYPI_PASSWORD }}
         packages-dir: ${{ steps.get_vars.outputs.ARTIFACT }}
         verify-metadata: false
+
     - name: Publish tagged artifacts to PyPI
       if: >-
         github.event_name == 'push' &&
@@ -141,3 +162,4 @@ jobs:
         verify-metadata: false
     # ![2-test-build-publish]
 
+# EOF
