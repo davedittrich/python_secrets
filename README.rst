@@ -89,12 +89,6 @@ Features
   that may contain secrets *outside* of the source repo directory
   in an environment-specific ``tmp/`` directory.
 
-.. note::
-
-   Due to the use of the Python ``secrets`` module, which was introduced
-   in Python 3.6, only Python versions >= 3.6 can be used.
-
-..
 
 .. _limitations:
 
