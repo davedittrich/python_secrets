@@ -24,6 +24,15 @@ History
 .. Fixed for any bug fixes.
 .. Security in case of vulnerabilities.
 
+24.10.0 (2024-10-03)
+~~~~~~~~~~~~~~~~~~~~
+
+Changed
+^^^^^^^
+
+- Now using Poetry for package management and installation.
+
+
 23.4.2 (2023-04-20)
 ~~~~~~~~~~~~~~~~~~~
 
