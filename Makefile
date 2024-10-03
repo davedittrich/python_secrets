@@ -119,6 +119,7 @@ clean-docs:
 spotless: clean
 	rm -rf htmlcov
 	rm -f psec/_version.py
+	rm -rf .tox/
 	python -m pip uninstall -y $(PROJECT)
 
 #HELP install - build project with Poetry and install with Pip'
