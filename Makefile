@@ -108,6 +108,7 @@ twine-check: build
 #HELP clean - remove build artifacts
 .PHONY: clean
 clean: clean-docs
+	rm -f psec/_version.py
 	rm -rf dist build *.egg-info
 	find . -name '*.pyc' -delete
 
@@ -118,14 +119,13 @@ clean-docs:
 .PHONY: spotless
 spotless: clean
 	rm -rf htmlcov
-	rm -f psec/_version.py
 	rm -rf .tox/
 	python -m pip uninstall -y $(PROJECT)
 
 #HELP install - build project with Poetry and install with Pip'
 .PHONY: i
 .PHONY: install
-i install: spotless build
+i install: clean build
 	(cd dist && python -m pip install $$(cat .LATEST_WHEEL))
 
 #HELP update-packages - update dependencies with Poetry
