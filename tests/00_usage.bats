@@ -22,11 +22,13 @@ teardown() {
     run $PSEC --version
     refute_output --partial "main"
     assert_output --partial "psec"
+    refute_output --partial "0.0.0"
 }
 
 @test "'psec --help' shows usage" {
     run $PSEC --help
-    assert_output --partial 'Python secrets management app'
+    assert_output --partial 'usage: '
+    assert_output --partial 'options:'
 }
 
 # vim: set ts=4 sw=4 tw=0 et :

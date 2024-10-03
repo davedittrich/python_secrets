@@ -78,7 +78,7 @@ Ready to contribute? Here's how to set up `python_secrets` for local development
 
     $ mkvirtualenv python_secrets
     $ cd python_secrets/
-    $ python setup.py develop
+    $ make install
 
 #. Create a branch for local development::
 

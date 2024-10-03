@@ -17,7 +17,7 @@ Python command line app for managing groups of secrets (passwords, API keys, etc
 other project variables. Reduces security risks from things like weak default passwords,
 secrets stored in files in the source code repository directory.
 
-Version: 23.4.2
+Version: 24.10.0
 
 * Free software: `Apache 2.0 License <https://www.apache.org/licenses/LICENSE-2.0>`_
 * Documentation: https://python_secrets.readthedocs.org.
@@ -89,12 +89,6 @@ Features
   that may contain secrets *outside* of the source repo directory
   in an environment-specific ``tmp/`` directory.
 
-.. note::
-
-   Due to the use of the Python ``secrets`` module, which was introduced
-   in Python 3.6, only Python versions >= 3.6 can be used.
-
-..
 
 .. _limitations:
 
@@ -1218,7 +1212,7 @@ Decrypted, it looks like this:
     myapp_app_password=brunt.outclass.alike.turbine
 
     --
-    Sent using psec version 23.4.2
+    Sent using psec version 24.10.0
     https://pypi.org/project/python-secrets/
     https://github.com/davedittrich/python_secrets
 

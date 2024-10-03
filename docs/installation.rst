@@ -2,12 +2,12 @@
 Installation
 ============
 
-Install ``psec`` using the ``pip`` module of Python 3.6 (or greater):
+Install ``psec`` using the ``pip`` module of Python:
 
 .. code-block:: console
 
    $ python -V
-   $ Python 3.9.0
+   Python 3.12.6
    $ python -m pip install python_secrets
 
 ..

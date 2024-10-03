@@ -46,10 +46,8 @@ class Init(Command):
     logger = logging.getLogger(__name__)
 
     def get_parser(self, prog_name):
-        try:
-            basedir = self.app.secrets_basedir
-        except AttributeError:
-            # For cliff
+        basedir = getattr(self.app, 'secrets_basedir', None)
+        if basedir is None:
             basedir = get_default_secrets_basedir()
         parser = super().get_parser(prog_name)
         parser.add_argument(

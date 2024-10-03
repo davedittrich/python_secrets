@@ -204,7 +204,9 @@ def secrets_basedir_create(
 ):
     """Create secrets root directory"""
     if basedir is None:
-        raise RuntimeError("[-] a base directory is required")
+        raise RuntimeError(
+            "[-] no base directory path specified"
+        )
     secrets_basedir = Path(basedir)
     secrets_basedir.mkdir(
         parents=True,
