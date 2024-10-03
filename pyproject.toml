@@ -49,7 +49,7 @@ classifiers = [
 	"Intended Audience :: Other Audience",
 	"Intended Audience :: Science/Research",
 	"Intended Audience :: System Administrators",
-	"License :: OSI Approved :: Apache 2.0 License",
+	"License-Expression :: Apache-2.0",
 	"Natural Language :: English",
 	"Operating System :: POSIX",
 	"Operating System :: MacOS",
