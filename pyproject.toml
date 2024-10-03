@@ -42,25 +42,31 @@ keywords = [
 ]
 classifiers = [
 	"Development Status :: 5 - Production/Stable",
+	"Environment :: Console",
 	"Intended Audience :: Developers",
 	"Intended Audience :: End Users/Desktop",
 	"Intended Audience :: Information Technology",
-	"Intended Audience :: Artifical Intelligence",
 	"Intended Audience :: Other Audience",
 	"Intended Audience :: Science/Research",
 	"Intended Audience :: System Administrators",
 	"License :: OSI Approved :: Apache 2.0 License",
 	"Natural Language :: English",
+	"Operating System :: POSIX",
+	"Operating System :: MacOS",
 	"Operating System :: OS Independent",
+	"Operating System :: Microsoft/Windows",
+	"Operating System :: Unix",
 	"Programming Language :: Python :: 3",
 	"Programming Language :: Python :: 3.10",
 	"Programming Language :: Python :: 3.11",
 	"Programming Language :: Python :: 3.12",
+	"Programming Language :: Unix Shell",
 	"Topic :: Security",
 	"Topic :: Software Development",
 	"Topic :: Software Development :: Build Tools",
 	"Topic :: Software Development :: Libraries :: Python Modules",
 	"Topic :: System :: Installation/Setup",
+	"Topic :: System :: Systems Administration",
 	"Topic :: Utilities"
 ]
 packages = [
