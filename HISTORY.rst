@@ -24,7 +24,7 @@ History
 .. Fixed for any bug fixes.
 .. Security in case of vulnerabilities.
 
-24.10.0 (2024-10-03)
+24.10.3 (2024-10-03)
 ~~~~~~~~~~~~~~~~~~~~
 
 Changed
