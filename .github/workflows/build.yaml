@@ -9,7 +9,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     env:
       PY_COLORS: 1
       PYTHON_VERSION: '3.12.6'
