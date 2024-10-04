@@ -27,7 +27,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: $PYTHON_VERSION
+          python-version: ${{env.PYTHON_VERSION}}
 
       - name: Set up Conda
         uses: conda-incubator/setup-miniconda@v3
