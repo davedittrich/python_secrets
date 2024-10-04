@@ -137,12 +137,12 @@ requests = "^2.32.3"
 sphinx = "^8.0.2"
 setuptools = "^75.1.0"
 xkcdpass ="^1.19.9"
+ruff = "^0.6.9"
 
 [tool.poetry.group.dev]
 optional = true
 
 [tool.poetry.group.dev.dependencies]
-flake8 = "^3.9.2"
 tox = "^4.8.1"
 bandit = "^1.7.9"
 
