@@ -1,0 +1,62 @@
+# .github/workflows/build.yml
+name: Build
+
+on:
+  workflow_run:
+    workflows: ["Test"]
+    types:
+      - completed
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      PY_COLORS: 1
+      PYTHON_VERSION: '3.10.9'
+
+    steps:
+      - name: Dump select GitHub event context
+        run: |
+          echo "github.ref=${{ github.ref }}"
+          echo "github.event.head_commit=$HEAD_COMMIT"
+        env:
+          HEAD_COMMIT: ${{ toJson(github.event.head_commit) }}
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: $PYTHON_VERSION
+
+      - name: Install and configure Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: 1.8.3
+          # Get from poetry.toml
+          # virtualenvs-create: false
+          # prefer-active-python: true
+
+      - name: Install poetry dependencies
+        run: poetry install --no-root --with=dev --with=test
+
+      - name: Add Dynamic Versioning Plugin
+        run: |
+          poetry self add poetry-dynamic-versioning[plugin]
+
+      - name: Update the version
+        run: |
+          poetry dynamic-versioning
+          echo "VERSION=$(poetry version --short)"
+
+    - name: Build artifacts
+      run: make twine-check
+
+    - name: Store artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: dist-files
+        path: dist/*

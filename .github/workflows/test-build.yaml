@@ -1,0 +1,70 @@
+# .github/workflows/test.yml
+name: Test
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - 'feature/*'
+      - 'hotfix/*'
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      PY_COLORS: 1
+      TOX_PARALLEL_NO_SPINNER: 1
+      PYTHON_VERSION: '3.10.9'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: $PYTHON_VERSION
+
+      - name: Set up Conda
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          auto-activate-base: true
+          python-version: $PYTHON_VERSION
+          auto-update-conda: true
+
+      - name: Install and configure Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: 1.8.3
+          # Get from poetry.toml
+          # virtualenvs-create: false
+          # prefer-active-python: true
+
+      - name: Install poetry dependencies
+        run: poetry install --no-root --with=dev --with=test
+
+      - name: Install remaining dependencies
+        run: |
+          conda config --set always_yes yes --set changeps1 no
+          make bats-libraries
+          # Useful for debugging any issues with conda
+          conda info -a
+
+      - name: Add Dynamic Versioning Plugin
+        run: |
+          poetry self add poetry-dynamic-versioning[plugin]
+
+      - name: Update the version
+        run: |
+          poetry dynamic-versioning
+          echo "VERSION=$(poetry version --short)"
+
+      # [1-test-workflow]
+      - name: Run tests
+        run: make test
+      # ![1-test-workflow]
+
