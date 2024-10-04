@@ -13,7 +13,6 @@ jobs:
     env:
       PY_COLORS: 1
       PYTHON_VERSION: '3.12.6'
-
     steps:
       - name: Dump select GitHub event context
         run: |
@@ -52,11 +51,11 @@ jobs:
           poetry dynamic-versioning
           echo "VERSION=$(poetry version --short)"
 
-    - name: Build artifacts
-      run: make twine-check
+      - name: Build artifacts
+        run: make twine-check
 
-    - name: Store artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: dist-files
-        path: dist/*
+      - name: Store artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-files
+          path: dist/*
