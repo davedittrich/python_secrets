@@ -16,7 +16,7 @@ jobs:
     env:
       PY_COLORS: 1
       TOX_PARALLEL_NO_SPINNER: 1
-      PYTHON_VERSION: '3.12.7'
+      PYTHON_VERSION: '3.12.6'
 
     steps:
       - name: Checkout code
