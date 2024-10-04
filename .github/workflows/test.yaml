@@ -33,7 +33,7 @@ jobs:
         uses: conda-incubator/setup-miniconda@v3
         with:
           auto-activate-base: true
-          python-version: $PYTHON_VERSION
+          python-version: ${{env.PYTHON_VERSION}}
           auto-update-conda: true
 
       - name: Install and configure Poetry
