@@ -1,9 +1,12 @@
-# .github/workflows/build.yml
-name: Build
+# .github/workflows/build-publish.yml
+name: Build and Publish
 
 on:
   workflow_run:
     workflows: ["Test"]
+    branches:
+      - main
+      - develop
     types:
       - completed
 
@@ -60,3 +63,38 @@ jobs:
         with:
           name: dist-files
           path: dist/*
+  publish:
+    needs: build
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-22.04
+    env:
+      PY_COLORS: 1
+
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dist-files
+          path: ./dist
+
+      # [1-build-publish-workflow]
+      - name: Publish release candidate artifacts to TestPyPI
+        if: contains(github.ref, 'rc') == true
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository_url: https://test.pypi.org/legacy/
+          user: __token__
+          password: ${{ secrets.PSEC_TEST_PYPI_PASSWORD }}
+          packages-dir: ./dist
+          verify-metadata: false
+
+      - name: Publish tagged artifacts to PyPI
+        if: contains(github.ref, 'rc') == false
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          user: __token__
+          password: ${{ secrets.PSEC_PYPI_PASSWORD }}
+          packages-dir: ./dist
+          verify-metadata: false
+      # ![1-build-publish-workflow]
+
