@@ -8,7 +8,7 @@ on:
       - completed
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
     env:
       PY_COLORS: 1
