@@ -9,6 +9,7 @@ on:
 
 jobs:
   build:
+    needs: test
     runs-on: ubuntu-22.04
     env:
       PY_COLORS: 1
