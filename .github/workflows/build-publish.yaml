@@ -62,7 +62,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: dist-files
-          path: dist/*
+          path: ./dist/
   publish:
     needs: build
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
@@ -75,7 +75,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: dist-files
-          path: ./dist
+          path: ./dist/
 
       # [1-build-publish-workflow]
       - name: Publish release candidate artifacts to TestPyPI
