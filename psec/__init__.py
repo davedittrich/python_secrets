@@ -12,7 +12,7 @@ from psec._version import (
 
 __author__ = 'Dave Dittrich'
 __email__ = 'dave.dittrich@gmail.com'
-__release__ = '24.10.4'
+__release__ = '24.10.5'
 
 if __version__ in ['0.0.0', '0.1.0']:
     try:

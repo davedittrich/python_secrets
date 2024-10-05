@@ -1,44 +1,94 @@
-# .github/workflows/publish.yml
-name: Publish after Build
+name: Publish
 
 on:
-  workflow_run:
-    workflows: ["Build"]
-    types:
-      - completed
+  push:
+    tags:
+      - '*.*.*'
+
+permissions:
+  contents: read
 
 jobs:
-  publish:
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+  build:
     runs-on: ubuntu-22.04
     env:
       PY_COLORS: 1
-
+      PYTHON_VERSION: '3.12.6'
     steps:
-      - name: Download artifact
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{env.PYTHON_VERSION}}
+
+      - name: Install and configure Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: 1.8.3
+
+      - name: Install poetry dependencies
+        run: poetry install --no-root --with=dev --with=test
+
+      - name: Add Dynamic Versioning Plugin
+        run: |
+          poetry self add poetry-dynamic-versioning[plugin]
+
+      - name: Update the version
+        run: |
+          poetry dynamic-versioning
+          echo "VERSION=$(poetry version --short)"
+
+      - name: Package project
+        run: make twine-check
+
+      - name: Store the distribution packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-package-distributions
+          path: dist/
+
+  # [1-build-publish-workflow]
+  pypi-publish:
+    name: Publish release artifacts to PyPI
+    if: contains(github.ref, 'rc') == false
+    runs-on: ubuntu-22.04
+    needs:
+      - build
+    environment:
+      name: pypi
+      url: https://pypi.org/p/python_secrets
+    permissions:
+      id-token: write
+    steps:
+      - name: Download all the dists
         uses: actions/download-artifact@v4
         with:
-          name: dist-files
-          path: ./dist
+          name: python-package-distributions
+          path: dist/
 
-      # [1-publish-workflow]
-      - name: Publish release candidate artifacts to TestPyPI
-        if: contains(github.ref, 'rc') == true
+      - name: Publish distribution to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          repository_url: https://test.pypi.org/legacy/
-          user: __token__
-          password: ${{ secrets.PSEC_TEST_PYPI_PASSWORD }}
-          packages-dir: ./dist
-          verify-metadata: false
 
-      - name: Publish tagged artifacts to PyPI
-        if: contains(github.ref, 'rc') == false
+  test-pypi-publish:
+    name: Publish release candidate artifacts to test PyPI
+    if: contains(github.ref, 'rc') == true
+    runs-on: ubuntu-22.04
+    needs:
+      - build
+    environment:
+      name: pypi
+      url: https://test.pypi.org/p/python_secrets
+    permissions:
+      id-token: write
+    steps:
+      - name: Download all the dists
+        uses: actions/download-artifact@v4
+        with:
+          name: python-package-distributions
+          path: dist/
+
+      - name: Publish release candidate distribution to TestPyPI
         uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          user: __token__
-          password: ${{ secrets.PSEC_PYPI_PASSWORD }}
-          packages-dir: ./dist
-          verify-metadata: false
-      # ![1-publish-workflow]
-
+  # ![1-build-publish-workflow]
