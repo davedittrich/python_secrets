@@ -53,7 +53,7 @@ classifiers = [
 	"Operating System :: POSIX",
 	"Operating System :: MacOS",
 	"Operating System :: OS Independent",
-	"Operating System :: Microsoft/Windows",
+	"Operating System :: Microsoft :: Windows",
 	"Operating System :: Unix",
 	"Programming Language :: Python :: 3",
 	"Programming Language :: Python :: 3.10",
