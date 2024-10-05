@@ -24,7 +24,7 @@ History
 .. Fixed for any bug fixes.
 .. Security in case of vulnerabilities.
 
-24.10.4 (2024-10-04)
+24.10.5 (2024-10-05)
 ~~~~~~~~~~~~~~~~~~~~
 
 Changed
@@ -32,7 +32,7 @@ Changed
 
 - Now using Poetry for package management and installation.
 - Refactored GitHub Actions workflows.
-- (Versions 24.10.0 - 24.10.3 were fix attempts.)
+- (Versions 24.10.0 - 24.10.4 were fix attempts.)
 
 23.4.2 (2023-04-20)
 ~~~~~~~~~~~~~~~~~~~
