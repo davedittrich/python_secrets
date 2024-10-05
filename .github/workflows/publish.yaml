@@ -72,6 +72,7 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
 
   test-pypi-publish:
+    name: Publish release candidate artifacts to test PyPI
     if: contains(github.ref, 'rc') == true
     runs-on: ubuntu-22.04
     needs:
