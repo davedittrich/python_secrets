@@ -1,34 +1,27 @@
-# .github/workflows/build-publish.yml
-name: Build and Publish
+name: Publish
 
 on:
-  workflow_run:
-    workflows: ["Test"]
-    branches:
-      - main
-      - develop
-    types:
-      - completed
+  push:
+    tags:
+      - '*.*.*'
+
+permissions:
+  contents: read
 
 jobs:
-  build:
-    needs: test
+  pypi-publish:
+    name: Upload release to PyPI
     runs-on: ubuntu-22.04
     env:
-      PY_COLORS: 1
-      PYTHON_VERSION: '3.12.6'
+        PY_COLORS: 1
+        PYTHON_VERSION: '3.12.6'
+    environment:
+      name: pypi
+    permissions:
+      id-token: write
     steps:
-      - name: Dump select GitHub event context
-        run: |
-          echo "github.ref=${{ github.ref }}"
-          echo "github.event.head_commit=$HEAD_COMMIT"
-        env:
-          HEAD_COMMIT: ${{ toJson(github.event.head_commit) }}
-
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -39,9 +32,6 @@ jobs:
         uses: snok/install-poetry@v1
         with:
           version: 1.8.3
-          # Get from poetry.toml
-          # virtualenvs-create: false
-          # prefer-active-python: true
 
       - name: Install poetry dependencies
         run: poetry install --no-root --with=dev --with=test
@@ -55,27 +45,8 @@ jobs:
           poetry dynamic-versioning
           echo "VERSION=$(poetry version --short)"
 
-      - name: Build artifacts
+      - name: Package project
         run: make twine-check
-
-      - name: Store artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: dist-files
-          path: ./dist/
-  publish:
-    needs: build
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
-    runs-on: ubuntu-22.04
-    env:
-      PY_COLORS: 1
-
-    steps:
-      - name: Download artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: dist-files
-          path: ./dist/
 
       # [1-build-publish-workflow]
       - name: Publish release candidate artifacts to TestPyPI
@@ -85,7 +56,6 @@ jobs:
           repository_url: https://test.pypi.org/legacy/
           user: __token__
           password: ${{ secrets.PSEC_TEST_PYPI_PASSWORD }}
-          packages-dir: ./dist
           verify-metadata: false
 
       - name: Publish tagged artifacts to PyPI
@@ -94,7 +64,5 @@ jobs:
         with:
           user: __token__
           password: ${{ secrets.PSEC_PYPI_PASSWORD }}
-          packages-dir: ./dist
           verify-metadata: false
       # ![1-build-publish-workflow]
-
