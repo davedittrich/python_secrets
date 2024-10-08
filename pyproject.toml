@@ -7,9 +7,10 @@ build-backend = "poetry_dynamic_versioning.backend"
 [tool.poetry-dynamic-versioning]
 enable = true
 vcs = "git"
-style = "semver"
+style = "pep440"
 latest-tag = true
-pattern = '(?P<base>\d+\.\d+\.\d+)'
+metadata = true
+pattern = "((?P<epoch>\\d+)!)?(?P<base>\\d+(\\.\\d+)*)([-._]?((?P<stage>[a-zA-Z]+)[-._]?(?P<revision>\\d+)?))?"
 
 [tool.poetry-dynamic-versioning.files."psec/_version.py"]
 persistent-substitution = true
@@ -21,6 +22,7 @@ initial-content = """
 
 [tool.poetry]
 name = "python-secrets"
+package-mode = true
 version = "0.1.0"
 description = "Python CLI for decoupling secrets (passwords, API keys, etc.) from source code"
 license = "Apache-2.0"
@@ -68,8 +70,11 @@ classifiers = [
 	"Topic :: System :: Systems Administration",
 	"Topic :: Utilities"
 ]
+include = [
+        { path = "psec/_version.py" },
+]
 packages = [
-	{include = "psec", to = "python-secrets"}
+	{include = "psec"}
 ]
 
 [tool.poetry.scripts]
@@ -130,14 +135,12 @@ ipwhois = "^1.2.0"
 jinja2 = "^3.1.4"
 lxml = "^5.3.0"
 pexpect = "^4.9.0"
-poetry = "^1.8.3"
+poetry = ">=1.8.3"
 poetry-dynamic-versioning = "^1.4.1"
 psutil = "^6.0.0"
-requests = "^2.32.3"
+requests = ">=2.31.0"
 sphinx = "^8.0.2"
-setuptools = "^75.1.0"
 xkcdpass ="^1.19.9"
-ruff = "^0.6.9"
 
 [tool.poetry.group.dev]
 optional = true
@@ -145,6 +148,7 @@ optional = true
 [tool.poetry.group.dev.dependencies]
 tox = "^4.8.1"
 bandit = "^1.7.9"
+ruff = "^0.6.9"
 
 [tool.poetry.group.test]
 optional = true

@@ -5,14 +5,18 @@ from importlib.metadata import (
     PackageNotFoundError,
 )
 
-from psec._version import (
-    __version__,
-    __version_tuple__,
-)
-
 __author__ = 'Dave Dittrich'
 __email__ = 'dave.dittrich@gmail.com'
 __release__ = '24.10.7'
+
+try:
+    from psec._version import (
+        __version__,
+        __version_tuple__,
+    )
+except ModuleNotFoundError:
+    __version__ = __release__
+    __version_tuple__ = tuple(__version__.split('.'))
 
 if __version__ in ['0.0.0', '0.1.0']:
     try:
