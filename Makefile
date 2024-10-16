@@ -3,6 +3,10 @@
 SHELL=bash
 VERSION=$(shell cat VERSION)
 PROJECT:=$(shell basename `pwd`)
+# Install poetry into conda environment
+export POETRY_HOME:=$(CONDA_PREFIX)
+POETRY_INSTALL_URL=https://raw.githubusercontent.com/python-poetry/install.python-poetry.org/refs/heads/main/install-poetry.py
+POETRY_VERSION=1.8.3
 
 .PHONY: default
 default: all
@@ -125,7 +129,27 @@ spotless: clean
 .PHONY: i
 .PHONY: install
 i install: clean build
-	(cd dist && python -m pip install $$(cat .LATEST_WHEEL))
+	(cd dist && python -m pip install $$(cat .LATEST_WHEEL) --force-reinstall)
+
+#HELP uninstall - uninstall project package from active virtualenv'
+.PHONY: uninstall
+uninstall:
+	python -m pip uninstall python_secrets
+
+# dittrich 2024-10-08 Assuming use of conda environments right now...
+
+.PHONY: install-poetry
+install-poetry:
+	@if [[ "$(shell poetry --version 2>/dev/null)" =~ "$(POETRY_VERSION)" ]]; then \
+		echo "[+] poetry version $(POETRY_VERSION) is already installed"; \
+	else \
+		(curl -sSL $(POETRY_INSTALL_URL) | python - --version $(POETRY_VERSION)); \
+		poetry self add "poetry-dynamic-versioning[plugin]"; \
+	fi
+
+.PHONY: uninstall-poetry
+uninstall-poetry:
+	curl -sSL $(POETRY_INSTALL_URL) | python - --version $(POETRY_VERSION) --uninstall
 
 #HELP update-packages - update dependencies with Poetry
 .PHONY: update-packages
