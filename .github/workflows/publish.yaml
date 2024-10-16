@@ -52,6 +52,30 @@ jobs:
           path: dist/
 
   # [1-build-publish-workflow]
+  test-pypi-publish:
+    name: Publish release candidate artifacts to test PyPI
+    if: contains(github.ref, 'rc') == true
+    runs-on: ubuntu-22.04
+    needs:
+      - build
+    environment:
+      name: testpypi
+      url: https://test.pypi.org/p/python_secrets
+    permissions:
+      id-token: write
+    steps:
+      - name: Download all the dists
+        uses: actions/download-artifact@v4
+        with:
+          name: python-package-distributions
+          path: dist/
+
+      - name: Publish release candidate distribution to TestPyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+          skip-existing: true
+
   pypi-publish:
     name: Publish release artifacts to PyPI
     if: contains(github.ref, 'rc') == false
@@ -71,26 +95,5 @@ jobs:
           path: dist/
 
       - name: Publish distribution to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-
-  test-pypi-publish:
-    name: Publish release candidate artifacts to test PyPI
-    if: contains(github.ref, 'rc') == true
-    runs-on: ubuntu-22.04
-    needs:
-      - build
-    environment:
-      name: pypi
-      url: https://test.pypi.org/p/python_secrets
-    permissions:
-      id-token: write
-    steps:
-      - name: Download all the dists
-        uses: actions/download-artifact@v4
-        with:
-          name: python-package-distributions
-          path: dist/
-
-      - name: Publish release candidate distribution to TestPyPI
         uses: pypa/gh-action-pypi-publish@release/v1
   # ![1-build-publish-workflow]
