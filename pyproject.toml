@@ -139,8 +139,15 @@ poetry = ">=1.8.3"
 poetry-dynamic-versioning = "^1.4.1"
 psutil = "^6.0.0"
 requests = ">=2.31.0"
-sphinx = "^8.0.2"
 xkcdpass ="^1.19.9"
+
+[tool.poetry.group.docs]
+optional = true
+
+[tool.poetry.group.docs.dependencies]
+sphinx = ">=4.0"
+sphinx-autobuild = ">=2021.0"
+sphinx-rtd-theme = ">=1.0"
 
 [tool.poetry.group.dev]
 optional = true
