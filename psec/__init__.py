@@ -7,7 +7,7 @@ from importlib.metadata import (
 
 __author__ = 'Dave Dittrich'
 __email__ = 'dave.dittrich@gmail.com'
-__release__ = '24.10.10'
+__release__ = '24.10.11'
 
 try:
     from psec._version import (
