@@ -6,14 +6,14 @@
   "configurations": [
     {
       "name": "Python: Current File",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "program": "${file}",
       "console": "integratedTerminal"
     },
     {
       "name": "Debug Tests (async)",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "console": "integratedTerminal",
       "module": "pytest",
@@ -29,7 +29,7 @@
     },
     {
       "name": "psec -v init",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": ["-v", "init"],
@@ -38,7 +38,7 @@
     },
     {
       "name": "psec secrets set --help",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": ["--debug", "secrets", "set", "--help"],
@@ -47,7 +47,7 @@
     },
     {
       "name": "psec -q complete",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": ["--debug", "-q", "complete"],
@@ -56,7 +56,7 @@
     },
     {
       "name": "psec about",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": ["help"],
@@ -65,7 +65,7 @@
     },
     {
       "name": "psec --version",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": ["-vv", "--version"],
@@ -74,7 +74,7 @@
     },
     {
       "name": "psec environments create --init --clone-from tests/secrets.d",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": [
@@ -90,7 +90,7 @@
     },
     {
       "name": "psec environments create aclone --clone-from psectest",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": [
@@ -106,7 +106,7 @@
     },
     {
       "name": "psec environments create --alias alias aclone",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": [
@@ -122,7 +122,7 @@
     },
     {
       "name": "psec environments default",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": ["--debug", "environments", "default"],
@@ -131,7 +131,7 @@
     },
     {
       "name": "psec environments default --set",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": ["--debug", "environments", "default", "--set"],
@@ -140,7 +140,7 @@
     },
     {
       "name": "psec environments list",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": ["--debug", "environments", "list"],
@@ -149,7 +149,7 @@
     },
     {
       "name": "psec -d /tmp/not/a/real/path environments list",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": ["--debug", "-d", "/tmp/not/a/real/path", "environments", "list"],
@@ -158,7 +158,7 @@
     },
     {
       "name": "psec environments list --aliasing",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": ["--debug", "environments", "list", "--aliasing"],
@@ -167,7 +167,7 @@
     },
     {
       "name": "psec environments rename alias renamed_alias",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": ["--debug", "environments", "rename", "alias", "renamed_alias"],
@@ -176,7 +176,7 @@
     },
     {
       "name": "psec environments delete",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": ["--debug", "environments", "delete"],
@@ -185,7 +185,7 @@
     },
     {
       "name": "psec environments delete aclone",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": ["--debug", "environments", "delete", "aclone"],
@@ -194,7 +194,7 @@
     },
     {
       "name": "psec environments rename notanalias not_an_alias",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": [
@@ -209,7 +209,7 @@
     },
     {
       "name": "psec environments default --set",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": ["--debug", "environments", "default", "--set"],
@@ -218,7 +218,7 @@
     },
     {
       "name": "psec environments path --tmpdir",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": ["--debug", "environments", "path", "--tmpdir"],
@@ -227,7 +227,7 @@
     },
     {
       "name": "psec environments path doesntexist --exists",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": [
@@ -243,7 +243,7 @@
     },
     {
       "name": "psec environments tree",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": ["--debug", "environments", "tree"],
@@ -252,7 +252,7 @@
     },
     {
       "name": "psec groups create emptygroup",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": ["--debug", "groups", "create", "emptygroup"],
@@ -261,7 +261,7 @@
     },
     {
       "name": "psec groups create newgroup --clone-from tests/gosecure.json",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": [
@@ -277,7 +277,7 @@
     },
     {
       "name": "psec groups create newgroup --clone-from tests/gosecure.json",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": [
@@ -293,7 +293,7 @@
     },
     {
       "name": "psec groups delete gosecure",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": ["--debug", "groups", "delete", "gosecure"],
@@ -302,7 +302,7 @@
     },
     {
       "name": "psec secrets create newsecret",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": ["--debug", "secrets", "create", "newsecret"],
@@ -311,7 +311,7 @@
     },
     {
       "name": "psec secrets create newsecret --mirror-locally",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": ["--debug", "secrets", "create", "newsecret", "--mirror-locally"],
@@ -320,7 +320,7 @@
     },
     {
       "name": "psec secrets create --update newsecret",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": [
@@ -336,7 +336,7 @@
     },
     {
       "name": "psec secrets delete --group consul consul_key",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": [
@@ -352,7 +352,7 @@
     },
     {
       "name": "psec secrets describe",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": ["--debug", "secrets", "describe"],
@@ -361,7 +361,7 @@
     },
     {
       "name": "psec secrets describe jenkins_admin_password",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": ["--debug", "secrets", "describe", "jenkins_admin_password"],
@@ -370,7 +370,7 @@
     },
     {
       "name": "psec secrets find jenkins_admin_password",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": ["--debug", "secrets", "find", "jenkins_admin_password"],
@@ -379,7 +379,7 @@
     },
     {
       "name": "psec secrets get jenkins_admin_password",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": ["--debug", "secrets", "get", "jenkins_admin_password"],
@@ -388,7 +388,7 @@
     },
     {
       "name": "psec secrets set algo_store_pki",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": ["--debug", "secrets", "set", "algo_store_pki"],
@@ -397,7 +397,7 @@
     },
     {
       "name": "psec secrets set jenkins_admin_password --from-environment python_secrets",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": [
@@ -413,7 +413,7 @@
     },
     {
       "name": "psec secrets set hypriot_hostname",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": ["--debug", "secrets", "set", "hypriot_hostname"],
@@ -422,7 +422,7 @@
     },
     {
       "name": "psec secrets set jenkins_admin_password=trident_sysadmin_pass --from-environment python_secrets",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": [
@@ -438,7 +438,7 @@
     },
     {
       "name": "psec secrets set --from-options",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": ["--debug", "secrets", "set", "--from-options"],
@@ -447,7 +447,7 @@
     },
     {
       "name": "psec secrets show --no-redact",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": ["--debug", "secrets", "show", "--no-redact"],
@@ -456,7 +456,7 @@
     },
     {
       "name": "psec secrets show --type password --no-redact",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": [
@@ -472,7 +472,7 @@
     },
     {
       "name": "psec secrets generate --from-options",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": ["--debug", "secrets", "generate", "--from-options"],
@@ -481,7 +481,7 @@
     },
     {
       "name": "psec secrets generate --max-acrostic-length 3",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": ["--debug", "secrets", "generate", "--max-acrostic-length", "3"],
@@ -490,7 +490,7 @@
     },
     {
       "name": "psec secrets path",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": ["--debug", "secrets", "path"],
@@ -499,7 +499,7 @@
     },
     {
       "name": "psec secrets send dittrich@speakeasy.net google_oauth_username",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": [
@@ -517,7 +517,7 @@
     },
     {
       "name": "psec secrets tree",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": ["--debug", "secrets", "tree"],
@@ -527,7 +527,7 @@
     },
     {
       "name": "psec secrets backup",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": ["--debug", "-vvv", "secrets", "backup"],
@@ -536,7 +536,7 @@
     },
     {
       "name": "psec secrets restore",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": ["--debug", "-vvv", "secrets", "restore"],
@@ -545,7 +545,7 @@
     },
     {
       "name": "psec -E run printenv",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": ["--debug", "-vvv", "-E", "run", "printenv"],
@@ -557,7 +557,7 @@
     },
     {
       "name": "psec --elapsed run -- sleep 5",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": ["--debug", "--elapsed", "run", "--", "sleep", "5"],
@@ -566,7 +566,7 @@
     },
     {
       "name": "psec ssh known-hosts add console-output.txt",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": ["--debug", "ssh", "known-hosts", "add", "console-output.txt"],
@@ -575,7 +575,7 @@
     },
     {
       "name": "psec ssh known-hosts add terraform.log",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": [
@@ -591,7 +591,7 @@
     },
     {
       "name": "psec ssh known-hosts add --save-to-files terraform.log",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": [
@@ -608,7 +608,7 @@
     },
     {
       "name": "psec ssh known-hosts remove --ask-become-pass",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": ["--debug", "ssh", "known-hosts", "remove", "--ask-become-pass"],
@@ -617,7 +617,7 @@
     },
     {
       "name": "psec ssh known-hosts remove console-output.txt",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": [
@@ -633,7 +633,7 @@
     },
     {
       "name": "psec ssh known-hosts remove --host-ip 52.34.168.102",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": [
@@ -649,7 +649,7 @@
     },
     {
       "name": "psec ssh known-hosts add i-036b9d28241dacf68-console-output.txt",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": [
@@ -665,7 +665,7 @@
     },
     {
       "name": "psec ssh known-hosts add --known-hosts-root /tmp/foo --ask-become-pass",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": [
@@ -682,7 +682,7 @@
     },
     {
       "name": "psec ssh known-hosts extract --known-hosts-root /tmp/foo terraform.log",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": [
@@ -699,7 +699,7 @@
     },
     {
       "name": "psec ssh known-hosts add --instance-id [LATEST]",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": [
@@ -716,7 +716,7 @@
     },
     {
       "name": "psec ssh known-hosts remove --instance-id [LATEST]",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": [
@@ -733,7 +733,7 @@
     },
     {
       "name": "psec ssh config --clean",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": ["--debug", "-v", "ssh", "config", "--clean"],
@@ -742,7 +742,7 @@
     },
     {
       "name": "psec utils asciinema --rebase test.cast",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": ["--debug", "utils", "asciinema", "--rebase", "test.cast"],
@@ -751,7 +751,7 @@
     },
     {
       "name": "psec utils myip --cidr",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": ["--debug", "utils", "myip", "--cidr"],
@@ -760,7 +760,7 @@
     },
     {
       "name": "psec utils myip --cidr --method amazon_http",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": ["--debug", "utils", "myip", "--cidr", "--method", "amazon_http"],
@@ -769,7 +769,7 @@
     },
     {
       "name": "psec utils myip --cidr --method random",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": ["--debug", "utils", "myip", "--cidr", "--method", "random"],
@@ -778,7 +778,7 @@
     },
     {
       "name": "psec utils myip --netblock",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": ["--debug", "utils", "myip", "--netblock"],
@@ -787,7 +787,7 @@
     },
     {
       "name": "psec utils myip methods",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": ["--debug", "utils", "myip", "methods"],
@@ -796,7 +796,7 @@
     },
     {
       "name": "psec utils netblock",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": ["--debug", "utils", "netblock"],
@@ -805,7 +805,7 @@
     },
     {
       "name": "psec utils netblock 8.8.8.8",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": ["--debug", "utils", "netblock", "8.8.8.8"],
@@ -814,7 +814,7 @@
     },
     {
       "name": "psec utils yaml-to-json - < /tmp/yamlsecrets/jenkins.yml",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": [
@@ -830,7 +830,7 @@
     },
     {
       "name": "psec utils yaml-to-json --convert /tmp/yamlsecrets",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "psec.__main__",
       "args": [
