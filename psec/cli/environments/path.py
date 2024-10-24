@@ -109,7 +109,7 @@ class EnvironmentsPath(Command):
                 if self.app_args.verbose_level > 1:
                     self.logger.info("[+] created %s", full_path)
             if parsed_args.exists:
-                # Just check existance and return result
+                # Just check existence and return result
                 exists = os.path.exists(full_path)
                 if self.app_args.verbose_level > 1:
                     status = "exists" if exists else "does not exist"
