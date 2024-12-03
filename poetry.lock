@@ -27,13 +27,13 @@ ansible-core = ">=2.17.5,<2.18.0"
 
 [[package]]
 name = "ansible-core"
-version = "2.17.5"
+version = "2.17.7"
 description = "Radically simple IT automation"
 optional = false
 python-versions = ">=3.10"
 files = [
-    {file = "ansible_core-2.17.5-py3-none-any.whl", hash = "sha256:10f165b475cf2bc8d886e532cadb32c52ee6a533649793101d3166bca9bd3ea3"},
-    {file = "ansible_core-2.17.5.tar.gz", hash = "sha256:ae7f51fd13dc9d57c9bcd43ef23f9c255ca8f18f4b5c0011a4f9b724d92c5a8e"},
+    {file = "ansible_core-2.17.7-py3-none-any.whl", hash = "sha256:64d4f0a006687a5621aa80dca54fd0c5ae75145b7aac8c1b8d7f07a1399c4705"},
+    {file = "ansible_core-2.17.7.tar.gz", hash = "sha256:3aaab735d6c4e2d6239bc326800dc0ecda2a1490caa8455b41084ec0bc54dacf"},
 ]
 
 [package.dependencies]
@@ -571,6 +571,7 @@ description = "Config file reading, writing and validation."
 optional = false
 python-versions = ">=3.7"
 files = [
+    {file = "configobj-5.0.9-py2.py3-none-any.whl", hash = "sha256:1ba10c5b6ee16229c79a05047aeda2b55eb4e80d7c7d8ecf17ec1ca600c79882"},
     {file = "configobj-5.0.9.tar.gz", hash = "sha256:03c881bbf23aa07bccf1b837005975993c4ab4427ba57f959afdd9d1a2386848"},
 ]
 
