@@ -72,9 +72,15 @@ Ready to contribute? Here's how to set up `python_secrets` for local development
     $ git clone https://github.com/ztombol/bats-support.git
     $ git clone https://github.com/jasonkarns/bats-assert-1.git
 
-#. Install your local copy into a virtualenv. Assuming you have
-   virtualenvwrapper installed, this is how you set up your fork for
-   local development::
+#. Install your local copy into a conda environment or virtualenv.
+   Using conda (recommended)::
+
+    $ conda create -n python_secrets python=3.10
+    $ conda activate python_secrets
+    $ cd python_secrets/
+    $ make install
+
+   Or using virtualenvwrapper::
 
     $ mkvirtualenv python_secrets
     $ cd python_secrets/
@@ -87,13 +93,18 @@ Ready to contribute? Here's how to set up `python_secrets` for local development
    Now you can make your changes locally.
 
 #. When you're done making changes, check that your changes pass
-   ``flake8`` and ``bandit`` (security) tests, including testing
-   other Python versions with ``tox``::
+   linting, security analysis, and all tests including multiple Python
+   versions with ``tox``::
 
     $ make test
 
-   To get ``flake8`` and ``tox``, just ``python -m pip install`` them
-   into your virtualenv.
+   For individual testing components::
+
+    $ make test-tox          # Run Python unit tests across versions
+    $ make test-bats         # Run Bats integration tests
+    $ tox run -m static      # Run static analysis (ruff, bandit, docs)
+    $ tox -e pep8            # Run ruff linting only
+    $ tox -e bandit          # Run security analysis only
 
 #. Commit your changes and push your branch to GitHub::
 
@@ -116,21 +127,45 @@ Before you submit a pull request, check that it meets these guidelines:
    in ``README.rst``, ``docs/usage.rst``, and ``parser.epilog`` for CLI
    commands.
 
-#. The pull request should work for the versions of Python defined in ``tox.ini``
-   and ``.travis.yml``. Check
-   https://travis-ci.org/davedittrich/python_secrets/pull_requests
-   and make sure that the tests pass for all supported Python versions.
+#. The pull request should work for Python 3.10, 3.11, and 3.12 as defined
+   in ``tox.ini``. Run ``make test`` to ensure compatibility across all
+   supported Python versions.
 
 Tips
 ----
 
-To run a subset of Python unit tests::
+Development and Testing Best Practices
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    $ python -m unittest tests.test_secrets
+The project uses **pytest** for unit testing with enhanced type safety and modern Python practices.
 
-To run a subset of Bats tests::
+To run Python unit tests::
 
-    $ bats tests/secrets.bats
+    $ python -m pytest tests/test_secrets.py -v    # Run specific test file
+    $ python -m pytest tests/ -k "test_name"       # Run tests matching pattern
+    $ python -m pytest tests/ --cov=psec           # Run with coverage
+
+To run Bats integration tests::
+
+    $ make test-bats                               # All Bats tests
+    $ bats tests/runtime_10_groups.bats            # Specific test file
+
+Code Quality Standards
+~~~~~~~~~~~~~~~~~~~~~~
+
+* **Type Hints**: All new code should include proper type annotations using modern Python typing
+* **pytest**: New tests should be written using pytest framework, not unittest
+* **Ruff**: Code formatting and linting is handled by Ruff (replaces flake8/black)
+* **Bandit**: Security analysis is mandatory for all changes
+* **Dataclasses**: Prefer dataclasses over traditional classes where appropriate
+
+Modern Development Workflow
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+1. Use ``conda activate psec`` to activate the development environment
+2. Run ``make test`` to execute the full test suite
+3. Use ``tox run -m static`` for quick linting and security checks
+4. Follow the existing code patterns for consistency
 
 
 .. [1] https://github.com/davedittrich/python_secrets/issues
